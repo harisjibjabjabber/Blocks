@@ -28,8 +28,13 @@ export interface ControllerSeed {
 export interface RecentPhraseCut {
   status: "recent" | "ambiguous";
   selection: CutBounds;
-  /** Repeating period. It can end before a release tail, or after the last raw event when one measured spacing remains. */
+  /** Playback wrap and ribbon end. Trailing silence is empty time, not a new note. */
   loop: CutBounds;
+  /** Measured attack spacing of the phrase. Null when the spacing is too weak to extend the loop. */
+  periodTicks: bigint | null;
+  /** First onset the spacing is measured from. Null when periodTicks is null. */
+  phaseOriginTicks: bigint | null;
+  periodConfidence: "measured" | "fallback";
   priorPhrase: CutBounds | null;
   priorBar: CutBounds | null;
   heldNoteIds: string[];
@@ -336,23 +341,55 @@ function attacksReleased(events: readonly CapturedEvent[], start: bigint, end: b
   return ons.every((on) => events.some((event) => (event.kind === "note-off" || (event.kind === "note-on" && event.velocity === 0)) && event.note === on.note && event.channel === on.channel && event.scheduleElapsed > on.scheduleElapsed));
 }
 
-function nominalLoop(events: readonly CapturedEvent[], selection: CutBounds): CutBounds {
-  const attacks = events
-    .filter((event) => event.kind === "note-on" && event.velocity > 0 && event.scheduleElapsed >= selection.start && event.scheduleElapsed <= selection.end)
-    .map((event) => event.scheduleElapsed)
-    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-  if (attacks.length < 4) {
-    return { start: selection.start, end: selection.end };
-  }
+function onsetGaps(times: bigint[]): bigint[] {
   const gaps: bigint[] = [];
-  for (let i = 1; i < attacks.length; i += 1) {
-    gaps.push(attacks[i] - attacks[i - 1]);
+  for (let i = 1; i < times.length; i += 1) {
+    gaps.push(times[i] - times[i - 1]);
+  }
+  return gaps;
+}
+
+function measuredPeriod(times: bigint[], selection: CutBounds): { loop: CutBounds; periodTicks: bigint; phaseOriginTicks: bigint } | null {
+  if (times.length < 4) {
+    return null;
+  }
+  const gaps = onsetGaps(times);
+  if (!repeatedSpacing(gaps)) {
+    return null;
   }
   const spacing = medianOf(gaps);
   if (spacing <= 0n) {
-    return { start: selection.start, end: selection.end };
+    return null;
   }
-  return { start: selection.start, end: attacks[attacks.length - 1] + spacing };
+  return {
+    loop: { start: selection.start, end: times[times.length - 1] + spacing },
+    periodTicks: spacing,
+    phaseOriginTicks: times[0],
+  };
+}
+
+/** The loop ends one measured slot after the last chord onset. A short release does not pull that end in, and it does not move the notes. */
+function nominalLoop(events: readonly CapturedEvent[], selection: CutBounds, clusters: bigint[]): {
+  loop: CutBounds;
+  periodTicks: bigint | null;
+  phaseOriginTicks: bigint | null;
+  periodConfidence: "measured" | "fallback";
+} {
+  const fallback = {
+    loop: { start: selection.start, end: selection.end },
+    periodTicks: null,
+    phaseOriginTicks: null,
+    periodConfidence: "fallback" as const,
+  };
+  const harmonic = fingerStacks(events)
+    .filter((stack) => stack.time >= selection.start && stack.time <= selection.end && isHarmonic(stack))
+    .map((stack) => stack.time);
+  const clusterTimes = clusters.filter((time) => time >= selection.start && time <= selection.end);
+  const measured = measuredPeriod(harmonic, selection) ?? measuredPeriod(clusterTimes, selection);
+  if (!measured) {
+    return fallback;
+  }
+  return { ...measured, periodConfidence: "measured" };
 }
 
 function sizedClusters(events: readonly CapturedEvent[], chord: bigint): { time: bigint; count: number }[] {
@@ -515,6 +552,9 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
       status: "ambiguous",
       selection: { start: 0n, end: 0n },
       loop: { start: 0n, end: 0n },
+      periodTicks: null,
+      phaseOriginTicks: null,
+      periodConfidence: "fallback",
       priorPhrase: null,
       priorBar: null,
       heldNoteIds: [],
@@ -722,17 +762,23 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     selectedCount + " events in the window, " + events.length + " in the raw history.",
   ].join(" ");
 
-  const loop = nominalLoop(events, selection);
+  const period = nominalLoop(events, selection, clusters);
+  const periodNote = period.periodConfidence === "measured"
+    ? " The loop and the ribbon run to one measured slot after the last chord onset. An early release does not shorten that slot and does not move the notes. Empty time is silence."
+    : " Spacing was too weak to extend the loop, so it stays on the recorded events.";
   return {
     status,
     selection,
-    loop,
+    loop: period.loop,
+    periodTicks: period.periodTicks,
+    phaseOriginTicks: period.phaseOriginTicks,
+    periodConfidence: period.periodConfidence,
     priorPhrase,
     priorBar,
     heldNoteIds,
     controllerSeed,
     deferred,
-    note,
+    note: note + periodNote,
   };
 }
 

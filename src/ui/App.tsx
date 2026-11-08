@@ -19,6 +19,7 @@ import {
 import { beatForCut, createProject, gridStatusCopy, projectFromJson, projectToJson, proposeTempo, type Project } from "../domain/project";
 import { eventsInSelection, moveSelectionStart, recentPhraseCut, type RecentPhraseCut } from "../domain/recent-phrase";
 import { routeLearnedControl, type ControlMap, type LearnTarget } from "../domain/learn";
+import { ribbonMarks } from "./ribbon-scale";
 import { ReadinessStrip } from "./Readiness";
 import { touchFromPress, type PressPhase } from "./keys";
 
@@ -337,7 +338,7 @@ export default function App() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Take ribbon</Text>
-          <TakeRibbon events={ribbon} />
+          <TakeRibbon events={ribbon} coverageEnd={take ? take.overlay.loopEnd : undefined} />
           {notice.kind === "none" ? null : <Text style={styles.meta}>{evictionCopy(notice)}</Text>}
         </View>
         {learning ? <Text style={styles.meta}>Learning {learning === "capture" ? "Capture" : "Play/Stop"}. Not CC 64 and not a key.</Text> : null}
@@ -519,24 +520,17 @@ function evictionCopy(notice: RibbonNotice): string {
   return "No eviction.";
 }
 
-function TakeRibbon({ events }: { events: CapturedEvent[] }) {
+function TakeRibbon({ events, coverageEnd }: { events: CapturedEvent[]; coverageEnd?: bigint }) {
   const notes = events.filter((event) => event.kind === "note-on" && event.velocity > 0).slice(-64);
   if (notes.length === 0) {
     return <Text style={styles.meta}>Nothing played yet</Text>;
   }
-  const start = notes[0].scheduleElapsed;
-  const end = notes[notes.length - 1].scheduleElapsed;
-  const span = end > start ? end - start : 1n;
-  const lowest = notes.reduce((min, event) => Math.min(min, event.note), notes[0].note);
-  const highest = notes.reduce((max, event) => Math.max(max, event.note), notes[0].note);
-  const pitch = Math.max(1, highest - lowest);
+  const marks = ribbonMarks(notes, coverageEnd);
   return (
     <View style={styles.ribbonPlot} accessibilityLabel="Take ribbon">
-      {notes.map((event) => {
-        const x = Number(((event.scheduleElapsed - start) * 100n) / span);
-        const y = ((highest - event.note) / pitch) * 116;
-        return <View key={event.id} style={[styles.ribbonMark, { left: `${Math.min(97, Math.max(0, x))}%`, top: y }]} />;
-      })}
+      {marks.map((mark) => (
+        <View key={mark.id} style={[styles.ribbonMark, { left: `${Math.min(97, Math.max(0, mark.xPercent))}%`, top: mark.y }]} />
+      ))}
     </View>
   );
 }
