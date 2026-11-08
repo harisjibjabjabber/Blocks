@@ -230,8 +230,8 @@ export default function App() {
       ...defaultOverlay(events),
       selectionStart: cut.selection.start,
       selectionEnd: cut.selection.end,
-      loopStart: cut.selection.start,
-      loopEnd: cut.selection.end,
+      loopStart: cut.loop.start,
+      loopEnd: cut.loop.end,
       quantiseStrength: 0,
       playback: { mode: "original" as const },
     };

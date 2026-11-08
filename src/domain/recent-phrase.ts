@@ -28,6 +28,8 @@ export interface ControllerSeed {
 export interface RecentPhraseCut {
   status: "recent" | "ambiguous";
   selection: CutBounds;
+  /** Repeating period. It can end before a release tail, or after the last raw event when one measured spacing remains. */
+  loop: CutBounds;
   priorPhrase: CutBounds | null;
   priorBar: CutBounds | null;
   heldNoteIds: string[];
@@ -206,6 +208,153 @@ function overlapStacks(events: readonly CapturedEvent[]): { time: bigint; count:
   return stacks;
 }
 
+interface FingerStack {
+  time: bigint;
+  attacks: bigint[];
+  fingerOff: (bigint | null)[];
+}
+
+/** Same joining as overlapStacks, plus the finger release of each attack. Pedal does not count as a finger hold. */
+function fingerStacks(events: readonly CapturedEvent[]): FingerStack[] {
+  const ordered = events.slice().sort((a, b) => (a.scheduleElapsed < b.scheduleElapsed ? -1 : a.scheduleElapsed > b.scheduleElapsed ? 1 : a.sequence < b.sequence ? -1 : a.sequence > b.sequence ? 1 : 0));
+  const notes: { key: string; stack: number; index: number; alive: boolean }[] = [];
+  const stacks: FingerStack[] = [];
+  const anyAlive = () => notes.some((note) => note.alive);
+  for (const event of ordered) {
+    if (event.kind === "cc") {
+      continue;
+    }
+    const key = event.channel + ":" + event.note;
+    if (event.kind === "note-off" || (event.kind === "note-on" && event.velocity === 0)) {
+      const note = notes.find((item) => item.alive && item.key === key);
+      if (note) {
+        note.alive = false;
+        const stack = stacks[note.stack];
+        if (stack.fingerOff[note.index] === null) {
+          stack.fingerOff[note.index] = event.scheduleElapsed;
+        }
+      }
+      continue;
+    }
+    if (event.kind === "note-on" && event.velocity > 0) {
+      if (!anyAlive()) {
+        notes.length = 0;
+        stacks.push({ time: event.scheduleElapsed, attacks: [event.scheduleElapsed], fingerOff: [null] });
+      } else {
+        const stack = stacks[stacks.length - 1];
+        stack.attacks.push(event.scheduleElapsed);
+        stack.fingerOff.push(null);
+      }
+      notes.push({ key, stack: stacks.length - 1, index: stacks[stacks.length - 1].attacks.length - 1, alive: true });
+    }
+  }
+  return stacks;
+}
+
+/** A stack is a chord when its notes are still held after the time it took to attack them. A brief legato smear is not. */
+function isHarmonic(stack: FingerStack): boolean {
+  if (stack.attacks.length < 2) {
+    return false;
+  }
+  const last = stack.attacks[stack.attacks.length - 1];
+  const span = last - stack.attacks[0];
+  const check = last + span;
+  return stack.fingerOff.every((off) => off === null || off > check);
+}
+
+function harmonicStart(stacks: FingerStack[]): { start: bigint; throughEnd: boolean } | null {
+  const harmonic: number[] = [];
+  for (let i = 0; i < stacks.length; i += 1) {
+    if (isHarmonic(stacks[i])) {
+      harmonic.push(i);
+    }
+  }
+  if (harmonic.length < 3) {
+    return null;
+  }
+  let first = harmonic[harmonic.length - 1];
+  let count = 1;
+  for (let k = harmonic.length - 2; k >= 0; k -= 1) {
+    const between = harmonic[k + 1] - harmonic[k] - 1;
+    if (between > 0) {
+      break;
+    }
+    first = harmonic[k];
+    count += 1;
+  }
+  if (count < 3 || harmonic[harmonic.indexOf(first) + count - 1] !== harmonic[harmonic.length - 1]) {
+    return null;
+  }
+  const tail = stacks.length - 1 - harmonic[harmonic.length - 1];
+  return { start: stacks[first].time, throughEnd: tail <= count };
+}
+
+function nearClass(gap: bigint, model: bigint): boolean {
+  return model > 0n && gap * 2n <= model * 3n && model * 2n <= gap * 3n;
+}
+
+/** Recent attacks whose gaps match the short and long classes measured on the tail. Not a new silence constant. */
+function classWalkStart(clusters: bigint[]): number | null {
+  if (clusters.length < 7) {
+    return null;
+  }
+  const gaps: bigint[] = [];
+  for (let i = 1; i < clusters.length; i += 1) {
+    gaps.push(clusters[i] - clusters[i - 1]);
+  }
+  const seed = gaps.slice(-6);
+  const shorts: bigint[] = [];
+  const longs: bigint[] = [];
+  for (let i = seed.length; i >= 2; i -= 2) {
+    const left = seed[i - 2];
+    const right = seed[i - 1];
+    if (left <= right) {
+      shorts.push(left);
+      longs.push(right);
+    } else {
+      shorts.push(right);
+      longs.push(left);
+    }
+  }
+  const shortM = medianOf(shorts);
+  const longM = medianOf(longs);
+  let start = gaps.length;
+  while (start > 0 && (nearClass(gaps[start - 1], shortM) || nearClass(gaps[start - 1], longM))) {
+    start -= 1;
+  }
+  if (gaps.length - start < 4) {
+    return null;
+  }
+  return start;
+}
+
+function attacksReleased(events: readonly CapturedEvent[], start: bigint, end: bigint): boolean {
+  const ons = events.filter((event) => event.kind === "note-on" && event.velocity > 0 && event.scheduleElapsed >= start && event.scheduleElapsed <= end);
+  if (ons.length === 0) {
+    return false;
+  }
+  return ons.every((on) => events.some((event) => (event.kind === "note-off" || (event.kind === "note-on" && event.velocity === 0)) && event.note === on.note && event.channel === on.channel && event.scheduleElapsed > on.scheduleElapsed));
+}
+
+function nominalLoop(events: readonly CapturedEvent[], selection: CutBounds): CutBounds {
+  const attacks = events
+    .filter((event) => event.kind === "note-on" && event.velocity > 0 && event.scheduleElapsed >= selection.start && event.scheduleElapsed <= selection.end)
+    .map((event) => event.scheduleElapsed)
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  if (attacks.length < 4) {
+    return { start: selection.start, end: selection.end };
+  }
+  const gaps: bigint[] = [];
+  for (let i = 1; i < attacks.length; i += 1) {
+    gaps.push(attacks[i] - attacks[i - 1]);
+  }
+  const spacing = medianOf(gaps);
+  if (spacing <= 0n) {
+    return { start: selection.start, end: selection.end };
+  }
+  return { start: selection.start, end: attacks[attacks.length - 1] + spacing };
+}
+
 function sizedClusters(events: readonly CapturedEvent[], chord: bigint): { time: bigint; count: number }[] {
   const attacks = events
     .filter((event) => event.kind === "note-on" && event.velocity > 0)
@@ -365,6 +514,7 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     return {
       status: "ambiguous",
       selection: { start: 0n, end: 0n },
+      loop: { start: 0n, end: 0n },
       priorPhrase: null,
       priorBar: null,
       heldNoteIds: [],
@@ -500,6 +650,38 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     }
   }
 
+  const passage = harmonicStart(fingerStacks(events));
+  if (passage && passage.throughEnd) {
+    selection = { start: passage.start, end: last };
+    status = "recent";
+    how = "Notes that stay held together after they are attacked stay one chord. A short tail after those chords stays in the raw range. Basic cut, not finished Capture.";
+    if (passage.start > first) {
+      priorPhrase = boundsFrom(events, first, passage.start - 1n);
+    }
+  } else {
+    const walked = classWalkStart(clusters);
+    if (walked !== null) {
+      const walkStart = clusters[walked];
+      const released = attacksReleased(events, walkStart, last);
+      if (walked > 0 && walkStart < selection.start) {
+        selection = { start: walkStart, end: last };
+        status = "recent";
+        how = "The recent attacks repeat a short gap and a long gap measured from the tail. Earlier gaps do not match those two. Basic cut, not finished Capture.";
+        priorPhrase = boundsFrom(events, first, walkStart - 1n);
+      } else if (walked > 0 && selection.start === first && status === "ambiguous") {
+        selection = { start: walkStart, end: last };
+        status = "recent";
+        how = "The recent attacks repeat a short gap and a long gap measured from the tail. Earlier gaps do not match those two. Basic cut, not finished Capture.";
+        priorPhrase = boundsFrom(events, first, walkStart - 1n);
+      } else if (walked === 0 && released && selection.start !== first) {
+        selection = { start: first, end: last };
+        status = "recent";
+        how = "The take repeats one measured spacing and the notes were released, so the window stays the whole ribbon. Basic cut, not finished Capture.";
+        priorPhrase = null;
+      }
+    }
+  }
+
   if (breaks.length > 0 && beat !== null) {
     const bar = beat * 4n;
     const earlier = selection.start - bar;
@@ -527,6 +709,8 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
   }
   if (selection.start === first && selection.end === last && events.length > 1 && status === "ambiguous") {
     deferred.push("Note-boundary expansion was not allowed to fall back to a wider cut. The window is already the whole ribbon because no rest or bar was used.");
+  } else if (selection.start > first) {
+    deferred.push("Note-boundary expansion was not allowed to fall back to a wider cut.");
   }
 
   const selectedCount = eventsBetween(events, selection.start, selection.end).length;
@@ -538,9 +722,11 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     selectedCount + " events in the window, " + events.length + " in the raw history.",
   ].join(" ");
 
+  const loop = nominalLoop(events, selection);
   return {
     status,
     selection,
+    loop,
     priorPhrase,
     priorBar,
     heldNoteIds,
