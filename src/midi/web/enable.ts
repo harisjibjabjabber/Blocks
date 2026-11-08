@@ -1,4 +1,15 @@
-export type GateKind = "idle" | "unsupported" | "denied" | "no-device" | "disconnected" | "suspended" | "ready";
+export type GateKind =
+  | "idle"
+  | "unsupported"
+  | "site-addon"
+  | "policy-blocked"
+  | "settings-blocked"
+  | "denied"
+  | "no-device"
+  | "disconnected"
+  | "suspended"
+  | "ready"
+  | "failed";
 
 export interface GateState {
   kind: GateKind;
@@ -13,6 +24,8 @@ export interface EnableDeps {
   audioState: () => string;
   requestMIDIAccess?: (options: { sysex: boolean }) => Promise<MidiAccessLike>;
   isSecureContext?: () => boolean;
+  browser?: "firefox" | "other";
+  permission?: { state: "granted" | "denied" | "prompt" | null; policyAllows: boolean | null };
 }
 
 export interface MidiAccessLike {
@@ -63,14 +76,55 @@ export async function enableFromGesture(deps: EnableDeps): Promise<{ gate: GateS
       order,
     };
   }
+  if (deps.permission?.policyAllows === false) {
+    return {
+      gate: {
+        kind: "policy-blocked",
+        ready: false,
+        audioRunning: runningNow(),
+        midiAccess: false,
+        detail: "The midi permission policy blocks this page. A site setting cannot override that. Open the top-level page. On-screen keys still play. This is not a broken take.",
+      },
+      access: null,
+      order,
+    };
+  }
   if (typeof deps.requestMIDIAccess !== "function") {
+    if (deps.browser === "firefox") {
+      return {
+        gate: {
+          kind: "site-addon",
+          ready: false,
+          audioRunning: runningNow(),
+          midiAccess: false,
+          detail:
+            "Desktop Firefox does not expose requestMIDIAccess here until a site-permission add-on is installed. From Firefox 108 that add-on is offered in a secure context when the midi permission policy allows it. This is a browser requirement, not a missing Web MIDI design and not a permission denial this page can see. Chrome or Edge is the easier first hardware test. Next: install the site-permission add-on Firefox offers for this site, or open the page in Chrome or Edge. On-screen keys still play.",
+        },
+        access: null,
+        order,
+      };
+    }
     return {
       gate: {
         kind: "unsupported",
         ready: false,
         audioRunning: runningNow(),
         midiAccess: false,
-        detail: "This browser has no Web MIDI API.",
+        detail: "requestMIDIAccess is not on this page. On-screen keys still play. This is not a permission denial.",
+      },
+      access: null,
+      order,
+    };
+  }
+  if (deps.permission?.state === "denied") {
+    return {
+      gate: {
+        kind: "settings-blocked",
+        ready: false,
+        audioRunning: runningNow(),
+        midiAccess: false,
+        detail:
+          "MIDI for this site is already blocked in the browser settings. This page did not see a prompt, and it will not ask again while the setting stays blocked. Allow MIDI for this site, then press Try MIDI. On-screen keys still play.",
       },
       access: null,
       order,
@@ -81,14 +135,24 @@ export async function enableFromGesture(deps: EnableDeps): Promise<{ gate: GateS
   try {
     access = await deps.requestMIDIAccess({ sysex: false });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "";
     const name = error instanceof DOMException ? error.name : error instanceof Error ? error.name : "";
+    const siteAddon = name === "SecurityError" && /site permission add-on/i.test(message);
+    const blocked = siteAddon ? "site-addon" : name === "NotAllowedError" ? "denied" : name === "SecurityError" && deps.permission?.policyAllows === false ? "policy-blocked" : "failed";
+    const detail = siteAddon
+      ? "SecurityError: " + message + " Desktop Firefox gates Web MIDI behind a site-permission add-on. This is a browser requirement, not a permission denial this page can see and not a broken take. Chrome or Edge is the easier first hardware test. Next: install the site-permission add-on Firefox offers for this site, or open the page in Chrome or Edge. On-screen keys still play."
+      : name === "NotAllowedError"
+        ? "NotAllowedError. This page cannot see whether a prompt appeared. If Try MIDI does not ask again, allow MIDI for this site in the browser settings. This is not a broken take. On-screen keys still play."
+        : name === "SecurityError"
+          ? "SecurityError. The page is not allowed to request MIDI, or the call had no user gesture. This is not recorded as a choice you made. Press the button again, or open the top-level page. On-screen keys still play."
+          : (name || "Error") + " while requesting MIDI. This is an API or runtime failure, not a permission denial and not a missing phrase. On-screen keys still play.";
     return {
       gate: {
-        kind: "denied",
+        kind: blocked,
         ready: false,
         audioRunning: runningNow(),
         midiAccess: false,
-        detail: name === "SecurityError" || name === "NotAllowedError" ? "MIDI permission was denied." : "MIDI access failed.",
+        detail,
       },
       access: null,
       order,

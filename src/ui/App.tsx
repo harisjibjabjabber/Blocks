@@ -9,6 +9,7 @@ import {
   defaultOverlay,
   loopLonger,
   loopShorter,
+  loopWindow,
   nudgeBoundary,
   recover,
   shiftBeat,
@@ -17,8 +18,10 @@ import {
   type PhraseOverlay,
 } from "../domain/phrase";
 import { createProject, gridStatusCopy, projectFromJson, projectToJson, proposeGrid, type Project } from "../domain/project";
+import { eventsInSelection, moveSelectionStart, recentPhraseCut, type RecentPhraseCut } from "../domain/recent-phrase";
 import { controlLabel, routeLearnedControl, type ControlMap, type LearnTarget } from "../domain/learn";
 import { ReadinessStrip } from "./Readiness";
+import { touchFromPress, type PressPhase } from "./keys";
 
 const engine = createEngine();
 const NOTES = [48, 50, 52, 53, 55, 57, 59, 60, 62, 64, 65, 67, 69, 71, 72];
@@ -31,6 +34,7 @@ interface Take {
   performance: Performance;
   overlay: PhraseOverlay;
   report: InferenceReport;
+  cut: RecentPhraseCut;
 }
 
 interface UndoCapture {
@@ -77,6 +81,20 @@ export default function App() {
   const learningRef = useRef<LearnTarget | null>(null);
   const mapRef = useRef<ControlMap>({ capture: null, transport: null });
   const actions = useRef({ capture: () => {}, togglePlay: () => {} });
+  const heldTouch = useRef(new Set<number>());
+
+  function pressKey(note: number, phase: PressPhase) {
+    const action = touchFromPress(phase);
+    if (action === "on") {
+      heldTouch.current.add(note);
+      engine.touch(note, 100, true);
+    } else if (action === "off") {
+      if (heldTouch.current.has(note)) {
+        heldTouch.current.delete(note);
+        engine.touch(note, 0, false);
+      }
+    }
+  }
 
   useEffect(() => {
     let stop = false;
@@ -131,10 +149,18 @@ export default function App() {
         }
       });
     }, 400);
+    const releaseTouch = () => {
+      for (const note of heldTouch.current) {
+        engine.touch(note, 0, false);
+      }
+      heldTouch.current.clear();
+    };
+    window.addEventListener("blur", releaseTouch);
     return () => {
       stop = true;
       unsubscribe();
       clearInterval(timer);
+      window.removeEventListener("blur", releaseTouch);
       if (loopTimer.current) {
         clearTimeout(loopTimer.current);
       }
@@ -156,9 +182,18 @@ export default function App() {
   }
 
   function playTake(item: Take, continueLoop: boolean) {
-    const selectedEvents = item.performance.events.filter(
-      (event) => event.scheduleElapsed >= item.overlay.selectionStart && event.scheduleElapsed <= item.overlay.selectionEnd,
-    );
+    const window = loopWindow(item.overlay);
+    const preface = [
+      ...item.cut.controllerSeed.map((seed) => {
+        const source = item.performance.events.find((event) => event.id === seed.sourceId) ?? item.performance.events[0];
+        return { ...source, id: seed.sourceId + ":seed", kind: "cc" as const, channel: seed.channel, controller: seed.controller, value: seed.value, note: 0, velocity: 0, scheduleElapsed: window.start };
+      }),
+      ...item.cut.heldNoteIds.map((id) => item.performance.events.find((event) => event.id === id)).flatMap((event) => (event ? [{ ...event, id: event.id + ":hold", scheduleElapsed: window.start }] : [])),
+    ];
+    const selectedEvents = [
+      ...preface,
+      ...item.performance.events.filter((event) => event.scheduleElapsed >= window.start && event.scheduleElapsed <= window.end),
+    ];
     if (selectedEvents.length === 0) {
       setMessage("That loop contains no recorded events.");
       return;
@@ -204,22 +239,38 @@ export default function App() {
       setMessage("Nothing to capture yet — play something");
       return;
     }
+    const ticksPerSecond = unitFor(domain);
+    const cut = recentPhraseCut(events, {
+      ticksPerSecond,
+      gridPeriodTicks: project.gridLocked && project.tempoBpm ? BigInt(Math.round((60 / project.tempoBpm) * ticksPerSecond)) : null,
+      gridOriginTicks: project.gridLocked && takes[0] ? takes[0].overlay.selectionStart : null,
+      historyMayBeTruncated: notice.kind !== "none",
+    });
     const performance = capturePerformance(events);
-    const report = inferPulse(events, unitFor(domain));
-    const overlay = defaultOverlay(events);
+    const overlay = {
+      ...defaultOverlay(events),
+      selectionStart: cut.selection.start,
+      selectionEnd: cut.selection.end,
+      loopStart: cut.selection.start,
+      loopEnd: cut.selection.end,
+      quantiseStrength: 0,
+      playback: { mode: "original" as const },
+    };
+    const selected = eventsInSelection(events, cut.selection);
+    const report = inferPulse(selected.length > 0 ? selected : events, ticksPerSecond);
     const id = "layer-" + (takes.length + 1);
-    const created: Take = { id, performance, overlay, report };
+    const created: Take = { id, performance, overlay, report, cut };
     setUndo({ takes, ribbon: events, project });
     setTakes((current) => [...current, created]);
     setSelected(id);
     history.clear();
     setRibbon([]);
     setNotice({ kind: "none" });
-    const proposal = proposeGrid(project, report.bpm);
+    const proposal = cut.status === "recent" ? proposeGrid(project, report.bpm) : proposeGrid(project, null);
     setProject(proposal.project);
     engine.saveProject(projectToJson(proposal.project));
-    const reading = report.pulse === "none" || report.bpm === null ? "No pulse reading." : report.bpm.toFixed(1) + " bpm · 4/4. One reading, not a set of candidates.";
-    setMessage("Captured " + events.length + " events into " + id + ". " + proposal.note + " " + reading + " Your timing is unchanged — only the grid moves.");
+    const reading = report.pulse === "none" || report.bpm === null ? "No pulse reading. Quantise stays off." : report.bpm.toFixed(1) + " bpm · one reading. Quantise stays off.";
+    setMessage(cut.note + " " + proposal.note + " " + reading + " Raw timestamps were not edited.");
     if (project.afterCapture === "silent") {
       return;
     }
@@ -245,6 +296,17 @@ export default function App() {
     setNotice(history.ribbonNotice());
     setUndo(null);
     setMessage("Capture undone. The ribbon has the events again.");
+  }
+
+  function applyBounds(item: Take, bounds: { start: bigint; end: bigint }, note: string) {
+    updateTake(
+      item.id,
+      (current) => ({
+        ...current,
+        overlay: { ...current.overlay, selectionStart: bounds.start, selectionEnd: bounds.end, loopStart: bounds.start, loopEnd: bounds.end },
+      }),
+      note,
+    );
   }
 
   function updateTake(id: string, patch: (current: Take) => Take, note: string) {
@@ -277,13 +339,14 @@ export default function App() {
     <View style={styles.page}>
       <ScrollView contentContainerStyle={[styles.content, narrow ? styles.contentNarrow : null]}>
         <Text style={styles.kicker}>Blocks</Text>
+        <Text style={styles.meta}>Early prototype. Hardware unverified. Not a finished product.</Text>
         <Text style={styles.title}>Warm EP</Text>
         <Text style={styles.preset}>{engine.presetId}</Text>
         <Text style={styles.body}>Procedural FM electric piano. Velocity and sustain. Not a sampled piano, and not a brand name.</Text>
 
         <View style={styles.row}>
           <Pressable style={styles.primary} onPress={enable} disabled={busy}>
-            <Text style={styles.primaryText}>{busy ? "Starting…" : "Enable"}</Text>
+            <Text style={styles.primaryText}>{busy ? "Starting…" : gate.kind === "idle" ? "Enable" : "Try MIDI"}</Text>
           </Pressable>
           <View style={styles.status}>
             <ReadinessStrip audioState={audioState} showContext={engine.kind === "web"} />
@@ -331,6 +394,10 @@ export default function App() {
             <Text style={styles.meta}>{take.report.reason}</Text>
             <Text style={styles.body}>Your timing is unchanged — only the grid moves.</Text>
             <Text style={styles.meta}>Manual grid: {chosenBpm(take.report, take.overlay.tempoChoice)?.toFixed(1) ?? "no bpm"} · phase {take.overlay.phaseBeats} · 4/4</Text>
+            <Text style={styles.meta}>Basic recent-phrase cut. Not finished Capture. Quantise stays off unless you turn it on later.</Text>
+            {take.cut.deferred.slice(0, 3).map((line) => (
+              <Text key={line} style={styles.meta}>{line}</Text>
+            ))}
             <View style={styles.wrap}>
               <Small label="Half" onPress={() => updateTake(take.id, (current) => ({ ...current, overlay: withChoice(current.overlay, "half") }), "Half is a manual grid correction.")} />
               <Small label="Double" onPress={() => updateTake(take.id, (current) => ({ ...current, overlay: withChoice(current.overlay, "double") }), "Double is a manual grid correction.")} />
@@ -356,7 +423,24 @@ export default function App() {
                   updateTake(take.id, (current) => ({ ...current, overlay: result.overlay }), result.note);
                 }}
               />
-              <Small label="Recover" onPress={() => updateTake(take.id, (current) => ({ ...current, overlay: recover(current.performance.events) }), "Grid overlay reset.")} />
+              <Small label="Recover" onPress={() => updateTake(take.id, (current) => ({ ...current, overlay: recover(current.performance.events) }), "Grid overlay reset. Raw times were not edited.")} />
+              {take.cut.priorPhrase ? <Small label="Prior phrase" onPress={() => applyBounds(take, take.cut.priorPhrase as { start: bigint; end: bigint }, "Prior phrase. A manual alternative, not a second confident reading. Raw times were not edited.")} /> : null}
+              {take.cut.priorBar ? <Small label="Prior bar" onPress={() => applyBounds(take, take.cut.priorBar as { start: bigint; end: bigint }, "Prior bar of the locked grid. The grid was not changed. Raw times were not edited.")} /> : null}
+              <Small label="Recent phrase" onPress={() => applyBounds(take, take.cut.selection, "Back to the basic recent-phrase cut.")} />
+              <Small
+                label="Start later"
+                onPress={() => {
+                  const moved = moveSelectionStart(take.performance.events, { start: take.overlay.selectionStart, end: take.overlay.selectionEnd }, "later", unitFor(domain));
+                  applyBounds(take, moved.selection, moved.note);
+                }}
+              />
+              <Small
+                label="Start earlier"
+                onPress={() => {
+                  const moved = moveSelectionStart(take.performance.events, { start: take.overlay.selectionStart, end: take.overlay.selectionEnd }, "earlier", unitFor(domain));
+                  applyBounds(take, moved.selection, moved.note);
+                }}
+              />
               <Small label={looping ? "Stop loop" : "Hear loop"} onPress={() => (looping ? stopLoop() : playTake(take, true))} />
             </View>
           </View>
@@ -371,9 +455,9 @@ export default function App() {
             <Pressable
               key={note + "-" + index}
               style={styles.pad}
-              onPressIn={() => engine.touch(note, 100, true)}
-              onPress={() => engine.touch(note, 100, true)}
-              onPressOut={() => engine.touch(note, 0, false)}
+              onPressIn={() => pressKey(note, "in")}
+              onPress={() => pressKey(note, "press")}
+              onPressOut={() => pressKey(note, "out")}
             >
               <Text style={styles.padText}>{NAMES[index]}</Text>
             </Pressable>
@@ -390,6 +474,9 @@ export default function App() {
           </Pressable>
           <Pressable style={styles.secondary} onPress={() => (looping ? stopLoop() : take ? playTake(take, true) : setMessage("Nothing to play yet."))}>
             <Text style={styles.secondaryText}>{looping ? "Stop" : "Play"}</Text>
+          </Pressable>
+          <Pressable style={styles.secondary} onPress={() => engine.silence()}>
+            <Text style={styles.secondaryText}>Silence notes</Text>
           </Pressable>
           <Pressable style={styles.secondary} onPress={() => setAfterCapture(project.afterCapture === "loop" ? "silent" : "loop")}>
             <Text style={styles.secondaryText}>{project.afterCapture === "loop" ? "After capture: loop" : "After capture: stay silent"}</Text>
@@ -419,17 +506,35 @@ export default function App() {
 }
 
 function inputCopy(kind: string, ports: number): string {
+  if (kind === "site-addon") {
+    return "Firefox site-permission add-on";
+  }
   if (kind === "unsupported") {
-    return "this browser has no Web MIDI";
+    return "MIDI API not exposed";
+  }
+  if (kind === "policy-blocked") {
+    return "blocked by permission policy";
+  }
+  if (kind === "settings-blocked") {
+    return "blocked in site settings";
   }
   if (kind === "denied") {
-    return "permission denied";
+    return "MIDI request was not granted";
+  }
+  if (kind === "failed") {
+    return "MIDI request failed";
   }
   if (kind === "disconnected") {
     return "disconnected";
   }
-  if (kind === "no-device" || ports === 0) {
-    return "no keyboard";
+  if (kind === "no-device") {
+    return "no input connected";
+  }
+  if (kind === "idle") {
+    return "not asked";
+  }
+  if (ports === 0 && kind !== "ready" && kind !== "suspended") {
+    return "not asked";
   }
   if (kind === "suspended") {
     return "MIDI open, sound paused";

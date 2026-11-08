@@ -190,6 +190,49 @@ describe("enable flow", () => {
     expect(result.gate.audioRunning).toBe(false);
   });
 
+  it("mock only: Firefox without requestMIDIAccess is a site-permission add-on, not a denial", async () => {
+    const result = await enableFromGesture({
+      resume: async () => undefined,
+      audioState: () => "running",
+      browser: "firefox",
+    });
+    expect(result.gate.kind).toBe("site-addon");
+    expect(result.gate.detail).toMatch(/site-permission add-on/);
+    expect(result.gate.detail).not.toMatch(/you denied|permission was denied/i);
+    expect(result.gate.audioRunning).toBe(true);
+  });
+
+  it("mock only: a denied permission state does not call requestMIDIAccess again", async () => {
+    let called = false;
+    const result = await enableFromGesture({
+      resume: async () => undefined,
+      audioState: () => "running",
+      permission: { state: "denied", policyAllows: true },
+      requestMIDIAccess: async () => {
+        called = true;
+        return { inputs: [], onstatechange: null };
+      },
+    });
+    expect(called).toBe(false);
+    expect(result.gate.kind).toBe("settings-blocked");
+    expect(result.gate.detail).toMatch(/site settings|browser settings/i);
+  });
+
+  it("mock only: Firefox site-permission add-on SecurityError is not a denial", async () => {
+    const result = await enableFromGesture({
+      resume: async () => undefined,
+      audioState: () => "running",
+      requestMIDIAccess: async () => {
+        throw new DOMException("WebMIDI requires a site permission add-on to activate", "SecurityError");
+      },
+    });
+    expect(result.gate.kind).toBe("site-addon");
+    expect(result.gate.detail).toMatch(/site-permission add-on/);
+    expect(result.gate.detail).toMatch(/Chrome or Edge/);
+    expect(result.gate.detail).not.toMatch(/you denied/i);
+    expect(result.order).toEqual(["resume", "midi"]);
+  });
+
   it("separates unsupported, denied, and no device", async () => {
     const unsupported = await enableFromGesture({ resume: async () => undefined, audioState: () => "running" });
     expect(unsupported.gate.kind).toBe("unsupported");

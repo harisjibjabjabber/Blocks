@@ -25,6 +25,7 @@ export interface SketchEngine {
   setSustain(cc: number): void;
   replay(events: IncomingEvent[], stretch: number): void;
   stopReplay(): void;
+  silence(): void;
   stats(): Promise<string>;
   loadProject(): Promise<string>;
   saveProject(json: string): Promise<void>;
@@ -142,7 +143,8 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
       clearInterval(replayTimer);
       replayTimer = null;
     }
-    piano.cancelAll();
+    piano.releaseSource("replay", context.currentTime);
+    scheduledNotes = 0;
   }
 
   return {
@@ -156,19 +158,23 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
     readAudioState: () => context.state,
     ports: () => bound.map((port) => ({ id: port.id, name: port.name || "MIDI input", state: port.state })),
     async enable() {
+      const permission = await readMidiPermission();
       const result = await enableFromGesture({
         resume: () => context.resume(),
         audioState: () => context.state,
         requestMIDIAccess,
+        browser: firefoxBrowser() ? "firefox" : "other",
+        permission,
         ...(typeof window === "undefined" ? {} : { isSecureContext: () => window.isSecureContext }),
       });
       gate = syncAudioGate(result.gate, context.state);
       access = (result.access as MIDIAccess | null) ?? null;
       if (access) {
         access.onstatechange = () => {
+          const hadConnected = bound.some((port) => port.state === "connected");
           rebind();
           const connected = Array.from(access?.inputs.values() ?? []).some((port) => port.state === "connected");
-          if (!connected && gate.midiAccess) {
+          if (!connected && hadConnected && gate.midiAccess) {
             gate = { ...gate, kind: "disconnected", ready: false, detail: "The MIDI input disconnected." };
           } else if (connected && context.state === "running") {
             gate = { ...gate, kind: "ready", ready: true, audioRunning: true, detail: "Audio is running and a MIDI input is connected." };
@@ -204,7 +210,7 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
         lateToleranceSec: 0.04,
       });
       if (!decision.drop && context.state === "running") {
-        piano.play(decision.when, { ...incoming, velocity: vel });
+        piano.play(decision.when, { ...incoming, velocity: vel, source: "touch" });
       }
     },
     setSustain(cc) {
@@ -213,6 +219,7 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
     },
     replay(events, stretch) {
       stopReplay();
+      scheduledNotes = 0;
       if (context.state !== "running" || events.length === 0) {
         return;
       }
@@ -248,18 +255,25 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
         });
         index = selected.index;
         for (const event of selected.due) {
-          piano.play(event.audioTimeSec, event);
+          piano.play(event.audioTimeSec, { ...event, source: "replay" });
           scheduledNotes += 1;
         }
-        if (index >= planned.length && replayTimer) {
-          clearInterval(replayTimer);
-          replayTimer = null;
+        if (index >= planned.length) {
+          piano.releaseSource("replay", context.currentTime);
+          if (replayTimer) {
+            clearInterval(replayTimer);
+            replayTimer = null;
+          }
         }
       };
       replayTimer = setInterval(pump, 10);
       pump();
     },
     stopReplay,
+    silence() {
+      piano.silenceAll();
+      scheduledNotes = 0;
+    },
     async stats() {
       return JSON.stringify({
         preset: EP_PRESET.id,
@@ -280,4 +294,34 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
 
 export function createEngine(): SketchEngine {
   return createWebEngine();
+}
+
+function firefoxBrowser(): boolean {
+  return typeof navigator !== "undefined" && /firefox\//i.test(navigator.userAgent);
+}
+
+async function readMidiPermission(): Promise<{ state: "granted" | "denied" | "prompt" | null; policyAllows: boolean | null }> {
+  let policyAllows: boolean | null = null;
+  if (typeof document !== "undefined") {
+    const policy = (document as Document & { permissionsPolicy?: { allowsFeature: (name: string) => boolean } }).permissionsPolicy;
+    if (policy && typeof policy.allowsFeature === "function") {
+      try {
+        policyAllows = policy.allowsFeature("midi");
+      } catch {
+        policyAllows = null;
+      }
+    }
+  }
+  let state: "granted" | "denied" | "prompt" | null = null;
+  if (typeof navigator !== "undefined" && navigator.permissions && typeof navigator.permissions.query === "function") {
+    try {
+      const result = await navigator.permissions.query({ name: "midi", sysex: false } as PermissionDescriptor);
+      if (result.state === "granted" || result.state === "denied" || result.state === "prompt") {
+        state = result.state;
+      }
+    } catch {
+      state = null;
+    }
+  }
+  return { state, policyAllows };
 }

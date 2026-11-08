@@ -4,10 +4,20 @@ import type { InferenceReport } from "./inference";
 export interface PhraseOverlay {
   selectionStart: bigint;
   selectionEnd: bigint;
+  /** Playback loop. Separate from the raw selection. Falls back to the selection when omitted. */
+  loopStart?: bigint;
+  loopEnd?: bigint;
   tempoChoice: "estimated" | "half" | "double";
   phaseBeats: number;
   quantiseStrength: number;
   playback: { mode: "original" } | { mode: "tempo"; bpm: number };
+}
+
+export function loopWindow(overlay: PhraseOverlay): { start: bigint; end: bigint } {
+  return {
+    start: overlay.loopStart ?? overlay.selectionStart,
+    end: overlay.loopEnd ?? overlay.selectionEnd,
+  };
 }
 
 export interface Performance {
@@ -29,6 +39,8 @@ export function defaultOverlay(events: readonly CapturedEvent[]): PhraseOverlay 
   return {
     selectionStart: events[0].scheduleElapsed,
     selectionEnd: events[events.length - 1].scheduleElapsed,
+    loopStart: events[0].scheduleElapsed,
+    loopEnd: events[events.length - 1].scheduleElapsed,
     tempoChoice: "estimated",
     phaseBeats: 0,
     quantiseStrength: 0,
@@ -120,12 +132,13 @@ export function loopShorter(overlay: PhraseOverlay, report: InferenceReport): { 
   if (period === null) {
     return { overlay, note: "No pulse, so the loop length stays put." };
   }
+  const window = loopWindow(overlay);
   const bar = period * 4n;
-  const next = overlay.selectionEnd - bar;
-  if (next <= overlay.selectionStart + period) {
+  const next = window.end - bar;
+  if (next <= window.start + period) {
     return { overlay, note: "A shorter loop would pass the start of the recording." };
   }
-  return { overlay: { ...overlay, selectionEnd: next }, note: "Loop end moved one bar earlier in the overlay." };
+  return { overlay: { ...overlay, loopStart: window.start, loopEnd: next }, note: "Loop end moved one bar earlier. The raw selection was not moved." };
 }
 
 export function loopLonger(
@@ -137,12 +150,13 @@ export function loopLonger(
   if (period === null) {
     return { overlay, note: "No pulse, so the loop length stays put." };
   }
+  const window = loopWindow(overlay);
   const last = performance.events[performance.events.length - 1].scheduleElapsed;
-  const next = overlay.selectionEnd + period * 4n;
+  const next = window.end + period * 4n;
   if (next > last) {
     return { overlay, note: "The recording ends here. The loop was not extended past it." };
   }
-  return { overlay: { ...overlay, selectionEnd: next }, note: "Loop end moved one bar later inside the recording." };
+  return { overlay: { ...overlay, loopStart: window.start, loopEnd: next }, note: "Loop end moved one bar later inside the recording. The raw selection was not moved." };
 }
 
 export function nudgeBoundary(overlay: PhraseOverlay, report: InferenceReport, performance: Performance): { overlay: PhraseOverlay; note: string } {

@@ -1,5 +1,7 @@
 import { EP_PRESET } from "./preset";
 
+export type VoiceSource = "touch" | "midi" | "replay";
+
 interface Voice {
   osc: OscillatorNode[];
   mod: OscillatorNode;
@@ -9,6 +11,7 @@ interface Voice {
   channel: number;
   keyDown: boolean;
   pedal: boolean;
+  source: VoiceSource;
 }
 
 export class WebElectricPiano {
@@ -41,14 +44,16 @@ export class WebElectricPiano {
 
   play(
     time: number,
-    message: { kind: string; channel: number; note: number; velocity: number; controller: number; value: number },
+    message: { kind: string; channel: number; note: number; velocity: number; controller: number; value: number; source?: VoiceSource },
   ): void {
-    if (this.context.state !== "running") {
+    const offline = "startRendering" in this.context;
+    if (this.context.state !== "running" && !offline) {
       return;
     }
     const when = Math.max(time, this.context.currentTime);
+    const source = message.source ?? "midi";
     if (message.kind === "note-on" && message.velocity > 0) {
-      this.noteOn(when, message.channel, message.note, message.velocity);
+      this.noteOn(when, message.channel, message.note, message.velocity, source);
     } else if (message.kind === "note-off" || (message.kind === "note-on" && message.velocity === 0)) {
       this.noteOff(when, message.channel, message.note);
     } else if (message.kind === "cc") {
@@ -60,11 +65,20 @@ export class WebElectricPiano {
     }
   }
 
-  private noteOn(time: number, channel: number, note: number, velocity: number): void {
+  releaseSource(source: VoiceSource, time: number): void {
+    for (const voice of this.voices.filter((item) => item.source === source)) {
+      this.release(voice, Math.max(time, this.context.currentTime), voice.pedal ? EP_PRESET.pedalReleaseSeconds : EP_PRESET.releaseSeconds);
+    }
+  }
+
+  silenceAll(): void {
+    this.cancelAll();
+  }
+
+  private noteOn(time: number, channel: number, note: number, velocity: number, source: VoiceSource): void {
     const existing = this.voices.find((voice) => voice.channel === channel && voice.note === note);
     if (existing) {
-      this.stopVoice(existing, time);
-      this.voices.splice(this.voices.indexOf(existing), 1);
+      this.release(existing, time, 0.02);
     }
     while (this.voices.length >= 12) {
       const released = this.voices.find((voice) => !voice.keyDown) ?? this.voices[0];
@@ -114,6 +128,7 @@ export class WebElectricPiano {
       channel,
       keyDown: true,
       pedal: false,
+      source,
     });
   }
 
@@ -127,24 +142,41 @@ export class WebElectricPiano {
       voice.pedal = true;
       return;
     }
-    this.release(voice, time);
+    this.release(voice, time, EP_PRESET.releaseSeconds);
   }
 
   private setPedal(time: number, channel: number, down: boolean): void {
     this.pedal[channel] = down;
     if (!down) {
       for (const voice of this.voices.filter((item) => item.channel === channel && item.pedal && !item.keyDown)) {
-        this.release(voice, time);
+        this.release(voice, time, EP_PRESET.pedalReleaseSeconds);
       }
     }
   }
 
-  private release(voice: Voice, time: number): void {
-    voice.amp.gain.cancelScheduledValues(time);
-    voice.amp.gain.setValueAtTime(Math.max(0.0001, voice.amp.gain.value), time);
-    voice.amp.gain.exponentialRampToValueAtTime(0.0001, time + EP_PRESET.releaseSeconds);
-    this.stopVoice(voice, time + EP_PRESET.releaseSeconds + 0.02);
-    this.voices.splice(this.voices.indexOf(voice), 1);
+  private release(voice: Voice, time: number, seconds: number): void {
+    const gain = voice.amp.gain;
+    const floor = 0.0001;
+    let level = floor;
+    if (typeof gain.cancelAndHoldAtTime === "function") {
+      try {
+        gain.cancelAndHoldAtTime(time);
+        level = Math.max(floor, gain.value);
+      } catch {
+        gain.cancelScheduledValues(time);
+        level = Math.max(floor, gain.value);
+      }
+    } else {
+      gain.cancelScheduledValues(time);
+      level = Math.max(floor, gain.value);
+    }
+    gain.setValueAtTime(level, time);
+    gain.exponentialRampToValueAtTime(floor, time + seconds);
+    this.stopVoice(voice, time + seconds + 0.03);
+    const index = this.voices.indexOf(voice);
+    if (index >= 0) {
+      this.voices.splice(index, 1);
+    }
   }
 
   private stopVoice(voice: Voice, time: number): void {
