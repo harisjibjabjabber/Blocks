@@ -2,7 +2,8 @@ import { WebElectricPiano } from "../audio/web/instrument";
 import { EP_PRESET } from "../audio/web/preset";
 import { liveAudioTime, planFromElapsed, selectDue, type PlannedEvent } from "../audio/web/schedule";
 import type { IncomingEvent } from "../domain/capture";
-import { bindMidiInputs, enableFromGesture, idleGate } from "../midi/web/enable";
+import { syncAudioGate } from "../domain/readiness";
+import { bindMidiInputs, enableFromGesture, idleGate, type EnableDeps } from "../midi/web/enable";
 import { parseCompleteMidi } from "../midi/web/complete";
 
 export interface PortInfo {
@@ -17,6 +18,7 @@ export interface SketchEngine {
   presetName: string;
   enable(): Promise<ReturnType<typeof idleGate>>;
   getGate(): ReturnType<typeof idleGate>;
+  readAudioState(): string;
   ports(): PortInfo[];
   subscribe(listener: (event: IncomingEvent) => void): () => void;
   touch(note: number, velocity: number, down: boolean): void;
@@ -30,9 +32,21 @@ export interface SketchEngine {
 
 const STORE_KEY = "blocks.project.v1";
 
-export function createWebEngine(): SketchEngine {
-  const AudioContextCtor = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  const context = new AudioContextCtor();
+export interface WebEngineOptions {
+  createContext?: () => AudioContext;
+  requestMIDIAccess?: EnableDeps["requestMIDIAccess"];
+}
+
+export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
+  const context = options.createContext
+    ? options.createContext()
+    : new (window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
+  const requestMIDIAccess =
+    options.requestMIDIAccess !== undefined
+      ? options.requestMIDIAccess
+      : typeof navigator !== "undefined" && navigator.requestMIDIAccess
+        ? (midiOptions: { sysex: boolean }) => navigator.requestMIDIAccess(midiOptions)
+        : undefined;
   const piano = new WebElectricPiano(context);
   let gate = idleGate();
   let access: MIDIAccess | null = null;
@@ -42,6 +56,7 @@ export function createWebEngine(): SketchEngine {
   const listeners = new Set<(event: IncomingEvent) => void>();
   let replayTimer: ReturnType<typeof setInterval> | null = null;
   let replayGeneration = 0;
+  let scheduledNotes = 0;
   let sustainCc = 64;
   piano.setSustainController(sustainCc);
 
@@ -112,12 +127,14 @@ export function createWebEngine(): SketchEngine {
     }
   };
 
-  context.addEventListener("statechange", () => {
+  const publishAudio = () => {
     if (context.state !== "running") {
       stopReplay();
-      gate = { ...gate, ready: false, audioRunning: false, kind: gate.midiAccess ? "suspended" : gate.kind, detail: "Audio is suspended." };
     }
-  });
+    gate = syncAudioGate(gate, context.state);
+  };
+
+  context.addEventListener("statechange", publishAudio);
 
   function stopReplay() {
     replayGeneration += 1;
@@ -132,17 +149,20 @@ export function createWebEngine(): SketchEngine {
     kind: "web",
     presetId: EP_PRESET.id,
     presetName: EP_PRESET.name,
-    getGate: () => gate,
+    getGate: () => {
+      gate = syncAudioGate(gate, context.state);
+      return gate;
+    },
+    readAudioState: () => context.state,
     ports: () => bound.map((port) => ({ id: port.id, name: port.name || "MIDI input", state: port.state })),
     async enable() {
       const result = await enableFromGesture({
         resume: () => context.resume(),
         audioState: () => context.state,
-        requestMIDIAccess: navigator.requestMIDIAccess
-          ? (options) => navigator.requestMIDIAccess(options)
-          : undefined,
+        requestMIDIAccess,
+        ...(typeof window === "undefined" ? {} : { isSecureContext: () => window.isSecureContext }),
       });
-      gate = result.gate;
+      gate = syncAudioGate(result.gate, context.state);
       access = (result.access as MIDIAccess | null) ?? null;
       if (access) {
         access.onstatechange = () => {
@@ -229,6 +249,7 @@ export function createWebEngine(): SketchEngine {
         index = selected.index;
         for (const event of selected.due) {
           piano.play(event.audioTimeSec, event);
+          scheduledNotes += 1;
         }
         if (index >= planned.length && replayTimer) {
           clearInterval(replayTimer);
@@ -245,6 +266,7 @@ export function createWebEngine(): SketchEngine {
         audio: context.state,
         ready: gate.ready,
         ports: bound.length,
+        scheduled: scheduledNotes,
       });
     },
     async loadProject() {

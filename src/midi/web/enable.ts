@@ -12,6 +12,7 @@ export interface EnableDeps {
   resume: () => Promise<void>;
   audioState: () => string;
   requestMIDIAccess?: (options: { sysex: boolean }) => Promise<MidiAccessLike>;
+  isSecureContext?: () => boolean;
 }
 
 export interface MidiAccessLike {
@@ -36,22 +37,45 @@ export const idleGate = (): GateState => ({
 
 export async function enableFromGesture(deps: EnableDeps): Promise<{ gate: GateState; access: MidiAccessLike | null; order: string[] }> {
   const order: string[] = [];
-  if (typeof deps.requestMIDIAccess !== "function") {
+  const runningNow = () => {
+    try {
+      return deps.audioState() === "running";
+    } catch {
+      return false;
+    }
+  };
+  order.push("resume");
+  try {
+    await deps.resume();
+  } catch {
+    // The live state is read again at each return.
+  }
+  if (deps.isSecureContext && !deps.isSecureContext()) {
     return {
-      gate: { kind: "unsupported", ready: false, audioRunning: false, midiAccess: false, detail: "This browser has no Web MIDI API." },
+      gate: {
+        kind: "unsupported",
+        ready: false,
+        audioRunning: runningNow(),
+        midiAccess: false,
+        detail: "Web MIDI needs HTTPS or localhost. Audio resumed on the click. This build has only been checked on localhost.",
+      },
       access: null,
       order,
     };
   }
-  order.push("resume");
-  let audioState = "suspended";
-  try {
-    await deps.resume();
-    audioState = deps.audioState();
-  } catch {
-    audioState = "suspended";
+  if (typeof deps.requestMIDIAccess !== "function") {
+    return {
+      gate: {
+        kind: "unsupported",
+        ready: false,
+        audioRunning: runningNow(),
+        midiAccess: false,
+        detail: "This browser has no Web MIDI API.",
+      },
+      access: null,
+      order,
+    };
   }
-  const audioRunning = audioState === "running";
   order.push("midi");
   let access: MidiAccessLike;
   try {
@@ -62,7 +86,7 @@ export async function enableFromGesture(deps: EnableDeps): Promise<{ gate: GateS
       gate: {
         kind: "denied",
         ready: false,
-        audioRunning,
+        audioRunning: runningNow(),
         midiAccess: false,
         detail: name === "SecurityError" || name === "NotAllowedError" ? "MIDI permission was denied." : "MIDI access failed.",
       },
@@ -71,6 +95,7 @@ export async function enableFromGesture(deps: EnableDeps): Promise<{ gate: GateS
     };
   }
   const inputs = Array.from(access.inputs.values()).filter((port) => port.state !== "disconnected");
+  const audioRunning = runningNow();
   if (inputs.length === 0) {
     return {
       gate: {

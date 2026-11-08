@@ -16,8 +16,9 @@ import {
   type Performance,
   type PhraseOverlay,
 } from "../domain/phrase";
-import { createProject, projectFromJson, projectToJson, type Project } from "../domain/project";
+import { createProject, gridStatusCopy, projectFromJson, projectToJson, proposeGrid, type Project } from "../domain/project";
 import { controlLabel, routeLearnedControl, type ControlMap, type LearnTarget } from "../domain/learn";
+import { ReadinessStrip } from "./Readiness";
 
 const engine = createEngine();
 const NOTES = [48, 50, 52, 53, 55, 57, 59, 60, 62, 64, 65, 67, 69, 71, 72];
@@ -35,6 +36,7 @@ interface Take {
 interface UndoCapture {
   takes: Take[];
   ribbon: CapturedEvent[];
+  project: Project;
 }
 
 function unitFor(domain: CapturedEvent["domain"]): number {
@@ -68,7 +70,8 @@ export default function App() {
   const [looping, setLooping] = useState(false);
   const [undo, setUndo] = useState<UndoCapture | null>(null);
   const [learning, setLearning] = useState<LearnTarget | null>(null);
-  const [audioState, setAudioState] = useState(engine.kind === "web" ? "suspended" : "not used");
+  const [audioState, setAudioState] = useState(engine.readAudioState());
+  const [scheduled, setScheduled] = useState(0);
   const loopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pending = useRef<Take | null>(null);
   const learningRef = useRef<LearnTarget | null>(null);
@@ -116,11 +119,12 @@ export default function App() {
     });
     const timer = setInterval(() => {
       setGate(engine.getGate());
+      setAudioState(engine.readAudioState());
       engine.stats().then((text) => {
         try {
-          const parsed = JSON.parse(text) as { audio?: string };
-          if (typeof parsed.audio === "string") {
-            setAudioState(parsed.audio);
+          const parsed = JSON.parse(text) as { scheduled?: number };
+          if (typeof parsed.scheduled === "number") {
+            setScheduled(parsed.scheduled);
           }
         } catch {
           // stats stay on the previous reading
@@ -186,7 +190,8 @@ export default function App() {
     setBusy(true);
     try {
       const next = await engine.enable();
-      setGate(next);
+      setGate(engine.getGate());
+      setAudioState(engine.readAudioState());
       setMessage(next.detail);
     } finally {
       setBusy(false);
@@ -204,14 +209,17 @@ export default function App() {
     const overlay = defaultOverlay(events);
     const id = "layer-" + (takes.length + 1);
     const created: Take = { id, performance, overlay, report };
-    setUndo({ takes, ribbon: events });
+    setUndo({ takes, ribbon: events, project });
     setTakes((current) => [...current, created]);
     setSelected(id);
     history.clear();
     setRibbon([]);
     setNotice({ kind: "none" });
+    const proposal = proposeGrid(project, report.bpm);
+    setProject(proposal.project);
+    engine.saveProject(projectToJson(proposal.project));
     const reading = report.pulse === "none" || report.bpm === null ? "No pulse reading." : report.bpm.toFixed(1) + " bpm · 4/4. One reading, not a set of candidates.";
-    setMessage("Captured " + events.length + " events into " + id + ". " + reading + " Your timing is unchanged — only the grid moves.");
+    setMessage("Captured " + events.length + " events into " + id + ". " + proposal.note + " " + reading + " Your timing is unchanged — only the grid moves.");
     if (project.afterCapture === "silent") {
       return;
     }
@@ -229,6 +237,8 @@ export default function App() {
     }
     stopLoop();
     setTakes(undo.takes);
+    setProject(undo.project);
+    engine.saveProject(projectToJson(undo.project));
     setSelected(undo.takes.length ? undo.takes[undo.takes.length - 1].id : null);
     history.replace(undo.ribbon);
     setRibbon(history.snapshot());
@@ -276,10 +286,10 @@ export default function App() {
             <Text style={styles.primaryText}>{busy ? "Starting…" : "Enable"}</Text>
           </Pressable>
           <View style={styles.status}>
-            <Text style={styles.statusTitle}>Sound · {gate.audioRunning ? "running" : "tap Enable"}</Text>
-            <Text style={styles.meta}>AudioContext: {audioState}</Text>
+            <ReadinessStrip audioState={audioState} showContext={engine.kind === "web"} />
             <Text style={styles.meta}>Input · {inputCopy(gate.kind, engine.ports().length)}</Text>
             <Text style={styles.meta}>Buffer · {seconds(age, domain)} kept · {ribbon.length} events</Text>
+            {scheduled > 0 ? <Text style={styles.meta}>Replay scheduled {scheduled} events on the audio clock.</Text> : null}
           </View>
         </View>
         <Text style={styles.body}>{gate.detail}</Text>
@@ -308,7 +318,7 @@ export default function App() {
         </View>
 
         <Text style={styles.meta}>Layer · {takes.length === 0 ? "empty" : takes.length + " captured, newest is the review"}</Text>
-        <Text style={styles.meta}>Sketch tempo {project.tempoBpm} is locked. A reading does not change it.</Text>
+        <Text style={styles.meta}>{gridStatusCopy(project)}</Text>
         <Text style={styles.meta}>Sustain stays CC {project.sustainCc}. It is not the Capture control.</Text>
         <Text style={styles.meta}>Capture control: {controlLabel(project.captureControl)}</Text>
         <Text style={styles.meta}>Play/Stop control: {controlLabel(project.transportControl)}</Text>

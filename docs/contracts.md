@@ -20,7 +20,7 @@ Synthetic releases are not raw MIDI.
 
 ## Phrase
 
-Capture copies the rolling window into a frozen performance. Each event keeps the id assigned when it was recorded. Half, double, phase, and loop length move a 4/4 grid overlay. They do not rewrite input timestamps and they do not invent events past the last recorded one. The sketch tempo stays at its locked value. Inference may return no reading or one reading. It does not invent a set of three candidates or a confidence score. Quantise is not applied on this screen.
+Capture copies the rolling window into a frozen performance. Each event keeps the id assigned when it was recorded. Half, double, phase, and loop length move a 4/4 grid overlay. They do not rewrite input timestamps and they do not invent events past the last recorded one. A new sketch has no tempo. 120 seconds is the ribbon window, not a tempo. The first pulse reading may propose the grid and lock it. Later readings do not change that tempo. Inference may return no reading or one reading. It does not invent a set of three candidates or a confidence score. Quantise is not applied on this screen.
 
 ## Play screen
 

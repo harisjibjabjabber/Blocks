@@ -8,10 +8,10 @@ Blocks is a musical sketchbook for a person who writes jazz at a keyboard, uses 
 2. It plays Warm EP (`blocks.ep.fm.v1`), a procedural FM electric piano. Velocity changes loudness and brightness. Sustain holds notes. The label is not a brand and not a sampled piano.
 3. While stopped, a ribbon keeps about 120 seconds, and also stops at a hard event cap or byte cap. Age and overload are shown as different losses.
 4. Capture freezes that history into an immutable phrase.
-5. After Capture, the default is to loop the new layer. Stay silent is a setting that persists. Review sits on the Play screen. One undo reverts that capture. The sketch tempo stays locked. Input timestamps are not rewritten to a heard time.
+5. After Capture, the default is to loop the new layer. Stay silent is a setting that persists. Review sits on the Play screen. One undo reverts that capture. A new sketch has no tempo until the first reading proposes the grid. Later readings stay locked. 120 seconds is the ribbon. Input timestamps are not rewritten to a heard time.
 6. Sustain stays CC 64. It is not used as the Capture button.
 
-Nothing in the slice quantises or forces a scale unless the player asks. Asking only changes a derived playback view. The captured events stay as they were. The project tempo changes only when the player uses the tempo buttons.
+Nothing in the slice quantises or forces a scale unless the player asks. Asking only changes a derived playback view. The captured events stay as they were. The first pulse reading can set the grid. After that, the project tempo stays put.
 
 ## What the player sees
 

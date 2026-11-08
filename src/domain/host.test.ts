@@ -3,7 +3,7 @@ import { liveAudioTime, planFromElapsed, selectDue } from "../audio/web/schedule
 import { RollingHistory, domainsCompatible, type IncomingEvent } from "./capture";
 import { inferPulse } from "./inference";
 import { capturePerformance, defaultOverlay, deriveSchedule, loopLonger, loopShorter, playbackStretch, recover, withChoice, withQuantise } from "./phrase";
-import { createProject, setProjectTempo } from "./project";
+import { createProject, gridStatusCopy, projectFromJson, projectToJson, proposeGrid, setProjectTempo } from "./project";
 import { routeLearnedControl } from "./learn";
 import { bindMidiInputs, enableFromGesture, type MidiPortLike } from "../midi/web/enable";
 import { parseCompleteMidi } from "../midi/web/complete";
@@ -146,6 +146,26 @@ describe("enable flow", () => {
     expect(result.gate.ready).toBe(true);
   });
 
+  it("resumes audio before refusing an insecure page, and does not ask for MIDI", async () => {
+    const calls: string[] = [];
+    const result = await enableFromGesture({
+      resume: async () => {
+        calls.push("resume");
+      },
+      audioState: () => "running",
+      isSecureContext: () => false,
+      requestMIDIAccess: async () => {
+        calls.push("midi");
+        return { inputs: [], onstatechange: null };
+      },
+    });
+    expect(calls).toEqual(["resume"]);
+    expect(result.gate.kind).toBe("unsupported");
+    expect(result.gate.detail).toMatch(/localhost/);
+    expect(result.gate.audioRunning).toBe(true);
+    expect(result.gate.ready).toBe(false);
+  });
+
   it("keeps readiness false when audio stays suspended", async () => {
     const result = await enableFromGesture({
       resume: async () => undefined,
@@ -154,6 +174,20 @@ describe("enable flow", () => {
     });
     expect(result.gate.kind).toBe("suspended");
     expect(result.gate.ready).toBe(false);
+  });
+
+  it("re-reads audio after MIDI denial so a suspended context is not running", async () => {
+    let state = "running";
+    const result = await enableFromGesture({
+      resume: async () => undefined,
+      audioState: () => state,
+      requestMIDIAccess: async () => {
+        state = "suspended";
+        throw new DOMException("no", "NotAllowedError");
+      },
+    });
+    expect(result.gate.kind).toBe("denied");
+    expect(result.gate.audioRunning).toBe(false);
   });
 
   it("separates unsupported, denied, and no device", async () => {
@@ -270,17 +304,50 @@ describe("inference and phrase", () => {
     expect(report.bpm).toBeNull();
   });
 
-  it("does not change project tempo when a reading is chosen", () => {
-    const project = createProject();
+  it("does not change a locked project tempo when a reading is chosen", () => {
+    const fresh = createProject();
+    expect(fresh.tempoBpm).toBeNull();
+    expect(fresh.gridLocked).toBe(false);
+    expect(gridStatusCopy(fresh)).not.toMatch(/locked/);
+    expect(gridStatusCopy(fresh)).toMatch(/120 seconds is the ribbon/);
     const events = historyFrom([0n, 500n, 1000n, 1500n, 2000n, 2500n, 3000n]);
     const report = inferPulse(events, 1_000_000);
     const overlay = withChoice(defaultOverlay(events), "half");
-    expect(project.tempoBpm).toBe(120);
-    expect(setProjectTempo(project, 96).tempoBpm).toBe(96);
-    expect(project.tempoBpm).toBe(120);
-    const played = playbackStretch(report, { ...overlay, playback: { mode: "tempo", bpm: project.tempoBpm } });
+    const first = proposeGrid(fresh, report.bpm);
+    expect(first.proposed).toBe(report.bpm !== null);
+    expect(first.project.gridLocked).toBe(report.bpm !== null);
+    const established = { ...setProjectTempo(fresh, 96), gridLocked: true };
+    const locked = proposeGrid(established, 140);
+    expect(locked.project.tempoBpm).toBe(96);
+    expect(locked.proposed).toBe(false);
+    const played = playbackStretch(report, { ...overlay, playback: { mode: "tempo", bpm: locked.project.tempoBpm ?? 96 } });
     expect(played.stretch).not.toBeNaN();
-    expect(project.tempoBpm).toBe(120);
+    expect(locked.project.tempoBpm).toBe(96);
+  });
+
+  it("lets the first inference propose the grid and keeps an existing project locked", () => {
+    const events = historyFrom([0n, 500n, 1000n, 1500n, 2000n]);
+    const report = inferPulse(events, 1_000_000);
+    const opened = proposeGrid(createProject(), report.bpm);
+    expect(opened.proposed).toBe(true);
+    expect(opened.project.gridLocked).toBe(true);
+    expect(opened.project.tempoBpm).not.toBeNull();
+    const again = proposeGrid(opened.project, 72);
+    expect(again.proposed).toBe(false);
+    expect(again.project.tempoBpm).toBe(opened.project.tempoBpm);
+    const quiet = proposeGrid(createProject(), null);
+    expect(quiet.proposed).toBe(false);
+    expect(quiet.project.gridLocked).toBe(false);
+    expect(gridStatusCopy(quiet.project)).not.toMatch(/locked/);
+    const stored = projectFromJson(projectToJson({ ...createProject(), tempoBpm: 88, gridLocked: true, phrases: [{ id: "layer-1", createdAt: "t", domain: "web-performance-us", events: [] }] }));
+    expect(stored?.gridLocked).toBe(true);
+    expect(stored?.tempoBpm).toBe(88);
+    const later = proposeGrid(stored as NonNullable<typeof stored>, 140);
+    expect(later.project.tempoBpm).toBe(88);
+    const emptyOld = projectFromJson(JSON.stringify({ name: "Sketch", tempoBpm: 120, sustainCc: 64, afterCapture: "loop", phrases: [] }));
+    expect(emptyOld?.gridLocked).toBe(false);
+    expect(emptyOld?.tempoBpm).toBeNull();
+    expect(gridStatusCopy(emptyOld as NonNullable<typeof emptyOld>)).not.toMatch(/locked/);
   });
 
   it("quantises only a copy and can recover", () => {

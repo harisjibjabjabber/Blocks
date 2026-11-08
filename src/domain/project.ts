@@ -1,6 +1,7 @@
 export interface Project {
   name: string;
-  tempoBpm: number;
+  tempoBpm: number | null;
+  gridLocked: boolean;
   sustainCc: number;
   afterCapture: "loop" | "silent";
   captureControl: number | null;
@@ -33,8 +34,41 @@ export interface StoredEvent {
   origin: string;
 }
 
+export const HISTORY_WINDOW_SECONDS = 120;
+
 export function createProject(): Project {
-  return { name: "Sketch", tempoBpm: 120, sustainCc: 64, afterCapture: "loop", captureControl: null, transportControl: null, phrases: [] };
+  return {
+    name: "Sketch",
+    tempoBpm: null,
+    gridLocked: false,
+    sustainCc: 64,
+    afterCapture: "loop",
+    captureControl: null,
+    transportControl: null,
+    phrases: [],
+  };
+}
+
+export function gridStatusCopy(project: Project): string {
+  if (!project.gridLocked || project.tempoBpm === null) {
+    return "No grid yet. The first reading can propose one. " + HISTORY_WINDOW_SECONDS + " seconds is the ribbon, not a tempo.";
+  }
+  return "Sketch tempo " + project.tempoBpm + " is locked. A later reading does not change it.";
+}
+
+export function proposeGrid(project: Project, bpm: number | null): { project: Project; proposed: boolean; note: string } {
+  if (project.gridLocked && project.tempoBpm !== null) {
+    return { project, proposed: false, note: "Sketch tempo " + project.tempoBpm + " stays locked." };
+  }
+  if (bpm === null || !Number.isFinite(bpm)) {
+    return { project, proposed: false, note: "No pulse reading, so no grid was proposed." };
+  }
+  const next = setProjectTempo({ ...project, gridLocked: false, tempoBpm: null }, bpm);
+  return {
+    project: { ...next, gridLocked: true },
+    proposed: true,
+    note: "The first reading proposed " + next.tempoBpm + " bpm. The grid is now locked.",
+  };
 }
 
 export function setProjectTempo(project: Project, tempoBpm: number): Project {
@@ -55,8 +89,17 @@ export function projectFromJson(text: string): Project | null {
     return null;
   }
   const parsed = JSON.parse(text) as Project;
-  if (!parsed || typeof parsed.tempoBpm !== "number" || !Array.isArray(parsed.phrases)) {
+  if (!parsed || !Array.isArray(parsed.phrases)) {
     return null;
+  }
+  if (parsed.tempoBpm !== null && typeof parsed.tempoBpm !== "number") {
+    return null;
+  }
+  if (typeof parsed.gridLocked !== "boolean") {
+    parsed.gridLocked = parsed.phrases.length > 0 && typeof parsed.tempoBpm === "number";
+  }
+  if (!parsed.gridLocked) {
+    parsed.tempoBpm = null;
   }
   if (parsed.afterCapture !== "silent" && parsed.afterCapture !== "loop") {
     parsed.afterCapture = "loop";

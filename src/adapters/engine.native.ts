@@ -91,6 +91,7 @@ export function createNativeEngine() {
     presetId: EP_PRESET.id,
     presetName: EP_PRESET.name,
     getGate: () => gate,
+    readAudioState: () => (gate.audioRunning ? "running" : "stopped"),
     ports: () => ports,
     async enable() {
       const raw = await native.start();
