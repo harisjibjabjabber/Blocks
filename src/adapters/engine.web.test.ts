@@ -149,6 +149,30 @@ describe("web engine adapter", () => {
     engine.stopReplay();
     vi.useRealTimers();
   });
+
+  it("plays piano, bass, and drums together without writing replay into history", async () => {
+    vi.useFakeTimers();
+    const context = new FakeContext();
+    context.setState("running");
+    context.currentTime = 5;
+    const engine = createWebEngine({
+      createContext: () => context as unknown as AudioContext,
+      requestMIDIAccess: async () => ({ inputs: new Map(), onstatechange: null }),
+    });
+    const heard: string[] = [];
+    engine.subscribe((event) => heard.push(event.origin));
+    engine.loopLayer("piano", [note()], 1, 2);
+    engine.loopLayer("bass", [{ ...note(), note: 40 }], 1, 2);
+    engine.loopLayer("drums", [{ ...note(), note: 36 }], 1, 1);
+    await vi.advanceTimersByTimeAsync(30);
+    const stats = JSON.parse(await engine.stats()) as { layers: number };
+    expect(stats.layers).toBe(3);
+    expect(heard).toEqual([]);
+    engine.stopLayer("drums");
+    expect(JSON.parse(await engine.stats()).layers).toBe(2);
+    engine.stopReplay();
+    vi.useRealTimers();
+  });
 });
 
 describe("dependency-injection mocks, not hardware proof", () => {

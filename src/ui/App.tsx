@@ -206,7 +206,7 @@ export default function App() {
       const next = await engine.enable();
       setGate(engine.getGate());
       setAudioState(engine.readAudioState());
-      setMessage(next.detail);
+      setMessage(next.kind === "site-addon" ? "Firefox needs its site-permission add-on before MIDI. On-screen keys still play." : "Sound follows the audio state above.");
     } finally {
       setBusy(false);
     }
@@ -247,7 +247,7 @@ export default function App() {
     setProject(proposal.project);
     engine.saveProject(projectToJson(proposal.project));
     const reading = report.pulse === "none" || report.bpm === null ? "No pulse reading. Quantise stays off." : report.bpm.toFixed(1) + " bpm · one reading, 4/4. Quantise stays off.";
-    setMessage(cut.note + " " + proposal.note + " " + reading + " The raw interval is pinned in this layer. The ribbon was not cleared.");
+    setMessage((cut.status === "recent" ? "Captured a recent phrase into " + id + ". " : "No clear rest, so the window may be the whole ribbon. ") + proposal.note + " Raw notes were not moved.");
     if (project.afterCapture === "silent") {
       return;
     }
@@ -318,14 +318,13 @@ export default function App() {
         <Text style={styles.body}>Procedural FM electric piano. Velocity and sustain. Not a sampled piano, and not a brand name.</Text>
 
         <View style={styles.row}>
-          <Pressable style={styles.primary} onPress={enable} disabled={busy}>
+          <Pressable accessibilityRole="button" style={styles.primary} onPress={enable} disabled={busy}>
             <Text style={styles.primaryText}>{busy ? "Starting…" : gate.kind === "idle" ? "Enable" : "Try MIDI"}</Text>
           </Pressable>
           <View style={styles.status}>
             <ReadinessStrip audioState={audioState} showContext={engine.kind === "web"} />
             <Text style={styles.meta}>Input · {inputCopy(gate.kind, engine.ports().length)}</Text>
             <Text style={styles.meta}>Buffer · {seconds(age, domain)} kept · {ribbon.length} events</Text>
-            {scheduled > 0 ? <Text style={styles.meta}>Replay scheduled {scheduled} events on the audio clock.</Text> : null}
           </View>
         </View>
         <Text style={styles.body}>{gate.detail}</Text>
@@ -353,7 +352,19 @@ export default function App() {
           <Text style={styles.meta}>{evictionCopy(notice)}</Text>
         </View>
 
-        <Text style={styles.meta}>Layer · {takes.length === 0 ? "empty" : takes.length + " captured, newest is the review"}</Text>
+        <View style={styles.layerRow} accessibilityLabel="Layers">
+          {takes.length === 0 ? <Text style={styles.meta}>No layer yet</Text> : takes.map((item, index) => (
+            <Pressable
+              key={item.id}
+              accessibilityRole="button"
+              accessibilityLabel={item.id + (loopingIds.includes(item.id) ? ", looping" : "")}
+              style={[styles.layerChip, item.id === selected ? styles.layerChipOn : null]}
+              onPress={() => setSelected(item.id)}
+            >
+              <Text style={styles.layerText}>{index + 1} · {item.id}{loopingIds.includes(item.id) ? " · looping" : ""}</Text>
+            </Pressable>
+          ))}
+        </View>
         <Text style={styles.meta}>{gridStatusCopy(project)}</Text>
         <Text style={styles.meta}>Sustain stays CC {project.sustainCc}. It is not the Capture control.</Text>
         <Text style={styles.meta}>Capture control: {controlLabel(project.captureControl)}</Text>
@@ -367,10 +378,7 @@ export default function App() {
             <Text style={styles.meta}>{take.report.reason}</Text>
             <Text style={styles.body}>Your timing is unchanged — only the grid moves.</Text>
             <Text style={styles.meta}>Manual grid: {chosenBpm(take.report, take.overlay.tempoChoice)?.toFixed(1) ?? "no bpm"} · phase {take.overlay.phaseBeats} · 4/4</Text>
-            <Text style={styles.meta}>Basic recent-phrase cut. Not finished Capture. Quantise stays off unless you turn it on later.</Text>
-            {take.cut.deferred.slice(0, 3).map((line) => (
-              <Text key={line} style={styles.meta}>{line}</Text>
-            ))}
+            <Text style={styles.meta}>Basic phrase cut. Not finished Capture. Quantise is off.</Text>
             <View style={styles.wrap}>
               <Small label="Half" onPress={() => updateTake(take.id, (current) => ({ ...current, overlay: withChoice(current.overlay, "half") }), "Half is a manual grid correction.")} />
               <Small label="Double" onPress={() => updateTake(take.id, (current) => ({ ...current, overlay: withChoice(current.overlay, "double") }), "Double is a manual grid correction.")} />
@@ -438,7 +446,7 @@ export default function App() {
         </View>
       </ScrollView>
       <View style={styles.dock}>
-        <Pressable style={styles.capture} onPress={capture}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Capture" style={styles.capture} onPress={capture}>
           <Text style={styles.captureText}>Capture</Text>
         </Pressable>
         <View style={styles.row}>
@@ -537,31 +545,35 @@ function Small({ label, onPress }: { label: string; onPress: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#111418" },
-  content: { padding: 24, paddingBottom: 180, maxWidth: 880, width: "100%", alignSelf: "center" },
-  contentNarrow: { padding: 16, paddingBottom: 180 },
-  kicker: { color: "#6C9BFF", letterSpacing: 2, fontSize: 12, fontWeight: "700" },
-  title: { color: "#E8EAED", fontSize: 36, fontWeight: "700", marginTop: 6 },
-  preset: { color: "#A0A7B1", fontFamily: "monospace", marginTop: 4 },
-  body: { color: "#E8EAED", fontSize: 16, lineHeight: 22, marginTop: 8 },
-  row: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 12, flexWrap: "wrap" },
+  page: { flex: 1, backgroundColor: "#0D0F13" },
+  content: { padding: 24, paddingBottom: 280, maxWidth: 880, width: "100%", alignSelf: "center" },
+  contentNarrow: { padding: 16, paddingBottom: 320 },
+  kicker: { color: "#9AA3AF", letterSpacing: 1.6, fontSize: 12, fontWeight: "600" },
+  title: { color: "#ECEEF2", fontSize: 32, fontWeight: "700", marginTop: 4, letterSpacing: -0.4 },
+  preset: { color: "#9AA3AF", marginTop: 4, fontSize: 14 },
+  body: { color: "#ECEEF2", fontSize: 16, lineHeight: 22, marginTop: 8 },
+  row: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12, flexWrap: "wrap" },
   wrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  primary: { backgroundColor: "#6C9BFF", borderRadius: 12, minHeight: 48, paddingVertical: 14, paddingHorizontal: 18 },
-  primaryText: { color: "#0B1020", fontSize: 18, fontWeight: "700" },
-  status: { flex: 1, minWidth: 220 },
-  statusTitle: { color: "#E8EAED", fontSize: 16 },
-  meta: { color: "#A0A7B1", marginTop: 4, fontSize: 14 },
-  empty: { color: "#E8EAED", marginTop: 14, fontSize: 15 },
-  port: { color: "#E8EAED", marginTop: 6 },
-  card: { backgroundColor: "#1B1F24", borderRadius: 16, padding: 16, marginTop: 16 },
-  cardTitle: { color: "#E8EAED", fontSize: 18, fontWeight: "700", marginTop: 16 },
-  ribbon: { flexDirection: "row", flexWrap: "wrap", gap: 6, minHeight: 48, marginTop: 8 },
-  tick: { color: "#E8EAED", backgroundColor: "#2A2F36", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 8, overflow: "hidden" },
-  dock: { position: "absolute", left: 0, right: 0, bottom: 0, padding: 16, backgroundColor: "#111418", borderTopWidth: 1, borderTopColor: "#2A2F36" },
-  capture: { backgroundColor: "#FFC93C", borderRadius: 16, minHeight: 96, alignItems: "center", justifyContent: "center" },
-  captureText: { color: "#111418", fontSize: 32, fontWeight: "800" },
-  secondary: { backgroundColor: "#2A2F36", borderRadius: 12, minHeight: 48, paddingVertical: 12, paddingHorizontal: 12, justifyContent: "center" },
-  secondaryText: { color: "#E8EAED", fontSize: 14 },
-  pad: { backgroundColor: "#2A2F36", borderRadius: 10, minWidth: 48, minHeight: 48, paddingVertical: 16, paddingHorizontal: 8, alignItems: "center" },
-  padText: { color: "#E8EAED", fontWeight: "700" },
+  primary: { backgroundColor: "#FF6A3D", borderRadius: 12, minHeight: 48, minWidth: 48, paddingVertical: 14, paddingHorizontal: 18 },
+  primaryText: { color: "#120C0A", fontSize: 16, fontWeight: "700" },
+  status: { flexGrow: 1, flexShrink: 1, minWidth: 160 },
+  statusTitle: { color: "#ECEEF2", fontSize: 16 },
+  meta: { color: "#9AA3AF", marginTop: 4, fontSize: 14, lineHeight: 20 },
+  empty: { color: "#ECEEF2", marginTop: 14, fontSize: 16 },
+  port: { color: "#ECEEF2", marginTop: 6, fontSize: 16 },
+  card: { backgroundColor: "#14171C", borderRadius: 16, padding: 16, marginTop: 16 },
+  cardTitle: { color: "#ECEEF2", fontSize: 18, fontWeight: "700", marginTop: 16 },
+  ribbon: { flexDirection: "row", flexWrap: "wrap", gap: 8, minHeight: 48, marginTop: 8 },
+  tick: { color: "#ECEEF2", backgroundColor: "#20252C", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 8, overflow: "hidden", minHeight: 44 },
+  layerRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16 },
+  layerChip: { backgroundColor: "#20252C", borderRadius: 12, minHeight: 48, paddingVertical: 12, paddingHorizontal: 12, justifyContent: "center" },
+  layerChipOn: { borderWidth: 2, borderColor: "#FFFFFF" },
+  layerText: { color: "#ECEEF2", fontSize: 14, fontWeight: "600" },
+  dock: { position: "absolute", left: 0, right: 0, bottom: 0, padding: 16, backgroundColor: "#0D0F13" },
+  capture: { backgroundColor: "#FF6A3D", borderRadius: 16, minHeight: 96, width: "100%", alignItems: "center", justifyContent: "center" },
+  captureText: { color: "#120C0A", fontSize: 32, fontWeight: "700" },
+  secondary: { backgroundColor: "#20252C", borderRadius: 12, minHeight: 48, minWidth: 48, paddingVertical: 12, paddingHorizontal: 12, justifyContent: "center" },
+  secondaryText: { color: "#ECEEF2", fontSize: 14 },
+  pad: { backgroundColor: "#20252C", borderRadius: 12, minWidth: 48, minHeight: 48, paddingVertical: 14, paddingHorizontal: 8, alignItems: "center", justifyContent: "center" },
+  padText: { color: "#ECEEF2", fontWeight: "700", fontSize: 16 },
 });
