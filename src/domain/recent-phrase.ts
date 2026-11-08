@@ -111,11 +111,9 @@ function silenceBeforeNext(events: readonly CapturedEvent[], prev: bigint, next:
     }
     if (event.kind === "note-off" || (event.kind === "note-on" && event.velocity === 0)) {
       sawRelease = true;
-      if (!pedal) {
-        released.add(key);
-        if (allReleased()) {
-          lastSoundOff = event.scheduleElapsed;
-        }
+      released.add(key);
+      if (!pedal && allReleased()) {
+        lastSoundOff = event.scheduleElapsed;
       }
     }
   }
@@ -154,6 +152,23 @@ function repeatedSpacing(gaps: bigint[]): boolean {
     return false;
   }
   return gaps.every((gap) => gap * 2n <= median * 3n && median * 2n <= gap * 3n);
+}
+
+function sizedClusters(events: readonly CapturedEvent[], chord: bigint): { time: bigint; count: number }[] {
+  const attacks = events
+    .filter((event) => event.kind === "note-on" && event.velocity > 0)
+    .map((event) => event.scheduleElapsed)
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  const clusters: { time: bigint; count: number }[] = [];
+  for (const time of attacks) {
+    const last = clusters[clusters.length - 1];
+    if (last === undefined || time - last.time > chord) {
+      clusters.push({ time, count: 1 });
+    } else {
+      last.count += 1;
+    }
+  }
+  return clusters;
 }
 
 function clustersOf(events: readonly CapturedEvent[], chord: bigint): bigint[] {
@@ -312,7 +327,8 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
   const freeGap = ms(options.ticksPerSecond, FREE_GAP_MS);
   const beat = options.gridPeriodTicks !== null && options.gridPeriodTicks > 0n ? options.gridPeriodTicks : null;
   const gap = beat !== null && beat * 2n > freeGap ? beat * 2n : freeGap;
-  const clusters = clustersOf(events, chord);
+  const sized = sizedClusters(events, chord);
+  const clusters = sized.map((cluster) => cluster.time);
   const gaps: bigint[] = [];
   for (let i = 1; i < clusters.length; i += 1) {
     gaps.push(silenceBeforeNext(events, clusters[i - 1], clusters[i], chord));
@@ -334,7 +350,29 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
   let priorBar: CutBounds | null = null;
   let how = "No silence cleared the gap hypothesis, so this window is the whole ribbon and may be the whole session.";
 
-  if (breaks.length > 0) {
+  let runStart = sized.length;
+  while (runStart > 0 && sized[runStart - 1].count >= 2) {
+    runStart -= 1;
+  }
+  const runGaps = gaps.slice(runStart, Math.max(runStart, sized.length - 1));
+  let chordCut = runStart;
+  if (sized.length - runStart >= 3) {
+    for (let i = 0; i < runGaps.length; i += 1) {
+      if (isPhraseBreak(i, runGaps, gap)) {
+        chordCut = runStart + i + 1;
+      }
+    }
+  }
+
+  if (sized.length - runStart >= 3) {
+    const phraseStart = clusters[chordCut];
+    selection = { start: phraseStart, end: last };
+    status = "recent";
+    how = "The recent chords stay one progression. Rests are compared with each other, not with the earlier line. Basic cut, not finished Capture.";
+    if (chordCut > 0) {
+      priorPhrase = boundsFrom(events, clusters[0], phraseStart - 1n);
+    }
+  } else if (breaks.length > 0) {
     const split = breaks[breaks.length - 1];
     const phraseStart = clusters[split];
     selection = { start: phraseStart, end: last };

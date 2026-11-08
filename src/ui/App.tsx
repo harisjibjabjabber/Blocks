@@ -16,7 +16,7 @@ import {
   type Performance,
   type PhraseOverlay,
 } from "../domain/phrase";
-import { createProject, gridStatusCopy, projectFromJson, projectToJson, proposeTempo, type Project } from "../domain/project";
+import { beatForCut, createProject, gridStatusCopy, projectFromJson, projectToJson, proposeTempo, type Project } from "../domain/project";
 import { eventsInSelection, moveSelectionStart, recentPhraseCut, type RecentPhraseCut } from "../domain/recent-phrase";
 import { routeLearnedControl, type ControlMap, type LearnTarget } from "../domain/learn";
 import { ReadinessStrip } from "./Readiness";
@@ -218,7 +218,7 @@ export default function App() {
       return;
     }
     const ticksPerSecond = unitFor(domain);
-    const tempoForCut = project.gridLocked ? project.tempoBpm : project.proposedTempoBpm;
+    const tempoForCut = beatForCut(project);
     const cut = recentPhraseCut(events, {
       ticksPerSecond,
       gridPeriodTicks: tempoForCut ? BigInt(Math.round((60 / tempoForCut) * ticksPerSecond)) : null,

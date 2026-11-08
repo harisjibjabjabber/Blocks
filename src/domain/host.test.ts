@@ -3,7 +3,7 @@ import { joinAtSeam, liveAudioTime, planFromElapsed, selectDue } from "../audio/
 import { RollingHistory, domainsCompatible, type IncomingEvent } from "./capture";
 import { inferPulse } from "./inference";
 import { capturePerformance, defaultOverlay, deriveSchedule, loopLonger, loopShorter, playbackStretch, recover, withChoice, withQuantise } from "./phrase";
-import { createProject, gridStatusCopy, projectFromJson, projectToJson, proposeGrid, proposeTempo, setProjectTempo } from "./project";
+import { beatForCut, createProject, gridStatusCopy, projectFromJson, projectToJson, proposeGrid, proposeTempo, setProjectTempo } from "./project";
 import { routeLearnedControl } from "./learn";
 import { bindMidiInputs, enableFromGesture, type MidiPortLike } from "../midi/web/enable";
 import { parseCompleteMidi } from "../midi/web/complete";
@@ -373,11 +373,13 @@ describe("inference and phrase", () => {
     expect(first.project.gridLocked).toBe(false);
     expect(first.project.tempoBpm).toBeNull();
     expect(first.project.proposedTempoBpm).toBe(132);
+    expect(beatForCut(first.project)).toBeNull();
     expect(first.note).toMatch(/proposed/);
     expect(gridStatusCopy(first.project)).toMatch(/not accepted/);
     const second = proposeTempo(first.project, 90, 1);
     expect(second.project.gridLocked).toBe(true);
     expect(second.project.tempoBpm).toBe(132);
+    expect(beatForCut(second.project)).toBe(132);
     expect(second.note).toMatch(/kept/);
     const held = proposeTempo(second.project, 140, 2);
     expect(held.project.tempoBpm).toBe(132);

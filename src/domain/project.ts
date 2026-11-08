@@ -62,6 +62,14 @@ export function gridStatusCopy(project: Project): string {
   return "No grid yet. The first reading can propose one. " + HISTORY_WINDOW_SECONDS + " seconds is the ribbon, not a tempo.";
 }
 
+/** A beat for the phrase cut. A proposed tempo is not a beat until a later capture accepts it. */
+export function beatForCut(project: Project): number | null {
+  if (project.gridLocked && project.tempoBpm !== null) {
+    return project.tempoBpm;
+  }
+  return null;
+}
+
 export function proposeTempo(project: Project, bpm: number | null, layerCount: number): { project: Project; note: string } {
   if (project.gridLocked && project.tempoBpm !== null) {
     return { project, note: "Sketch tempo " + project.tempoBpm + " stays accepted." };

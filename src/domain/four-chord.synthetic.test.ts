@@ -113,6 +113,52 @@ describe("synthetic four-chord selection, not a recorded take", () => {
     expect(cut.priorPhrase).not.toBeNull();
   });
 
+  it("keeps four uneven chords after a longer line, including under a 40 bpm bar", () => {
+    const gaps = [180, 260, 140, 320, 220, 410, 190, 280, 150, 360, 240, 300];
+    const pitches = [60, 62, 64, 67, 64, 62, 60, 65, 67, 65, 64, 62, 60, 67, 69, 67, 65, 64, 62, 60, 64, 67, 72, 67, 64, 60, 62, 64, 65, 67, 64, 62, 60, 64, 67, 65];
+    const events: CapturedEvent[] = [];
+    let at = 800;
+    let n = 1;
+    for (let i = 0; i < pitches.length; i += 1) {
+      const hold = 90 + (i % 5) * 25;
+      events.push(ev({ id: "p" + n, atMs: at, note: pitches[i] }));
+      n += 1;
+      events.push(ev({ id: "p" + n, atMs: at + hold, kind: "note-off", note: pitches[i], velocity: 0 }));
+      n += 1;
+      at += gaps[i % gaps.length];
+    }
+    const chords = [
+      { id: "C", atMs: at + 980, pitches: [60, 64, 67] },
+      { id: "Am", atMs: 0, pitches: [57, 64, 69] },
+      { id: "F", atMs: 0, pitches: [53, 60, 65] },
+      { id: "G", atMs: 0, pitches: [55, 62, 67] },
+    ];
+    const steps = [1680, 2240, 1790];
+    for (let i = 1; i < chords.length; i += 1) {
+      chords[i].atMs = chords[i - 1].atMs + steps[i - 1];
+    }
+    for (const chord of chords) {
+      const releaseAt = chord.atMs + 470 + (chord.pitches[0] % 3) * 40;
+      events.push(ev({ id: chord.id + "d", atMs: chord.atMs - 40, kind: "cc", controller: 64, value: 127, note: 0, velocity: 0 }));
+      events.push(ev({ id: chord.id + "u", atMs: releaseAt + 30, kind: "cc", controller: 64, value: 0, note: 0, velocity: 0 }));
+      chord.pitches.forEach((pitch, index) => {
+        events.push(ev({ id: chord.id + "n" + index, atMs: chord.atMs + index * 16, note: pitch }));
+      });
+      chord.pitches.forEach((pitch, index) => {
+        events.push(ev({ id: chord.id + "f" + index, atMs: releaseAt, kind: "note-off", note: pitch, velocity: 0 }));
+      });
+    }
+    events.sort((a, b) => (a.scheduleElapsed < b.scheduleElapsed ? -1 : a.scheduleElapsed > b.scheduleElapsed ? 1 : 0));
+    const before = events.map((event) => event.scheduleElapsed);
+    for (const gridPeriodTicks of [null, 1_500_000n]) {
+      const cut = recentPhraseCut(events, { ...opts, gridPeriodTicks, gridOriginTicks: 800_000n });
+      const selected = onsets(events, cut.selection);
+      expect(selected).toEqual(["Cn0", "Cn1", "Cn2", "Amn0", "Amn1", "Amn2", "Fn0", "Fn1", "Fn2", "Gn0", "Gn1", "Gn2"]);
+      expect(selected).not.toContain("p1");
+      expect(events.map((event) => event.scheduleElapsed)).toEqual(before);
+    }
+  });
+
   it("stays ambiguous on continuous playing and does not select the whole ribbon", () => {
     const events = Array.from({ length: 36 }, (_, index) => ev({ id: "n" + index, atMs: index * 280, note: 60 + (index % 5) }));
     const cut = recentPhraseCut(events, opts);
