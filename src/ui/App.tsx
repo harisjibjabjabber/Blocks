@@ -9,6 +9,7 @@ import { eventsInSelection, recentPhraseCut, type RecentPhraseCut } from "../dom
 import { routeLearnedControl, type ControlMap, type LearnTarget } from "../domain/learn";
 import { RangeRibbon } from "./RangeRibbon";
 import { ribbonMarks } from "./ribbon-scale";
+import { notesInRecentWindow, ribbonGrid } from "./ribbon-view";
 import { ReadinessStrip } from "./Readiness";
 import { moveBound, undoRange, type RangeBounds } from "./range";
 import { playChrome, resolveTheme, type ThemeChoice } from "./theme";
@@ -51,7 +52,6 @@ function seconds(elapsed: bigint, domain: CapturedEvent["domain"]): string {
 export default function App() {
   const { width } = useWindowDimensions();
   const chrome = playChrome(width);
-  const narrow = chrome.narrow;
   const [themeChoice, setThemeChoice] = useState<ThemeChoice>("dark");
   const [systemDark, setSystemDark] = useState(true);
   const palette = resolveTheme(themeChoice, systemDark);
@@ -342,7 +342,7 @@ export default function App() {
 
   return (
     <View style={[styles.page, { backgroundColor: palette.bg }]}>
-      <ScrollView contentContainerStyle={[styles.content, { padding: chrome.pad }, narrow ? styles.contentNarrow : null]}>
+      <ScrollView style={styles.scroll} contentContainerStyle={[styles.content, { padding: chrome.pad }]}>
         <Text style={[styles.kicker, { color: palette.muted }]}>Blocks</Text>
         <Text style={[styles.meta, { color: palette.muted }]}>Early prototype. Hardware unverified.</Text>
         <Text style={[styles.title, { color: palette.ink }]}>Warm EP</Text>
@@ -392,11 +392,18 @@ export default function App() {
               bounds={{ start: take.overlay.loopStart ?? take.overlay.selectionStart, end: take.overlay.loopEnd ?? take.overlay.selectionEnd }}
               ceiling={take.rangeCeiling}
               palette={palette}
-              handlePx={chrome.handlePx}
+              hitPx={chrome.handlePx}
+              grid={ribbonGrid({
+                tempoBpm: project.tempoBpm,
+                proposedTempoBpm: project.proposedTempoBpm,
+                gridLocked: project.gridLocked,
+                phase: gridPhase(project.gridLocked ? takes[0] ?? take : take),
+              })}
+              ticksPerSecond={unitFor(domain)}
               onCommit={(next) => commitBounds(take, next)}
             />
           ) : (
-            <TakeRibbon events={ribbon} palette={palette} />
+            <TakeRibbon events={ribbon} palette={palette} ticksPerSecond={unitFor(domain)} />
           )}
           {notice.kind === "none" ? null : <Text style={[styles.meta, { color: palette.muted }]}>{evictionCopy(notice)}</Text>}
         </View>
@@ -533,8 +540,19 @@ function evictionCopy(notice: RibbonNotice): string {
   return "No eviction.";
 }
 
-function TakeRibbon({ events, palette }: { events: CapturedEvent[]; palette: { muted: string; plot: string; line: string; note: string } }) {
-  const notes = events.filter((event) => event.kind === "note-on" && event.velocity > 0).slice(-64);
+function gridPhase(take: Take): bigint {
+  if (take.cut.phaseOriginTicks !== null) {
+    return take.cut.phaseOriginTicks;
+  }
+  const onset = take.performance.events.find((event) => event.kind === "note-on" && event.velocity > 0 && event.scheduleElapsed >= take.overlay.selectionStart);
+  return onset?.scheduleElapsed ?? take.overlay.selectionStart;
+}
+
+function TakeRibbon({ events, palette, ticksPerSecond }: { events: CapturedEvent[]; palette: { muted: string; plot: string; line: string; note: string }; ticksPerSecond: number }) {
+  const notes = notesInRecentWindow(
+    events.filter((event) => event.kind === "note-on" && event.velocity > 0),
+    BigInt(ticksPerSecond) * 12n,
+  ).slice(-64);
   if (notes.length === 0) {
     return <Text style={{ color: palette.muted, marginTop: 8 }}>Nothing played yet</Text>;
   }
@@ -549,9 +567,9 @@ function TakeRibbon({ events, palette }: { events: CapturedEvent[]; palette: { m
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#0D0F13" },
-  content: { padding: 24, paddingBottom: 280, maxWidth: 880, width: "100%", alignSelf: "center" },
-  contentNarrow: { paddingBottom: 460 },
+  page: { flex: 1, height: "100%", maxHeight: "100%", overflow: "hidden", backgroundColor: "#0D0F13" },
+  scroll: { flexGrow: 1, flexShrink: 1, minHeight: 0 },
+  content: { padding: 24, paddingBottom: 12, maxWidth: 880, width: "100%", alignSelf: "center" },
   kicker: { color: "#9AA3AF", letterSpacing: 1.6, fontSize: 12, fontWeight: "600" },
   title: { color: "#ECEEF2", fontSize: 32, fontWeight: "700", marginTop: 4, letterSpacing: -0.4 },
   preset: { color: "#9AA3AF", marginTop: 4, fontSize: 14 },
@@ -573,7 +591,7 @@ const styles = StyleSheet.create({
   layerChip: { backgroundColor: "#20252C", borderRadius: 12, minHeight: 48, paddingVertical: 12, paddingHorizontal: 12, justifyContent: "center" },
   layerChipOn: { borderWidth: 2, borderColor: "#FFFFFF" },
   layerText: { color: "#ECEEF2", fontSize: 14, fontWeight: "600" },
-  dock: { position: "fixed", left: 0, right: 0, bottom: 0, padding: 16, backgroundColor: "#0D0F13" },
+  dock: { flexShrink: 0, padding: 12, paddingBottom: 16, backgroundColor: "#0D0F13" },
   capture: { backgroundColor: "#FF6A3D", borderRadius: 16, minHeight: 84, width: "100%", alignItems: "center", justifyContent: "center" },
   captureText: { color: "#120C0A", fontSize: 32, fontWeight: "700" },
   secondary: { backgroundColor: "#20252C", borderRadius: 12, minHeight: 48, minWidth: 48, paddingVertical: 12, paddingHorizontal: 12, justifyContent: "center" },
