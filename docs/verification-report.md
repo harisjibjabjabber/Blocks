@@ -64,4 +64,4 @@ Web and Android device gates stay open.
 
 Implementation commit for this packaging and learn pass is recorded below after `git rev-parse`. The stamp commit only adds that hash.
 
-Stamp: filled in the follow-up commit.
+Stamp: implementation commit `e4fefc54c33426e70d3e14c94a6673b902f8e5df`.
