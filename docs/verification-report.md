@@ -57,4 +57,4 @@ Web and Android gates stay open.
 
 The commit that contains this report is recorded after `git rev-parse HEAD` in the stamp line below once that commit exists. The APK hash above is of the debug APK built before the Play-screen copy pass. That pass did not change the C++ or Kotlin, so the packaged `libblocksengine.so` is the one from this Gradle run. Debug APKs load JavaScript from Metro rather than baking this later UI into the APK.
 
-Stamp: see the commit that adds this file.
+Stamp: implementation commit `79d9fa8f4f9caadb03852076f65098b22effb82c`. The commit that records this line is the one after it.
