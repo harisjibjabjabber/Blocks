@@ -4,6 +4,7 @@ import { RollingHistory, domainsCompatible, type IncomingEvent } from "./capture
 import { inferPulse } from "./inference";
 import { capturePerformance, defaultOverlay, deriveSchedule, loopLonger, loopShorter, playbackStretch, recover, withChoice, withQuantise } from "./phrase";
 import { createProject, setProjectTempo } from "./project";
+import { routeLearnedControl } from "./learn";
 import { bindMidiInputs, enableFromGesture, type MidiPortLike } from "../midi/web/enable";
 import { parseCompleteMidi } from "../midi/web/complete";
 
@@ -320,5 +321,29 @@ describe("web scheduler", () => {
     const live = liveAudioTime({ audioNowSec: 3, performanceNowMs: 1000, eventTimeStampMs: 1000, lateToleranceSec: 0.04 });
     expect(live.when).toBe(3);
     expect(live.drop).toBe(false);
+  });
+});
+
+describe("controller learn", () => {
+  it("refuses CC 64 and playing keys, and still records every event", () => {
+    const map = { capture: null, transport: null };
+    const sustain = routeLearnedControl({ kind: "cc", controller: 64 }, "capture", map);
+    expect(sustain.record).toBe(true);
+    expect(sustain.fire).toBeNull();
+    expect(sustain.decision?.accept).toBe(false);
+    const key = routeLearnedControl({ kind: "note-on", controller: 60 }, "transport", map);
+    expect(key.record).toBe(true);
+    expect(key.decision?.accept).toBe(false);
+    expect(key.decision?.message).toMatch(/Playing keys/);
+    const learned = routeLearnedControl({ kind: "cc", controller: 67 }, "capture", map);
+    expect(learned.decision).toEqual({ accept: true, controller: 67, message: "Capture is CC 67." });
+    const armed = routeLearnedControl({ kind: "cc", controller: 67 }, null, { capture: 67, transport: 1 });
+    expect(armed.record).toBe(true);
+    expect(armed.fire).toBe("capture");
+    const stopped = routeLearnedControl({ kind: "cc", controller: 1 }, null, { capture: 67, transport: 1 });
+    expect(stopped.fire).toBe("transport");
+    const noteStillRecorded = routeLearnedControl({ kind: "note-on", controller: 60 }, null, { capture: 67, transport: 1 });
+    expect(noteStillRecorded.record).toBe(true);
+    expect(noteStillRecorded.fire).toBeNull();
   });
 });

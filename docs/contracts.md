@@ -33,7 +33,7 @@ This is the first slice, not the proposed UI spec. That proposal was not user-te
 - Capture writes a new layer. It does not overwrite one. The default after capture is to loop. Stay silent is a persistent project setting. Review stays on the page. One undo puts the ribbon back and removes that capture.
 - A capture made while a loop is running waits for the next loop boundary. The selection uses events that already exist.
 - On-screen keys are labelled as on-screen keys and are not a MIDI input.
-- CC 64 remains sustain. It is not the Capture control. Pitch bend, channel pressure, and expression stay in the raw take when the parser accepts them. Whether the FM voice sounds each of them is separate. A synthetic panic release is not raw input.
+- CC 64 remains sustain. It is not the Capture control. Learn is only for Capture and for Play/Stop, and only from a CC other than 64. Note-ons and note-offs are refused. The learned control is shown as `CC n` or `not learned`. The incoming event is still written into the ribbon.
 - Native MIDI is foreground-first. The in-memory ribbon is kept when audio stops.
 - No heard-time rewrite and no latency compensation. There is no measured keyboard-to-speaker latency.
 - Piano roll, autosave of the ribbon, export, a fixed four-layer maximum, and full controller learn are not in this slice. One grid and one loop are the shared model so far.

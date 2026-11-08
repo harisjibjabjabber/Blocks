@@ -17,6 +17,7 @@ import {
   type PhraseOverlay,
 } from "../domain/phrase";
 import { createProject, projectFromJson, projectToJson, type Project } from "../domain/project";
+import { controlLabel, routeLearnedControl, type ControlMap, type LearnTarget } from "../domain/learn";
 
 const engine = createEngine();
 const NOTES = [48, 50, 52, 53, 55, 57, 59, 60, 62, 64, 65, 67, 69, 71, 72];
@@ -66,8 +67,13 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [looping, setLooping] = useState(false);
   const [undo, setUndo] = useState<UndoCapture | null>(null);
+  const [learning, setLearning] = useState<LearnTarget | null>(null);
+  const [audioState, setAudioState] = useState(engine.kind === "web" ? "suspended" : "not used");
   const loopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pending = useRef<Take | null>(null);
+  const learningRef = useRef<LearnTarget | null>(null);
+  const mapRef = useRef<ControlMap>({ capture: null, transport: null });
+  const actions = useRef({ capture: () => {}, togglePlay: () => {} });
 
   useEffect(() => {
     let stop = false;
@@ -78,6 +84,7 @@ export default function App() {
       const loaded = projectFromJson(text);
       if (loaded) {
         setProject(loaded);
+        mapRef.current = { capture: loaded.captureControl, transport: loaded.transportControl };
         engine.setSustain(loaded.sustainCc);
       }
     });
@@ -85,8 +92,41 @@ export default function App() {
       history.push(event);
       setRibbon(history.snapshot());
       setNotice(history.ribbonNotice());
+      const routed = routeLearnedControl(event, learningRef.current, mapRef.current);
+      if (routed.decision) {
+        if (routed.decision.accept) {
+          const nextMap = { ...mapRef.current, [learningRef.current === "transport" ? "transport" : "capture"]: routed.decision.controller };
+          mapRef.current = nextMap;
+          learningRef.current = null;
+          setLearning(null);
+          setProject((current) => {
+            const next = { ...current, captureControl: nextMap.capture, transportControl: nextMap.transport };
+            engine.saveProject(projectToJson(next));
+            return next;
+          });
+        }
+        setMessage(routed.decision.message);
+        return;
+      }
+      if (routed.fire === "capture") {
+        actions.current.capture();
+      } else if (routed.fire === "transport") {
+        actions.current.togglePlay();
+      }
     });
-    const timer = setInterval(() => setGate(engine.getGate()), 400);
+    const timer = setInterval(() => {
+      setGate(engine.getGate());
+      engine.stats().then((text) => {
+        try {
+          const parsed = JSON.parse(text) as { audio?: string };
+          if (typeof parsed.audio === "string") {
+            setAudioState(parsed.audio);
+          }
+        } catch {
+          // stats stay on the previous reading
+        }
+      });
+    }, 400);
     return () => {
       stop = true;
       unsubscribe();
@@ -212,6 +252,17 @@ export default function App() {
     setMessage(mode === "silent" ? "After Capture: stay silent. This stays until you change it." : "After Capture: loop. This stays until you change it.");
   }
 
+  actions.current.capture = capture;
+  actions.current.togglePlay = () => {
+    if (looping) {
+      stopLoop();
+    } else if (take) {
+      playTake(take, true);
+    } else {
+      setMessage("Nothing to play yet.");
+    }
+  };
+
   return (
     <View style={styles.page}>
       <ScrollView contentContainerStyle={[styles.content, narrow ? styles.contentNarrow : null]}>
@@ -226,12 +277,13 @@ export default function App() {
           </Pressable>
           <View style={styles.status}>
             <Text style={styles.statusTitle}>Sound · {gate.audioRunning ? "running" : "tap Enable"}</Text>
+            <Text style={styles.meta}>AudioContext: {audioState}</Text>
             <Text style={styles.meta}>Input · {inputCopy(gate.kind, engine.ports().length)}</Text>
             <Text style={styles.meta}>Buffer · {seconds(age, domain)} kept · {ribbon.length} events</Text>
           </View>
         </View>
         <Text style={styles.body}>{gate.detail}</Text>
-        {engine.ports().length === 0 ? (
+        {gate.kind === "denied" || gate.kind === "unsupported" ? null : engine.ports().length === 0 ? (
           <Text style={styles.empty}>No MIDI input is listed. On-screen keys are not a MIDI device.</Text>
         ) : (
           engine.ports().map((port) => (
@@ -258,7 +310,9 @@ export default function App() {
         <Text style={styles.meta}>Layer · {takes.length === 0 ? "empty" : takes.length + " captured, newest is the review"}</Text>
         <Text style={styles.meta}>Sketch tempo {project.tempoBpm} is locked. A reading does not change it.</Text>
         <Text style={styles.meta}>Sustain stays CC {project.sustainCc}. It is not the Capture control.</Text>
-        <Text style={styles.body}>{message}</Text>
+        <Text style={styles.meta}>Capture control: {controlLabel(project.captureControl)}</Text>
+        <Text style={styles.meta}>Play/Stop control: {controlLabel(project.transportControl)}</Text>
+        <Text style={styles.body}>{learning ? "Learning " + (learning === "capture" ? "Capture" : "Play/Stop") + ". Move a controller that is not CC 64 and not a key." : message}</Text>
 
         {take ? (
           <View style={styles.card}>
@@ -308,6 +362,7 @@ export default function App() {
               key={note + "-" + index}
               style={styles.pad}
               onPressIn={() => engine.touch(note, 100, true)}
+              onPress={() => engine.touch(note, 100, true)}
               onPressOut={() => engine.touch(note, 0, false)}
             >
               <Text style={styles.padText}>{NAMES[index]}</Text>
@@ -323,8 +378,29 @@ export default function App() {
           <Pressable style={styles.secondary} onPress={undoCapture} disabled={!undo}>
             <Text style={styles.secondaryText}>Undo capture</Text>
           </Pressable>
+          <Pressable style={styles.secondary} onPress={() => (looping ? stopLoop() : take ? playTake(take, true) : setMessage("Nothing to play yet."))}>
+            <Text style={styles.secondaryText}>{looping ? "Stop" : "Play"}</Text>
+          </Pressable>
           <Pressable style={styles.secondary} onPress={() => setAfterCapture(project.afterCapture === "loop" ? "silent" : "loop")}>
             <Text style={styles.secondaryText}>{project.afterCapture === "loop" ? "After capture: loop" : "After capture: stay silent"}</Text>
+          </Pressable>
+          <Pressable
+            style={styles.secondary}
+            onPress={() => {
+              learningRef.current = "capture";
+              setLearning("capture");
+            }}
+          >
+            <Text style={styles.secondaryText}>Learn Capture</Text>
+          </Pressable>
+          <Pressable
+            style={styles.secondary}
+            onPress={() => {
+              learningRef.current = "transport";
+              setLearning("transport");
+            }}
+          >
+            <Text style={styles.secondaryText}>Learn Play/Stop</Text>
           </Pressable>
         </View>
       </View>

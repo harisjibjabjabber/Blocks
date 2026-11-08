@@ -36,7 +36,7 @@ cd android
 ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a,x86_64
 ```
 
-The debug APK is `android/app/build/outputs/apk/debug/app-debug.apk`. It links Oboe 1.11.0 and the C++ callback. This is the React Native CLI / Gradle app, not Expo Go. iOS is not a supported build. The `ios/` directory is the unused React Native template.
+The debug APK is `android/app/build/outputs/apk/debug/app-debug.apk`. It links Oboe 1.11.0 and the C++ callback, and it contains the compiled JavaScript bundle. Installing it does not require Metro. This is the React Native CLI / Gradle app, not Expo Go. iOS is not a supported build. The `ios/` directory is the unused React Native template.
 
 Install on a device that supports USB MIDI through `android.media.midi`. The app asks for audio focus, opens the first MIDI output port it can read, and copies callback bytes before they leave `onSend`.
 

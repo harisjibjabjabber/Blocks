@@ -17,6 +17,8 @@ class MainApplication : Application(), ReactApplication {
         PackageList(this).packages.apply {
           add(BlocksEnginePackage())
         },
+      // The JS bundle is inside the APK. Do not probe Metro on launch.
+      useDevSupport = false,
     )
   }
 

@@ -3,6 +3,8 @@ export interface Project {
   tempoBpm: number;
   sustainCc: number;
   afterCapture: "loop" | "silent";
+  captureControl: number | null;
+  transportControl: number | null;
   phrases: StoredPhrase[];
 }
 
@@ -32,7 +34,7 @@ export interface StoredEvent {
 }
 
 export function createProject(): Project {
-  return { name: "Sketch", tempoBpm: 120, sustainCc: 64, afterCapture: "loop", phrases: [] };
+  return { name: "Sketch", tempoBpm: 120, sustainCc: 64, afterCapture: "loop", captureControl: null, transportControl: null, phrases: [] };
 }
 
 export function setProjectTempo(project: Project, tempoBpm: number): Project {
@@ -58,6 +60,12 @@ export function projectFromJson(text: string): Project | null {
   }
   if (parsed.afterCapture !== "silent" && parsed.afterCapture !== "loop") {
     parsed.afterCapture = "loop";
+  }
+  if (typeof parsed.captureControl !== "number") {
+    parsed.captureControl = null;
+  }
+  if (typeof parsed.transportControl !== "number") {
+    parsed.transportControl = null;
   }
   return parsed;
 }

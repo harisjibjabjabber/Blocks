@@ -1,60 +1,67 @@
 # Verification report
 
-Host checks were run on this machine. Browser hardware, USB, a Fold, playing feel, and latency were not. The UI proposal was not user-tested. QA stays open.
+Host checks and a browser smoke of the running web app were done on this machine. No emulator launch, device, USB, Fold, pedal, or latency run. The UI proposal was not user-tested. QA stays open.
 
-## Commands and results
+## Packaging
 
-JavaScript host tests:
-
-```text
-npx vitest run
-Test Files  1 passed (1)
-Tests  21 passed (21)
-```
-
-Native host tests:
-
-```text
-npm run test:native
-g++ -std=c++20 -O2 -Wall -Wextra -I native/include native/src/midi_parser.cpp native/src/instrument.cpp native/src/pipeline.cpp native/src/render.cpp native/tests/test_main.cpp -o /tmp/blocks-host-tests && /tmp/blocks-host-tests
-native host tests passed
-```
-
-`npm test` runs both.
-
-NDK compile of the Oboe engine and JNI bridge, objects only, not a device run:
-
-```text
-aarch64-linux-android29-clang++ -std=c++20 -c native/src/oboe_engine.cpp native/src/jni_bridge.cpp
-exit 0
-```
-
-Debug APK:
+Debug APKs are signed with the debug keystore. The standalone build sets `debuggableVariants = []` so Gradle runs `createBundleDebugJsAndAssets`, and `MainApplication` sets `useDevSupport = false` so launch does not probe Metro.
 
 ```text
 cd android && ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a,x86_64 --no-daemon
-BUILD SUCCESSFUL in 2m 45s
+BUILD SUCCESSFUL in 17s
 ```
 
-APK path: `/workspace/android/app/build/outputs/apk/debug/app-debug.apk`
+The standalone APK contains `assets/index.android.bundle` (Hermes bytecode) plus `lib/arm64-v8a/libblocksengine.so` and `lib/x86_64/libblocksengine.so`.
 
-APK sha256: `c4aa0796756b67a64026fefa360b62155ee1bb9bfeecf6f3c178a00dcf809e0c`
+| File | sha256 |
+|---|---|
+| Metro debug APK, kept | `c4aa0796756b67a64026fefa360b62155ee1bb9bfeecf6f3c178a00dcf809e0c` |
+| Standalone debug APK | `3395360529263bfa6782c22a827e323ec9062ac94bd422443ebd1f6bea4c5ac3` |
 
-`unzip -l` shows `lib/arm64-v8a/libblocksengine.so` and `lib/x86_64/libblocksengine.so`.
+Store paths, both still present:
 
-The web dev server answered HTTP 200 on port 41713. A headless Chrome screenshot showed Warm EP, the readiness lines, the empty take ribbon, labelled on-screen keys, and the Capture bar. That is a render check. It is not proof a keyboard, a pedal, or a speaker worked. Enable was not clicked in that browser, so no MIDI permission result was observed.
+- `/cursor/stores/bc-cda16613-24d8-5558-8bb3-7f3eeac46b26/media/blocks-debug.apk`
+- `/cursor/stores/bc-cda16613-24d8-5558-8bb3-7f3eeac46b26/media/blocks-debug-metro.apk` (same bytes and hash as the Metro APK)
+- `/cursor/stores/bc-cda16613-24d8-5558-8bb3-7f3eeac46b26/media/blocks-standalone-debug.apk`
+
+## Audio and timing
+
+Separate from packaging. The standalone `libblocksengine.so` bytes match the Metro APK for both ABIs. arm64-v8a sha256 `7b3b417bf2034c38402db8a26fd1ad1b8ff8c8837723da86c053706403ac3a5c`. x86_64 sha256 `61028283622503e17ea2519c544bc3e1f5402c724051c85ed4019bc632e8f4c7`. Both exports include `Java_com_blocks_sketchbook_BlocksNative_nativeEnqueue`, `nativeReplay`, and `nativePoll`. The audio callback was not retuned for this package. No latency number is claimed.
+
+Host tests, unchanged engine:
+
+```text
+npx vitest run
+Tests  22 passed (22)
+```
+
+The new case checks that CC 64 and note-ons are refused as Capture or Play/Stop mappings, that another CC can be learned, and that every event is still recorded.
+
+## Browser smoke
+
+Chrome, headless, against `http://127.0.0.1:41713/` (HTTP 200 on this machine). Real clicks on the running page. Not USB, not a pedal, not a Fold, not a latency measurement.
+
+| Screenshot | What the page showed |
+|---|---|
+| `media/touch-instrument.png` | On-screen C key. Ribbon gained note events. |
+| `media/audiocontext-state.png` | `AudioContext: running` after Enable. It was `suspended` before that click. |
+| `media/permission-denied.png` | `Input · permission denied` and `MIDI permission was denied.` |
+| `media/capture.png` | `Captured 3 events into layer-1.` |
+| `media/replay.png` | Same take, button reads `Stop loop`. |
+| `media/undo.png` | After Undo capture, `Layer · empty`. |
+
+`requestMIDIAccess` is a function in this Chrome, including with `--disable-features=WebMIDI`. The unsupported screen was not reached. A granted MIDI permission was not obtained either: the browser returned `NotAllowedError`, so the no-device screen was not reached and no `no-device` screenshot is kept. No hardware controller was moved, so the learned-CC label was not exercised in the browser. The host test covers that refusal and mapping.
 
 ## Not run
 
-- Android emulator. `/dev/kvm` exists, and no emulator package or AVD was installed. No system image was downloaded. The emulator was not started.
-- A physical keyboard, USB MIDI, CC 64, hotplug, or a Samsung Fold.
-- An audition of Warm EP.
-- Browser proof that Web MIDI received a device. API support from the BCD file is not that proof.
+- Emulator. `$HOME/android-sdk/emulator/emulator` is not installed. It was not booted, and the standalone APK was not installed or launched.
+- USB, a pedal, a Fold, hotplug, and any latency measurement.
+- An outside-the-machine GET. The server is bound to `0.0.0.0:41713` and answers on this machine. No public URL is claimed.
 
-Web and Android gates stay open.
+Web and Android device gates stay open.
 
 ## Commit
 
-The commit that contains this report is recorded after `git rev-parse HEAD` in the stamp line below once that commit exists. The APK hash above is of the debug APK built before the Play-screen copy pass. That pass did not change the C++ or Kotlin, so the packaged `libblocksengine.so` is the one from this Gradle run. Debug APKs load JavaScript from Metro rather than baking this later UI into the APK.
+Implementation commit for this packaging and learn pass is recorded below after `git rev-parse`. The stamp commit only adds that hash.
 
-Stamp: implementation commit `79d9fa8f4f9caadb03852076f65098b22effb82c`. The commit that records this line is the one after it.
+Stamp: filled in the follow-up commit.
