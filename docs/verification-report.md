@@ -1,67 +1,57 @@
 # Verification report
 
-Host checks and a browser smoke of the running web app were done on this machine. No emulator launch, device, USB, Fold, pedal, or latency run. The UI proposal was not user-tested. QA stays open.
+This pass finished the Sound chip, the first-grid rule, and the static `/Blocks/` build. It did not rebuild an APK and did not boot an emulator. USB, a Fold, a pedal, and latency were not tested. No hosted URL exists.
 
-## Packaging
-
-Debug APKs are signed with the debug keystore. The standalone build sets `debuggableVariants = []` so Gradle runs `createBundleDebugJsAndAssets`, and `MainApplication` sets `useDevSupport = false` so launch does not probe Metro.
-
-```text
-cd android && ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a,x86_64 --no-daemon
-BUILD SUCCESSFUL in 17s
-```
-
-The standalone APK contains `assets/index.android.bundle` (Hermes bytecode) plus `lib/arm64-v8a/libblocksengine.so` and `lib/x86_64/libblocksengine.so`.
-
-| File | sha256 |
-|---|---|
-| Metro debug APK, kept | `c4aa0796756b67a64026fefa360b62155ee1bb9bfeecf6f3c178a00dcf809e0c` |
-| Standalone debug APK | `3395360529263bfa6782c22a827e323ec9062ac94bd422443ebd1f6bea4c5ac3` |
-
-Store paths, both still present:
-
-- `/cursor/stores/bc-cda16613-24d8-5558-8bb3-7f3eeac46b26/media/blocks-debug.apk`
-- `/cursor/stores/bc-cda16613-24d8-5558-8bb3-7f3eeac46b26/media/blocks-debug-metro.apk` (same bytes and hash as the Metro APK)
-- `/cursor/stores/bc-cda16613-24d8-5558-8bb3-7f3eeac46b26/media/blocks-standalone-debug.apk`
-
-## Audio and timing
-
-Separate from packaging. The standalone `libblocksengine.so` bytes match the Metro APK for both ABIs. arm64-v8a sha256 `7b3b417bf2034c38402db8a26fd1ad1b8ff8c8837723da86c053706403ac3a5c`. x86_64 sha256 `61028283622503e17ea2519c544bc3e1f5402c724051c85ed4019bc632e8f4c7`. Both exports include `Java_com_blocks_sketchbook_BlocksNative_nativeEnqueue`, `nativeReplay`, and `nativePoll`. The audio callback was not retuned for this package. No latency number is claimed.
-
-Host tests, unchanged engine:
+## Tests
 
 ```text
 npx vitest run
-Tests  22 passed (22)
+Test Files  4 passed (4)
+Tests  35 passed (35)
+
+npm run test:native
+native host tests passed
 ```
 
-The new case checks that CC 64 and note-ons are refused as Capture or Play/Stop mappings, that another CC can be learned, and that every event is still recorded.
+The Vitest run includes the Sound chip against `suspended`, `interrupted`, `running`, and `closed`, MIDI denial without a false "running" chip, Web MIDI unsupported and no-input mocks, resume-before-permission, and first capture versus an existing locked project. 120 seconds is asserted as the ribbon, not a tempo.
 
-## Browser smoke
+```text
+npm run build:web
+BLOCKS_BASE=/Blocks/ vite build
+dist/index.html script src="/Blocks/assets/index-Ck4Rr643.js"
+```
 
-Chrome, headless, against `http://127.0.0.1:41713/` (HTTP 200 on this machine). Real clicks on the running page. Not USB, not a pedal, not a Fold, not a latency measurement.
+## Sound chip and grid
 
-| Screenshot | What the page showed |
+The Sound line and `AudioContext:` line are both produced from the live context state. "Sound · running" is not used while the context is suspended, interrupted, or closed. On-screen touch does not depend on MIDI. A new sketch has `tempoBpm: null` until the first pulse reading proposes a grid. A later reading does not change a locked tempo.
+
+## GitHub push
+
+Destination: `https://github.com/harisjibjabjabber/Blocks` (`main`). Not a force push.
+
+```text
+git push origin cursor/blocks-sketchbook-a2bd
+4e80111..f8ed13d  cursor/blocks-sketchbook-a2bd -> cursor/blocks-sketchbook-a2bd
+
+GIT_TERMINAL_PROMPT=0 git push https://github.com/harisjibjabjabber/Blocks.git HEAD:main
+fatal: could not read Username for 'https://github.com': terminal prompts disabled
+```
+
+SSH was not usable either: `git@github.com: Permission denied (publickey).` No GitHub credential was present, so the push stopped there. There is no commit URL on that GitHub repository from this pass. Implementation commit on this project origin: `f8ed13d5b443629ca8eb9603eaac02ac5c6bdac9`.
+
+## Metadata
+
+Description and topics were not written. The GitHub API was not called, because the same missing credential would be required. There is no readback.
+
+## Actions and Pages
+
+`.github/workflows/pages.yml` is committed. It is `workflow_dispatch` only and builds with `npm run build:web` (`BLOCKS_BASE=/Blocks/`). It was not run. Pages was not enabled. The account plan was not read, so private Pages was not attempted. No live HTTPS fetch was made. No hosted URL is claimed.
+
+## APKs kept
+
+Not rebuilt this pass. Previously recorded hashes, files left in place:
+
+| File | sha256 |
 |---|---|
-| `media/touch-instrument.png` | On-screen C key. Ribbon gained note events. |
-| `media/audiocontext-state.png` | `AudioContext: running` after Enable. It was `suspended` before that click. |
-| `media/permission-denied.png` | `Input · permission denied` and `MIDI permission was denied.` |
-| `media/capture.png` | `Captured 3 events into layer-1.` |
-| `media/replay.png` | Same take, button reads `Stop loop`. |
-| `media/undo.png` | After Undo capture, `Layer · empty`. |
-
-`requestMIDIAccess` is a function in this Chrome, including with `--disable-features=WebMIDI`. The unsupported screen was not reached. A granted MIDI permission was not obtained either: the browser returned `NotAllowedError`, so the no-device screen was not reached and no `no-device` screenshot is kept. No hardware controller was moved, so the learned-CC label was not exercised in the browser. The host test covers that refusal and mapping.
-
-## Not run
-
-- Emulator. `$HOME/android-sdk/emulator/emulator` is not installed. It was not booted, and the standalone APK was not installed or launched.
-- USB, a pedal, a Fold, hotplug, and any latency measurement.
-- An outside-the-machine GET. The server is bound to `0.0.0.0:41713` and answers on this machine. No public URL is claimed.
-
-Web and Android device gates stay open.
-
-## Commit
-
-Implementation commit for this packaging and learn pass is recorded below after `git rev-parse`. The stamp commit only adds that hash.
-
-Stamp: implementation commit `e4fefc54c33426e70d3e14c94a6673b902f8e5df`.
+| Metro debug APK | `c4aa0796756b67a64026fefa360b62155ee1bb9bfeecf6f3c178a00dcf809e0c` |
+| Standalone debug APK | `3395360529263bfa6782c22a827e323ec9062ac94bd422443ebd1f6bea4c5ac3` |
