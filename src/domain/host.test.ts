@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { liveAudioTime, planFromElapsed, selectDue } from "../audio/web/schedule";
+import { joinAtSeam, liveAudioTime, planFromElapsed, selectDue } from "../audio/web/schedule";
 import { RollingHistory, domainsCompatible, type IncomingEvent } from "./capture";
 import { inferPulse } from "./inference";
 import { capturePerformance, defaultOverlay, deriveSchedule, loopLonger, loopShorter, playbackStretch, recover, withChoice, withQuantise } from "./phrase";
-import { createProject, gridStatusCopy, projectFromJson, projectToJson, proposeGrid, setProjectTempo } from "./project";
+import { createProject, gridStatusCopy, projectFromJson, projectToJson, proposeGrid, proposeTempo, setProjectTempo } from "./project";
 import { routeLearnedControl } from "./learn";
 import { bindMidiInputs, enableFromGesture, type MidiPortLike } from "../midi/web/enable";
 import { parseCompleteMidi } from "../midi/web/complete";
@@ -368,6 +368,29 @@ describe("inference and phrase", () => {
     expect(locked.project.tempoBpm).toBe(96);
   });
 
+  it("proposes a tempo on the first layer and accepts it on the second without changing the number", () => {
+    const first = proposeTempo(createProject(), 132.4, 0);
+    expect(first.project.gridLocked).toBe(false);
+    expect(first.project.tempoBpm).toBeNull();
+    expect(first.project.proposedTempoBpm).toBe(132);
+    expect(first.note).toMatch(/proposed/);
+    expect(gridStatusCopy(first.project)).toMatch(/not accepted/);
+    const second = proposeTempo(first.project, 90, 1);
+    expect(second.project.gridLocked).toBe(true);
+    expect(second.project.tempoBpm).toBe(132);
+    expect(second.note).toMatch(/kept/);
+    const held = proposeTempo(second.project, 140, 2);
+    expect(held.project.tempoBpm).toBe(132);
+  });
+
+  it("does not change loop duration when the half-tempo choice is selected", () => {
+    const events = historyFrom([0n, 500n, 1000n, 1500n]);
+    const overlay = defaultOverlay(events);
+    const half = withChoice(overlay, "half");
+    expect(half.selectionEnd - half.selectionStart).toBe(overlay.selectionEnd - overlay.selectionStart);
+    expect((half.loopEnd ?? 0n) - (half.loopStart ?? 0n)).toBe((overlay.loopEnd ?? 0n) - (overlay.loopStart ?? 0n));
+  });
+
   it("lets the first inference propose the grid and keeps an existing project locked", () => {
     const events = historyFrom([0n, 500n, 1000n, 1500n, 2000n]);
     const report = inferPulse(events, 1_000_000);
@@ -431,6 +454,12 @@ describe("web scheduler", () => {
     const live = liveAudioTime({ audioNowSec: 3, performanceNowMs: 1000, eventTimeStampMs: 1000, lateToleranceSec: 0.04 });
     expect(live.when).toBe(3);
     expect(live.drop).toBe(false);
+    const first = joinAtSeam(10, null, null);
+    expect(first.start).toBeCloseTo(10.05);
+    expect(first.epoch).toBeCloseTo(10.05);
+    const next = joinAtSeam(10.4, 10.05, 2);
+    expect(next.start).toBeCloseTo(12.05);
+    expect(next.epoch).toBeCloseTo(10.05);
   });
 });
 

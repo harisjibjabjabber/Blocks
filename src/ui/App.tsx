@@ -17,7 +17,7 @@ import {
   type Performance,
   type PhraseOverlay,
 } from "../domain/phrase";
-import { createProject, gridStatusCopy, projectFromJson, projectToJson, proposeGrid, type Project } from "../domain/project";
+import { createProject, gridStatusCopy, projectFromJson, projectToJson, proposeTempo, type Project } from "../domain/project";
 import { eventsInSelection, moveSelectionStart, recentPhraseCut, type RecentPhraseCut } from "../domain/recent-phrase";
 import { controlLabel, routeLearnedControl, type ControlMap, type LearnTarget } from "../domain/learn";
 import { ReadinessStrip } from "./Readiness";
@@ -71,7 +71,7 @@ export default function App() {
   const [selected, setSelected] = useState<string | null>(null);
   const [message, setMessage] = useState("Play, then capture. The ribbon keeps about 120 seconds.");
   const [busy, setBusy] = useState(false);
-  const [looping, setLooping] = useState(false);
+  const [loopingIds, setLoopingIds] = useState<string[]>([]);
   const [undo, setUndo] = useState<UndoCapture | null>(null);
   const [learning, setLearning] = useState<LearnTarget | null>(null);
   const [audioState, setAudioState] = useState(engine.readAudioState());
@@ -168,57 +168,36 @@ export default function App() {
   }, [history]);
 
   const take = takes.find((item) => item.id === selected) ?? null;
+  const looping = take ? loopingIds.includes(take.id) : false;
   const newest = ribbon.length ? ribbon[ribbon.length - 1].scheduleElapsed : 0n;
   const age = ribbon.length ? newest - ribbon[0].scheduleElapsed : 0n;
 
   function stopLoop() {
-    if (loopTimer.current) {
-      clearTimeout(loopTimer.current);
-      loopTimer.current = null;
-    }
-    pending.current = null;
-    engine.stopReplay();
-    setLooping(false);
-  }
-
-  function playTake(item: Take, continueLoop: boolean) {
-    const window = loopWindow(item.overlay);
-    const preface = [
-      ...item.cut.controllerSeed.map((seed) => {
-        const source = item.performance.events.find((event) => event.id === seed.sourceId) ?? item.performance.events[0];
-        return { ...source, id: seed.sourceId + ":seed", kind: "cc" as const, channel: seed.channel, controller: seed.controller, value: seed.value, note: 0, velocity: 0, scheduleElapsed: window.start };
-      }),
-      ...item.cut.heldNoteIds.map((id) => item.performance.events.find((event) => event.id === id)).flatMap((event) => (event ? [{ ...event, id: event.id + ":hold", scheduleElapsed: window.start }] : [])),
-    ];
-    const selectedEvents = [
-      ...preface,
-      ...item.performance.events.filter((event) => event.scheduleElapsed >= window.start && event.scheduleElapsed <= window.end),
-    ];
-    if (selectedEvents.length === 0) {
-      setMessage("That loop contains no recorded events.");
+    if (!take) {
       return;
     }
-    engine.replay(selectedEvents, 1);
-    setLooping(true);
-    const span = selectedEvents[selectedEvents.length - 1].scheduleElapsed - selectedEvents[0].scheduleElapsed;
-    const ms = Math.min(120000, Math.max(400, Number(span) / (unitFor(domain) / 1000)));
-    if (loopTimer.current) {
-      clearTimeout(loopTimer.current);
+    engine.stopLayer(take.id);
+    setLoopingIds((current) => current.filter((id) => id !== take.id));
+  }
+
+  function playTake(item: Take) {
+    const bounds = loopWindow(item.overlay);
+    const preface = item.cut.controllerSeed.map((seed) => {
+      const source = item.performance.events.find((event) => event.id === seed.sourceId) ?? item.performance.events[0];
+      return { ...source, id: seed.sourceId + ":seed", kind: "cc" as const, channel: seed.channel, controller: seed.controller, value: seed.value, note: 0, velocity: 0, scheduleElapsed: bounds.start };
+    });
+    const selectedEvents = [
+      ...preface,
+      ...item.performance.events.filter((event) => event.scheduleElapsed >= bounds.start && event.scheduleElapsed <= bounds.end && !event.id.endsWith(":seed") && !event.id.endsWith(":hold")),
+    ];
+    if (!selectedEvents.some((event) => event.kind === "note-on" && event.velocity > 0)) {
+      setMessage("That loop contains no recorded notes.");
+      return;
     }
-    loopTimer.current = setTimeout(() => {
-      const next = pending.current;
-      pending.current = null;
-      if (next) {
-        setSelected(next.id);
-        playTake(next, project.afterCapture === "loop");
-        return;
-      }
-      if (continueLoop && project.afterCapture === "loop") {
-        playTake(item, true);
-      } else {
-        setLooping(false);
-      }
-    }, ms);
+    const span = bounds.end - bounds.start;
+    const durationSec = Math.max(0.4, Number(span) / unitFor(domain));
+    engine.loopLayer(item.id, selectedEvents, 1, durationSec);
+    setLoopingIds((current) => (current.includes(item.id) ? current : [...current, item.id]));
   }
 
   async function enable() {
@@ -240,10 +219,11 @@ export default function App() {
       return;
     }
     const ticksPerSecond = unitFor(domain);
+    const tempoForCut = project.gridLocked ? project.tempoBpm : project.proposedTempoBpm;
     const cut = recentPhraseCut(events, {
       ticksPerSecond,
-      gridPeriodTicks: project.gridLocked && project.tempoBpm ? BigInt(Math.round((60 / project.tempoBpm) * ticksPerSecond)) : null,
-      gridOriginTicks: project.gridLocked && takes[0] ? takes[0].overlay.selectionStart : null,
+      gridPeriodTicks: tempoForCut ? BigInt(Math.round((60 / tempoForCut) * ticksPerSecond)) : null,
+      gridOriginTicks: takes[0] ? takes[0].overlay.selectionStart : null,
       historyMayBeTruncated: notice.kind !== "none",
     });
     const performance = capturePerformance(events);
@@ -263,39 +243,32 @@ export default function App() {
     setUndo({ takes, ribbon: events, project });
     setTakes((current) => [...current, created]);
     setSelected(id);
-    history.clear();
-    setRibbon([]);
-    setNotice({ kind: "none" });
-    const proposal = cut.status === "recent" ? proposeGrid(project, report.bpm) : proposeGrid(project, null);
+    const proposal = cut.status === "recent" ? proposeTempo(project, report.bpm, takes.length) : proposeTempo(project, null, takes.length);
     setProject(proposal.project);
     engine.saveProject(projectToJson(proposal.project));
-    const reading = report.pulse === "none" || report.bpm === null ? "No pulse reading. Quantise stays off." : report.bpm.toFixed(1) + " bpm · one reading. Quantise stays off.";
-    setMessage(cut.note + " " + proposal.note + " " + reading + " Raw timestamps were not edited.");
+    const reading = report.pulse === "none" || report.bpm === null ? "No pulse reading. Quantise stays off." : report.bpm.toFixed(1) + " bpm · one reading, 4/4. Quantise stays off.";
+    setMessage(cut.note + " " + proposal.note + " " + reading + " The raw interval is pinned in this layer. The ribbon was not cleared.");
     if (project.afterCapture === "silent") {
       return;
     }
-    if (looping) {
-      pending.current = created;
-      setMessage("Captured " + id + ". It joins at the next loop boundary. " + reading);
-      return;
-    }
-    playTake(created, true);
+    playTake(created);
   }
 
   function undoCapture() {
     if (!undo) {
       return;
     }
-    stopLoop();
+    const removed = takes.find((item) => !undo.takes.some((kept) => kept.id === item.id));
+    if (removed) {
+      engine.stopLayer(removed.id);
+      setLoopingIds((current) => current.filter((id) => id !== removed.id));
+    }
     setTakes(undo.takes);
     setProject(undo.project);
     engine.saveProject(projectToJson(undo.project));
     setSelected(undo.takes.length ? undo.takes[undo.takes.length - 1].id : null);
-    history.replace(undo.ribbon);
-    setRibbon(history.snapshot());
-    setNotice(history.ribbonNotice());
     setUndo(null);
-    setMessage("Capture undone. The ribbon has the events again.");
+    setMessage("Capture undone. The pinned layer is gone. The ribbon was left as it is, and other layers keep playing.");
   }
 
   function applyBounds(item: Take, bounds: { start: bigint; end: bigint }, note: string) {
@@ -329,7 +302,7 @@ export default function App() {
     if (looping) {
       stopLoop();
     } else if (take) {
-      playTake(take, true);
+      playTake(take);
     } else {
       setMessage("Nothing to play yet.");
     }
@@ -441,7 +414,7 @@ export default function App() {
                   applyBounds(take, moved.selection, moved.note);
                 }}
               />
-              <Small label={looping ? "Stop loop" : "Hear loop"} onPress={() => (looping ? stopLoop() : playTake(take, true))} />
+              <Small label={looping ? "Stop loop" : "Hear loop"} onPress={() => (looping ? stopLoop() : playTake(take))} />
             </View>
           </View>
         ) : (
@@ -472,7 +445,7 @@ export default function App() {
           <Pressable style={styles.secondary} onPress={undoCapture} disabled={!undo}>
             <Text style={styles.secondaryText}>Undo capture</Text>
           </Pressable>
-          <Pressable style={styles.secondary} onPress={() => (looping ? stopLoop() : take ? playTake(take, true) : setMessage("Nothing to play yet."))}>
+          <Pressable style={styles.secondary} onPress={() => (looping ? stopLoop() : take ? playTake(take) : setMessage("Nothing to play yet."))}>
             <Text style={styles.secondaryText}>{looping ? "Stop" : "Play"}</Text>
           </Pressable>
           <Pressable style={styles.secondary} onPress={() => engine.silence()}>

@@ -9,6 +9,19 @@ export interface PlannedEvent {
   value: number;
 }
 
+/** Next audio-clock start on an existing transport. A null epoch means this layer is the first and starts after `lead` seconds. */
+export function joinAtSeam(now: number, epoch: number | null, period: number | null, lead = 0.05): { start: number; epoch: number } {
+  if (epoch === null || period === null || !(period > 0)) {
+    return { start: now + lead, epoch: now + lead };
+  }
+  const earliest = now + lead;
+  if (earliest <= epoch) {
+    return { start: epoch, epoch };
+  }
+  const steps = Math.ceil((earliest - epoch) / period);
+  return { start: epoch + steps * period, epoch };
+}
+
 export function planFromElapsed(args: {
   audioStartSec: number;
   elapsedUs: bigint;

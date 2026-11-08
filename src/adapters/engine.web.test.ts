@@ -128,6 +128,27 @@ describe("web engine adapter", () => {
     engine.stopReplay();
     vi.useRealTimers();
   });
+
+  it("keeps the first layer when a second layer starts", async () => {
+    vi.useFakeTimers();
+    const context = new FakeContext();
+    context.setState("running");
+    context.currentTime = 10;
+    const engine = createWebEngine({
+      createContext: () => context as unknown as AudioContext,
+      requestMIDIAccess: async () => ({ inputs: new Map(), onstatechange: null }),
+    });
+    engine.loopLayer("piano", [note()], 1, 2);
+    engine.loopLayer("bass", [{ ...note(), note: 64 }], 1, 1);
+    await vi.advanceTimersByTimeAsync(20);
+    const both = JSON.parse(await engine.stats()) as { layers: number };
+    expect(both.layers).toBe(2);
+    engine.stopLayer("bass");
+    const left = JSON.parse(await engine.stats()) as { layers: number };
+    expect(left.layers).toBe(1);
+    engine.stopReplay();
+    vi.useRealTimers();
+  });
 });
 
 describe("dependency-injection mocks, not hardware proof", () => {

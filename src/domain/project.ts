@@ -1,6 +1,8 @@
 export interface Project {
   name: string;
   tempoBpm: number | null;
+  /** A first reading that loops, but is not accepted until a second layer is captured. */
+  proposedTempoBpm: number | null;
   gridLocked: boolean;
   sustainCc: number;
   afterCapture: "loop" | "silent";
@@ -40,6 +42,7 @@ export function createProject(): Project {
   return {
     name: "Sketch",
     tempoBpm: null,
+    proposedTempoBpm: null,
     gridLocked: false,
     sustainCc: 64,
     afterCapture: "loop",
@@ -50,10 +53,33 @@ export function createProject(): Project {
 }
 
 export function gridStatusCopy(project: Project): string {
-  if (!project.gridLocked || project.tempoBpm === null) {
-    return "No grid yet. The first reading can propose one. " + HISTORY_WINDOW_SECONDS + " seconds is the ribbon, not a tempo.";
+  if (project.gridLocked && project.tempoBpm !== null) {
+    return "Sketch tempo " + project.tempoBpm + " is accepted. A later reading does not change it.";
   }
-  return "Sketch tempo " + project.tempoBpm + " is locked. A later reading does not change it.";
+  if (project.proposedTempoBpm !== null) {
+    return "Tempo " + project.proposedTempoBpm + " is proposed, not accepted. A second layer keeps it. " + HISTORY_WINDOW_SECONDS + " seconds is the ribbon, not a tempo.";
+  }
+  return "No grid yet. The first reading can propose one. " + HISTORY_WINDOW_SECONDS + " seconds is the ribbon, not a tempo.";
+}
+
+export function proposeTempo(project: Project, bpm: number | null, layerCount: number): { project: Project; note: string } {
+  if (project.gridLocked && project.tempoBpm !== null) {
+    return { project, note: "Sketch tempo " + project.tempoBpm + " stays accepted." };
+  }
+  if (project.proposedTempoBpm !== null && layerCount >= 1) {
+    return {
+      project: { ...project, tempoBpm: project.proposedTempoBpm, gridLocked: true },
+      note: "Tempo " + project.proposedTempoBpm + " kept. Undo restores the proposal.",
+    };
+  }
+  if (bpm === null || !Number.isFinite(bpm)) {
+    return { project, note: "No pulse reading, so no grid was proposed." };
+  }
+  const rounded = Math.max(40, Math.min(240, Math.round(bpm)));
+  return {
+    project: { ...project, proposedTempoBpm: rounded, tempoBpm: null, gridLocked: false },
+    note: "Tempo " + rounded + " proposed. The loop is starting. A second layer accepts it.",
+  };
 }
 
 export function proposeGrid(project: Project, bpm: number | null): { project: Project; proposed: boolean; note: string } {
@@ -97,6 +123,9 @@ export function projectFromJson(text: string): Project | null {
   }
   if (typeof parsed.gridLocked !== "boolean") {
     parsed.gridLocked = parsed.phrases.length > 0 && typeof parsed.tempoBpm === "number";
+  }
+  if (typeof parsed.proposedTempoBpm !== "number") {
+    parsed.proposedTempoBpm = null;
   }
   if (!parsed.gridLocked) {
     parsed.tempoBpm = null;

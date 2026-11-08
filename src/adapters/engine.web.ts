@@ -1,6 +1,6 @@
 import { WebElectricPiano } from "../audio/web/instrument";
 import { EP_PRESET } from "../audio/web/preset";
-import { liveAudioTime, planFromElapsed, selectDue, type PlannedEvent } from "../audio/web/schedule";
+import { joinAtSeam, liveAudioTime, planFromElapsed, selectDue, type PlannedEvent } from "../audio/web/schedule";
 import type { IncomingEvent } from "../domain/capture";
 import { syncAudioGate } from "../domain/readiness";
 import { bindMidiInputs, enableFromGesture, idleGate, type EnableDeps } from "../midi/web/enable";
@@ -24,6 +24,8 @@ export interface SketchEngine {
   touch(note: number, velocity: number, down: boolean): void;
   setSustain(cc: number): void;
   replay(events: IncomingEvent[], stretch: number): void;
+  loopLayer(id: string, events: IncomingEvent[], stretch: number, durationSec: number): void;
+  stopLayer(id: string): void;
   stopReplay(): void;
   silence(): void;
   stats(): Promise<string>;
@@ -58,6 +60,20 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
   let replayTimer: ReturnType<typeof setInterval> | null = null;
   let replayGeneration = 0;
   let scheduledNotes = 0;
+  let transportEpoch: number | null = null;
+  let transportPeriod: number | null = null;
+  let loopTimer: ReturnType<typeof setInterval> | null = null;
+  interface LoopSlot {
+    id: string;
+    events: IncomingEvent[];
+    stretch: number;
+    generation: number;
+    cycleStart: number;
+    duration: number;
+    planned: PlannedEvent[];
+    index: number;
+  }
+  let slots: LoopSlot[] = [];
   let sustainCc = 64;
   piano.setSustainController(sustainCc);
 
@@ -137,6 +153,111 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
 
   context.addEventListener("statechange", publishAudio);
 
+  function layerSource(id: string): `replay:${string}` {
+    return `replay:${id}`;
+  }
+
+  function planSlot(slot: LoopSlot, audioStart: number): PlannedEvent[] {
+    const anchor = slot.events[0].scheduleElapsed;
+    return slot.events.map((event) => ({
+      audioTimeSec: planFromElapsed({
+        audioStartSec: audioStart,
+        elapsedUs: event.scheduleElapsed,
+        anchorElapsedUs: anchor,
+        stretch: slot.stretch,
+      }),
+      elapsedUs: event.scheduleElapsed,
+      kind: event.kind,
+      channel: event.channel,
+      note: event.note,
+      velocity: event.velocity,
+      controller: event.controller,
+      value: event.value,
+    }));
+  }
+
+  function clearTransportIfIdle() {
+    if (slots.length > 0) {
+      return;
+    }
+    transportEpoch = null;
+    transportPeriod = null;
+    if (loopTimer) {
+      clearInterval(loopTimer);
+      loopTimer = null;
+    }
+  }
+
+  function pumpLayers() {
+    if (context.state !== "running") {
+      return;
+    }
+    const now = context.currentTime;
+    for (const slot of slots) {
+      if (slot.index >= slot.planned.length && now + 0.02 >= slot.cycleStart + slot.duration) {
+        piano.releaseSource(layerSource(slot.id), now);
+        slot.cycleStart += slot.duration;
+        slot.planned = planSlot(slot, slot.cycleStart);
+        slot.index = 0;
+      }
+      const selected = selectDue({
+        planned: slot.planned,
+        nextIndex: slot.index,
+        audioNowSec: now,
+        lookaheadSec: 0.025,
+        lateToleranceSec: 0.04,
+      });
+      slot.index = selected.index;
+      for (const event of selected.due) {
+        piano.play(event.audioTimeSec, { ...event, source: layerSource(slot.id) });
+        scheduledNotes += 1;
+      }
+    }
+  }
+
+  function ensureLoopPump() {
+    if (loopTimer) {
+      return;
+    }
+    loopTimer = setInterval(pumpLayers, 10);
+    pumpLayers();
+  }
+
+  function stopLayer(id: string) {
+    if (!slots.some((slot) => slot.id === id)) {
+      return;
+    }
+    piano.releaseSource(layerSource(id), context.currentTime);
+    slots = slots.filter((slot) => slot.id !== id);
+    clearTransportIfIdle();
+  }
+
+  function loopLayer(id: string, events: IncomingEvent[], stretch: number, durationSec: number) {
+    stopLayer(id);
+    if (context.state !== "running" || events.length === 0) {
+      return;
+    }
+    const duration = Math.max(0.4, durationSec);
+    const joined = joinAtSeam(context.currentTime, transportEpoch, transportPeriod);
+    if (transportEpoch === null) {
+      transportEpoch = joined.epoch;
+      transportPeriod = duration;
+    }
+    const slot: LoopSlot = {
+      id,
+      events,
+      stretch,
+      generation: 1,
+      cycleStart: joined.start,
+      duration,
+      planned: [],
+      index: 0,
+    };
+    slot.planned = planSlot(slot, slot.cycleStart);
+    slots.push(slot);
+    ensureLoopPump();
+  }
+
   function stopReplay() {
     replayGeneration += 1;
     if (replayTimer) {
@@ -144,6 +265,11 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
       replayTimer = null;
     }
     piano.releaseSource("replay", context.currentTime);
+    for (const slot of slots) {
+      piano.releaseSource(layerSource(slot.id), context.currentTime);
+    }
+    slots = [];
+    clearTransportIfIdle();
     scheduledNotes = 0;
   }
 
@@ -217,6 +343,8 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
       sustainCc = cc;
       piano.setSustainController(cc);
     },
+    loopLayer,
+    stopLayer,
     replay(events, stretch) {
       stopReplay();
       scheduledNotes = 0;
@@ -281,6 +409,7 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
         ready: gate.ready,
         ports: bound.length,
         scheduled: scheduledNotes,
+        layers: slots.length,
       });
     },
     async loadProject() {

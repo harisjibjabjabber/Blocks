@@ -1,6 +1,6 @@
 import { EP_PRESET } from "./preset";
 
-export type VoiceSource = "touch" | "midi" | "replay";
+export type VoiceSource = "touch" | "midi" | "replay" | `replay:${string}`;
 
 interface Voice {
   osc: OscillatorNode[];
