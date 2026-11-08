@@ -1,4 +1,4 @@
-# Blocks — gestures, input ownership and equivalents (PROPOSED, rev 2)
+# Blocks — gestures, input ownership and equivalents (PROPOSED, rev 2; §9 rev 3.2; §10 rev 3.3)
 **All thresholds and sizes below are proposals pending measurement on device.** Rev 2 applies the lead decisions (see `CHANGELOG.md`).
 
 ## 1. Ownership rules (conflict-free by construction)
@@ -116,3 +116,27 @@ Note/event IDs are stable across derived edits and re-inference (A12), so a sele
 | Tap | Undo toast (shown ≥ 6 s, provisional) / ↶ | Undo last range / slide / label change | — | — |
 
 Keyboard and screen-reader equivalents: see `spec.md` §0b.7. While a handle is held, chord labels fade out so the notes under the finger stay readable. Handles win over pan by construction: hit-testing checks handle zones first.
+
+
+## 10. Full-screen editor ownership (rev 3.3, PROPOSED)
+Supersedes §1–2 inside the full-screen editor where they differ (tools are now **Draw / Select / Erase**). **Every number here is provisional until device testing** (spec OQ-3).
+
+| Input | Where | Draw | Select | Erase | Notes |
+|---|---|---|---|---|---|
+| 1-finger tap | Empty grid | Add note (last length, snapped) | Deselect all | — | One finger always acts per tool; never pans |
+| 1-finger tap | Note | Select it (never deletes) | Select only it | Erase it | Audition if Hear edits ♪ on |
+| 1-finger drag | Empty grid | Add note, drag sets length | **Marquee** select | Swipe-erase notes crossed | |
+| 1-finger drag | Selected note body | Move | **Move pitch + time** (snap 1/16, offset kept) | Erase | Loupe + readout above finger |
+| 1-finger drag | End handle of selected note (48 dp hit, provisional) | Resize | **Resize** (start fixed) | — | Readout "1 → 1½ beats" |
+| Long-press / add-quasimode tap | Note | Toggle in selection | Toggle in selection | — | |
+| Double-tap | Note | Select chord | Select chord (same start ±1/32) | — | |
+| Tap | Key column | Select all notes of that pitch | same | — | |
+| 1-finger drag | Velocity group bar (24) | — | Scale selected velocities proportionally | — | Numeric readout updates live |
+| 1-finger drag | Ruler | Pan time | Pan time; Shift-drag (desktop) = time range | Pan time | **Loop bracket is read-only (🔒)** |
+| 2-finger drag / pinch | Anywhere in the editor | Pan / zoom | Pan / zoom | Pan / zoom | **Always navigation** |
+| 2nd finger during a 1-finger edit | Grid | Cancel + revert | Cancel + revert | Cancel + revert stroke | Hint "Second finger cancels and reverts" |
+| Tap | Tool button | Switch tool | | | Active tool filled + ✓ (non-colour) |
+| Tap | ↶ / ↷ | Undo / redo one labelled step | | | Shared sketch history (A10) |
+| Tap | ‹ Play / system Back | Return to Play; loop never stops | | | Session Undo toast on Play |
+
+Mouse (desktop): drag empty = marquee, Shift-click = add, double-click = chord, Alt-drag = no snap, wheel = scroll, Ctrl/Cmd-wheel = zoom. Keyboard: `D` `S` `E` tools; ↑↓ pitch (Shift octave); ←→ grid step (Alt no snap); Shift ←→ length; Ctrl/Cmd `A` `C` `V` `D`; Delete; `Q` quantise preview; `V` then ↑↓ velocity ±5; Ctrl/Cmd `Z` / Shift `Z`; Space play/stop; Esc back to Play.

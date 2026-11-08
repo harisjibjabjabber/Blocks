@@ -118,6 +118,26 @@ Each criterion is phrased so that QA can verify it on a device/browser without r
 | AC-SET-02 | Switching System/Light/Dark re-themes instantly and never interrupts audio, playback, the loop phase or MIDI input (no glitch in a loopback recording across 20 switches). | M/A |
 | AC-SET-03 | The appearance choice persists across relaunch on that device. Settings is reached from the Blocks ⌄ menu and never appears on the play surface. | A/L |
 
+## Rev 3.3 additions — full-screen editor (PROPOSED; nothing implemented)
+Numbers are provisional until device testing (spec OQ-3). Check codes as above (L layout review, A automated, M measured, U usability, SR screen reader, K keyboard).
+| ID | Criterion | Check |
+|---|---|---|
+| AC-ED-01 | Tapping a layer's mini-roll on Play opens the full-screen editor for that layer in one touch; the loop never stops, and on return (‹ Play / Back) the playhead position, loop range and phase are unchanged (compare transport position before/after; no audible gap in a loopback recording). | A/M |
+| AC-ED-02 | The editor shows pitch keys with C labels, a bar/beat ruler, the layer's number + glyph + name, and other layers as ghosts or edge chips; switching layer is one tap. Identity never depends on colour alone. | L |
+| AC-ED-03 | Exactly one of Draw / Select / Erase is active and shown filled with ✓; the hint line names the tool's one-finger action. | L |
+| AC-ED-04 | One finger always performs the current tool's action on the grid and never pans; two fingers always pan/zoom in every tool; a second finger during a one-finger edit cancels and reverts it. | A/M |
+| AC-ED-05 | In Select: tap selects, add-quasimode/long-press adds, double-tap selects the chord, drag on empty grid draws a marquee, drag a selected body moves pitch and time with snapping (Alt = none), drag the end handle resizes. | A/U |
+| AC-ED-06 | Selected notes are distinguishable without colour (gap + ring, handle, pitch label, count in the context bar); verified in greyscale in both themes. | L |
+| AC-ED-07 | During move/resize/draw a loupe with a text readout (interval and position, or length) stays visible above the finger and is clamped inside the screen. | L/M |
+| AC-ED-08 | Velocity: the lane highlights the selection; the panel shows per-note numbers and an average, and dragging the group bar scales all selected velocities proportionally (clamped 1–127); Done is one undo step. | A |
+| AC-ED-09 | Quantise never runs automatically. The preview names its scope (selected count or whole layer) and the Apply button repeats the count; Grid/Strength/Swing update the preview live; originals show as dashed ghosts; Cancel leaves every event byte-identical; Apply is one undo step and the raw take is preserved. | A |
+| AC-ED-10 | Duplicate, Copy, Paste at playhead, Select all and Delete are reachable from ⋯ (and Ctrl/Cmd shortcuts on desktop); the toolbar keeps three tools. | L/K |
+| AC-ED-11 | No editor gesture changes loop start, length or phase; the loop is shown read-only (🔒) with a pointer to Play. | A/L |
+| AC-ED-12 | ↶ ↷ are always visible at ≥ 48 dp (provisional) and every gesture/action is one labelled step; returning to Play offers a session Undo. | A/L |
+| AC-ED-13 | Desktop: D/S/E, arrows (+Shift octave/length, +Alt no snap), Ctrl/Cmd Z/⇧Z/A/C/V/D, Delete, Q, V, Space, Esc all work; mouse marquee, Shift-click, double-click chord, Ctrl/Cmd-wheel zoom. Fold expanded shows the side pane without losing the toolbar. | K/L |
+| AC-ED-14 | Text in the editor meets WCAG AA (4.5:1) and non-text cues (ring, handle, playhead, ghost/preview outlines) meet 3:1 in both hybrid themes (`hifi/contrast-rev33.tsv`). Screen reader: notes announce pitch, position, length, velocity and selection; tools are a radio group. | A/SR |
+| AC-ED-15 | The play screen gains no Quantise button (spec §0c.10); quantise is reachable from the editor in two taps from Play. | L |
+
 ## Stage P1
 | ID | Criterion |
 |---|---|

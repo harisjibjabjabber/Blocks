@@ -8,7 +8,7 @@ Base path: `/Blocks/`
 
 Live script: `/Blocks/assets/index-CsEdtvjV.js`
 
-The design proposal on this branch is rev 3.2.1. It is still proposed mock data. It is not the live site, and it is not approval to implement the UI.
+The design proposal on this branch is rev 3.3. It is proposed example data. It is not implemented UI, not the live site, and not approval to build the production screen. A thumbs-up on the delivery acknowledges the prototype caveats. Capture research is separate: its current baseline remains `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`, and last-chord Capture is still unresolved. Neither is shipped.
 
 ## Last-chord Capture is not fixed
 
@@ -48,7 +48,7 @@ The journey people are aiming at is: improvise, capture a phrase into a synced l
 
 Not in the app binary. Not user-tested.
 
-- UI rev 3.2.1 hybrid, dark and light, including settings and the range frames: `docs/design/hifi/hybrid/`. This delta wins where it overlaps the earlier hybrid files. Mock data. See `docs/design/hifi/hybrid/CURRENT-PROPOSAL.md`. Original storyboard PNGs (`docs/design/hifi/storyboard/`) and the A/B comparison (`docs/design/hifi/directions/`) are history. Rev 3.2.1 is not docs-only: frame 14, the range overviews, `rangeview.py`, and the prototype changed. That is not approval to implement the UI. No new full-editor frames are in the delta. The upcoming editor storyboard is separate and not included.
+- UI rev 3.3 hybrid, dark and light: `docs/design/hifi/hybrid/`. Rev 3.3 wins where it overlaps rev 3.2.1. Frames 17–27 are the new editor storyboard in both themes. Only frame 18 has Fold and desktop adaptations. Fold sizes are provisional. Mock data. See `docs/design/hifi/hybrid/CURRENT-PROPOSAL.md`. Original storyboard PNGs and the A/B comparison remain history. The user asked for draw, move, resize, erase, velocity, and maybe Quantise on the main screen. The designer recommends Quantise only inside the editor. Haris has not agreed to remove a main-screen shortcut. That choice is open. Undo is pictured and the prototype has none. Pinch is not simulated. This is not approval to build the production screen.
 - A piano roll corrects a miss. It does not replace one-action phrase capture. No production UI until Haris reviews the storyboard. Tests, audio, and Capture behaviour can continue. Layout work waits.
 - Capture research in `docs/research/capture/`: phrase selection, a proposed grid or an honest abstain, layered loops, reversible corrections. Decisions D1–D9 are in `capture-spec.md` §0. Numeric gaps, including 1.5 s, are unvalidated starting values. The current research baseline is `3412f61`. The evening handoff's comparisons to `fdba348` and `497894e` are historical. Ableton material in `source-audit-2026-11-08.md` and `source-ledger.md` is public behaviour, not Ableton's private algorithm. Zya figures 14–16 are UI, not MIDI. The earlier MIT repository quantised and bar-aligned. The 2024 paper was reviewed as an abstract only. Those licence caveats stay. Validation V01–V13 was frozen independent of predictor tuning, by the same designer. V10's title says the pedal runs through the noodle, but CC64 starts at the progression; that frozen file stays unchanged. D01 is an unscored diagnostic.
 - Sounds that are not Warm EP. See `docs/research/sound/README.md`. Procedural bass `blocks.bass.pluck.v1` and pad `blocks.pad.soft.v1` have no code. Drums `blocks.drums.electro.v1` and optional piano `blocks.piano.kw-small.v1` are candidates with licence evidence and no samples in this repo.
@@ -133,7 +133,7 @@ node --experimental-strip-types repro-four-chords.mjs
 - Browser-first. Keep the Android code. Do not spend routine iteration on APK size or emulator installs. Do not commit APKs.
 - This repository is public. Do not change its visibility. Publish Pages from the `/Blocks/` base. A docs commit must not ship a UI change.
 - No automatic quantise. Raw history is kept. The first grid is proposed. A later layer accepts it, with undo. Ableton is a behaviour reference only.
-- No production UI until Haris reviews the storyboard. The current storyboard to review is the rev 3.2.1 hybrid, dark and light, including range and settings. A piano roll corrects a miss and does not replace one-action phrase capture. The changelog line that says rev 3.2.1 changed no PNG, HTML frame, or prototype is wrong. The correction is in `docs/handover/import-record.md`.
+- No production UI until Haris reviews the storyboard. The storyboard to review is rev 3.3, including frames 17–27. A piano roll corrects a miss and does not replace one-action phrase capture. The rev 3.2.1 changelog line that said nothing visual changed is still wrong for that older revision. The correction is in `docs/handover/import-record.md`.
 - Preserve input timestamps. Do not rewrite them to a heard time. There is no measured latency compensation.
 - CC 64 is sustain, never the Capture button.
 - Inference may return no reading or one reading. Do not invent a confidence score for the screen. Research decision D2 allows real alternatives and abstention reasons, and forbids displaying invented confidence percentages. That research contract is not what the current screen does.
@@ -182,7 +182,7 @@ JDK 17 or 21, Android SDK platform 36 or 37, build-tools 37.0.0, NDK `27.1.12297
 | Path | What it is |
 |---|---|
 | `docs/design/` | Proposed UI package, rev 3.2. Spec, gestures, tokens, wireframes, prototype. |
-| `docs/design/hifi/hybrid/` | Current proposal, rev 3.2.1, dark and light, including range and settings. Mock data. Wins over the earlier hybrid files. |
+| `docs/design/hifi/hybrid/` | Current proposal, rev 3.3, dark and light, including editor frames 17–27. Mock data. Wins over rev 3.2.1 where they overlap. |
 | `docs/design/hifi/storyboard/` and `docs/design/hifi/directions/` | History. Not the current decision. |
 | `docs/design/hifi/prototype/index.html` | Clickable simulation of the hybrid. Not working MIDI or audio. |
 | `docs/research/capture/` | Capture research, synthetic fixtures, saved harness output. "Today" in those files means `534279f` unless a line says otherwise. |
@@ -213,7 +213,7 @@ One meter, 4/4, in the current screen. One undo. Stay silent persists in the pro
 1. Keep last-chord Capture open. Do not describe `fdba348`, `497894e`, or `3412f61` as the fix. The live script is `/Blocks/assets/index-CsEdtvjV.js`. The 12-note synthetic traces are not his playing.
 2. `3412f61` is Capture work on `main` and is not in this branch. Read it there. It groups notes that are still sounding, or still held by the pedal, as one chord, without widening the 40 ms cluster or the 1.5 s rest. On the synthetic tight-chord trace and the synthetic 60–120 ms roll, the stored range now has all 12 chord notes. A real pause still splits.
 3. Do not ask Haris to retest until that kind of trace fails the way he heard it. The 58 synthetic checks are not that test.
-4. Leave production UI until he reviews `docs/design/hifi/hybrid/` (rev 3.2.1, dark and light, range and settings). The roll corrects a miss. It does not replace one-action capture. Importing the changed frame 14 pictures is not permission to build them.
+4. Leave production UI until he reviews `docs/design/hifi/hybrid/` rev 3.3, including editor frames 17–27. The roll corrects a miss. It does not replace one-action capture. A thumbs-up on the prototype is not permission to build the screen. Whether Quantise stays on the main screen is still open.
 5. Stay on the web app for routine iteration. Android code stays. Do not commit an APK, and do not treat the old standalone build as installed or launched.
 6. If you run a research script, say which predictor and which fixture set. Do not rerun them and then call the saved files new. Git extracts for the harness are `fdba348124d4cefe6fbeba2a7c187e47de705528`, `497894e170ac150f06e5a8bea34d0d4e7f34e2fd`, and the current research baseline `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`. Those copies were not in the research archive. The first two comparisons are historical. None of those scripts were rerun here.
 7. Do not download sample audio into this repo. A later sound import has to name the exact files, hashes, and licence texts, and it is still not an integrated preset.

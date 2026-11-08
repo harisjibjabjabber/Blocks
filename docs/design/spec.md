@@ -1,5 +1,5 @@
 # Blocks — UI/UX & Interaction Design Spec
-**Status: PROPOSED (rev 3.2.1, 8 Nov 2026 — see `CHANGELOG.md` and `LIMITATIONS.md`).** Nothing here is implemented or user-tested. **All numeric limits, timings and UI dimensions (dp, ms, s, counts) are proposals pending measurement on device.** Sound names such as "Warm EP" are placeholders until the sound set is chosen. Platforms: Android phone, Samsung Galaxy Z Fold (folded and open), desktop and Android web browsers (Web MIDI + Web Audio). Companion files: `CHANGELOG.md`, `research.md` (sourced findings), `sources.md`, `gestures.md`, `state-machines.md`, `acceptance-criteria.md`, `components.md`, `qa-review.md`, `usability-test-script.md`, `tokens.json`, `wireframes/*.svg`.
+**Status: PROPOSED (rev 3.3, 8 Nov 2026 — see `CHANGELOG.md` and `LIMITATIONS.md`).** Nothing here is implemented or user-tested. **All numeric limits, timings and UI dimensions (dp, ms, s, counts) are proposals pending measurement on device.** Sound names such as "Warm EP" are placeholders until the sound set is chosen. Platforms: Android phone, Samsung Galaxy Z Fold (folded and open), desktop and Android web browsers (Web MIDI + Web Audio). Companion files: `CHANGELOG.md`, `research.md` (sourced findings), `sources.md`, `gestures.md`, `state-machines.md`, `acceptance-criteria.md`, `components.md`, `qa-review.md`, `usability-test-script.md`, `tokens.json`, `wireframes/*.svg`.
 
 **Design principle:** more time playing, less time touching the screen. The success metric is touches between "I played something good" and "it's looping in a layer". The target is ≤ 1 touch, or 0 when Capture is mapped to a spare CC/button/pad (optional; no spare pedal is required).
 
@@ -58,6 +58,53 @@ Each handle is a slider ("Loop start, bar 1 beat 1, 4 bars selected"). Screen-re
 
 ### 0b.8 Settings → Appearance (frame 08)
 Reached from the **Blocks ⌄** wordmark menu at the top-left of Play (on desktop the same menu in the top bar); never on the play surface. **Appearance: System (default) · Light · Dark**, with a small dark/light preview strip and the note "Switching applies instantly. Audio, playback and MIDI input keep running. The choice is saved on this device." The bottom bar shows the sketch still looping. A "More (proposed)" list holds MIDI devices and Capture (history target, snapping, labels).
+
+## 0c. Rev 3.3 — Full-screen piano-roll editor (Haris via lead) — PROPOSED
+Storyboarded **before implementation**. Nothing here is implemented, user-tested, or claimed to work in the current build; the editor edits a captured layer, and engine capture itself is not claimed to work today. All notes, velocities and counts in the frames are design/example data. **Every numeric value in this section (48 dp targets, loupe size and offset, slop, pinch limits, toast duration) is provisional until device testing** (OQ-3). Frames: `hifi/hybrid/{dark,light}/17-…27-editor-*.png`, `fold-18-editor.png`, `desktop-18-editor.png`; overview `editor-overview.png`; 2× screens `src/*@2x.png`; editable `src/*.html`; generator `hifi/src/editor.py`. Where this section differs from §3.11 (rev 2 piano roll), **this section wins**: tools are now Draw / Select / Erase (Select absorbs rev 2 "Edit" and "Range"), and loop boundaries are read-only inside the editor.
+
+### 0c.1 Entry and return (17, 27)
+- **Enter:** tap a layer's mini-roll on its Play card (17). One touch. The play screen gains **no new button**; long-press a note on the take history (§0b.6) also opens the editor at that time.
+- The loop **keeps playing** throughout; the playhead, loop range and phase are preserved. The info bar says so ("▶ looping · 2.3 / 4").
+- **Return:** ‹ Play (top-left, 48 dp) or system Back (27). Play shows the same sketch at the same playhead; a toast summarises the session ("Piano: 4 edits · loop kept playing") with Undo for the whole session.
+
+### 0c.2 Legibility (18)
+- Pitch key column (34 dp) with C labels; bar/beat ruler; grid shaded per beat, bar lines stronger.
+- **Layer identity:** layer strip with number + glyph + name (◆ 1 Piano, ▬ 2 Bass, ● 3 Drums), the editing layer outlined and named in the title ("Edit · Piano · Layer 1 · Warm EP"). Glyph + text carry identity; colour is secondary.
+- **Other layers stay visible:** "◐ Others shown" draws other layers as ghosts behind the grid (dimmed; off-screen ones as an edge chip, e.g. "▾ Bass · 8 notes below · ghost"). Switching layer is one tap on the strip.
+- **Selection without colour:** selected notes get a 2 dp gap + 1.5 dp ring, an end handle, and a pitch label inside the note; the context bar states the count ("3 selected · 92 avg").
+
+### 0c.3 Tools and gesture ownership (18–23)
+The toolbar has three explicit tools — **Draw · Select · Erase** — plus Capture. The active tool is filled and carries a ✓ (non-colour). Rules (full table: `gestures.md` §10):
+- **One finger always acts per the tool.** It never pans the grid.
+- **Two fingers always navigate:** drag = pan, pinch = zoom (time or pitch by angle, as §3.11). A second finger arriving mid-edit **cancels and reverts** that edit (20).
+- **Select:** tap a note = select it; tap another with the add-quasimode or long-press = add; double-tap = chord (same start ±1/32); **drag on empty grid = marquee** (20); drag a selected note's body = move in pitch and time (19); drag the end handle = resize (21). Shift-drag on the ruler = time range select.
+- **Draw:** tap empty = add one note (last length, snapped); drag sets length (22). Draw never deletes; tapping a note selects it.
+- **Erase:** tap or swipe across notes to erase (23). Erase stays on until another tool is chosen; each stroke is one undo step (toast "3 notes erased · Erase stays on · ↶ Undo").
+- **Finger obscuration:** a loupe (≈196 × 96 dp, provisional) appears above the finger during move/resize/draw with a zoomed view and a text readout ("+2 semitones · +⅛ beat · F4→G4 · A4→B4 · snaps 1/16"); flipped/clamped near edges.
+
+### 0c.4 Velocity (24)
+- A velocity lane is always under the grid; bars for the selected notes are outlined and taller-contrast. "Velocity" in the context bar expands it into a panel **tied to the current selection**: bars, numeric readout per note (shown once per stacked chord), an average readout ("avg 78 → 66 · ×0.85"), a group bar to **drag-to-scale** the whole selection proportionally, −/+ steps, "Set all…" and Done. Previous values show as dashed ticks until Done.
+
+### 0c.5 Quantise preview (25) — never automatic
+- Opened from Quantise… in the context bar. **Scope is explicit**: "Selected · 6 notes" or "Whole layer · 20" (default = the selection if one exists; the Apply button names the count).
+- Grid (1/4, 1/8, 1/16, 1/8T), **Strength** (default 50 %), **Swing** (default 0 %). Swing is included because the target user plays groove/jazz material where straight quantise flattens the feel; at 0 % it changes nothing and can be cut for P0 if testing shows it confuses.
+- **Preview before apply:** the notes move live in the grid; the **as-played originals stay visible as dashed ghosts** and are kept (raw take preserved, A-decisions). Cancel restores; Apply is one undo step. Nothing is ever quantised automatically, on capture or on entry.
+
+### 0c.6 Secondary actions (26)
+"⋯" in the context bar: Duplicate after · Copy · Paste at playhead · Select all in layer · Delete. The toolbar stays at three tools. Desktop: Ctrl/Cmd + D / C / V / A, Delete.
+
+### 0c.7 Loop boundary and phase stay separate
+The editor shows the loop on the ruler as a **read-only** bracket with 🔒 and an info-bar chip "🔒 Loop · on Play". Boundaries and Slide/phase (rev 3.2 operations (a) and (c)) are changed only on Play. No editor gesture changes loop start, length or phase; note edits (operation (b)) never move the loop.
+
+### 0c.8 Undo / Redo
+↶ ↷ are always visible in the top bar (48 dp). Every gesture or applied action is one labelled step on the sketch's single history (A10). Leaving the editor offers a session-level Undo toast on Play.
+
+### 0c.9 Fold expanded and desktop
+- **Fold expanded** (≈840 × 1000 dp, assumed): editor on the left; right pane holds Selection actions, the Quantise card (scope, grid, preview/apply) and Layers (mute/solo). Same tools and ownership.
+- **Desktop browser** (1440 × 900): layer rail and tools on the left (D / S / E), 4-bar grid, velocity lane, Quantise inspector and a keyboard map on the right. Mouse: drag empty = marquee, Shift-click add, double-click = chord, wheel = scroll, Ctrl/Cmd-wheel = zoom, Alt-drag = no snap; a cursor tooltip reads out pitch/position/velocity. Keys: ↑↓ pitch (Shift = octave), ←→ grid step, Alt = no snap, ⇧←→ length, ⌘/Ctrl Z / ⇧Z, Q quantise preview, V then ↑↓ velocity, Space play/stop, Esc back to Play.
+
+### 0c.10 Quick Quantise on the play screen — evaluated, **recommended against**
+Considered: a one-tap "Quantise" on Play. Recommendation: **do not add it** (revisit only if usability testing shows people look for it). Reasons: (1) scope is ambiguous on a multi-layer screen (which layer? which notes?), and a one-tap action could not name it; (2) quantise needs strength and a preview to be safe — a blind one-tap version invites destroying feel; (3) it adds a control to the screen we deliberately keep simple, and tempts "fixing" mid-performance; (4) capture review already offers grid correction at capture time (§3.7), and the editor's Quantise is two taps away (tap the layer → Quantise…) with explicit scope, preview and Undo. If it were ever added, it would have to name its scope ("Quantise Piano · 20 notes") and offer Undo in a toast.
 
 ## 0. Visual north star — sexy, sleek (owner direction, Haris)
 Blocks should feel like a **premium, dark-first instrument**, not an app full of grey boxes. **Sexy never overrides usability or accessibility:** 48dp targets, WCAG contrast, non-colour cues and reduced-motion support always win over looks.

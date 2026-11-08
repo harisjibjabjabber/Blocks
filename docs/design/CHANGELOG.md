@@ -1,5 +1,16 @@
 # Blocks design package — changelog
 
+## Rev 3.3 — 8 Nov 2026 (full-screen piano-roll editor, storyboarded before implementation; Haris via lead)
+Still PROPOSED. Nothing implemented or tested; no claim that engine capture or editing works today. All notes and counts are example data; all numbers provisional.
+- **New frames 17–27** (hybrid dark + light; boards `*.png`, 2x screens `src/*@2x.png`, editable `src/*.html`): 17 entry from Play (tap a layer's notes; loop keeps playing), 18 legible editor (keys, ruler, layer strip, other layers as ghosts, Select), 19 move pitch + time with loupe readout, 20 marquee and two-finger ownership, 21 resize with end handle, 22 Draw, 23 Erase with Undo, 24 velocity panel tied to the selection (bars, numbers, drag-to-scale), 25 quantise preview (explicit scope, grid, strength, swing; originals as dashed ghosts; never automatic), 26 ⋯ Duplicate/Copy/Paste/Select all/Delete, 27 return to Play with playhead and loop preserved. Plus `fold-18-editor` and `desktop-18-editor` (keyboard + mouse) and `editor-overview.png`.
+- **Quick Quantise on the play screen: evaluated and recommended against** (spec §0c.10, AC-ED-15).
+- Loop boundary and phase are read-only in the editor (🔒), kept separate from note edits.
+- Tools renamed for the full-screen editor: Draw / Select / Erase (spec §0c supersedes §3.11 where they differ).
+- Generator `hifi/src/editor.py`, wired into `hybrid.py` (frames, Fold/desktop alts, editor overview, prototype roles and interaction geometry); `build.py` prototype gains an editor simulation (select/move, draw, erase, velocity scaling, quantise strength preview).
+- Docs: spec §0c, `gestures.md` §10 ownership table, `state-machines.md` editor diagram, `acceptance-criteria.md` AC-ED-01–15, `LIMITATIONS.md` item 13, `hifi/README.md`, `README.md` (index, rebuild, prototype, evidence), `tokens.json` (`hifiDirections.hybrid.rev33`, provisional).
+- Contrast: `hifi/contrast-rev33.tsv` (`hifi/src/contrast_rev33.py`), 0 fails in both themes. Checks: `checks/run_checks.sh` §3b–3d plus editor interactions in `checks/prototype-test.js`.
+- Page: new "Full-screen editor (rev 3.3)" section, status and changelog; `page/` export refreshed.
+
 ## Rev 3.2.1 — 8 Nov 2026 (doc-only; no visual changes)
 - **Repeating pickup** is now labelled explicit PROPOSED behaviour, not an engine contract. "First pass only" is recorded as an unresolved audition/test question: spec §0b.4 and new §0b.9 (OQ-1), `qa-review.md` item 18, `usability-test-script.md` task R4 and a post-task question, AC-RNG-09, `state-machines.md`, `tokens.json`. No control added.
 - **Provisional gesture numbers:** every numeric gesture value (48 dp zones, 72 dp magnifier offset, 40 dp slide-up override, 32 dp edge zone, ≥ 6 s Undo toast, zoom limits, 15 px label cap) is marked provisional until device testing in `spec.md` §0b, `gestures.md` §9, `tokens.json` (`hifiDirections.hybrid.rev32`) and AC-RNG-10; tracked as OQ-3; `qa-review.md` item 19.

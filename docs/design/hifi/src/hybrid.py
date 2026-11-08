@@ -2,7 +2,7 @@
 (serif headings, italic chord names, stave hairlines inside layer cards, serif capture-proposal headlines). Dark + light. PROPOSED."""
 import os,sys,json
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
-import frames, rangeview
+import frames, rangeview, editor
 from large import *
 from build import STEPS,ALT,standalone,present,font_css,D,TAGLINE
 from render import shot
@@ -17,9 +17,13 @@ def frames_for(t):
         s=FR[n](); out[n]=(s['html'] if 'html' in s else phone(s,t),390,844)
     for n,ff in RALTS['11-range-drag-start']:
         s=FR[n](); out[n]=(s['html'],s['W'],s['H'])
+    for n,*_ in editor.ESTEPS:
+        s=FR[n](); out[n]=(s['html'],390,844)
+    for n,ff in editor.EALT['18-editor-select']:
+        s=FR[n](); out[n]=(s['html'],s['W'],s['H'])
     return out
-RALTS={'11-range-drag-start':[('fold-11-range-drag','Fold expanded'),('desktop-11-range-drag','Desktop browser')]}
-ALLSTEPS=STEPS+[rangeview.SET]+rangeview.RSTEPS
+RALTS={'11-range-drag-start':[('fold-11-range-drag','Fold expanded'),('desktop-11-range-drag','Desktop browser')],**editor.EALT}
+ALLSTEPS=STEPS+[rangeview.SET]+rangeview.RSTEPS+editor.ESTEPS
 ROLES={**{n:{'menu':'08-settings-appearance'} for n,*_ in STEPS},
   '08-settings-appearance':{'done':'01-free-play','ap-system':'tone:system','ap-light':'tone:light','ap-dark':'tone:dark'},
   '09-range-auto-success':{'menu':'08-settings-appearance'},
@@ -28,6 +32,30 @@ ROLES={**{n:{'menu':'08-settings-appearance'} for n,*_ in STEPS},
   '13a-range-boundaries':{'mslide':'13b-range-slide-phase'},'13b-range-slide-phase':{'mbound':'13a-range-boundaries'},
   '15-range-free-time':{'live':'09-range-auto-success'},'16-range-zoom-snap':{'live':'09-range-auto-success'}}
 GEOMS={n:rangeview.geom(n) for n,*_ in rangeview.RSTEPS if rangeview.geom(n)}
+GEOMS.update({n:editor.egeom(n) for n,*_ in editor.ESTEPS if editor.egeom(n)})
+for k,v in editor.EROLES.items(): ROLES.setdefault(k,{}).update(v)
+def editor_overview(t,fr,path,png):
+    T=T_(t); sc=0.5; cw=int(390*sc); seq=editor.ESTEPS; per=6; ph=int(844*sc)
+    W=60*2+per*cw+(per-1)*28; rows=2; H=170+rows*(ph+230)+490
+    dk=T['dark']; bez='#22262D' if dk else '#1E1C17'; cells=''
+    for i,(n,title,body,touch) in enumerate(seq):
+        r,c=divmod(i,per); x=60+c*(cw+28); y=170+r*(ph+230)
+        cells+=f'''<div class="ab" style="left:{x}px;top:{y}px;width:{cw}px"><div style="width:{cw}px;height:{ph}px;border-radius:24px;overflow:hidden;box-shadow:0 0 0 3px {bez}"><div style="transform:scale({sc});transform-origin:0 0">{fr[n][0]}</div></div>
+<div class="mono acc" style="font-size:11px;margin-top:12px">{n[:2]} · est. {E(touch)}</div><div class="disp" style="font-size:19px;margin-top:3px;line-height:1.1">{E(title)}</div><div class="mute" style="font-size:11px;line-height:1.4;margin-top:5px">{E(body)}</div></div>'''
+    # last cell of row 2: quick-quantise recommendation
+    x=60+5*(cw+28); y=170+(ph+230)
+    cells+=f'''<div class="ab" style="left:{x}px;top:{y}px;width:{cw}px;height:{ph}px;border-radius:24px;border:1.5px dashed {T['line']};padding:16px;font-size:11.5px;line-height:1.5"><div class="lbl">Evaluated</div><div class="disp" style="font-size:22px;line-height:1.1;margin-top:6px">Quick Quantise on Play: not recommended</div>
+<div class="mute" style="margin-top:8px">Scope is ambiguous on a multi-layer screen, strength needs a preview, it adds a control to the screen we keep simple, and it invites “fixing” takes mid-performance. Quantise stays two taps away: tap a layer → Quantise…, with preview, explicit scope and Undo. Revisit only if testing shows people hunt for it.</div></div>'''
+    by=170+rows*(ph+230)+10; fs=.42; ds=.36
+    fh,fw,fhh=fr['fold-18-editor']; dh,dw,dhh=fr['desktop-18-editor']
+    cells+=f'''<div class="ab" style="left:60px;top:{by}px"><div class="mono acc" style="font-size:12px;margin-bottom:10px">18 · FOLD EXPANDED ≈840×1000 dp (assumed)</div><div style="width:{int(fw*fs)}px;height:{int(fhh*fs)}px;border-radius:16px;overflow:hidden;box-shadow:0 0 0 3px {bez}"><div style="transform:scale({fs});transform-origin:0 0">{fh}</div></div></div>
+<div class="ab" style="left:{60+int(fw*fs)+50}px;top:{by}px"><div class="mono acc" style="font-size:12px;margin-bottom:10px">18 · DESKTOP BROWSER 1440×900 · KEYBOARD + MOUSE</div><div style="width:{int(dw*ds)}px;height:{int(dhh*ds)}px;border-radius:12px;overflow:hidden;box-shadow:0 0 0 3px {bez}"><div style="transform:scale({ds});transform-origin:0 0">{dh}</div></div></div>'''
+    bg='radial-gradient(1600px 900px at 30% 0%,#15181D,#060708)' if dk else 'radial-gradient(1600px 900px at 30% 0%,#FBF7EF,#E2DACB)'
+    html=page(t,f'''<div class="th{t}" style="position:relative;width:{W}px;height:{H}px;background:{bg};color:{T['text']};font-family:{T['font']}">
+<div class="ab" style="left:60px;top:36px"><div class="mono acc" style="font-size:12px;letter-spacing:.12em">REV 3.3 · FULL-SCREEN PIANO-ROLL EDITOR · HYBRID ({VAR[t].upper()})</div><div class="disp" style="font-size:44px;margin-top:8px;line-height:1">Edit the notes without stopping the loop.</div></div>
+<div class="ab mono mute" style="left:60px;top:112px;font-size:10.5px;letter-spacing:.06em">PROPOSED · NOT IMPLEMENTED · DESIGN/EXAMPLE DATA · NO CLAIM THAT CAPTURE OR EDITING WORKS TODAY · 48 DP TARGETS PROVISIONAL</div>{cells}</div>''')
+    open(path,'w').write(html); shot(path,png,W,H)
+
 def range_overview(t,fr,path,png):
     T=T_(t); sc=0.5; cw=int(390*sc); seq=[rangeview.SET]+rangeview.RSTEPS; per=5
     W=60*2+per*cw+(per-1)*28; H=170+2*(int(844*sc)+240)
@@ -93,9 +121,10 @@ if __name__=='__main__':
                 present(t,ah,aw,ahh,num,title+' — '+ff,body,touch,D('hybrid',v,'src',an+'.board.html'),D('hybrid',v,an+'.png'),ff+' · hybrid '+v)
         if only: continue
         range_overview(t,fr,D('hybrid',v,'range-overview.html'),D('hybrid',v,'range-overview.png'))
+        editor_overview(t,fr,D('hybrid',v,'editor-overview.html'),D('hybrid',v,'editor-overview.png'))
         overview(t,fr,D('hybrid',v,'storyboard-overview.html'),D('hybrid',v,'storyboard-overview.png'))
     if not only:
         pair_board(res['C'],res['D'],D('hybrid','hybrid-dark-vs-light.html'),D('hybrid','hybrid-dark-vs-light.png'))
         import build
-        build.prototype(res['C'],res['D'],label='Hybrid: Graphite Studio structure + Paper Score character · Dark / Light · rev 3.2 adds Settings (08) and Take history + capture range (09–16)',steps=ALLSTEPS,alts={**{k:[v] for k,v in ALT.items()},**RALTS},roles=ROLES,geoms=GEOMS)
+        build.prototype(res['C'],res['D'],label='Hybrid: Graphite Studio structure + Paper Score character · Dark / Light · rev 3.2 adds Settings (08) and Take history + capture range (09–16); rev 3.3 adds the full-screen editor (17–27)',steps=ALLSTEPS,alts={**{k:[v] for k,v in ALT.items()},**RALTS},roles=ROLES,geoms=GEOMS)
     print('ok')

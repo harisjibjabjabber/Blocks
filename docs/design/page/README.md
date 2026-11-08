@@ -1,4 +1,4 @@
-# page/ — archived copy of the review Page (rev 3.2.1, exported 8 Nov 2026)
+# page/ — archived copy of the review Page (rev 3.3, exported 8 Nov 2026)
 `blocks-design.canvas.tsx` is the full source of the shareable review Page ("Blocks — UI/UX & Interaction Design (PROPOSED)"), exported so the archive has no Page-only dependency. It is a React/TSX module written for the Grok canvas kit (`import … from "grok/canvas"`); it does **not** build outside that host. Read it as content: every string, table and mock in it is plain text in the file.
 
 ## Where each Page section lives in the package
@@ -9,6 +9,7 @@
 | Storyboard (interactive) | `hifi/hybrid/{dark,light}/01…07-*.png`, `hifi/prototype/index.html` |
 | Take history & capture range (interactive mock) | `spec.md` §0b, `gestures.md` §9, `state-machines.md`, `acceptance-criteria.md` (AC-RNG/HAR), `hifi/hybrid/{dark,light}/09…16-*.png`, prototype frames 09–16 |
 | Settings · Appearance (interactive mock) | `spec.md` §0b.8, AC-SET-01–03, `hifi/hybrid/{dark,light}/08-settings-appearance.png`, prototype frame 08 |
+| Full-screen piano-roll editor (rev 3.3; interactive mock: tools, select/move, draw, erase, velocity ±, quantise preview with scope/strength, undo/redo) | `spec.md` §0c (quick-Quantise recommendation §0c.10), `gestures.md` §10, `state-machines.md`, AC-ED-01–15, `hifi/hybrid/{dark,light}/17…27-editor-*.png`, `fold-18-editor`, `desktop-18-editor`, `editor-overview.png`, prototype 17–27 |
 | Visual north star, vocabulary, research, navigation, layouts, screens, edge states, walkthrough, state machines, equivalents, components, handoff, QA, contract decisions, sources | `spec.md`, `research.md`, `gestures.md`, `state-machines.md`, `components.md`, `acceptance-criteria.md`, `qa-review.md`, `usability-test-script.md`, `sources.md`/`sources.tsv`/`link-check.tsv`, `wireframes/*.svg` (Page wireframe data: `wireframes/src/wire.json`) |
 
 ## Text that appeared only on the Page (copied here)

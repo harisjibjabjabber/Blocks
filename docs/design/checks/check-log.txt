@@ -1,4 +1,4 @@
-# Blocks package checks — run 2026-11-08 19:49 GMT
+# Blocks package checks — run 2026-11-08 20:06 GMT
 python: Python 3.13.5
 chrome: Google Chrome 156.0.8078.47 
 node: v24.22.1
@@ -9,13 +9,20 @@ ok
 ## 3. Contrast (rev 3.2 pairings, themes C/D)
 fails: []
 contrast.tsv fails: 0
+## 3b. Contrast (rev 3.3 editor pairings: text 4.5:1, non-text cues 3:1)
+fails: []
+contrast-rev33.tsv fails: 0
+## 3c. Rev 3.3 editor renders present (2x) in both themes
+26 frames x3 files + 2 overviews; missing: [] ; wrong 2x size: []
+## 3d. PROPOSED label on every editor frame source
+checked 52 editor sources
 ## 4. Copy hygiene greps (expect 0)
-Rhodes: 1 files
-Samsung Internet lines without 'not checked'/'have not': 1
+Rhodes: 0 files
+Samsung Internet lines without 'not checked'/'have not': 0
 ## 5. Prototype script syntax
 node --check ok
 ## 6. Prototype interaction test (headless Chrome)
-data-test="before:auto: 1 bar ; after:4 bars · end fixed ; key:3.63 bars · end fixed ; menu-&gt;08-settings-appearance ; tone:light ; mode-&gt;13b-range-slide-phase ; alts:Fold expanded|Desktop browser"
+data-test="before:auto: 1 bar ; after:4 bars · end fixed ; key:3.63 bars · end fixed ; menu-&gt;08-settings-appearance ; tone:light ; mode-&gt;13b-range-slide-phase ; alts:Fold expanded|Desktop browser ; entry-&gt;18-editor-select ; draw-&gt;22-editor-draw ; erase-&gt;23-editor-erase ; select-&gt;18-editor-select ; move:moved ; vel-&gt;24-editor-velocity ; vread:avg 78 → 110 · ×1.41 ; qstr:100% note@grid:true ; cancel-&gt;18-editor-select ; edalts:Fold expanded|Desktop browser"
 ## 7. Package fonts load for the generator
 6 @font-face rules from /workspace/blocks-design/hifi/src/build.py
 ## 8. Link check

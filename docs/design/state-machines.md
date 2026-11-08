@@ -1,4 +1,4 @@
-# Blocks — UI state machines (PROPOSED rev 2, mermaid)
+# Blocks — UI state machines (PROPOSED rev 2; rev 3.2 and rev 3.3 additions, mermaid)
 Timers and limits are proposals pending measurement.
 
 ## Readiness (web; native skips Permission/Audio-gesture states)
@@ -146,3 +146,40 @@ stateDiagram-v2
   Dark --> Light
   note right of System: follows OS/browser live; every change re-themes instantly without touching audio, transport or MIDI; choice persisted on device
 ```
+
+
+## Full-screen editor: entry, tools, quantise preview (rev 3.3, PROPOSED)
+```mermaid
+stateDiagram-v2
+  [*] --> Play
+  Play --> Editor: tap layer mini-roll / long-press note (loop keeps playing)
+  state Editor {
+    [*] --> Select
+    Select --> Draw: tool Draw (D)
+    Select --> Erase: tool Erase (E)
+    Draw --> Select: tool Select (S)
+    Erase --> Select: tool Select
+    Draw --> Erase
+    Erase --> Draw
+    state Select {
+      [*] --> Idle
+      Idle --> Selected: tap note / marquee / double-tap chord
+      Selected --> Moving: drag selected body
+      Selected --> Resizing: drag end handle
+      Moving --> Selected: release (one undo step)
+      Resizing --> Selected: release (one undo step)
+      Moving --> Selected: 2nd finger (cancel + revert)
+      Resizing --> Selected: 2nd finger (cancel + revert)
+      Selected --> Velocity: Velocity
+      Velocity --> Selected: Done (one undo step)
+      Selected --> QuantisePreview: Quantise… (scope = selection)
+      Idle --> QuantisePreview: Quantise… (scope = whole layer)
+      QuantisePreview --> Selected: Cancel (nothing changed)
+      QuantisePreview --> Selected: Apply (one undo step; originals kept)
+      Selected --> Idle: tap empty
+    }
+  }
+  Editor --> Play: ‹ Play / Back (playhead + loop preserved; session Undo toast)
+  note right of Editor: Loop range and phase are read-only here; they change only on Play (rev 3.2 operations a, c). Two fingers always pan/zoom in every state.
+```
+Quantise is never entered automatically (not on capture, not on entry). In QuantisePreview, Grid / Strength / Swing / Scope changes update the preview only; the raw take is never modified.

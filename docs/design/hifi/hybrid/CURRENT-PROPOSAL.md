@@ -1,12 +1,14 @@
-# Current proposal — hybrid, rev 3.2.1
+# Current proposal — hybrid, rev 3.3
 
-This directory is the current UI proposal. Rev 3.2.1 wins over the earlier hybrid files where both exist. It is Graphite structure with Paper character, in dark and light, including settings (frame 08) and the range frames (09–16 and the Fold and desktop variants).
+This directory is the current UI proposal. Rev 3.3 wins over rev 3.2.1 where both exist. It is Graphite structure with Paper character, in dark and light.
 
-Frame 14 label backgrounds, the range overviews, and the clickable prototype differ from the rev 3.2 snapshot. Those files are in this tree. The changelog sentence that says rev 3.2.1 changed no PNG, HTML frame, or prototype is wrong. See `../../../handover/import-record.md`. No new full-editor frames were added. The upcoming editor storyboard is not here.
+Frames 17–27 are the new editor storyboard, in both themes. Only frame 18 has Fold and desktop adaptations. Fold sizes are provisional. Settings and range frames from rev 3.2 remain. Frame 14 files that match the previous revision byte for byte are not a new decision.
 
-It is proposed. Every preview uses mock data. It is not the live site, not implemented, not user-tested, and not approval to build a production UI. No production UI until Haris reviews this storyboard.
+It is proposed example data. It is not implemented UI, not hardware validation, and not the live site. A thumbs-up on the delivery acknowledges the prototype caveats. It is not approval to build the production screen.
 
-A piano roll here corrects a miss. It does not replace one-action phrase capture.
+The user asked for draw, move, resize, erase, velocity, and maybe Quantise on the main screen. The designer recommends Quantise only inside the editor. Haris has not agreed to remove a main-screen shortcut. That choice is open. Undo is pictured and the prototype has none. Pinch is not simulated.
+
+A piano roll corrects a miss. It does not replace one-action phrase capture. No production UI until Haris reviews this storyboard.
 
 Dark is the playing default. Light is for daylight, review, and export. See `../../CHANGELOG.md` and `../README.md`.
 

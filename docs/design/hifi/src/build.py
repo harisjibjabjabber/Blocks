@@ -177,7 +177,7 @@ html,body{{margin:0;height:100%;background:#060708;color:#EEF0F3;font-family:'In
 @media (max-width:900px){{.app{{grid-template-columns:1fr;grid-template-rows:auto auto}} .stage{{height:80vh}} .side{{border-left:0;border-top:1px solid #272C35}}}}
 </style></head><body><div class="app"><main class="stage" id="stage" aria-live="polite"></main>
 <aside class="side"><div class="banner">Simulation — not working MIDI/audio · PROPOSED design · design/example data</div>
-<h1 style="font-size:22px;margin:20px 0 4px;letter-spacing:-.02em">Blocks storyboard</h1><div class="cap" style="margin-top:0">{label}. Click the highlighted hotspots (Capture, Undo, Done, Blocks ⌄ menu, Back to live, Boundaries/Slide, Appearance options), drag the range handles on 09–12 and 15, or use ← → keys.</div>
+<h1 style="font-size:22px;margin:20px 0 4px;letter-spacing:-.02em">Blocks storyboard</h1><div class="cap" style="margin-top:0">{label}. Click the highlighted hotspots (Capture, Undo, Done, Blocks ⌄ menu, Back to live, Boundaries/Slide, Appearance options), drag the range handles on 09–12 and 15, try the editor tools on 17–27, or use ← → keys.</div>
 <div id="title" style="font-size:18px;font-weight:650;margin-top:20px"></div><div id="meta" class="mono" style="font-size:12px;color:#FF7442;margin-top:4px"></div><div id="body" class="cap"></div>
 <div class="seg" id="seg"></div><div class="seg" id="tm"></div>
 <div class="nav"><button id="prev">← Prev</button><button id="next">Next →</button></div>
@@ -199,17 +199,43 @@ function render(){{
  if(v===s) Object.entries(s.roles).forEach(([role,to])=>{{scr.querySelectorAll('[data-role="'+role+'"]').forEach(el=>{{el.style.cursor='pointer';el.classList.add('rolehot');el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label',(el.textContent||role).trim()+' (simulated)');
    const act=()=>{{ if(to.startsWith('tone:')){{const t=to.slice(5);tone=(t==='system')?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;apl=t;render();}} else go(S.findIndex(q=>q.id===to)); }};
    el.addEventListener('click',act);el.addEventListener('keydown',e=>{{if(e.key==='Enter'||e.key===' '){{e.preventDefault();act();}}}});}});}});
- if(v===s&&s.geom) dragSim(scr,s.geom);
+ if(v===s&&s.geom) (s.geom.editor?edSim(scr,s.geom):dragSim(scr,s.geom));
  st.querySelector('.dev').style.transform='scale('+fit(w,h)+')';
  document.getElementById('title').textContent=s.num+' · '+s.title;
  document.getElementById('meta').textContent='est. '+s.touch+(view>0&&s.alts[view-1]?' · '+s.alts[view-1].label:' · phone')+(s.id.startsWith('08')?' · appearance: '+apl:'');
- document.getElementById('body').textContent=s.body+(s.geom?' Try it: drag the ⟦ Start or ⟧ End handle (snaps to onsets and bars; hold Shift for no snap; arrow keys when focused).':'');
+ document.getElementById('body').textContent=s.body+(s.geom?(s.geom.editor?(' Try it: '+(s.geom.vel?'drag the ⇕ pill up/down to scale the selected velocities.':s.geom.quant?'drag the Strength slider to move the preview between as-played and the grid; Apply or Cancel.':s.geom.mode==='draw'?'click empty grid to add a note.':s.geom.mode==='erase'?'click notes to erase them.':'tap a note to select (Shift adds), drag selected notes (snaps to rows and 1/16); switch tools in the toolbar.')):' Try it: drag the ⟦ Start or ⟧ End handle (snaps to onsets and bars; hold Shift for no snap; arrow keys when focused).'):'');
  const seg=document.getElementById('seg'); seg.innerHTML='';
  if(s.alts.length){{[['Phone'],...s.alts.map(a=>[a.label])].forEach(([l],k)=>{{const b=document.createElement('button');b.textContent=l;b.setAttribute('aria-pressed',view===k);b.onclick=()=>{{view=k;render();}};seg.appendChild(b);}});}}
  const tm=document.getElementById('tm'); tm.innerHTML=''; if(s.html_l){{[['dark','Dark'],['light','Light']].forEach(([k,l])=>{{const b=document.createElement('button');b.textContent=l;b.setAttribute('aria-pressed',tone===k);b.onclick=()=>{{tone=k;render();}};tm.appendChild(b);}});}}
  document.querySelectorAll('.step').forEach((b,k)=>b.setAttribute('aria-current',k===i));
 }}
 let apl='system';
+function edSim(scr,g){{
+ const gr=scr.querySelector('[data-role="grid"]'); if(!gr) return;
+ const row=+gr.dataset.row,col=+gr.dataset.col; const sc=()=>scr.getBoundingClientRect().width/scr.offsetWidth;
+ const notes=()=>[...scr.querySelectorAll('[data-note]')];
+ const sel=n=>{{n.dataset.sel='1';n.style.boxShadow='0 0 0 2px transparent,0 0 0 3.5px currentColor';n.style.opacity=1;}};
+ const uns=n=>{{delete n.dataset.sel;n.style.boxShadow='none';n.style.opacity=.8;}};
+ let drag=null;
+ if(g.mode==='select'&&!g.quant&&!g.vel){{
+  notes().forEach(n=>{{n.style.cursor='grab';n.addEventListener('pointerdown',e=>{{e.preventDefault();e.stopPropagation();if(!n.dataset.sel){{if(!e.shiftKey)notes().forEach(uns);sel(n);}}
+    drag={{x:e.clientX,y:e.clientY,it:notes().filter(m=>m.dataset.sel).map(m=>({{m,l:parseFloat(m.style.left),t:parseFloat(m.style.top)}}))}};}});}});
+  gr.addEventListener('pointerdown',()=>notes().forEach(uns));
+  scr.addEventListener('pointermove',e=>{{if(!drag)return;const k=sc();const dx=Math.round((e.clientX-drag.x)/k/col)*col,dy=Math.round((e.clientY-drag.y)/k/row)*row;drag.it.forEach(o=>{{o.m.style.left=(o.l+dx)+'px';o.m.style.top=(o.t+dy)+'px';}});
+    document.getElementById('meta').textContent='moving '+drag.it.length+' note(s): '+(dy?((dy<0?'+':'−')+Math.round(Math.abs(dy)/row)+' st '):'')+(dx?((dx>0?'+':'−')+Math.round(Math.abs(dx)/col)+'/16'):'');}});
+  scr.addEventListener('pointerup',()=>{{drag=null;}});
+ }}
+ if(g.mode==='erase') notes().forEach(n=>{{n.style.cursor='pointer';n.addEventListener('click',()=>{{n.style.opacity=.15;n.style.outline='1.5px dashed currentColor';}});}});
+ if(g.mode==='draw'){{gr.style.cursor='crosshair';gr.addEventListener('click',e=>{{const r=gr.getBoundingClientRect(),k=sc();const x=Math.floor((e.clientX-r.left)/k/col)*col,y=Math.floor((e.clientY-r.top)/k/row)*row;
+   const tpl=notes()[0];const d=document.createElement('div');d.className='ab';d.dataset.note='new';d.style.cssText=tpl.style.cssText;d.style.left=(+gr.dataset.gx+x)+'px';d.style.top=(+gr.dataset.gy+y+1)+'px';d.style.width=(col*2-1.5)+'px';d.style.height=(row-2)+'px';d.style.opacity=1;d.style.boxShadow='0 0 0 2px transparent,0 0 0 3.5px currentColor';gr.parentNode.appendChild(d);}});}}
+ if(g.vel){{const pill=scr.querySelector('[data-role="vscale"]'),rd=scr.querySelector('[data-role="vread"]');const bars=[...scr.querySelectorAll('[data-vsel]')];let y0=null,f0=0.85,f=0.85;
+   const apply=()=>{{let sum=0;bars.forEach(b=>{{const v=Math.min(127,Math.round(+b.dataset.v*f));sum+=v;const h=+b.dataset.bh*v/127;b.style.height=h+'px';b.style.top=(+b.dataset.base-h)+'px';}});rd.innerHTML='avg 78 → <b>'+Math.round(sum/bars.length)+'</b> · ×'+f.toFixed(2);}};
+   pill.addEventListener('pointerdown',e=>{{y0=e.clientY;f0=f;e.preventDefault();}});scr.addEventListener('pointermove',e=>{{if(y0===null)return;f=Math.max(.3,Math.min(1.6,f0-(e.clientY-y0)/sc()/120));apply();}});scr.addEventListener('pointerup',()=>{{y0=null;}});}}
+ if(g.quant){{const tr=scr.querySelector('[data-role="qstr"]'),fill=scr.querySelector('[data-role="qfill"]'),kn=scr.querySelector('[data-role="qknob"]'),val=scr.querySelector('[data-role="qval"]');let on=false;
+   const set=e=>{{const r=tr.getBoundingClientRect();const p=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));fill.style.width=(p*100)+'%';kn.style.left='calc('+(p*100)+'% - 12px)';val.textContent=Math.round(p*100)+'%';
+     scr.querySelectorAll('[data-q0]').forEach(n=>{{const a=+n.dataset.q0,b=+n.dataset.qg;n.style.left=(a+(b-a)*p)+'px';}});}};
+   tr.addEventListener('pointerdown',e=>{{on=true;set(e);e.preventDefault();}});scr.addEventListener('pointermove',e=>{{if(on)set(e);}});scr.addEventListener('pointerup',()=>{{on=false;}});}}
+}}
 function dragSim(scr,g){{
  const roll=scr.querySelector('[data-role="roll"]'); if(!roll) return;
  const hs=roll.querySelector('[data-role="hs"]'),he=roll.querySelector('[data-role="he"]'),wash=roll.querySelector('[data-role="rwash"]'),band=roll.querySelector('[data-role="rband"]'),lab=roll.querySelector('[data-role="rlabel"]');

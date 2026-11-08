@@ -1,5 +1,5 @@
 import sys; sys.path.insert(0,'.')
-import frames as FM, rangeview
+import frames as FM, rangeview, editor
 from large import *
 from render import shot
 for t in sys.argv[1].split(','):

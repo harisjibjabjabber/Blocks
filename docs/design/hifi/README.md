@@ -57,3 +57,9 @@ A1–A12 hold. The Capture icon is a reach-back glyph, not a record dot, and no 
 
 ## Rev 3.2.1 (doc-only)
 No visual changes. Fonts used by the generators are now in `fonts/` (OFL). Repeating-pickup is PROPOSED behaviour (open question OQ-1); gesture numbers are provisional; harmony labels are optional and research-gated (arpeggio/bass tags deliberately not drawn). Rebuild steps: top-level `README.md`.
+
+## Rev 3.3 — full-screen piano-roll editor (PROPOSED, storyboard before implementation)
+- `hybrid/{dark,light}/17…27-editor-*.png` — 17 entry from Play (tap a layer's notes), 18 legible editor (Select), 19 move pitch+time with loupe, 20 marquee + two-finger ownership, 21 resize, 22 Draw, 23 Erase with Undo, 24 velocity panel (drag-to-scale), 25 quantise preview (scope, grid, strength, swing; originals as ghosts), 26 ⋯ secondary actions, 27 return to Play with loop still running.
+- `hybrid/{dark,light}/fold-18-editor.png`, `desktop-18-editor.png` — Fold expanded and desktop (keyboard + mouse) adaptations.
+- `hybrid/{dark,light}/editor-overview.png` — board of 17–27 + Fold + desktop + the quick-Quantise recommendation (against).
+- Generator: `src/editor.py` (imported by `hybrid.py`). Contrast: `contrast-rev33.tsv` via `src/contrast_rev33.py`.

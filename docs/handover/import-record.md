@@ -210,3 +210,31 @@ The three loose checkpoint copies committed just before this overlay are byte-id
 - Last-chord Capture stays unresolved. The live script remains `/Blocks/assets/index-CsEdtvjV.js` until a later behavior commit says otherwise.
 - Ableton material is public behaviour, not its private algorithm. Zya figures 14–16 are UI, not MIDI. The earlier MIT repository quantised and bar-aligned. The 2024 paper was reviewed as an abstract only.
 
+## Design rev 3.3
+
+Overlaid onto `docs/design/` after the hashes below were checked. The four zips were not committed. Rev 3.3 wins where it overlaps rev 3.2.1. No generator, browser, test, or Page rebuild was run.
+
+| Zip | Bytes | sha256 | Payload files |
+|---|---:|---|---:|
+| `design-rev33-editable-sources_d8f0.zip` | 1637500 | `a7afa4c4f0bc201c84500bcdf850b806c1eea44ff0d9216e4ddfe989171d783f` | 105 |
+| `design-rev33-dark-previews_daea.zip` | 9677522 | `9f722a65af82f504e9b3f18005952bb0f9f8c88ec0c377db78a807c5a1662ad5` | 30 |
+| `design-rev33-light-previews_2548.zip` | 11020589 | `92d277fa7a11eda23e5b5cce2b7984627a4a0acb2be5a94abeba3161f5a0cd10` | 30 |
+| `design-rev33-other-previews_3a76.zip` | 1313249 | `15294edb6dc87578e4b35f22e370f22153ec34b05b75d60b8c7e2c6a6e1cb6d3` | 1 |
+
+The manifest lists 166 files: 161 that differ from the original snapshot (133 new, 28 modified) plus 5 retained font-provenance records. Every payload hash matched the zip before path edits. Two wrapper files are copied unchanged: `docs/handover/delta/design-rev33-DELTA-NOTE.md` (`8cb1000ddf271d482e21288d88b96f61eecb4cb716fd41b0d49d58f6b05f1307`) and `docs/handover/delta/design-rev33-DELTA-MANIFEST.json` (`a1b0e9ab204f2b2224db9095d5186f117a2923c4630fa85ca9358f7988b71d1a`).
+
+Before overlay, 16 font files already on disk matched the delta byte for byte. They are the six OFL binaries and five `OFL.txt` files from rev 3.2.1, plus the five provenance records. They are repeated for completeness, not a new font decision. Nineteen other files also already matched, including frame 14 and `rangeview.py`. A rebuild that left those bytes unchanged is not a new decision.
+
+`hifi/src/build.py` already uses a package-relative `ROOT`. It was not rewritten again.
+
+### Caveats
+
+- Proposed example data. Not implemented UI and not hardware validation.
+- A thumbs-up on the delivery acknowledges the prototype caveats. It is not approval to build the production screen.
+- The user asked for draw, move, resize, erase, velocity, and maybe Quantise on the main screen. The designer recommends Quantise only inside the editor. Haris has not agreed to remove a main-screen shortcut. That choice is open.
+- Undo is pictured and the prototype has none. Pinch is not simulated.
+- Fold sizes are provisional. Only frame 18 has Fold and desktop adaptations.
+- Frames 17–27 are the new editor storyboard, in both dark and light.
+- Capture research is unchanged by this overlay. Its baseline remains `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`. Last-chord Capture is still unresolved. Neither the design nor that baseline is shipped.
+
+

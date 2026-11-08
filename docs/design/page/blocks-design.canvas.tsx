@@ -945,12 +945,140 @@ function SettingsMock() {
   );
 }
 
+interface EN { id: number; s: number; d: number; p: number; v: number }
+const EOFF = [0.07, -0.05, 0.1, -0.08, 0.04, -0.09, 0.06, -0.03];
+const EDN0: EN[] = PIANO.filter((n: Nt) => n[0] < 8).map((n: Nt, i: number): EN => ({ id: i, s: Math.max(0, n[0] + EOFF[i % EOFF.length]), d: n[1], p: n[2], v: n[3] }));
+interface EDrag { x: number; y: number; dt: number; dp: number; ids: number[] }
+const ESTEP: string[][] = [
+  ["17", "Enter from Play", "Tap a layer’s notes on its card. One touch; the loop keeps playing; no new button on Play.", "1 touch"],
+  ["18", "A legible full editor", "Pitch keys, bar ruler, layer strip with number + glyph + name, other layers as ghosts. Select tool active.", "1 touch"],
+  ["19", "Move pitch and time", "Drag selected notes; a loupe above the finger reads out +2 semitones · +⅛ beat; dashed outlines show where they were.", "1 drag"],
+  ["20", "Marquee, and who owns the touch", "Select: one finger on empty grid draws a marquee. Two fingers always pan or pinch-zoom; a second finger cancels and reverts.", "1 drag"],
+  ["21", "Resize with the end handle", "The end handle changes length; start fixed. Readout 1 → 1½ beats.", "1 drag"],
+  ["22", "Draw adds notes", "Tap adds a note at the last-used length; drag sets the length. The loupe names pitch, position and velocity.", "1 touch"],
+  ["23", "Erase, with Undo", "Tap or swipe across notes. Erase stays on until you switch tools; each stroke is one undo step.", "1 swipe"],
+  ["24", "Velocity for the selection", "Bars, per-note numbers, an average readout and a group bar that scales the selection together.", "1 drag"],
+  ["25", "Quantise preview", "Never automatic. Explicit scope (selected or whole layer), grid, strength, swing; as-played notes stay as dashed ghosts.", "2–3 touches"],
+  ["26", "Secondary actions in ⋯", "Duplicate, copy, paste at playhead, select all and delete; the toolbar keeps three tools.", "2 touches"],
+  ["27", "Back to Play, loop still running", "‹ Play returns to the same playhead and loop; a toast offers Undo for the whole edit session.", "1 touch"]
+];
+
+function EditorLab() {
+  const t = useGrokTheme(); const F = t.font.family; const M = t.font.mono;
+  const [tone, setTone] = useState<string>("dark");
+  const [tool, setTool] = useState<string>("select");
+  const [notes, setNotes] = useState<EN[]>(EDN0);
+  const [hist, setHist] = useState<EN[][]>([]);
+  const [fut, setFut] = useState<EN[][]>([]);
+  const [sel, setSel] = useState<number[]>([0, 1, 2, 3]);
+  const [q, setQ] = useState<boolean>(false);
+  const [str, setStr] = useState<number>(50);
+  const [scope, setScope] = useState<string>("sel");
+  const [drag, setDrag] = useState<EDrag | null>(null);
+  const [msg, setMsg] = useState<string>("Select: tap a note (Shift adds), drag selected notes to move pitch and time.");
+  const P = tone === "light" ? HL : HA; const dk = tone !== "light";
+  const LO = 52, HI = 76, GX = 46, GW = 332, GY = 118, GH = 312; const RH = GH / (HI - LO);
+  const X = (b: number) => GX + (b / 8) * GW; const Y = (p: number) => GY + (HI - p) * RH;
+  const commit = (nn: EN[], m: string) => { setHist([...hist, notes]); setFut([]); setNotes(nn); setMsg(m); };
+  const undo = () => { if (!hist.length) return; setFut([notes, ...fut]); setNotes(hist[hist.length - 1]); setHist(hist.slice(0, -1)); setMsg("Undone: one step."); };
+  const redo = () => { if (!fut.length) return; setHist([...hist, notes]); setNotes(fut[0]); setFut(fut.slice(1)); setMsg("Redone."); };
+  const effScope = sel.length === 0 ? "layer" : scope;
+  const inScope = (n: EN) => effScope === "layer" || sel.includes(n.id);
+  const qs = (n: EN) => { const g = Math.round(n.s * 4) / 4; return n.s + (g - n.s) * (str / 100); };
+  const scopeN = notes.filter(inScope).length;
+  const selN = notes.filter((n: EN) => sel.includes(n.id));
+  const avg = selN.length ? Math.round(selN.reduce((a: number, n: EN) => a + n.v, 0) / selN.length) : 0;
+  const vb = (e: PointerEvent<SVGSVGElement>) => { const r = e.currentTarget.getBoundingClientRect(); const k = 390 / r.width; return { x: (e.clientX - r.left) * k, y: (e.clientY - r.top) * k }; };
+  const down = (e: PointerEvent<SVGSVGElement>) => {
+    const c = vb(e); if (q || c.x < GX || c.x > GX + GW || c.y < GY || c.y > GY + GH) return;
+    const b = ((c.x - GX) / GW) * 8; const p = HI - Math.floor((c.y - GY) / RH);
+    const hit = notes.find((n: EN) => n.p === p && b >= n.s - 0.06 && b <= n.s + n.d + 0.06);
+    if (tool === "select") {
+      if (hit) { const ids = sel.includes(hit.id) ? sel : e.shiftKey ? [...sel, hit.id] : [hit.id]; setSel(ids); setDrag({ x: c.x, y: c.y, dt: 0, dp: 0, ids }); e.currentTarget.setPointerCapture(e.pointerId); setMsg(`${ids.length} selected. Drag to move; the loupe would read out the change.`); }
+      else { setSel([]); setMsg("Nothing selected. On a phone, one-finger drag here would draw a marquee."); }
+    } else if (tool === "draw") {
+      if (hit) { setSel([hit.id]); setMsg("Draw never deletes: tapping a note selects it."); }
+      else { const id = Math.max(...notes.map((n: EN) => n.id)) + 1; const s = Math.floor(b * 4) / 4; commit([...notes, { id, s, d: 0.5, p, v: 84 }], `Added ${NN[p % 12]}${Math.floor(p / 12) - 1} at beat ${(s + 1).toFixed(2)} · ⅛ · vel 84 · one undo step`); setSel([id]); }
+    } else if (hit) { commit(notes.filter((n: EN) => n.id !== hit.id), "1 note erased · Erase stays on · ↶ Undo"); setSel(sel.filter((i: number) => i !== hit.id)); }
+  };
+  const move = (e: PointerEvent<SVGSVGElement>) => { if (!drag) return; const c = vb(e); const dt = Math.round(((c.x - drag.x) / GW) * 8 * 4) / 4; const dp = -Math.round((c.y - drag.y) / RH); setDrag({ ...drag, dt, dp }); setMsg(`Moving ${drag.ids.length}: ${dp >= 0 ? "+" : ""}${dp} semitones · ${dt >= 0 ? "+" : ""}${dt} beat · snaps 1/16`); };
+  const up = () => { if (!drag) return; const d = drag; setDrag(null); if (d.dt || d.dp) commit(notes.map((n: EN) => d.ids.includes(n.id) ? { ...n, s: Math.max(0, Math.min(7.75, n.s + d.dt)), p: Math.max(LO + 1, Math.min(HI, n.p + d.dp)) } : n), `Moved ${d.ids.length} note(s) ${d.dp >= 0 ? "+" : ""}${d.dp} st, ${d.dt >= 0 ? "+" : ""}${d.dt} beat · one undo step`); };
+  const vel = (f: number) => { if (!selN.length) return; commit(notes.map((n: EN) => sel.includes(n.id) ? { ...n, v: Math.max(1, Math.min(127, Math.round(n.v * f))) } : n), `Velocity ×${f} on ${selN.length} selected · one undo step`); };
+  const shown = (n: EN) => { let s = n.s, p = n.p; if (drag && drag.ids.includes(n.id)) { s = n.s + drag.dt; p = n.p + drag.dp; } if (q && inScope(n)) s = qs(n); return { s, p }; };
+  const btn = (k: string, x: number, y: number, w: number, h: number, label: string, on: boolean, fn: () => void, fs = 11) => (
+    <g key={k} onClick={fn} style={{ cursor: "pointer" }}><rect x={x} y={y} width={w} height={h} rx={10} fill={on ? P.text : P.surf2} stroke={on ? P.text : P.line} /><text x={x + w / 2} y={y + h / 2 + 4} textAnchor="middle" fontSize={fs} fontWeight={600} fontFamily={F} fill={on ? P.bg : P.text}>{label}</text></g>);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <Segmented options={[{ value: "dark", label: "Hybrid · dark" }, { value: "light", label: "Hybrid · light" }]} value={tone} onChange={setTone} />
+      <Grid columns={2} plain>
+        <Bezel>
+          <svg viewBox="0 0 390 660" width="100%" style={{ display: "block", background: P.bg, touchAction: "none", userSelect: "none" }} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={() => setDrag(null)} aria-label="Simulated full-screen piano-roll editor">
+            <rect width={390} height={660} fill={P.bg} />
+            {btn("back", 12, 14, 64, 40, "‹ Play", false, () => setMsg("‹ Play returns to the same playhead and loop (27)."))}
+            <text x={195} y={34} textAnchor="middle" fontSize={22} fontFamily={SERIF} fill={P.text}>Edit · Piano</text>
+            <text x={195} y={50} textAnchor="middle" fontSize={9.5} fontFamily={F} fill={P.mute}>Layer 1 · Warm EP · example data</text>
+            {btn("undo", 282, 14, 46, 40, "↶", false, undo, 16)}
+            {btn("redo", 332, 14, 46, 40, "↷", false, redo, 16)}
+            {[["◆ 1 Piano", 1], ["▬ 2 Bass", 0], ["● 3 Drums", 0], ["◐ Others", 0]].map((L: (string | number)[], i: number) => <g key={`ly${i}`}><rect x={12 + i * 92} y={62} width={86} height={30} rx={10} fill={P.surf} stroke={L[1] ? P.text : P.line} strokeWidth={L[1] ? 2 : 1} /><text x={55 + i * 92} y={81} textAnchor="middle" fontSize={10.5} fontWeight={L[1] ? 700 : 500} fontFamily={F} fill={P.text}>{String(L[0])}</text></g>)}
+            <rect x={GX} y={98} width={GW} height={18} fill={P.surf} />
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((b: number) => <text key={`rb${b}`} x={X(b) + 3} y={111} fontSize={b % 4 ? 8.5 : 10} fontWeight={b % 4 ? 400 : 700} fontFamily={M} fill={b % 4 ? P.mute : P.text}>{b % 4 ? `.${(b % 4) + 1}` : `${b / 4 + 1}`}</text>)}
+            <text x={14} y={111} fontSize={10} fontFamily={F} fill={P.mute}>🔒</text>
+            <rect x={GX} y={GY} width={GW} height={GH} fill={P.well} stroke={P.line} />
+            {Array.from({ length: HI - LO }, (_: unknown, r: number) => { const p = HI - r; const blk = [1, 3, 6, 8, 10].includes(p % 12); return <g key={`k${p}`}><rect x={12} y={GY + r * RH} width={32} height={RH} fill={blk ? P.keyB : P.keyW} stroke={P.line} strokeWidth={0.5} />{blk ? <rect x={GX} y={GY + r * RH} width={GW} height={RH} fill={P.wash} opacity={dk ? 0.025 : 0.03} /> : null}{p % 12 === 0 ? <text x={15} y={GY + r * RH + RH - 3} fontSize={8} fontFamily={M} fill={P.mute}>{`C${p / 12 - 1}`}</text> : null}</g>; })}
+            {Array.from({ length: 33 }, (_: unknown, i: number) => <line key={`gl${i}`} x1={X(i / 4)} x2={X(i / 4)} y1={GY} y2={GY + GH} stroke={i % 16 === 0 ? P.mute : P.line} strokeWidth={i % 16 === 0 ? 1 : i % 4 === 0 ? 0.8 : 0.3} opacity={i % 4 === 0 ? 1 : 0.6} />)}
+            {(q || drag) ? notes.filter((n: EN) => (q && inScope(n)) || (drag !== null && drag.ids.includes(n.id))).map((n: EN) => <rect key={`go${n.id}`} x={X(n.s)} y={Y(n.p) + 1} width={Math.max(4, (n.d / 8) * GW - 1.5)} height={RH - 2} rx={3} fill="none" stroke={P.mute} strokeWidth={1.3} strokeDasharray="3 2" />) : null}
+            {notes.map((n: EN) => { const o = shown(n); const on = sel.includes(n.id); const w = Math.max(4, (n.d / 8) * GW - 1.5); const x = X(o.s), y = Y(o.p) + 1, h = RH - 2; return <g key={`n${n.id}`}>
+              {on ? <rect x={x - 3.5} y={y - 3.5} width={w + 7} height={h + 7} rx={5} fill="none" stroke={P.text} strokeWidth={1.5} /> : null}
+              <rect x={x} y={y} width={w} height={h} rx={3} fill={P.lay[0]} opacity={on ? 1 : 0.55 + 0.4 * n.v / 127} />
+              {on && w > 22 ? <text x={x + 4} y={y + h - 3} fontSize={8} fontWeight={700} fontFamily={M} fill={dk ? P.bg : P.surf}>{`${NN[o.p % 12]}${Math.floor(o.p / 12) - 1}`}</text> : null}
+              {on ? <rect x={x + w - 3} y={y + h / 2 - 6} width={6} height={12} rx={2} fill={P.text} stroke={P.well} strokeWidth={1.5} /> : null}</g>; })}
+            <line x1={X(5.2)} x2={X(5.2)} y1={98} y2={GY + GH} stroke={P.acc} strokeWidth={2} />
+            <text x={GX + 6} y={GY + GH - 6} fontSize={9} fontFamily={M} fill={P.mute}>▾ Bass · ghost layer below</text>
+            <rect x={GX} y={438} width={GW} height={58} rx={8} fill={P.surf} stroke={P.line} />
+            <text x={14} y={452} fontSize={8} fontWeight={600} fontFamily={F} fill={P.mute}>VEL</text>
+            {notes.map((n: EN) => { const o = shown(n); const on = sel.includes(n.id); const h = (n.v / 127) * 44; return <rect key={`v${n.id}`} x={X(o.s) + (o.p % 3) * 3} y={492 - h} width={on ? 6 : 3} height={h} rx={1.5} fill={on ? P.text : P.mute} opacity={on ? 1 : 0.6} />; })}
+            <text x={GX + GW - 6} y={451} textAnchor="end" fontSize={9.5} fontFamily={M} fill={P.text}>{selN.length ? `${selN.length} selected · avg ${avg}` : "no selection"}</text>
+            {btn("vm", 12, 504, 60, 40, "Vel −", false, () => vel(0.9))}
+            {btn("vp", 76, 504, 60, 40, "Vel +", false, () => vel(1.1))}
+            {btn("qo", 140, 504, 112, 40, "Quantise…", q, () => { setQ(!q); setMsg("Preview only: nothing changes until Apply."); })}
+            {btn("mo", 256, 504, 122, 40, "⋯ Dup · Copy · Paste", false, () => setMsg("⋯ holds Duplicate after, Copy, Paste at playhead, Select all, Delete (26). Not simulated here."), 10)}
+            {q ? <g>
+              <rect x={8} y={276} width={374} height={272} rx={18} fill={P.surf} stroke={P.text} strokeWidth={1.2} />
+              <text x={22} y={304} fontSize={20} fontFamily={SERIF} fill={P.text}>Quantise preview</text>
+              <text x={368} y={304} textAnchor="end" fontSize={9.5} fontFamily={F} fill={P.mute}>dashed = as played (kept)</text>
+              <text x={22} y={326} fontSize={9} fontWeight={600} letterSpacing={1} fontFamily={F} fill={P.mute}>SCOPE</text>
+              {btn("ss", 22, 334, 168, 40, `Selected · ${sel.length}`, effScope === "sel", () => { if (sel.length) setScope("sel"); })}
+              {btn("sl", 200, 334, 168, 40, `Whole layer · ${notes.length}`, effScope === "layer", () => setScope("layer"))}
+              <text x={22} y={394} fontSize={9} fontWeight={600} letterSpacing={1} fontFamily={F} fill={P.mute}>STRENGTH · GRID 1/16 · SWING 0% (NOT SIMULATED)</text>
+              {[0, 25, 50, 75, 100].map((v: number, i: number) => btn(`st${v}`, 22 + i * 70, 402, 64, 40, `${v}%`, str === v, () => setStr(v)))}
+              {btn("qc", 22, 494, 140, 44, "Cancel", false, () => { setQ(false); setMsg("Cancelled: every note unchanged."); })}
+              <g onClick={() => { commit(notes.map((n: EN) => inScope(n) ? { ...n, s: qs(n) } : n), `Quantised ${scopeN} notes to 1/16 at ${str}% · one undo step · raw take kept (proposed)`); setQ(false); }} style={{ cursor: "pointer" }}><rect x={170} y={494} width={198} height={44} rx={12} fill={P.acc} /><text x={269} y={521} textAnchor="middle" fontSize={12} fontWeight={700} fontFamily={F} fill={P.accT}>{`Apply to ${scopeN} notes`}</text></g>
+              <text x={22} y={470} fontSize={10} fontFamily={F} fill={P.mute}>Never automatic. Notes move live in the grid; originals stay as ghosts.</text>
+            </g> : null}
+            {[["draw", "✎ Draw"], ["select", "⬚ Select"], ["erase", "⌫ Erase"]].map((o: string[], i: number) => btn(`tl${o[0]}`, 12 + i * 92, 556, 86, 52, tool === o[0] ? `${o[1]} ✓` : o[1], tool === o[0], () => { setTool(o[0]); setQ(false); setMsg(o[0] === "draw" ? "Draw: tap empty grid to add a note (⅛, snapped). Never deletes." : o[0] === "erase" ? "Erase: tap notes to erase. Stays on until you switch." : "Select: tap a note (Shift adds), drag selected notes to move."); }, 12))}
+            <rect x={288} y={556} width={90} height={52} rx={14} fill="none" stroke={P.acc} strokeWidth={1.5} />
+            <text x={333} y={587} textAnchor="middle" fontSize={11} fontWeight={600} fontFamily={F} fill={P.text}>Capture</text>
+            <text x={195} y={630} textAnchor="middle" fontSize={9} fontFamily={M} fill={P.mute}>PROPOSED · simulation · example data · not implemented</text>
+            <text x={195} y={646} textAnchor="middle" fontSize={9} fontFamily={M} fill={P.mute}>48 dp targets provisional · two-finger pan/zoom not simulated</text>
+          </svg>
+        </Bezel>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <Properties items={[{ label: "Tool", value: tool === "draw" ? "Draw" : tool === "erase" ? "Erase" : "Select" }, { label: "Selection", value: selN.length ? `${selN.length} notes · avg velocity ${avg}` : "none" }, { label: "Last action", value: msg }, { label: "Undo stack", value: `${hist.length} step(s) · redo ${fut.length}` }, { label: "Loop", value: "Read-only here (🔒). Boundaries and Slide stay on Play." }, { label: "Status", value: "PROPOSED · simulation · design/example data · no claim that capture or editing works today" }]} />
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <Button label="Reset mock" onClick={() => { setNotes(EDN0); setHist([]); setFut([]); setSel([0, 1, 2, 3]); setQ(false); setTool("select"); setStr(50); setScope("sel"); setMsg("Reset to the example take."); }} />
+          </div>
+        </div>
+      </Grid>
+    </div>
+  );
+}
+
 export default function BlocksDesign() {
   return (
     <Page title="Blocks — UI/UX & Interaction Design" width="wide" summary="PROPOSED design for the Blocks musical sketchbook (Android phone, Galaxy Fold, web). Not implemented, not user-tested. 8 Nov 2026." sources={SOURCES.map((s) => s.href)}>
-      <Callout tone="warning" lead="Status: PROPOSED · rev 3.2.1.">Rev 3.2 adds Settings → Appearance (System default) and the take-history piano roll with capture-range handles, harmony labels as a proposed capability (mock data), and the boundary / slide / edit separation; nothing claims the current build supports any of it. Rev 3 adds two high-fidelity visual directions, a recommendation, and a seven-frame interactive storyboard (simulation, not working MIDI/audio; all musical content is design/example data). Lead decisions A1–A12 are applied and marked RESOLVED (see Changelog). All numeric limits and UI dimensions are proposals pending measurement. Sound names such as “Warm EP” are placeholders. Every screen and number here is a proposal for the Blocks team. Nothing is implemented or user-tested; interaction counts are walkthrough estimates. Engineer assets (spec, acceptance criteria, gestures, tokens, 16 SVG wireframes) live under /workspace/blocks-design/ on the shared box.</Callout>
+      <Callout tone="warning" lead="Status: PROPOSED · rev 3.3.">Rev 3.3 storyboards a full-screen piano-roll editor before implementation (frames 17–27, Fold and desktop; quick Quantise on Play recommended against). Rev 3.2 adds Settings → Appearance (System default) and the take-history piano roll with capture-range handles, harmony labels as a proposed capability (mock data), and the boundary / slide / edit separation; nothing claims the current build supports any of it. Rev 3 adds two high-fidelity visual directions, a recommendation, and a seven-frame interactive storyboard (simulation, not working MIDI/audio; all musical content is design/example data). Lead decisions A1–A12 are applied and marked RESOLVED (see Changelog). All numeric limits and UI dimensions are proposals pending measurement. Sound names such as “Warm EP” are placeholders. Every screen and number here is a proposal for the Blocks team. Nothing is implemented or user-tested; interaction counts are walkthrough estimates. Engineer assets (spec, acceptance criteria, gestures, tokens, 16 SVG wireframes) live under /workspace/blocks-design/ on the shared box.</Callout>
       <TableOfContents items={[
-        { label: "Hi-fi directions: A vs B", id: "hifi" }, { label: "Storyboard (interactive)", id: "story" }, { label: "Take history & capture range (3.2)", id: "range" }, { label: "Settings · Appearance (3.2)", id: "settings" },
+        { label: "Hi-fi directions: A vs B", id: "hifi" }, { label: "Storyboard (interactive)", id: "story" }, { label: "Take history & capture range (3.2)", id: "range" }, { label: "Settings · Appearance (3.2)", id: "settings" }, { label: "Full-screen editor (3.3)", id: "editor" },
         { label: "Visual north star: sexy, sleek", id: "north" }, { label: "Principle & vocabulary", id: "vocab" }, { label: "Research → decisions", id: "research" }, { label: "Navigation", id: "nav" },
         { label: "Layouts (5 form factors)", id: "layouts" }, { label: "Play / Capture", id: "play" }, { label: "First run & readiness", id: "ready" },
         { label: "Capture review & auto-play", id: "review" }, { label: "Sounds & layers", id: "layers" }, { label: "Touch piano roll & gestures", id: "roll" },
@@ -1032,6 +1160,27 @@ export default function BlocksDesign() {
             <Table columns={["Asset", "Path"]} rows={[["Dark", "/workspace/blocks-design/hifi/hybrid/dark/08-settings-appearance.png"], ["Light", "/workspace/blocks-design/hifi/hybrid/light/08-settings-appearance.png"], ["Editable", "hifi/hybrid/{dark,light}/src/08-settings-appearance.html"]]} />
           </div>
         </Grid>
+      </Section>
+
+      <Section heading="Full-screen piano-roll editor (rev 3.3)" id="editor" caption="PROPOSED, storyboarded before implementation; nothing implemented or tested, and no claim that engine capture or editing works today. Notes, velocities and counts are example data; every number is provisional.">
+        <EditorLab />
+        <Table columns={["Frame", "What it shows", "Touches (est.)"]} rows={ESTEP.map((r: string[]) => [`${r[0]} · ${r[1]}`, r[2], r[3]])} />
+        <Table columns={["Input", "Draw", "Select", "Erase"]} rows={[
+          ["1 finger, empty grid", "Add note (drag sets length)", "Marquee select", "Swipe-erase"],
+          ["1 finger, note", "Select (never deletes)", "Select; drag body = move pitch + time; end handle = resize", "Erase"],
+          ["2 fingers", "Pan / pinch-zoom", "Pan / pinch-zoom", "Pan / pinch-zoom"],
+          ["2nd finger mid-edit", "Cancel + revert", "Cancel + revert", "Cancel + revert"],
+          ["Ruler loop bracket", "Read-only 🔒", "Read-only 🔒", "Read-only 🔒"]
+        ]} />
+        <Callout lead="Quick Quantise on the play screen: recommended against.">Scope is ambiguous on a multi-layer screen, a blind one-tap quantise has no strength or preview and can flatten the feel, it adds a control to the screen kept simple for playing, and it invites fixing takes mid-performance. Capture review already offers grid correction, and the editor’s Quantise is two taps from Play (tap the layer, then Quantise…) with explicit scope, preview and Undo. Revisit only if testing shows people look for it; if ever added it must name its scope (“Quantise Piano · 20 notes”) and offer Undo.</Callout>
+        <Table columns={["Rev 3.3 asset (shared box)", "What it is"]} rows={[
+          ["/workspace/blocks-design/hifi/hybrid/{dark,light}/editor-overview.png", "Board of 17–27, Fold, desktop and the quick-Quantise recommendation"],
+          ["/workspace/blocks-design/hifi/hybrid/{dark,light}/17-editor-entry.png … 27-editor-return.png", "Editor frames with captions; bare 2x screens in src/*@2x.png, editable src/*.html"],
+          ["/workspace/blocks-design/hifi/hybrid/{dark,light}/fold-18-editor.png · desktop-18-editor.png", "Fold expanded (side pane) and desktop browser (keyboard + mouse map)"],
+          ["/workspace/blocks-design/hifi/src/editor.py", "Generator module, imported by hybrid.py"],
+          ["/workspace/blocks-design/hifi/prototype/index.html", "Prototype 17–27: enter editor, switch tools, select/move, draw, erase, velocity scale, quantise strength preview"],
+          ["spec.md §0c · gestures.md §10 · state-machines.md · acceptance-criteria.md AC-ED-01–15 · hifi/contrast-rev33.tsv", "Spec, ownership table, editor state machine, criteria, contrast (0 fails)"]
+        ]} />
       </Section>
 
       <Section heading="Visual north star: sexy, sleek" id="north" caption="Owner direction from Haris. Sexy never overrides usability or accessibility: 48dp targets, WCAG contrast, non-colour cues and reduced motion always win.">
@@ -1372,6 +1521,14 @@ export default function BlocksDesign() {
       </Section>
 
       <Section heading="Changelog" id="changes">
+        <Text><b>Rev 3.3 — 8 Nov 2026 (full-screen piano-roll editor, storyboard before implementation)</b></Text>
+        <BulletList items={[
+          "New frames 17–27 in hybrid dark and light, plus Fold expanded and desktop editor frames and editor-overview.png.",
+          "Explicit Draw / Select / Erase tools; one finger acts per tool, two fingers always navigate; loupe readout; non-colour selection.",
+          "Velocity tied to the selection; quantise preview with explicit scope, ghosts of the originals, never automatic; ⋯ for duplicate/copy/paste.",
+          "Loop boundary and phase read-only in the editor. Quick Quantise on Play evaluated and recommended against.",
+          "Spec §0c, gestures §10, editor state machine, AC-ED-01–15, contrast-rev33.tsv, prototype and checks updated; editor.py wired into the build."
+        ]} />
         <Text><b>Rev 3.2.1 — 8 Nov 2026 (doc-only, no visual changes)</b></Text>
         <BulletList items={[
           "Repeating pickup is explicit PROPOSED behaviour, not an engine contract; “first pass only” is an unresolved audition/test question (spec OQ-1, QA item 18, usability task R4). No control added.",
