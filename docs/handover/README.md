@@ -1,6 +1,8 @@
 # Blocks handover
 
-This page is the place to continue from the public repository alone. The documents on `handover/status` were branched from `497894e170ac150f06e5a8bea34d0d4e7f34e2fd` and do not include later Capture code. `main` has since moved to `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`. That commit is not merged here. This branch does not deploy a UI. The Pages workflow runs on push to `main` and on `workflow_dispatch`.
+This page is the place to continue from the public repository alone. The documents on `handover/status` were branched from `497894e170ac150f06e5a8bea34d0d4e7f34e2fd` and do not include later Capture code. `main` has since moved to `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`. That commit is not merged here. This branch does not deploy a UI. The Pages workflow runs on push to `main` and on `workflow_dispatch`. Take application code from the latest `main`. Take these documents from `handover/status`. This branch is not a substitute for `main`.
+
+Roles and the portable path: [ways-of-working.md](ways-of-working.md). Milestone form: [checkpoint-template.md](checkpoint-template.md).
 
 Live site: https://harisjibjabjabber.github.io/Blocks/
 

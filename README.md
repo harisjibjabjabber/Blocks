@@ -4,7 +4,9 @@ A musical sketchbook for Android and the web. Play MIDI into a procedural electr
 
 ## Continue from here
 
-Start at [docs/handover/README.md](docs/handover/README.md). That page is the handover: what is implemented, proposed, tested, and broken, how to build and test, and where the imported design and research live.
+Start at [docs/handover/README.md](docs/handover/README.md). That page is the handover: what is implemented, proposed, tested, and broken, how to build and test, and where the imported design and research live. Roles and working agreements are in [docs/handover/ways-of-working.md](docs/handover/ways-of-working.md). A milestone note uses [docs/handover/checkpoint-template.md](docs/handover/checkpoint-template.md).
+
+Take application code from the latest `main`. Take these documents from `handover/status`. This branch is not a substitute for `main`.
 
 The public site is https://harisjibjabjabber.github.io/Blocks/ with base path `/Blocks/`. Last-chord Capture is not fixed. Commit `fdba348` (script `/Blocks/assets/index-DGbe1J8t.js`) is the build Haris refreshed and still heard as only the last chord. Commit `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e` is on `main` and is not in this branch. On synthetic traces it stores all 12 chord notes for the tight chords and for the 60–120 ms roll. The live script is `/Blocks/assets/index-CsEdtvjV.js`. That is still not his take. Do not treat a documentation commit as a new UI.
 
