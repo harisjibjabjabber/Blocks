@@ -153,7 +153,9 @@ export function workingPlayback(source: readonly CapturedEvent[], notes: readonl
     return [];
   }
   const template = source[0];
-  const controllers = source.filter((event) => event.kind === "cc" && event.scheduleElapsed >= bounds.start && event.scheduleElapsed <= bounds.end);
+  // Keep expression payloads and timestamps intact, including pitch/pressure
+  // represented as `other`. Note edits replace only note messages.
+  const controllers = source.filter((event) => event.kind !== "note-on" && event.kind !== "note-off" && event.scheduleElapsed >= bounds.start && event.scheduleElapsed < bounds.end);
   const sounded: CapturedEvent[] = [];
   for (const note of notes) {
     if (note.end <= bounds.start || note.start >= bounds.end) {

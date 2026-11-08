@@ -33,13 +33,16 @@ export function readTransport(args: {
   if (!(offset >= 0)) {
     return { availability: "available", state: "playing", positionSeconds: null, originSeconds, revision: args.revision };
   }
-  const within = offset >= args.duration ? Math.max(0, args.duration - 1e-4) : offset;
+  // cycleStart is the immutable audio start, not the scheduler's lookahead cursor.
+  // This keeps the line present through silent tails and across timer delays.
+  const cycle = Math.floor(offset / args.duration);
+  const within = offset - cycle * args.duration;
   const stretch = args.stretch > 0 ? args.stretch : 1;
   return {
     availability: "available",
     state: "playing",
-    positionSeconds: originSeconds! + within * stretch,
+    positionSeconds: originSeconds! + within / stretch,
     originSeconds,
-    revision: args.revision,
+    revision: args.revision + cycle,
   };
 }

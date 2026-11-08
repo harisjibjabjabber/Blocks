@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { IncomingEvent } from "../domain/capture";
-import { createWebEngine } from "./engine.web";
+import { createWebEngine, type PlaybackEvent } from "./engine.web";
 
 class FakeParam {
   value = 0.2;
@@ -20,6 +20,7 @@ class FakeParam {
 }
 
 class FakeNode {
+  stops: number[] = [];
   frequency = new FakeParam();
   gain = new FakeParam();
   type = "sine";
@@ -28,10 +29,11 @@ class FakeNode {
   }
   disconnect() {}
   start() {}
-  stop() {}
+  stop(time: number) { this.stops.push(time); }
 }
 
 class FakeContext {
+  oscillators: FakeNode[] = [];
   state = "suspended";
   currentTime = 1;
   sampleRate = 48000;
@@ -55,11 +57,13 @@ class FakeContext {
     return new FakeNode();
   }
   createOscillator() {
-    return new FakeNode();
+    const oscillator = new FakeNode();
+    this.oscillators.push(oscillator);
+    return oscillator;
   }
 }
 
-function note(): IncomingEvent {
+function note(): PlaybackEvent {
   return {
     domain: "web-performance-us",
     sequence: 1n,
@@ -81,6 +85,115 @@ function note(): IncomingEvent {
 }
 
 describe("web engine adapter", () => {
+  it("schedules a held-note seam release at the boundary, not the lookahead tick", async () => {
+    vi.useFakeTimers();
+    try {
+      const context = new FakeContext();
+      context.setState("running");
+      context.currentTime = 10;
+      const engine = createWebEngine({ createContext: () => context as unknown as AudioContext });
+      engine.loopLayer("held", [note()], 2, 2, 0n);
+      context.currentTime = 10.04;
+      await vi.advanceTimersByTimeAsync(10);
+      const firstCarrier = context.oscillators[0];
+      context.currentTime = 12.035;
+      await vi.advanceTimersByTimeAsync(10);
+      // The release envelope begins at 12.05, not at the 12.035 scheduling tick.
+      expect(firstCarrier.stops[0]).toBeCloseTo(12.05 + 0.4 + 0.03);
+      expect(engine.transport("held").positionSeconds).toBeCloseTo(1.985 / 2);
+      engine.stopReplay();
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("keeps selected-layer clocks through a silent tail and wraps without a timer tick", () => {
+    const context = new FakeContext();
+    context.setState("running");
+    context.currentTime = 10;
+    const engine = createWebEngine({ createContext: () => context as unknown as AudioContext });
+    engine.loopLayer("first", [note()], 1, 2, 0n);
+    engine.loopLayer("selected", [{ ...note(), scheduleElapsed: 9_000_000n }], 1, 2, 9_000_000n);
+    context.currentTime = 10.05 + 1.9;
+    expect(engine.transport("first").positionSeconds).toBeCloseTo(1.9);
+    expect(engine.transport("selected").positionSeconds).toBeCloseTo(10.9);
+    expect(engine.transport("missing").positionSeconds).toBeNull();
+    const revision = engine.transport("selected").revision;
+    context.currentTime = 10.05 + 2.1;
+    expect(engine.transport("selected").positionSeconds).toBeCloseTo(9.1);
+    expect(engine.transport("selected").revision).toBeGreaterThan(revision);
+    engine.stopReplay();
+  });
+
+  it("keeps audition outside capture and isolates overlapping layer note-offs and sustain", async () => {
+    vi.useFakeTimers();
+    try {
+      const context = new FakeContext();
+      context.setState("running");
+      context.currentTime = 10;
+      const engine = createWebEngine({ createContext: () => context as unknown as AudioContext });
+      const capture: IncomingEvent[] = [];
+      engine.subscribe((event) => capture.push(event));
+      const cc = (at: bigint, value: number): PlaybackEvent => ({ ...note(), kind: "cc", controller: 64, value, scheduleElapsed: at });
+      const off = (at: bigint): PlaybackEvent => ({ ...note(), kind: "note-off", velocity: 0, scheduleElapsed: at });
+      engine.loopLayer("pedalled", [cc(0n, 127), note(), off(100_000n), cc(600_000n, 0)], 1, 4, 0n);
+      engine.loopLayer("plain", [note(), off(100_000n)], 1, 4, 0n);
+      engine.audition(60, true);
+      engine.audition(60, false);
+      engine.stopAudition();
+      expect(capture).toEqual([]);
+      // A scheduled lookahead note must not light before its audio start.
+      context.currentTime = 10.04;
+      await vi.advanceTimersByTimeAsync(10);
+      expect(engine.soundingPitches("plain")).toEqual([]);
+      context.currentTime = 10.05;
+      expect(engine.soundingPitches("plain")).toEqual([60]);
+      context.currentTime = 10.14;
+      await vi.advanceTimersByTimeAsync(10);
+      context.currentTime = 10.60;
+      expect(engine.soundingPitches("plain")).toEqual([]);
+      expect(engine.soundingPitches("pedalled")).toEqual([60]);
+      context.currentTime = 10.64;
+      await vi.advanceTimersByTimeAsync(10);
+      context.currentTime = 11.2;
+      expect(engine.soundingPitches("pedalled")).toEqual([60]);
+      context.currentTime = 11.9;
+      expect(engine.soundingPitches("pedalled")).toEqual([]);
+      expect(capture).toEqual([]);
+      engine.stopReplay();
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("applies edited notes at the next seam without resetting phase, including erase-all", async () => {
+    vi.useFakeTimers();
+    try {
+      const context = new FakeContext();
+      context.setState("running");
+      context.currentTime = 10;
+      const engine = createWebEngine({ createContext: () => context as unknown as AudioContext });
+      const off = { ...note(), kind: "note-off" as const, velocity: 0, scheduleElapsed: 100_000n };
+      engine.loopLayer("edit", [note(), off], 1, 2, 0n);
+      context.currentTime = 10.04;
+      await vi.advanceTimersByTimeAsync(10);
+      context.currentTime = 10.14;
+      await vi.advanceTimersByTimeAsync(10);
+      context.currentTime = 11;
+      engine.updateLayer("edit", [{ ...note(), note: 64 }, { ...off, note: 64 }], 1, 2, 0n);
+      expect(engine.transport("edit").positionSeconds).toBeCloseTo(0.95);
+      context.currentTime = 12.055;
+      await vi.advanceTimersByTimeAsync(10);
+      expect(engine.soundingPitches("edit")).toEqual([64]);
+      expect(engine.transport("edit").positionSeconds).toBeCloseTo(0.005);
+      context.currentTime = 12.14;
+      await vi.advanceTimersByTimeAsync(10);
+      engine.updateLayer("edit", [], 1, 2, 0n);
+      context.currentTime = 14.055;
+      await vi.advanceTimersByTimeAsync(10);
+      expect(engine.soundingPitches("edit")).toEqual([]);
+      expect(engine.transport("edit").state).toBe("playing");
+      expect(engine.transport("edit").positionSeconds).toBeCloseTo(0.005);
+      engine.stopReplay();
+    } finally { vi.useRealTimers(); }
+  });
+
   it("follows suspended, interrupted, resume, and closed without claiming running", async () => {
     const context = new FakeContext();
     const engine = createWebEngine({

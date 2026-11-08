@@ -23,7 +23,7 @@ export interface IncomingEvent {
   sourceTimestamp: bigint | null;
   receiptTimestamp: bigint;
   missingSourceTimestamp: boolean;
-  raw: number[] | null;
+  raw: readonly number[] | null;
   origin: EventOrigin;
 }
 

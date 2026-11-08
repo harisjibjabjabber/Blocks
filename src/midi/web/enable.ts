@@ -30,14 +30,14 @@ export interface EnableDeps {
 
 export interface MidiAccessLike {
   inputs: Iterable<[string, MidiPortLike]>;
-  onstatechange: ((event: unknown) => void) | null;
+  onstatechange: ((event: MIDIConnectionEvent) => void) | null;
 }
 
 export interface MidiPortLike {
   id: string;
-  name?: string;
+  name?: string | null;
   state: string;
-  onmidimessage: ((event: { data: Uint8Array; timeStamp: number }) => void) | null;
+  onmidimessage: ((event: MIDIMessageEvent) => void) | null;
 }
 
 export const idleGate = (): GateState => ({
@@ -138,7 +138,7 @@ export async function enableFromGesture(deps: EnableDeps): Promise<{ gate: GateS
     const message = error instanceof Error ? error.message : "";
     const name = error instanceof DOMException ? error.name : error instanceof Error ? error.name : "";
     const siteAddon = name === "SecurityError" && /site permission add-on/i.test(message);
-    const blocked = siteAddon ? "site-addon" : name === "NotAllowedError" ? "denied" : name === "SecurityError" && deps.permission?.policyAllows === false ? "policy-blocked" : "failed";
+    const blocked = siteAddon ? "site-addon" : name === "NotAllowedError" ? "denied" : "failed";
     const detail = siteAddon
       ? "SecurityError: " + message + " Desktop Firefox gates Web MIDI behind a site-permission add-on. This is a browser requirement, not a permission denial this page can see and not a broken take. Chrome or Edge is the easier first hardware test. Next: install the site-permission add-on Firefox offers for this site, or open the page in Chrome or Edge. On-screen keys still play."
       : name === "NotAllowedError"
@@ -158,7 +158,7 @@ export async function enableFromGesture(deps: EnableDeps): Promise<{ gate: GateS
       order,
     };
   }
-  const inputs = Array.from(access.inputs.values()).filter((port) => port.state !== "disconnected");
+  const inputs = Array.from(access.inputs, ([, port]) => port).filter((port) => port.state !== "disconnected");
   const audioRunning = runningNow();
   if (inputs.length === 0) {
     return {

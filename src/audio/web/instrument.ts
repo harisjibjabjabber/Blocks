@@ -1,6 +1,6 @@
 import { EP_PRESET } from "./preset";
 
-export type VoiceSource = "touch" | "midi" | "replay" | `replay:${string}`;
+export type VoiceSource = "touch" | "midi" | "replay" | "audition" | `replay:${string}`;
 
 interface Voice {
   osc: OscillatorNode[];
@@ -12,14 +12,16 @@ interface Voice {
   keyDown: boolean;
   pedal: boolean;
   source: VoiceSource;
+  startedAt: number;
+  stopsAt: number;
 }
 
 export class WebElectricPiano {
   readonly presetId = EP_PRESET.id;
   private readonly master: GainNode;
   private readonly voices: Voice[] = [];
-  private readonly pedal = new Array(16).fill(false);
-  private readonly expression = new Array(16).fill(127);
+  private readonly pedal = new Map<string, boolean>();
+  private readonly expression = new Map<string, number>();
   private sustainCc = 64;
   private generation = 0;
 
@@ -39,7 +41,8 @@ export class WebElectricPiano {
       this.stopVoice(voice, this.context.currentTime);
     }
     this.voices.length = 0;
-    this.pedal.fill(false);
+    this.pedal.clear();
+    this.expression.clear();
   }
 
   play(
@@ -55,12 +58,12 @@ export class WebElectricPiano {
     if (message.kind === "note-on" && message.velocity > 0) {
       this.noteOn(when, message.channel, message.note, message.velocity, source);
     } else if (message.kind === "note-off" || (message.kind === "note-on" && message.velocity === 0)) {
-      this.noteOff(when, message.channel, message.note);
+      this.noteOff(when, message.channel, message.note, source);
     } else if (message.kind === "cc") {
       if (message.controller === this.sustainCc) {
-        this.setPedal(when, message.channel, message.value >= 64);
+        this.setPedal(when, message.channel, message.value >= 64, source);
       } else if (message.controller === 11) {
-        this.expression[message.channel] = message.value;
+        this.expression.set(source + ":" + message.channel, message.value);
       }
     }
   }
@@ -69,6 +72,23 @@ export class WebElectricPiano {
     for (const voice of this.voices.filter((item) => item.source === source)) {
       this.release(voice, Math.max(time, this.context.currentTime), voice.pedal ? EP_PRESET.pedalReleaseSeconds : EP_PRESET.releaseSeconds);
     }
+    for (let channel = 0; channel < 16; channel += 1) {
+      this.pedal.delete(source + ":" + channel);
+      this.expression.delete(source + ":" + channel);
+    }
+  }
+
+  /** Scheduled voice lifetime, including the instrument's release envelope. */
+  soundingPitches(source: VoiceSource): readonly number[] {
+    this.prune();
+    const now = this.context.currentTime;
+    return [...new Set(this.voices.filter((voice) => voice.source === source && voice.startedAt <= now && now < voice.stopsAt).map((voice) => voice.note))].sort((a, b) => a - b);
+  }
+
+  private prune(): void {
+    for (let index = this.voices.length - 1; index >= 0; index -= 1) {
+      if (this.voices[index].stopsAt <= this.context.currentTime) this.voices.splice(index, 1);
+    }
   }
 
   silenceAll(): void {
@@ -76,7 +96,8 @@ export class WebElectricPiano {
   }
 
   private noteOn(time: number, channel: number, note: number, velocity: number, source: VoiceSource): void {
-    const existing = this.voices.find((voice) => voice.channel === channel && voice.note === note);
+    this.prune();
+    const existing = this.voices.find((voice) => voice.source === source && voice.channel === channel && voice.note === note && voice.keyDown);
     if (existing) {
       this.release(existing, time, 0.02);
     }
@@ -112,7 +133,7 @@ export class WebElectricPiano {
     carrier.connect(amp);
     amp.connect(tremoloOffset);
     tremoloOffset.connect(this.master);
-    const peak = 0.2 * velocityGain * (this.expression[channel] / 127);
+    const peak = 0.2 * velocityGain * ((this.expression.get(source + ":" + channel) ?? 127) / 127);
     amp.gain.setValueAtTime(0.0001, time);
     amp.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), time + EP_PRESET.attackSeconds);
     amp.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak * EP_PRESET.sustainLevel), time + EP_PRESET.decaySeconds);
@@ -129,32 +150,37 @@ export class WebElectricPiano {
       keyDown: true,
       pedal: false,
       source,
+      startedAt: time,
+      stopsAt: Infinity,
     });
   }
 
-  private noteOff(time: number, channel: number, note: number): void {
-    const voice = this.voices.find((item) => item.channel === channel && item.note === note);
+  private noteOff(time: number, channel: number, note: number, source: VoiceSource): void {
+    const voice = this.voices.find((item) => item.source === source && item.channel === channel && item.note === note && item.keyDown);
     if (!voice) {
       return;
     }
     voice.keyDown = false;
-    if (this.pedal[channel]) {
+    if (this.pedal.get(source + ":" + channel)) {
       voice.pedal = true;
       return;
     }
     this.release(voice, time, EP_PRESET.releaseSeconds);
   }
 
-  private setPedal(time: number, channel: number, down: boolean): void {
-    this.pedal[channel] = down;
+  private setPedal(time: number, channel: number, down: boolean, source: VoiceSource): void {
+    this.pedal.set(source + ":" + channel, down);
     if (!down) {
-      for (const voice of this.voices.filter((item) => item.channel === channel && item.pedal && !item.keyDown)) {
+      for (const voice of this.voices.filter((item) => item.source === source && item.channel === channel && item.pedal && !item.keyDown)) {
         this.release(voice, time, EP_PRESET.pedalReleaseSeconds);
       }
     }
   }
 
   private release(voice: Voice, time: number, seconds: number): void {
+    const stopsAt = time + seconds + 0.03;
+    if (voice.stopsAt <= stopsAt) return;
+    voice.keyDown = false;
     const gain = voice.amp.gain;
     const floor = 0.0001;
     let level = floor;
@@ -172,14 +198,11 @@ export class WebElectricPiano {
     }
     gain.setValueAtTime(level, time);
     gain.exponentialRampToValueAtTime(floor, time + seconds);
-    this.stopVoice(voice, time + seconds + 0.03);
-    const index = this.voices.indexOf(voice);
-    if (index >= 0) {
-      this.voices.splice(index, 1);
-    }
+    this.stopVoice(voice, stopsAt);
   }
 
   private stopVoice(voice: Voice, time: number): void {
+    voice.stopsAt = Math.min(voice.stopsAt, time);
     for (const osc of voice.osc) {
       try {
         osc.stop(time);

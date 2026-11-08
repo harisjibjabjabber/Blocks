@@ -18,7 +18,9 @@ describe("GitHub Pages base path", () => {
 
   it("builds the static site at exactly /Blocks/", () => {
     const pkg = readFileSync(new URL("../../package.json", import.meta.url), "utf8");
-    expect(pkg).toContain("BLOCKS_BASE=/Blocks/");
+    expect(JSON.parse(pkg).scripts["build:web"]).toBe("node scripts/build-web.mjs");
+    const build = readFileSync(new URL("../../scripts/build-web.mjs", import.meta.url), "utf8");
+    expect(build).toContain('process.env.BLOCKS_BASE = "/Blocks/"');
     const workflow = readFileSync(new URL("../../.github/workflows/pages.yml", import.meta.url), "utf8");
     expect(workflow).toContain("npm run build:web");
     expect(workflow).not.toContain("github.event.repository.name");

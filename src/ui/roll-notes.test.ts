@@ -101,4 +101,19 @@ describe("working notes", () => {
     expect(played.find((item) => item.kind === "note-off" && item.note === 60)?.scheduleElapsed).toBe(500_000n);
     expect(note.end).toBe(900_000n);
   });
+
+  it("keeps expression bytes on the playback copy and excludes a note at the loop end", () => {
+    const expression = [
+      event("expression", "cc", 0, 0, 30_000n, 11, 90),
+      { ...event("bend", "pitch", 0, 0, 35_000n), raw: [0xe0, 0, 70] },
+      { ...event("pressure", "other", 60, 0, 40_000n), raw: [0xa0, 60, 85] },
+    ];
+    const input = [...source, ...expression];
+    const before = structuredClone(input);
+    const edge: RollNote = { id: "at-end", pitch: 80, channel: 0, start: 500_000n, end: 600_000n, velocity: 80, sourceOnId: null, sourceOffId: null };
+    const played = workingPlayback(input, [...notesFromEvents(input), edge], { start: 0n, end: 500_000n });
+    expect(played.filter((item) => expression.some((original) => original.id === item.id))).toEqual(expression);
+    expect(played.some((item) => item.kind === "note-on" && item.note === 80)).toBe(false);
+    expect(input).toEqual(before);
+  });
 });

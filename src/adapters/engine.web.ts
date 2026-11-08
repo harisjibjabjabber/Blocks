@@ -7,6 +7,8 @@ import { syncAudioGate } from "../domain/readiness";
 import { bindMidiInputs, enableFromGesture, idleGate, type EnableDeps } from "../midi/web/enable";
 import { parseCompleteMidi } from "../midi/web/complete";
 
+export type PlaybackEvent = IncomingEvent & { scheduleElapsed: bigint };
+
 export interface PortInfo {
   id: string;
   name: string;
@@ -15,19 +17,25 @@ export interface PortInfo {
 
 export interface SketchEngine {
   kind: "web";
+  domain: "web-performance-us";
   presetId: string;
   presetName: string;
+  capabilities: { audition: boolean; soundingPitches: boolean };
   enable(): Promise<ReturnType<typeof idleGate>>;
   getGate(): ReturnType<typeof idleGate>;
   readAudioState(): string;
   ports(): PortInfo[];
   subscribe(listener: (event: IncomingEvent) => void): () => void;
   touch(note: number, velocity: number, down: boolean): void;
+  audition(note: number, down: boolean): void;
+  stopAudition(): void;
+  soundingPitches(layerId: string): readonly number[];
   setSustain(cc: number): void;
-  replay(events: IncomingEvent[], stretch: number): void;
-  loopLayer(id: string, events: IncomingEvent[], stretch: number, durationSec: number, originUs?: bigint): void;
+  replay(events: PlaybackEvent[], stretch: number): void;
+  loopLayer(id: string, events: PlaybackEvent[], stretch: number, durationSec: number, originUs?: bigint): void;
+  updateLayer(id: string, events: PlaybackEvent[], stretch: number, durationSec: number, originUs?: bigint): void;
   stopLayer(id: string): void;
-  transport(): TransportSnapshot;
+  transport(layerId?: string): TransportSnapshot;
   stopReplay(): void;
   silence(): void;
   stats(): Promise<string>;
@@ -53,6 +61,8 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
         ? (midiOptions: { sysex: boolean }) => navigator.requestMIDIAccess(midiOptions)
         : undefined;
   const piano = new WebElectricPiano(context);
+  // Separate voices and pedal state: editor audition cannot steal a loop voice.
+  const auditionPiano = new WebElectricPiano(context);
   let gate = idleGate();
   let access: MIDIAccess | null = null;
   let bound: MIDIInput[] = [];
@@ -68,14 +78,16 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
   let loopTimer: ReturnType<typeof setInterval> | null = null;
   interface LoopSlot {
     id: string;
-    events: IncomingEvent[];
+    events: PlaybackEvent[];
     stretch: number;
     generation: number;
     cycleStart: number;
+    startedAt: number;
     duration: number;
     originUs: bigint;
     planned: PlannedEvent[];
     index: number;
+    pending?: { events: PlaybackEvent[]; stretch: number; duration: number; originUs: bigint };
   }
   let slots: LoopSlot[] = [];
   let sustainCc = 64;
@@ -112,7 +124,8 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
     };
   };
 
-  const onMessage = (portId: string) => (event: { data: Uint8Array; timeStamp: number }) => {
+  const onMessage = (portId: string) => (event: { data: Uint8Array | null; timeStamp: number }) => {
+    if (!event.data) return;
     const incoming = toIncoming(event.data, event.timeStamp, portId, "raw-midi");
     if (!incoming) {
       return;
@@ -151,6 +164,7 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
   const publishAudio = () => {
     if (context.state !== "running") {
       stopReplay();
+      auditionPiano.cancelAll();
     }
     gate = syncAudioGate(gate, context.state);
   };
@@ -163,7 +177,10 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
 
   function planSlot(slot: LoopSlot, audioStart: number): PlannedEvent[] {
     const anchor = slot.originUs;
-    return slot.events.map((event) => ({
+    return slot.events.filter((event) => {
+      const time = Number(event.scheduleElapsed - anchor) / 1_000_000 * slot.stretch;
+      return time >= 0 && (time < slot.duration || (time === slot.duration && event.kind !== "note-on"));
+    }).map((event) => ({
       audioTimeSec: planFromElapsed({
         audioStartSec: audioStart,
         elapsedUs: event.scheduleElapsed,
@@ -198,12 +215,23 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
     }
     const now = context.currentTime;
     for (const slot of slots) {
-      if (slot.index >= slot.planned.length && now + 0.02 >= slot.cycleStart + slot.duration) {
-        piano.releaseSource(layerSource(slot.id), now);
-        slot.cycleStart += slot.duration;
+      if (slot.index >= slot.planned.length && now + 0.02 >= slot.cycleStart + slot.duration && (!slot.pending || now >= slot.cycleStart + slot.duration)) {
+        const boundary = slot.cycleStart + slot.duration;
+        piano.releaseSource(layerSource(slot.id), Math.max(now, boundary));
+        // Skip missed cycles after a stalled scheduler, never replay a backlog.
+        slot.cycleStart += Math.max(1, Math.floor((now - slot.cycleStart) / slot.duration)) * slot.duration;
+        if (slot.pending) {
+          const next = slot.pending;
+          slot.events = next.events;
+          slot.stretch = next.stretch;
+          slot.duration = next.duration;
+          slot.originUs = next.originUs;
+          slot.startedAt = slot.cycleStart;
+          slot.pending = undefined;
+          transportRevision += 1;
+        }
         slot.planned = planSlot(slot, slot.cycleStart);
         slot.index = 0;
-        transportRevision += 1;
       }
       const selected = selectDue({
         planned: slot.planned,
@@ -238,9 +266,9 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
     clearTransportIfIdle();
   }
 
-  function loopLayer(id: string, events: IncomingEvent[], stretch: number, durationSec: number, originUs?: bigint) {
+  function loopLayer(id: string, events: PlaybackEvent[], stretch: number, durationSec: number, originUs?: bigint) {
     stopLayer(id);
-    if (context.state !== "running" || events.length === 0) {
+    if (context.state !== "running" || (events.length === 0 && originUs === undefined)) {
       return;
     }
     const duration = Math.max(0.4, durationSec);
@@ -252,9 +280,10 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
     const slot: LoopSlot = {
       id,
       events,
-      stretch,
+      stretch: stretch > 0 ? stretch : 1,
       generation: 1,
       cycleStart: joined.start,
+      startedAt: joined.start,
       duration,
       originUs: originUs ?? events[0].scheduleElapsed,
       planned: [],
@@ -264,6 +293,16 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
     slot.planned = planSlot(slot, slot.cycleStart);
     slots.push(slot);
     ensureLoopPump();
+  }
+
+  function updateLayer(id: string, events: PlaybackEvent[], stretch: number, durationSec: number, originUs?: bigint) {
+    const slot = slots.find((item) => item.id === id);
+    if (!slot) {
+      loopLayer(id, events, stretch, durationSec, originUs);
+      return;
+    }
+    // Repeated edits replace this pending copy. Preview never reaches the engine.
+    slot.pending = { events: events.slice(), stretch: stretch > 0 ? stretch : 1, duration: Math.max(0.4, durationSec), originUs: originUs ?? slot.originUs };
   }
 
   function stopReplay() {
@@ -283,8 +322,10 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
 
   return {
     kind: "web",
+    domain: "web-performance-us",
     presetId: EP_PRESET.id,
     presetName: EP_PRESET.name,
+    capabilities: { audition: true, soundingPitches: true },
     getGate: () => {
       gate = syncAudioGate(gate, context.state);
       return gate;
@@ -305,6 +346,7 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
       access = (result.access as MIDIAccess | null) ?? null;
       if (access) {
         access.onstatechange = () => {
+          auditionPiano.cancelAll();
           const hadConnected = bound.some((port) => port.state === "connected");
           rebind();
           const connected = Array.from(access?.inputs.values() ?? []).some((port) => port.state === "connected");
@@ -347,19 +389,30 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
         piano.play(decision.when, { ...incoming, velocity: vel, source: "touch" });
       }
     },
+    audition(note, down) {
+      if (!Number.isInteger(note) || note < 0 || note > 127) return;
+      auditionPiano.play(context.currentTime, { kind: down ? "note-on" : "note-off", channel: 0, note, velocity: down ? 96 : 0, controller: 0, value: 0, source: "audition" });
+    },
+    stopAudition() {
+      auditionPiano.cancelAll();
+    },
+    soundingPitches(layerId) {
+      return context.state === "running" ? piano.soundingPitches(layerSource(layerId)) : [];
+    },
     setSustain(cc) {
       sustainCc = cc;
       piano.setSustainController(cc);
     },
     loopLayer,
+    updateLayer,
     stopLayer,
-    transport() {
-      const slot = slots[0];
+    transport(layerId) {
+      const slot = layerId === undefined ? slots[0] : slots.find((item) => item.id === layerId);
       return readTransport({
         audioRunning: context.state === "running",
         hasSlot: Boolean(slot),
         now: context.currentTime,
-        cycleStart: slot ? slot.cycleStart : null,
+        cycleStart: slot ? slot.startedAt : null,
         duration: slot ? slot.duration : null,
         originUs: slot ? slot.originUs : null,
         stretch: slot ? slot.stretch : 1,
@@ -420,7 +473,9 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
     },
     stopReplay,
     silence() {
+      stopReplay();
       piano.silenceAll();
+      auditionPiano.cancelAll();
       scheduledNotes = 0;
     },
     async stats() {

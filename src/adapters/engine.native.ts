@@ -88,8 +88,14 @@ export function createNativeEngine() {
 
   return {
     kind: "android" as const,
+    domain: "android-monotonic-ns" as const,
     presetId: EP_PRESET.id,
     presetName: EP_PRESET.name,
+    capabilities: { audition: false, soundingPitches: false },
+    // Native bridge has no isolated audition or authoritative sounding-state API.
+    audition(_note: number, _down: boolean) {},
+    stopAudition() {},
+    soundingPitches(_layerId: string): readonly number[] { return []; },
     getGate: () => gate,
     readAudioState: () => (gate.audioRunning ? "running" : "stopped"),
     ports: () => ports,
@@ -131,7 +137,7 @@ export function createNativeEngine() {
     setSustain(cc: number) {
       native.setSustain(cc);
     },
-    replay(events: IncomingEvent[], stretch: number) {
+    replay(events: (IncomingEvent & { scheduleElapsed: bigint })[], stretch: number) {
       const first = events[0]?.scheduleElapsed ?? 0n;
       const lines = events
         .map((event) => {
@@ -148,7 +154,7 @@ export function createNativeEngine() {
     stopReplay() {
       native.stopReplay();
     },
-    transport() {
+    transport(_layerId?: string) {
       return { availability: "unavailable" as const, state: "stopped" as const, positionSeconds: null, originSeconds: null, revision: 0 };
     },
     async stats() {

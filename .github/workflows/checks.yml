@@ -1,0 +1,47 @@
+name: checks
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+      - handover/status
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck:web
+      - run: npm test
+      - run: npm run build:web
+      - name: Test the built web app
+        env:
+          BLOCKS_BASE: /Blocks/
+          BLOCKS_PROOF_URL: http://127.0.0.1:41713/Blocks/
+          BLOCKS_PROOF_DIR: ${{ runner.temp }}/blocks-browser-evidence
+        run: |
+          npx vite preview --host 127.0.0.1 --port 41713 --strictPort > "$RUNNER_TEMP/blocks-preview.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:41713/Blocks/ > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:browser
+      - name: Preserve browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: piano-roll-browser-evidence
+          path: ${{ runner.temp }}/blocks-browser-evidence

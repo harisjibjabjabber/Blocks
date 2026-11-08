@@ -1,5 +1,5 @@
 import * as esbuild from "esbuild";
-import { writeFileSync } from "node:fs";
+import { browserSession, delay } from "./browser-session.mjs";
 
 const bundled = await esbuild.build({
   entryPoints: ["src/audio/web/instrument.ts"],
@@ -59,48 +59,15 @@ const out = {
 document.getElementById("out").textContent = JSON.stringify(out);
 })().catch((error) => { document.getElementById("out").textContent = "ERR " + error; });
 </script>`;
-writeFileSync("/tmp/warm-ep-measure.html", html);
-
-const chrome = process.env.CHROME || "google-chrome";
-const port = 18000 + Math.floor(Math.random() * 2000);
-const { spawn } = await import("node:child_process");
-const child = spawn(chrome, [
-  "--headless=new",
-  "--disable-gpu",
-  "--no-sandbox",
-  `--remote-debugging-port=${port}`,
-  `--user-data-dir=/tmp/warm-ep-chrome-${port}`,
-  "about:blank",
-], { stdio: "ignore" });
-await new Promise((resolve) => setTimeout(resolve, 700));
-const list = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
-const page = list.find((item) => item.type === "page");
-const ws = new WebSocket(page.webSocketDebuggerUrl);
-let seq = 0;
-const pending = new Map();
-ws.addEventListener("message", (ev) => {
-  const msg = JSON.parse(ev.data);
-  if (msg.id && pending.has(msg.id)) {
-    pending.get(msg.id)(msg.result);
-    pending.delete(msg.id);
-  }
-});
-await new Promise((resolve) => ws.addEventListener("open", resolve));
-const send = (method, params = {}) => new Promise((resolve) => {
-  const id = ++seq;
-  pending.set(id, resolve);
-  ws.send(JSON.stringify({ id, method, params }));
-});
-await send("Page.enable");
-await send("Page.navigate", { url: "file:///tmp/warm-ep-measure.html" });
+const browser = await browserSession();
 let text = "waiting";
-for (let i = 0; i < 80 && (text === "waiting" || text === ""); i += 1) {
-  await new Promise((resolve) => setTimeout(resolve, 200));
-  const result = await send("Runtime.evaluate", { expression: "document.getElementById('out').textContent", returnByValue: true });
-  text = result.result.value;
-}
-ws.close();
-child.kill();
+try {
+  await browser.navigate("data:text/html;charset=utf-8," + encodeURIComponent(html));
+  for (let i = 0; i < 80 && (text === "waiting" || text === ""); i += 1) {
+    await delay(100);
+    text = await browser.evaluate("document.getElementById('out').textContent");
+  }
+} finally { await browser.close(); }
 const measured = JSON.parse(text);
 console.log(JSON.stringify(measured, null, 2));
 const faults = [];
