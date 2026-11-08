@@ -1,0 +1,19 @@
+== Phrase capture on VALIDATION fixtures (SYNTHETIC, provisional labels; not Haris's MIDI) [INDEPENDENT VALIDATION SET, frozen 19:57:01 GMT, sha256 c06e8caa9a75…; scored once, not tuned on]
+coverage categories: GOOD = >=90% of intended-phrase groups and <=1 unrelated earlier group; FINAL_TRAP = <=25% of a longer (>=3-group) intended phrase; WHOLE_TRAP = >50% of UNRELATED earlier material. A single-event or whole-session selection is GOOD when that IS the intended phrase
+reference coverage: {"PARTIAL":7,"GOOD":6} | reference period: {"NO_PERIOD":2,"DEFAULT":5,"ALTERNATIVE":1,"OTHER":5}
+main-fdba348 free time (no tempo passed): {"GOOD":3,"PARTIAL":2,"FINAL_TRAP":2,"WHOLE_TRAP":6} | main-fdba348 with the true beat passed as a grid (= a proposed tempo at fdba348): {"GOOD":2,"PARTIAL":4,"FINAL_TRAP":7}
+main-497894e as App calls it (free time unless the fixture has a locked grid): {"GOOD":5,"PARTIAL":2,"FINAL_TRAP":2,"WHOLE_TRAP":4}
+main-3412f61 (CURRENT baseline) as App calls it (beatForCut: locked grid only): {"GOOD":6,"PARTIAL":3,"FINAL_TRAP":1,"WHOLE_TRAP":3}
+  V01-single-note-take                         REF abstain       free      PARTIAL    period=NO_PERIOD(abstain)   | expected 1bar@100 | fdba348 free GOOD       grid GOOD       | 497894e GOOD       | 3412f61 GOOD
+  V02-short-complete-motif                     REF proposed-grid 1bar@108.7 GOOD       period=DEFAULT              | expected 1bar@110 | fdba348 free GOOD       grid GOOD       | 497894e GOOD       | 3412f61 GOOD
+  V03-whole-session-is-2bar-progression        REF abstain       free      PARTIAL    period=NO_PERIOD(abstain)   | expected 2bar@90 | fdba348 free GOOD       grid PARTIAL    | 497894e GOOD       | 3412f61 GOOD
+  V04-legato-melody-after-noodle               REF proposed-grid 4bar@84 GOOD       period=DEFAULT              | expected 4bar@84 | fdba348 free PARTIAL    grid PARTIAL    | 497894e PARTIAL    | 3412f61 PARTIAL
+  V05-pedalled-scalar-runs                     REF free          free      GOOD       period=ALTERNATIVE(free)    | expected 2bar@96 | fdba348 free FINAL_TRAP grid FINAL_TRAP | 497894e FINAL_TRAP | 3412f61 FINAL_TRAP
+  V06-bass-syncopated-after-noodle             REF proposed-grid 2bar@98.4 PARTIAL    period=OTHER                | expected 4bar@104 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP | 3412f61 WHOLE_TRAP
+  V07-melody-pickup                            REF proposed-grid 4bar@120 GOOD       period=DEFAULT              | expected 4bar@120 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP | 3412f61 WHOLE_TRAP
+  V08-mixed-hands                              REF proposed-grid 2bar@104.5 PARTIAL    period=OTHER                | expected 4bar@100 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP | 3412f61 GOOD
+  V09-rubato-chords-free                       REF proposed-grid 2bar@79.2 PARTIAL    period=OTHER(expected free) | expected 4bar@66 | fdba348 free FINAL_TRAP grid FINAL_TRAP | 497894e FINAL_TRAP | 3412f61 PARTIAL
+  V10-pedal-through-noodle-and-progression     REF proposed-grid 4bar@94.6 GOOD       period=DEFAULT              | expected 4bar@92 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e GOOD       | 3412f61 GOOD
+  V11-two-chord-idea-after-noodle              REF proposed-grid 4bar@115.3 PARTIAL    period=OTHER                | expected 4bar@96 | fdba348 free WHOLE_TRAP grid PARTIAL    | 497894e GOOD       | 3412f61 GOOD
+  V12-progression-plus-postlude-note           REF proposed-grid 4bar@84 PARTIAL    period=OTHER                | expected 4bar@100 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP | 3412f61 WHOLE_TRAP
+  V13-sparse-melody-after-noodle               REF proposed-grid 4bar@79.2 GOOD       period=DEFAULT              | expected 4bar@80 | fdba348 free PARTIAL    grid PARTIAL    | 497894e PARTIAL    | 3412f61 PARTIAL
