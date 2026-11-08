@@ -5,7 +5,6 @@ import { RollingHistory, type CapturedEvent, type RibbonNotice } from "../domain
 import { inferPulse, type InferenceReport } from "../domain/inference";
 import {
   capturePerformance,
-  chosenBpm,
   defaultOverlay,
   loopLonger,
   loopShorter,
@@ -19,7 +18,7 @@ import {
 } from "../domain/phrase";
 import { createProject, gridStatusCopy, projectFromJson, projectToJson, proposeTempo, type Project } from "../domain/project";
 import { eventsInSelection, moveSelectionStart, recentPhraseCut, type RecentPhraseCut } from "../domain/recent-phrase";
-import { controlLabel, routeLearnedControl, type ControlMap, type LearnTarget } from "../domain/learn";
+import { routeLearnedControl, type ControlMap, type LearnTarget } from "../domain/learn";
 import { ReadinessStrip } from "./Readiness";
 import { touchFromPress, type PressPhase } from "./keys";
 
@@ -312,22 +311,20 @@ export default function App() {
     <View style={styles.page}>
       <ScrollView contentContainerStyle={[styles.content, narrow ? styles.contentNarrow : null]}>
         <Text style={styles.kicker}>Blocks</Text>
-        <Text style={styles.meta}>Early prototype. Hardware unverified. Not a finished product.</Text>
+        <Text style={styles.meta}>Early prototype. Hardware unverified.</Text>
         <Text style={styles.title}>Warm EP</Text>
-        <Text style={styles.preset}>{engine.presetId}</Text>
-        <Text style={styles.body}>Procedural FM electric piano. Velocity and sustain. Not a sampled piano, and not a brand name.</Text>
 
         <View style={styles.row}>
           <Pressable accessibilityRole="button" style={styles.primary} onPress={enable} disabled={busy}>
             <Text style={styles.primaryText}>{busy ? "Starting…" : gate.kind === "idle" ? "Enable" : "Try MIDI"}</Text>
           </Pressable>
           <View style={styles.status}>
-            <ReadinessStrip audioState={audioState} showContext={engine.kind === "web"} />
+            <ReadinessStrip audioState={audioState} showContext={false} />
             <Text style={styles.meta}>Input · {inputCopy(gate.kind, engine.ports().length)}</Text>
             <Text style={styles.meta}>Buffer · {seconds(age, domain)} kept · {ribbon.length} events</Text>
           </View>
         </View>
-        <Text style={styles.body}>{gate.detail}</Text>
+        {gate.kind === "idle" ? null : <Text style={styles.body}>{gate.detail}</Text>}
         {gate.kind === "no-device" ? (
           <Text style={styles.empty}>MIDI is allowed, and no input is connected. On-screen keys are not a MIDI device.</Text>
         ) : engine.ports().length === 0 ? null : (
@@ -340,45 +337,18 @@ export default function App() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Take ribbon</Text>
-          <Text style={styles.meta}>Newest at the right. Drag is not editing. Target about 120 seconds.</Text>
-          <View style={styles.ribbon}>
-            {ribbon.length === 0 ? <Text style={styles.meta}>Empty</Text> : null}
-            {ribbon.slice(-24).map((event) => (
-              <Text key={event.id} style={styles.tick}>
-                {event.kind === "note-on" ? NAMES[NOTES.indexOf(event.note)] || event.note : event.kind === "cc" ? "CC" + event.controller : "·"}
-              </Text>
-            ))}
-          </View>
-          <Text style={styles.meta}>{evictionCopy(notice)}</Text>
+          <TakeRibbon events={ribbon} />
+          {notice.kind === "none" ? null : <Text style={styles.meta}>{evictionCopy(notice)}</Text>}
         </View>
-
-        <View style={styles.layerRow} accessibilityLabel="Layers">
-          {takes.length === 0 ? <Text style={styles.meta}>No layer yet</Text> : takes.map((item, index) => (
-            <Pressable
-              key={item.id}
-              accessibilityRole="button"
-              accessibilityLabel={item.id + (loopingIds.includes(item.id) ? ", looping" : "")}
-              style={[styles.layerChip, item.id === selected ? styles.layerChipOn : null]}
-              onPress={() => setSelected(item.id)}
-            >
-              <Text style={styles.layerText}>{index + 1} · {item.id}{loopingIds.includes(item.id) ? " · looping" : ""}</Text>
-            </Pressable>
-          ))}
-        </View>
-        <Text style={styles.meta}>{gridStatusCopy(project)}</Text>
-        <Text style={styles.meta}>Sustain stays CC {project.sustainCc}. It is not the Capture control.</Text>
-        <Text style={styles.meta}>Capture control: {controlLabel(project.captureControl)}</Text>
-        <Text style={styles.meta}>Play/Stop control: {controlLabel(project.transportControl)}</Text>
-        <Text style={styles.body}>{learning ? "Learning " + (learning === "capture" ? "Capture" : "Play/Stop") + ". Move a controller that is not CC 64 and not a key." : message}</Text>
+        {learning ? <Text style={styles.meta}>Learning {learning === "capture" ? "Capture" : "Play/Stop"}. Not CC 64 and not a key.</Text> : null}
+        {message ? <Text style={styles.meta}>{message}</Text> : null}
 
         {take ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>{take.id} · review</Text>
-            <Text style={styles.body}>{take.report.pulse === "none" || take.report.bpm === null ? "No pulse reading." : take.report.bpm.toFixed(1) + " bpm · 4/4"}</Text>
-            <Text style={styles.meta}>{take.report.reason}</Text>
-            <Text style={styles.body}>Your timing is unchanged — only the grid moves.</Text>
-            <Text style={styles.meta}>Manual grid: {chosenBpm(take.report, take.overlay.tempoChoice)?.toFixed(1) ?? "no bpm"} · phase {take.overlay.phaseBeats} · 4/4</Text>
-            <Text style={styles.meta}>Basic phrase cut. Not finished Capture. Quantise is off.</Text>
+            <Text style={styles.cardTitle}>{take.id}</Text>
+            <Text style={styles.meta}>{gridStatusCopy(project)}</Text>
+            <Text style={styles.meta}>{take.report.pulse === "none" || take.report.bpm === null ? "No pulse reading." : take.report.bpm.toFixed(1) + " bpm · 4/4"} · Quantise off</Text>
+            <Text style={styles.meta}>Your timing is unchanged — only the grid moves.</Text>
             <View style={styles.wrap}>
               <Small label="Half" onPress={() => updateTake(take.id, (current) => ({ ...current, overlay: withChoice(current.overlay, "half") }), "Half is a manual grid correction.")} />
               <Small label="Double" onPress={() => updateTake(take.id, (current) => ({ ...current, overlay: withChoice(current.overlay, "double") }), "Double is a manual grid correction.")} />
@@ -446,6 +416,19 @@ export default function App() {
         </View>
       </ScrollView>
       <View style={styles.dock}>
+        <View style={styles.layerRow} accessibilityLabel="Layers">
+          {takes.length === 0 ? <Text style={styles.meta}>No layer yet</Text> : takes.map((item, index) => (
+            <Pressable
+              key={item.id}
+              accessibilityRole="button"
+              accessibilityLabel={item.id + (loopingIds.includes(item.id) ? ", looping" : "")}
+              style={[styles.layerChip, item.id === selected ? styles.layerChipOn : null]}
+              onPress={() => setSelected(item.id)}
+            >
+              <Text style={styles.layerText}>{index + 1}{loopingIds.includes(item.id) ? " · looping" : ""}</Text>
+            </Pressable>
+          ))}
+        </View>
         <Pressable accessibilityRole="button" accessibilityLabel="Capture" style={styles.capture} onPress={capture}>
           <Text style={styles.captureText}>Capture</Text>
         </Pressable>
@@ -536,6 +519,28 @@ function evictionCopy(notice: RibbonNotice): string {
   return "No eviction.";
 }
 
+function TakeRibbon({ events }: { events: CapturedEvent[] }) {
+  const notes = events.filter((event) => event.kind === "note-on" && event.velocity > 0).slice(-64);
+  if (notes.length === 0) {
+    return <Text style={styles.meta}>Nothing played yet</Text>;
+  }
+  const start = notes[0].scheduleElapsed;
+  const end = notes[notes.length - 1].scheduleElapsed;
+  const span = end > start ? end - start : 1n;
+  const lowest = notes.reduce((min, event) => Math.min(min, event.note), notes[0].note);
+  const highest = notes.reduce((max, event) => Math.max(max, event.note), notes[0].note);
+  const pitch = Math.max(1, highest - lowest);
+  return (
+    <View style={styles.ribbonPlot} accessibilityLabel="Take ribbon">
+      {notes.map((event) => {
+        const x = Number(((event.scheduleElapsed - start) * 100n) / span);
+        const y = ((highest - event.note) / pitch) * 116;
+        return <View key={event.id} style={[styles.ribbonMark, { left: `${Math.min(97, Math.max(0, x))}%`, top: y }]} />;
+      })}
+    </View>
+  );
+}
+
 function Small({ label, onPress }: { label: string; onPress: () => void }) {
   return (
     <Pressable style={styles.secondary} onPress={onPress}>
@@ -563,8 +568,8 @@ const styles = StyleSheet.create({
   port: { color: "#ECEEF2", marginTop: 6, fontSize: 16 },
   card: { backgroundColor: "#14171C", borderRadius: 16, padding: 16, marginTop: 16 },
   cardTitle: { color: "#ECEEF2", fontSize: 18, fontWeight: "700", marginTop: 16 },
-  ribbon: { flexDirection: "row", flexWrap: "wrap", gap: 8, minHeight: 48, marginTop: 8 },
-  tick: { color: "#ECEEF2", backgroundColor: "#20252C", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 8, overflow: "hidden", minHeight: 44 },
+  ribbonPlot: { position: "relative", height: 140, marginTop: 8, backgroundColor: "#0D0F13", borderRadius: 12, overflow: "hidden" },
+  ribbonMark: { position: "absolute", width: 10, height: 18, borderRadius: 3, backgroundColor: "#C9D1DC" },
   layerRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16 },
   layerChip: { backgroundColor: "#20252C", borderRadius: 12, minHeight: 48, paddingVertical: 12, paddingHorizontal: 12, justifyContent: "center" },
   layerChipOn: { borderWidth: 2, borderColor: "#FFFFFF" },
