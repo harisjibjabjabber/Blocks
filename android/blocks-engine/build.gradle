@@ -1,0 +1,31 @@
+apply plugin: "com.android.library"
+
+android {
+    namespace "com.blocks.engine"
+    compileSdk rootProject.ext.compileSdkVersion
+    ndkVersion rootProject.ext.ndkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdkVersion
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++20"
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
+        def architectures = rootProject.findProperty("reactNativeArchitectures")
+        if (architectures != null) {
+            ndk {
+                abiFilters architectures.split(",")
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version "3.22.1"
+        }
+    }
+}

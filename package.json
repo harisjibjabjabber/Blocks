@@ -1,0 +1,50 @@
+{
+  "name": "com.blocks.sketchbook",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "lint": "eslint .",
+    "start": "react-native start",
+    "web": "vite --host 0.0.0.0 --port 41713 --strictPort",
+    "test": "vitest run && npm run test:native",
+    "test:native": "g++ -std=c++20 -O2 -Wall -Wextra -I native/include native/src/midi_parser.cpp native/src/instrument.cpp native/src/pipeline.cpp native/src/render.cpp native/tests/test_main.cpp -o /tmp/blocks-host-tests && /tmp/blocks-host-tests",
+    "test:js": "vitest run"
+  },
+  "dependencies": {
+    "@react-native/new-app-screen": "0.88.1",
+    "react": "19.3.0",
+    "react-dom": "^19.3.0",
+    "react-native": "0.88.1",
+    "react-native-safe-area-context": "^5.5.2",
+    "react-native-web": "^0.21.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.3",
+    "@babel/runtime": "^7.25.0",
+    "@react-native-community/cli": "20.2.0",
+    "@react-native-community/cli-platform-android": "20.2.0",
+    "@react-native-community/cli-platform-ios": "20.2.0",
+    "@react-native/babel-preset": "0.88.1",
+    "@react-native/eslint-config": "0.88.1",
+    "@react-native/jest-preset": "0.88.1",
+    "@react-native/metro-config": "0.88.1",
+    "@react-native/typescript-config": "0.88.1",
+    "@types/jest": "^29.5.13",
+    "@types/react": "^19.2.0",
+    "@types/react-test-renderer": "^19.1.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "eslint": "^8.19.0",
+    "jest": "^29.6.3",
+    "prettier": "2.8.8",
+    "react-test-renderer": "19.3.0",
+    "typescript": "^6.0.3",
+    "vite": "^7.3.7",
+    "vitest": "^3.2.7"
+  },
+  "engines": {
+    "node": ">= 22.11.0"
+  }
+}

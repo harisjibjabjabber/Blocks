@@ -1,0 +1,15 @@
+export const EP_PRESET = {
+  id: "blocks.ep.fm.v1",
+  name: "Warm EP",
+  tuningA4Hz: 440,
+  velocityCurve: 1.5,
+  modulatorRatio: 1,
+  modIndexAtFullVelocity: 2.4,
+  attackSeconds: 0.003,
+  decaySeconds: 1.1,
+  sustainLevel: 0.55,
+  releaseSeconds: 0.22,
+  tremoloRateHz: 4.8,
+  tremoloDepth: 0.15,
+  outputGain: 10 ** (-9 / 20),
+} as const;
