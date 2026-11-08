@@ -151,3 +151,62 @@ Before overlay, five modified files still matched the snapshot base hash: `captu
 | `docs/handover/delta/capture-DELTA-MANIFEST.json` | The same source paths were omitted from `report_provenance`. The zip member hash before that edit was `56a2e76fc7d156fd2da8dd2bdbd9f2b585572b1ad018e1cd0f1c0bc57fee973c`. |
 
 The phrase harness was not rerun. Its comparison baseline is `fdba348` and `497894e`, not `3412f61`. A later team runs those commits, plus live commit `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`, from this repository. `3412f61` was not vendored into the harness.
+
+## Cumulative baseline 3412f61 delta
+
+Applied over `docs/research/capture/` after the checksums below were recorded. The zip was not committed. This supersedes the 19:54 capture delta where paths overlap. Generators and tests were not rerun.
+
+| Check | Result |
+|---|---|
+| Zip | `blocks-capture-baseline3412f61-cumulative-delta_d7ef.zip` |
+| Bytes | 208428 |
+| sha256 | `0e2cdbfb2acbfed2675e4e3388199327356c7425bb0e25f2c057fd1f5984ba37` |
+| `actual_delta` | 64 files against the original snapshot: 6 modified, 58 new. Extracted hashes matched the manifest before path edits |
+| Zip members | 69. The 64, plus two implementation reports, `PROVENANCE.json`, and the delta note and manifest |
+| Missing original-base files | none |
+| Base manifest | `a00cc68081b1299b543dc1bb24b88e83f922c956164f77ca98625a7ab3a89491` |
+
+Before this overlay, six files already differed from that original base because the earlier capture delta and checkout notes were in the tree:
+
+| File | Disk sha256 before this overlay | Original snapshot base |
+|---|---|---|
+| `README.md` | `e053e786bbaa4ee72bf8770d4b00fb4c980c999570157f4a0df59570c79f0efb` | `fe64e7a4de7062688855cd3cbf9aa175f3a8b5d7990d80d8fa04ba3de7aa85e0` |
+| `capture-spec.md` | `90663b3d1934ab33695d613c230f340b9415b0b595359a6c18f0a7ec97451d1c` | `99fb3877f42009411bac26074bf1ec87b8b402d6e59ebfbc3b6f304fcbcda33e` |
+| `evaluation-plan.md` | `86066f666b176100b1f7e949b3e95c073bd91f01cf885ac97ec5982e998dc695` | `4d63a2733052e672f09c93fb903d50ea7ec3bee753964aff98e459ce36b3c951` |
+| `prototype-findings.md` | `8d6c409a45592dbde5beb8b3fc6c951314ff666d4a9259c6034a82e3301c0014` | `664f0c9416f7af47528063f31da3fc347e865800a79b63eaf07abafcd06dbd83` |
+| `repro-four-chords-results.txt` | `9a09e8b6431eae7d64ce740b0ccf392ba815e5eeefe78051e18a0bbc32545687` | `b6b5a64c7c4ddd65941b1dd73beef149d85839525ff9212d8e5a50f7e037af82` |
+| `source-ledger.md` | `5782534fdcb6188839fc1fb6dbc88de66df3a7bf4b055d9a3f25cc83a8bbaf8a` | `a26ac86d1fdf7293b56f23fbe087caaffc9bdd8e3a65ef33300e999c13b30765` |
+
+`phrase-results-holdout.json` on the branch matched `phrase-results-holdout-SUPERSEDED.json` byte for byte (`e157ed5930f3e490b264c0cefcaf70935b55d261ce54c386ea196ce228713f7e`, 15346 bytes). The zip does not delete the old name. That name is now a supersession note. The old bytes stay only in `phrase-results-holdout-SUPERSEDED.json`. PH01–15 are regression cases, not fresh holdout evidence. Current outputs are `phrase-results-regression.json`, `phrase-results-regression.txt`, and `phrase-results-regression-candidate.json`.
+
+### Mapping and path edits
+
+| Snapshot path | Repository path |
+|---|---|
+| `blocks-capture-product/` | `docs/research/capture/` |
+| `blocks-handover-capture-baseline3412f61/DELTA-NOTE.md` | `docs/handover/delta/capture-baseline3412f61-DELTA-NOTE.md` |
+| `blocks-handover-capture-baseline3412f61/DELTA-MANIFEST.json` | `docs/handover/delta/capture-baseline3412f61-DELTA-MANIFEST.json` |
+
+| File | Change after the checksums |
+|---|---|
+| `fixtures/phrase/evaluate-phrase.mjs` | Imports were `/workspace/research/blocks-{fdba348,497894e,3412f61}/recent-phrase.ts`. They now load `historical/`. |
+| `fixtures/phrase/verify-retest-3412f61.mjs` | Same for `497894e` and `3412f61`. |
+| `historical/3412f61/recent-phrase.ts` | Not in the archive. Git blob `f2b71bcd75f89624fba4868be6f318c2f7ee9cb9`. File sha256 `bb1133d7c4f5567750de97c4058f9ab65137a70a4330da1429a060ab170b825f`. |
+| `phrase-results-holdout.json` | Replaced with a supersession note. Old bytes kept under the SUPERSEDED name. |
+| `checkpoints/2026-11-08-last-chord-retest-497894e.md` | Machine path removed again after the overlay restored it. |
+| `handover-evidence/PROVENANCE.json` | Machine paths omitted again. Report hashes kept. |
+| `docs/handover/delta/capture-baseline3412f61-DELTA-MANIFEST.json` | Zip member sha256 before the path omission was `020f0080ded994e4c10a836368f5cc3d3f56955ca47d06e773afee9140851502`. Source paths in `report_provenance` were omitted. |
+
+The three loose checkpoint copies committed just before this overlay are byte-identical to the cumulative names: `checkpoints/2026-11-08-baseline-3412f61_5f2d.md` equals `checkpoints/2026-11-08-baseline-3412f61.md`, `checkpoints/grouping-results_c736.txt` equals `grouping-results.txt`, and `checkpoints/phrase-results-validation_6d1d.txt` equals `phrase-results-validation.txt`.
+
+### Caveats
+
+- Current research baseline is `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`. `fdba348` and `497894e` comparisons stay historical.
+- Validation V01–V13 was frozen independent of predictor tuning, by the same designer. It is not musician-reviewed ground truth.
+- V10's title says the pedal runs through the noodle, but CC64 starts at the progression. That frozen file stays unchanged.
+- D01 is an unscored diagnostic. It is not in the validation aggregate.
+- 3412f61 grouping failures, including `overlapStacks` collapsing a pedal scalar run, are synthetic. They are not Haris's take.
+- The research candidate is not validated and is not the app. Keep baseline metrics distinct from candidate metrics.
+- Last-chord Capture stays unresolved. The live script remains `/Blocks/assets/index-CsEdtvjV.js` until a later behavior commit says otherwise.
+- Ableton material is public behaviour, not its private algorithm. Zya figures 14–16 are UI, not MIDI. The earlier MIT repository quantised and bar-aligned. The 2024 paper was reviewed as an abstract only.
+

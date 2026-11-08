@@ -1,0 +1,824 @@
+{
+  "copy_started_london": "2026-11-08T20:04:42.029465+00:00",
+  "copy_completed_london": "2026-11-08T20:04:42.072936+00:00",
+  "base_manifest_sha256": "a00cc68081b1299b543dc1bb24b88e83f922c956164f77ca98625a7ab3a89491",
+  "actual_delta": [
+    {
+      "path": "blocks-capture-product/README.md",
+      "bytes": 3688,
+      "sha256": "a42f60333643c466c5fa3ab2eb3ad67001a2645ecba9bfc7b9111fc3bb079b86",
+      "base_sha256": "fe64e7a4de7062688855cd3cbf9aa175f3a8b5d7990d80d8fa04ba3de7aa85e0",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-capture-product/capture-spec.md",
+      "bytes": 51749,
+      "sha256": "b60fe4ffab374b2a9d3fa823b5c4289fcb34e9ab52ed9ba04ff8e9e4624fbcfe",
+      "base_sha256": "99fb3877f42009411bac26074bf1ec87b8b402d6e59ebfbc3b6f304fcbcda33e",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-capture-product/checkpoints/2026-11-08-baseline-3412f61.md",
+      "bytes": 3110,
+      "sha256": "951ce620578e8a01e3ca6df88d03b1928800d28f13f5bc029caa1bac59924d6d",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/checkpoints/2026-11-08-last-chord-retest-497894e.md",
+      "bytes": 2358,
+      "sha256": "5844feacec04902cf5f08ffdda0ee6af9c9675dd7cfa4c66887e22faa45ab667",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/evaluation-plan.md",
+      "bytes": 14294,
+      "sha256": "86066f666b176100b1f7e949b3e95c073bd91f01cf885ac97ec5982e998dc695",
+      "base_sha256": "4d63a2733052e672f09c93fb903d50ea7ec3bee753964aff98e459ce36b3c951",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH01-uneven-6-2-4-4-noodle-final-downbeat.json",
+      "bytes": 31673,
+      "sha256": "6c79e2cbcdd5925488a59e3bc5af49512cf53826b32626a6e6585afa750bbdb5",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH02-uneven-2-2-3-1-x2-held-final.json",
+      "bytes": 26605,
+      "sha256": "a599a44cf120e26fa48b0e175134af6532515754a6fcac8cce232db4bd2702c8",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH03-pedal-held-rubato-drift.json",
+      "bytes": 21619,
+      "sha256": "34a4d0a0f5fafd0d61f7c2033ac61844bce35b28474a60e813ceb3f1a8a1b2a1",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH04-pickup-melody-into-bar1.json",
+      "bytes": 20038,
+      "sha256": "0b27c77cc78ec04f6e7a9ea1f777aa5b3034cc6834d6b8c49372018ee267a310",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH05-half-double-fast-eighths.json",
+      "bytes": 19265,
+      "sha256": "6db37e110286456627295e7d0ffa2c7f9cdeacc2f7a22141b13c729e26f573a3",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH06-locked-grid-second-layer-bass.json",
+      "bytes": 12501,
+      "sha256": "3e94f301f407c11eb553028c1206f2c2e86f47cdbe0639e44c13f81ce0499f7a",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH07-sparse-melody.json",
+      "bytes": 11181,
+      "sha256": "9eca05e660a1aae7f6491e24fd14b4c4f6a68225bb7593f28ee7675655d5bede",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH08-arpeggios.json",
+      "bytes": 23071,
+      "sha256": "07e41641379d313f0c96567cb3c3c3b31533171f92abd7ff6bf6cf26f854e589",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH09-repeated-1bar-motif.json",
+      "bytes": 20052,
+      "sha256": "7cf0588d7ec868da04341e9aaf3782b13f1842df39664e74279a5c5a2a400874",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH10-continuous-scalar-runs.json",
+      "bytes": 10492,
+      "sha256": "8ebf9b3486a39a74592da21f48d5b41d651f4e4920ebb34a69af8e5dd1ebe008",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH11-free-rubato-ballad.json",
+      "bytes": 13916,
+      "sha256": "a730fb04fe084b7bb0b38c309d2fe8cc2311037c30bd9852d24277f0065d51f7",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH12-mixed-hands-trailing-silence.json",
+      "bytes": 28091,
+      "sha256": "6b9f87f42594d393f2b1086ee2a6034e59ebe6af66b322a77d662d96d7a8bc64",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH13-rolled-60-120ms-after-noodle.json",
+      "bytes": 20713,
+      "sha256": "976b12350021f35ca26175db3983d57c4f83b319e3cc52ef1b097bd859700dba",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH14-rolled-60-120ms-pedal.json",
+      "bytes": 20135,
+      "sha256": "c99283828d039054394a0ac3bc376beb00a446bfb3a386f472cf744b2ed124da",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH15-rolled-60-120ms-locked-grid.json",
+      "bytes": 10767,
+      "sha256": "7787f3f9ef829977c36ff8f7e9254bb63e1cb6124d2003a1cf06372790747655",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT01-even-4chords-after-noodle.json",
+      "bytes": 15777,
+      "sha256": "a7327068ad80bdae4164e152cc0cac2ab3c86d45bfb26f5a113c1f13c8baa094",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT02-uneven-3-1-2-2-plus-2bars.json",
+      "bytes": 19277,
+      "sha256": "902f078db9d679bc8b37922685d43f0cc49b0821093022bdba14fa005d2ceba1",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT03-pedal-through-changes.json",
+      "bytes": 16385,
+      "sha256": "73cce16e2124ab261b297e2c24e3be5da81b98e0b1fbab53afd74e1499083f10",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT04-bass-syncopated.json",
+      "bytes": 15502,
+      "sha256": "f1d5a9be74704419c231849bfb81f9d8caedc8cb1f544e2ce3f6e1dc8396ff09",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT05-legato-melody.json",
+      "bytes": 10839,
+      "sha256": "6819a4e1954d925ebf8b7f3e57cd4950275e0b9a06c23c261496a4f2e649aa87",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT06-free-rubato-chords.json",
+      "bytes": 10218,
+      "sha256": "43b15590aaff76b7c0ca8ce608efa530c54a749ff4cf309e30ba0f13f319628b",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/FREEZE.txt",
+      "bytes": 327,
+      "sha256": "64b4b6d02541da6a214a48f832c303cf05da03fd326849bf7c93b8fb520c0742",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/diagnostic-post-freeze/D01.json",
+      "bytes": 14186,
+      "sha256": "e9169d0ade985e40846265d28384795f55b2384fa54bb105f5ddcf12bc8cf169",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V01-single-note-take.json",
+      "bytes": 850,
+      "sha256": "fc4e2e704fad3972e5b07ba1ea82cecae70934eb4ba001486160916ee4dfb996",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V02-short-complete-motif.json",
+      "bytes": 1481,
+      "sha256": "33895d18aa0e1fbb66a3188fdec96a26dcdc131983869d2f58e58bd9f19603de",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V03-whole-session-is-2bar-progression.json",
+      "bytes": 2307,
+      "sha256": "c1893dc622419737c9f641ada2dd5946ab95bfe05ee94eed9e047b655c7fc6db",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V04-legato-melody-after-noodle.json",
+      "bytes": 11030,
+      "sha256": "71fe5486c47c8b0782288fadd653866be049638bf900e672f5b51003c5723652",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V05-pedalled-scalar-runs.json",
+      "bytes": 11092,
+      "sha256": "502d1b1184af85ca6f51fb31c5b91d3ae2f8f5e8f8086695680c6b1a14e06522",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V06-bass-syncopated-after-noodle.json",
+      "bytes": 18619,
+      "sha256": "4ac234cade30919d87fe90d30c0b6bf35bbc7012c061426204f518e07bdaf50a",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V07-melody-pickup.json",
+      "bytes": 11088,
+      "sha256": "60172faaa1bae30c04881f72a22350b09dcaa1ecf94f904223c66e485ca03d17",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V08-mixed-hands.json",
+      "bytes": 16820,
+      "sha256": "284fd89bdb34a67280869ee6567fe8166527b71784aa4f260f99927f4ea143cc",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V09-rubato-chords-free.json",
+      "bytes": 15247,
+      "sha256": "1087229a82ee959251d75b77cd6b55873038109591e69276f9a2757722985473",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V10-pedal-through-noodle-and-progression.json",
+      "bytes": 14113,
+      "sha256": "9e98b0bc6c70054fbd5aab2c4d53b7c17301f0c2fbb204c123377c4b1115733a",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V11-two-chord-idea-after-noodle.json",
+      "bytes": 12026,
+      "sha256": "4472dbce796ecc60b9e8977784699b97906768ada4a051012162baff2f714c62",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V12-progression-plus-postlude-note.json",
+      "bytes": 16406,
+      "sha256": "873516cef2ea77c845816e0b70a89e171e3ccf0500d38d01f00b4e9138952ff2",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V13-sparse-melody-after-noodle.json",
+      "bytes": 12434,
+      "sha256": "247c342f61b84f3a89f568e21f6aaa95fbd2fa819243de46a399171a4741e440",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/evaluate-phrase.mjs",
+      "bytes": 21616,
+      "sha256": "5f8b08ccc7d230d20111cfd99123c9544aa883013b41bd09c0f0281055ee6aac",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/generate-phrase.mjs",
+      "bytes": 13648,
+      "sha256": "18125ef473da7f84e3b6dbf9d3517bec20ece6d857c015a56ddc62c2a3941647",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/generate-validation.mjs",
+      "bytes": 7831,
+      "sha256": "20d68572160c0b6455d6d33a7976f9adb94475775f4d01b5dd1e114435819dd4",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/grouping-check.mjs",
+      "bytes": 6375,
+      "sha256": "8acf3ff2c04209cc14859e1ebad66f42285bff2469af493b398c026d207a801d",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/verify-retest-3412f61.mjs",
+      "bytes": 3232,
+      "sha256": "9a67c2f4f643810c8d5f3aa9ea7543c0512fc322b6d27663390516280cf101e4",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/grouping-results.json",
+      "bytes": 10685,
+      "sha256": "42e28a2190910d92aaba9a2e3407899260d963abbcdf7968020604a037699fe7",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/grouping-results.txt",
+      "bytes": 6184,
+      "sha256": "a350bda6afa557c68432d9b8af740909ab15070b32196ad50c1232dec11bb593",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-capture-handoff.md",
+      "bytes": 21989,
+      "sha256": "aa71fbdbc4c943a53b901fda1e044ed49427c7f6185e925b3562ad7e69908878",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-holdout-SUPERSEDED.json",
+      "bytes": 15346,
+      "sha256": "e157ed5930f3e490b264c0cefcaf70935b55d261ce54c386ea196ce228713f7e",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-regression-candidate.json",
+      "bytes": 17296,
+      "sha256": "1fb3a31a925d2ee7f178d290c3db9255bf5b1ed9a3dea60fcde80a2e2ec36170",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-regression.json",
+      "bytes": 17223,
+      "sha256": "3dad3ba5202260942449e3c4b59e18bbb889ff026384a43f5d2761f609562083",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-regression.txt",
+      "bytes": 4326,
+      "sha256": "6ab398a2ce9621e9eb48344556db1a86a67804c0fc1e703fc882273bea6c9921",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-tuning.json",
+      "bytes": 7069,
+      "sha256": "73e57a94e57fa7d1118fe6091427dba1110d8182cb9acf5072821f4e88947c15",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-tuning.txt",
+      "bytes": 2210,
+      "sha256": "8a1d00f4825f1c218a96235512f33aef87003d6e4c477da417e7bd226cace55d",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-validation-candidate.json",
+      "bytes": 14398,
+      "sha256": "21b90a1ae747258c69fa75a6c33058b477d6ac86da937833943aa52e4c53c376",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-validation.json",
+      "bytes": 14398,
+      "sha256": "847d6d34003cecc1cbd5f3dc4414d0cceb552c4b79ae36c1d6a26e32ec7ac34b",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-validation.txt",
+      "bytes": 3856,
+      "sha256": "f38462758e963484dffc8effca4892c9e5853f243e61da2f2490e2e1b7b34e78",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results.txt",
+      "bytes": 18073,
+      "sha256": "511d3e960377c5ba2b1fd6d8aec306d5ef1336c249ea59e15f83a8284249e653",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/prototype-findings.md",
+      "bytes": 15761,
+      "sha256": "8d6c409a45592dbde5beb8b3fc6c951314ff666d4a9259c6034a82e3301c0014",
+      "base_sha256": "664f0c9416f7af47528063f31da3fc347e865800a79b63eaf07abafcd06dbd83",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-capture-product/repro-four-chords-results.txt",
+      "bytes": 2774,
+      "sha256": "9a09e8b6431eae7d64ce740b0ccf392ba815e5eeefe78051e18a0bbc32545687",
+      "base_sha256": "b6b5a64c7c4ddd65941b1dd73beef149d85839525ff9212d8e5a50f7e037af82",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-capture-product/retest-reproduction-497894e-3412f61.txt",
+      "bytes": 1903,
+      "sha256": "9ae2fb92084881caaf0860be9e6207e41870f49fee64039233903ec559df55d0",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/source-audit-2026-11-08.md",
+      "bytes": 10156,
+      "sha256": "f3a7d31515f8756062af9408b764447cdb9afd2b60159f608634904469ff6457",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/source-ledger.md",
+      "bytes": 15995,
+      "sha256": "b7abe289444c4000b92c6aa50fe3e83184771ab41b2a111a2d89b8105189f731",
+      "base_sha256": "a26ac86d1fdf7293b56f23fbe087caaffc9bdd8e3a65ef33300e999c13b30765",
+      "status": "modified"
+    }
+  ],
+  "excluded": [],
+  "missing_original_base_files": [],
+  "superseded_prior_delta_path": {
+    "old": "blocks-capture-product/phrase-results-holdout.json",
+    "current": "blocks-capture-product/phrase-results-holdout-SUPERSEDED.json",
+    "action": "Parent must label old path historical or replace with supersession note; overlay does not delete."
+  },
+  "report_provenance": [
+    {
+      "source": "external implementation report; original machine path omitted",
+      "package_path": "blocks-capture-product/handover-evidence/implementation-report-3412f61-overlap-retest.md",
+      "checkout_path": "docs/research/capture/handover-evidence/implementation-report-3412f61-overlap-retest.md",
+      "bytes": 11410,
+      "sha256": "f291f7b34a0a889103c6aed6c08aff917c4fc349adc53875456109927354f3cf",
+      "latest_commit_in_report": "3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e",
+      "evidence_class": "implementation-agent report, synthetic; source bytes unchanged"
+    },
+    {
+      "source": "external implementation report; original machine path omitted",
+      "package_path": "blocks-capture-product/handover-evidence/implementation-report-497894e-rolled-chord-retest.md",
+      "checkout_path": "docs/research/capture/handover-evidence/implementation-report-497894e-rolled-chord-retest.md",
+      "bytes": 9150,
+      "sha256": "6a02b535a08a9042e568c963bcd5fb0454cebe66cf8e71b51787bec4f3738d6f",
+      "latest_commit_in_report": "497894e170ac150f06e5a8bea34d0d4e7f34e2fd",
+      "evidence_class": "implementation-agent report, synthetic; source bytes unchanged"
+    }
+  ],
+  "payload_files": [
+    {
+      "path": "blocks-capture-product/README.md",
+      "bytes": 3688,
+      "sha256": "a42f60333643c466c5fa3ab2eb3ad67001a2645ecba9bfc7b9111fc3bb079b86"
+    },
+    {
+      "path": "blocks-capture-product/capture-spec.md",
+      "bytes": 51749,
+      "sha256": "b60fe4ffab374b2a9d3fa823b5c4289fcb34e9ab52ed9ba04ff8e9e4624fbcfe"
+    },
+    {
+      "path": "blocks-capture-product/checkpoints/2026-11-08-baseline-3412f61.md",
+      "bytes": 3110,
+      "sha256": "951ce620578e8a01e3ca6df88d03b1928800d28f13f5bc029caa1bac59924d6d"
+    },
+    {
+      "path": "blocks-capture-product/checkpoints/2026-11-08-last-chord-retest-497894e.md",
+      "bytes": 2358,
+      "sha256": "5844feacec04902cf5f08ffdda0ee6af9c9675dd7cfa4c66887e22faa45ab667"
+    },
+    {
+      "path": "blocks-capture-product/evaluation-plan.md",
+      "bytes": 14294,
+      "sha256": "86066f666b176100b1f7e949b3e95c073bd91f01cf885ac97ec5982e998dc695"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH01-uneven-6-2-4-4-noodle-final-downbeat.json",
+      "bytes": 31673,
+      "sha256": "6c79e2cbcdd5925488a59e3bc5af49512cf53826b32626a6e6585afa750bbdb5"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH02-uneven-2-2-3-1-x2-held-final.json",
+      "bytes": 26605,
+      "sha256": "a599a44cf120e26fa48b0e175134af6532515754a6fcac8cce232db4bd2702c8"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH03-pedal-held-rubato-drift.json",
+      "bytes": 21619,
+      "sha256": "34a4d0a0f5fafd0d61f7c2033ac61844bce35b28474a60e813ceb3f1a8a1b2a1"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH04-pickup-melody-into-bar1.json",
+      "bytes": 20038,
+      "sha256": "0b27c77cc78ec04f6e7a9ea1f777aa5b3034cc6834d6b8c49372018ee267a310"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH05-half-double-fast-eighths.json",
+      "bytes": 19265,
+      "sha256": "6db37e110286456627295e7d0ffa2c7f9cdeacc2f7a22141b13c729e26f573a3"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH06-locked-grid-second-layer-bass.json",
+      "bytes": 12501,
+      "sha256": "3e94f301f407c11eb553028c1206f2c2e86f47cdbe0639e44c13f81ce0499f7a"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH07-sparse-melody.json",
+      "bytes": 11181,
+      "sha256": "9eca05e660a1aae7f6491e24fd14b4c4f6a68225bb7593f28ee7675655d5bede"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH08-arpeggios.json",
+      "bytes": 23071,
+      "sha256": "07e41641379d313f0c96567cb3c3c3b31533171f92abd7ff6bf6cf26f854e589"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH09-repeated-1bar-motif.json",
+      "bytes": 20052,
+      "sha256": "7cf0588d7ec868da04341e9aaf3782b13f1842df39664e74279a5c5a2a400874"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH10-continuous-scalar-runs.json",
+      "bytes": 10492,
+      "sha256": "8ebf9b3486a39a74592da21f48d5b41d651f4e4920ebb34a69af8e5dd1ebe008"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH11-free-rubato-ballad.json",
+      "bytes": 13916,
+      "sha256": "a730fb04fe084b7bb0b38c309d2fe8cc2311037c30bd9852d24277f0065d51f7"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH12-mixed-hands-trailing-silence.json",
+      "bytes": 28091,
+      "sha256": "6b9f87f42594d393f2b1086ee2a6034e59ebe6af66b322a77d662d96d7a8bc64"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH13-rolled-60-120ms-after-noodle.json",
+      "bytes": 20713,
+      "sha256": "976b12350021f35ca26175db3983d57c4f83b319e3cc52ef1b097bd859700dba"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH14-rolled-60-120ms-pedal.json",
+      "bytes": 20135,
+      "sha256": "c99283828d039054394a0ac3bc376beb00a446bfb3a386f472cf744b2ed124da"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH15-rolled-60-120ms-locked-grid.json",
+      "bytes": 10767,
+      "sha256": "7787f3f9ef829977c36ff8f7e9254bb63e1cb6124d2003a1cf06372790747655"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT01-even-4chords-after-noodle.json",
+      "bytes": 15777,
+      "sha256": "a7327068ad80bdae4164e152cc0cac2ab3c86d45bfb26f5a113c1f13c8baa094"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT02-uneven-3-1-2-2-plus-2bars.json",
+      "bytes": 19277,
+      "sha256": "902f078db9d679bc8b37922685d43f0cc49b0821093022bdba14fa005d2ceba1"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT03-pedal-through-changes.json",
+      "bytes": 16385,
+      "sha256": "73cce16e2124ab261b297e2c24e3be5da81b98e0b1fbab53afd74e1499083f10"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT04-bass-syncopated.json",
+      "bytes": 15502,
+      "sha256": "f1d5a9be74704419c231849bfb81f9d8caedc8cb1f544e2ce3f6e1dc8396ff09"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT05-legato-melody.json",
+      "bytes": 10839,
+      "sha256": "6819a4e1954d925ebf8b7f3e57cd4950275e0b9a06c23c261496a4f2e649aa87"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT06-free-rubato-chords.json",
+      "bytes": 10218,
+      "sha256": "43b15590aaff76b7c0ca8ce608efa530c54a749ff4cf309e30ba0f13f319628b"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/FREEZE.txt",
+      "bytes": 327,
+      "sha256": "64b4b6d02541da6a214a48f832c303cf05da03fd326849bf7c93b8fb520c0742"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/diagnostic-post-freeze/D01.json",
+      "bytes": 14186,
+      "sha256": "e9169d0ade985e40846265d28384795f55b2384fa54bb105f5ddcf12bc8cf169"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V01-single-note-take.json",
+      "bytes": 850,
+      "sha256": "fc4e2e704fad3972e5b07ba1ea82cecae70934eb4ba001486160916ee4dfb996"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V02-short-complete-motif.json",
+      "bytes": 1481,
+      "sha256": "33895d18aa0e1fbb66a3188fdec96a26dcdc131983869d2f58e58bd9f19603de"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V03-whole-session-is-2bar-progression.json",
+      "bytes": 2307,
+      "sha256": "c1893dc622419737c9f641ada2dd5946ab95bfe05ee94eed9e047b655c7fc6db"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V04-legato-melody-after-noodle.json",
+      "bytes": 11030,
+      "sha256": "71fe5486c47c8b0782288fadd653866be049638bf900e672f5b51003c5723652"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V05-pedalled-scalar-runs.json",
+      "bytes": 11092,
+      "sha256": "502d1b1184af85ca6f51fb31c5b91d3ae2f8f5e8f8086695680c6b1a14e06522"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V06-bass-syncopated-after-noodle.json",
+      "bytes": 18619,
+      "sha256": "4ac234cade30919d87fe90d30c0b6bf35bbc7012c061426204f518e07bdaf50a"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V07-melody-pickup.json",
+      "bytes": 11088,
+      "sha256": "60172faaa1bae30c04881f72a22350b09dcaa1ecf94f904223c66e485ca03d17"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V08-mixed-hands.json",
+      "bytes": 16820,
+      "sha256": "284fd89bdb34a67280869ee6567fe8166527b71784aa4f260f99927f4ea143cc"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V09-rubato-chords-free.json",
+      "bytes": 15247,
+      "sha256": "1087229a82ee959251d75b77cd6b55873038109591e69276f9a2757722985473"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V10-pedal-through-noodle-and-progression.json",
+      "bytes": 14113,
+      "sha256": "9e98b0bc6c70054fbd5aab2c4d53b7c17301f0c2fbb204c123377c4b1115733a"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V11-two-chord-idea-after-noodle.json",
+      "bytes": 12026,
+      "sha256": "4472dbce796ecc60b9e8977784699b97906768ada4a051012162baff2f714c62"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V12-progression-plus-postlude-note.json",
+      "bytes": 16406,
+      "sha256": "873516cef2ea77c845816e0b70a89e171e3ccf0500d38d01f00b4e9138952ff2"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data-validation/validation/V13-sparse-melody-after-noodle.json",
+      "bytes": 12434,
+      "sha256": "247c342f61b84f3a89f568e21f6aaa95fbd2fa819243de46a399171a4741e440"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/evaluate-phrase.mjs",
+      "bytes": 21616,
+      "sha256": "5f8b08ccc7d230d20111cfd99123c9544aa883013b41bd09c0f0281055ee6aac"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/generate-phrase.mjs",
+      "bytes": 13648,
+      "sha256": "18125ef473da7f84e3b6dbf9d3517bec20ece6d857c015a56ddc62c2a3941647"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/generate-validation.mjs",
+      "bytes": 7831,
+      "sha256": "20d68572160c0b6455d6d33a7976f9adb94475775f4d01b5dd1e114435819dd4"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/grouping-check.mjs",
+      "bytes": 6375,
+      "sha256": "8acf3ff2c04209cc14859e1ebad66f42285bff2469af493b398c026d207a801d"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/verify-retest-3412f61.mjs",
+      "bytes": 3232,
+      "sha256": "9a67c2f4f643810c8d5f3aa9ea7543c0512fc322b6d27663390516280cf101e4"
+    },
+    {
+      "path": "blocks-capture-product/grouping-results.json",
+      "bytes": 10685,
+      "sha256": "42e28a2190910d92aaba9a2e3407899260d963abbcdf7968020604a037699fe7"
+    },
+    {
+      "path": "blocks-capture-product/grouping-results.txt",
+      "bytes": 6184,
+      "sha256": "a350bda6afa557c68432d9b8af740909ab15070b32196ad50c1232dec11bb593"
+    },
+    {
+      "path": "blocks-capture-product/handover-evidence/PROVENANCE.json",
+      "bytes": 1248,
+      "sha256": "cfa280abf43919111a0933fdf11bcfcb9921e2b3e55fa5ca27d6b68d47ea93c6"
+    },
+    {
+      "path": "blocks-capture-product/handover-evidence/implementation-report-3412f61-overlap-retest.md",
+      "bytes": 11410,
+      "sha256": "f291f7b34a0a889103c6aed6c08aff917c4fc349adc53875456109927354f3cf"
+    },
+    {
+      "path": "blocks-capture-product/handover-evidence/implementation-report-497894e-rolled-chord-retest.md",
+      "bytes": 9150,
+      "sha256": "6a02b535a08a9042e568c963bcd5fb0454cebe66cf8e71b51787bec4f3738d6f"
+    },
+    {
+      "path": "blocks-capture-product/phrase-capture-handoff.md",
+      "bytes": 21989,
+      "sha256": "aa71fbdbc4c943a53b901fda1e044ed49427c7f6185e925b3562ad7e69908878"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-holdout-SUPERSEDED.json",
+      "bytes": 15346,
+      "sha256": "e157ed5930f3e490b264c0cefcaf70935b55d261ce54c386ea196ce228713f7e"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-regression-candidate.json",
+      "bytes": 17296,
+      "sha256": "1fb3a31a925d2ee7f178d290c3db9255bf5b1ed9a3dea60fcde80a2e2ec36170"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-regression.json",
+      "bytes": 17223,
+      "sha256": "3dad3ba5202260942449e3c4b59e18bbb889ff026384a43f5d2761f609562083"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-regression.txt",
+      "bytes": 4326,
+      "sha256": "6ab398a2ce9621e9eb48344556db1a86a67804c0fc1e703fc882273bea6c9921"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-tuning.json",
+      "bytes": 7069,
+      "sha256": "73e57a94e57fa7d1118fe6091427dba1110d8182cb9acf5072821f4e88947c15"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-tuning.txt",
+      "bytes": 2210,
+      "sha256": "8a1d00f4825f1c218a96235512f33aef87003d6e4c477da417e7bd226cace55d"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-validation-candidate.json",
+      "bytes": 14398,
+      "sha256": "21b90a1ae747258c69fa75a6c33058b477d6ac86da937833943aa52e4c53c376"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-validation.json",
+      "bytes": 14398,
+      "sha256": "847d6d34003cecc1cbd5f3dc4414d0cceb552c4b79ae36c1d6a26e32ec7ac34b"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-validation.txt",
+      "bytes": 3856,
+      "sha256": "f38462758e963484dffc8effca4892c9e5853f243e61da2f2490e2e1b7b34e78"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results.txt",
+      "bytes": 18073,
+      "sha256": "511d3e960377c5ba2b1fd6d8aec306d5ef1336c249ea59e15f83a8284249e653"
+    },
+    {
+      "path": "blocks-capture-product/prototype-findings.md",
+      "bytes": 15761,
+      "sha256": "8d6c409a45592dbde5beb8b3fc6c951314ff666d4a9259c6034a82e3301c0014"
+    },
+    {
+      "path": "blocks-capture-product/repro-four-chords-results.txt",
+      "bytes": 2774,
+      "sha256": "9a09e8b6431eae7d64ce740b0ccf392ba815e5eeefe78051e18a0bbc32545687"
+    },
+    {
+      "path": "blocks-capture-product/retest-reproduction-497894e-3412f61.txt",
+      "bytes": 1903,
+      "sha256": "9ae2fb92084881caaf0860be9e6207e41870f49fee64039233903ec559df55d0"
+    },
+    {
+      "path": "blocks-capture-product/source-audit-2026-11-08.md",
+      "bytes": 10156,
+      "sha256": "f3a7d31515f8756062af9408b764447cdb9afd2b60159f608634904469ff6457"
+    },
+    {
+      "path": "blocks-capture-product/source-ledger.md",
+      "bytes": 15995,
+      "sha256": "b7abe289444c4000b92c6aa50fe3e83184771ab41b2a111a2d89b8105189f731"
+    },
+    {
+      "path": "blocks-handover-capture-baseline3412f61/DELTA-NOTE.md",
+      "bytes": 4720,
+      "sha256": "91af573b791af3b787a635a0ca483cdc88e382184a13c9db2d2ab436391efd10"
+    }
+  ]
+}

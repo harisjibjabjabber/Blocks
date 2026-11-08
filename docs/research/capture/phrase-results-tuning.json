@@ -22,6 +22,11 @@
    "GOOD": 3,
    "WHOLE_TRAP": 1,
    "PARTIAL": 2
+  },
+  "m341": {
+   "PARTIAL": 4,
+   "GOOD": 1,
+   "WHOLE_TRAP": 1
   }
  },
  "rows": [
@@ -69,6 +74,12 @@
     "recall": 1,
     "noodleIncluded": "0/26",
     "status": "recent"
+   },
+   "main341": {
+    "cat": "PARTIAL",
+    "recall": 1,
+    "noodleIncluded": "2/26",
+    "status": "recent"
    }
   },
   {
@@ -111,6 +122,12 @@
     "status": "recent"
    },
    "main497": {
+    "cat": "GOOD",
+    "recall": 1,
+    "noodleIncluded": "0/30",
+    "status": "recent"
+   },
+   "main341": {
     "cat": "GOOD",
     "recall": 1,
     "noodleIncluded": "0/30",
@@ -161,6 +178,12 @@
     "recall": 1,
     "noodleIncluded": "0/22",
     "status": "recent"
+   },
+   "main341": {
+    "cat": "PARTIAL",
+    "recall": 1,
+    "noodleIncluded": "5/22",
+    "status": "recent"
    }
   },
   {
@@ -203,6 +226,12 @@
     "status": "recent"
    },
    "main497": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "20/20",
+    "status": "ambiguous"
+   },
+   "main341": {
     "cat": "WHOLE_TRAP",
     "recall": 1,
     "noodleIncluded": "20/20",
@@ -253,6 +282,12 @@
     "recall": 0.2857142857142857,
     "noodleIncluded": "0/21",
     "status": "recent"
+   },
+   "main341": {
+    "cat": "PARTIAL",
+    "recall": 0.2857142857142857,
+    "noodleIncluded": "0/21",
+    "status": "recent"
    }
   },
   {
@@ -295,6 +330,12 @@
     "status": "recent"
    },
    "main497": {
+    "cat": "PARTIAL",
+    "recall": 0.5,
+    "noodleIncluded": "0/15",
+    "status": "recent"
+   },
+   "main341": {
     "cat": "PARTIAL",
     "recall": 0.5,
     "noodleIncluded": "0/15",

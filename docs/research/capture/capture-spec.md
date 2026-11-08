@@ -357,7 +357,7 @@ Still open:
 11. **FiloBass licence conflict.** The project site states restricted research terms, while the Zenodo metadata says CC BY 4.0. Don't use it until the owner clarifies.
 12. **Chord-symbol spelling style.** Harte stays internal. Display could use jazz lead-sheet symbols ("Dm9", "G13", "C/E"), a flats-first default, and key-aware spelling at Stage 2.
 13. **Storage.** Should annotations be kept per take, and is there a cap (they're small, but versions accumulate)? I propose keeping the latest valid annotation per analyzer, plus user corrections forever.
-15. **Adaptive onset grouping limits (§12).** I propose a step of up to 130 ms, a total of up to 400 ms, and earlier keys still down. Needs tuning fixtures with real rolls.
+15. **Onset grouping (§12), UNVALIDATED.** Revised candidate: attack-onset grouping (attack gap ≤ min(130 ms, 0.4 × local bounding IOI), previous note still sounding, not a monotonic stepwise line). The former 130 ms step / 400 ms spread proposal is superseded. The 130 ms, 0.4, ≥ 3 groups / ≥ 2 s minimum and free-time 3-20 s values are all UNVALIDATED proposals.
 16. **4-bar prior strength (§12).** Haris's observed Ableton experience is a target, not a verified algorithm.
 17. **Repetition weight (§12).** Repetition is support only and must never require repeated playing.
 14. **Default view for layered takes.** Per-layer labels or the combined label? I propose per-layer by default with a "together" toggle, because a rootless piano part only becomes D:min9 with the bass.
@@ -367,18 +367,19 @@ Still open:
 
 ## 12. Core phrase capture: pulse-first, end-anchored range selection (v2.2, 8 Nov 2026 evening)
 
-The full handoff, with pseudocode, interfaces, parameters, acceptance examples and tests, is in `phrase-capture-handoff.md`. The evidence is in `phrase-results.txt` and `source-audit-2026-11-08.md`. Commit labels: 534279f, fdba348 and 497894e are each named where they're used. Haris's last-chord bug is **not resolved** by this research.
+The full handoff, with pseudocode, interfaces, parameters, acceptance examples and tests, is in `phrase-capture-handoff.md`. The evidence is in `phrase-results.txt` (index), `phrase-results-{tuning,regression,validation}.*`, `grouping-results.*` and `source-audit-2026-11-08.md`. Commit labels: 534279f, fdba348 and 497894e are historical; **current main for this review is 3412f61** (19:50 London). Results are labelled per commit; PH01-15 is the regression/development set, V01-13 the frozen independent validation set. Haris's last-chord bug is **not resolved** by this research.
 
 - **Replaces gap-first segmentation (§4.3) as the default selector.** LBDM and gaps remain boundary *features*.
-  - Group onsets adaptively and role-agnostically.
+  - Group onsets role-agnostically by attack (sounding overlap necessary, not sufficient; monotonic stepwise lines never one group). Not a widened window; parameters UNVALIDATED.
   - Fit tempo, phase and range jointly by walking back bar by bar from END anchors. The tolerance is robust and slow drift is allowed.
-  - Default to the largest fitting 1/2/4/8 bars, with a mild 4-bar preference. Keep 2-3 alternatives behind the existing handles.
-  - Otherwise abstain to a bounded free-time window (3-20 s).
+  - Default to the largest fitting 1/2/4/8 bars, with a mild 4-bar preference. Keep 2-3 internal alternatives; candidate alternatives carry no new UI commitment.
+  - Otherwise abstain to a bounded free-time window (3-20 s, UNVALIDATED).
+  - Correctness is conditional: a whole-session or single-event selection is wrong only when earlier unrelated material or a longer intended phrase exists.
 - **Three-way separation** is added to the data model: (a) `LoopPeriod`, (b) `Coverage` (pickups, late attacks) and (c) `SeamPlan` (tails). Tail crossfade and pickup wrapping are STAGED.
 - **No forced quantise or stretch.** Raw times are immutable. Quantise is explicit opt-in.
-- **Minimum content is role-agnostic:** at least 3 onset groups and at least 2 s.
-- **A proposed tempo is not a grid for the cut.** 497894e `beatForCut` does this; keep it as a regression test.
+- **Minimum content is role-agnostic:** at least 3 onset groups and at least 2 s (UNVALIDATED; must not reject a legitimately short complete take).
+- **A proposed tempo is not a grid for the cut.** `beatForCut` (since 497894e, unchanged at 3412f61) does this; keep it as a regression test.
 - **New open decisions** (added to §10):
-  - 15. The adaptive grouping limits (130 ms step / 400 ms spread proposed).
+  - 15. Onset grouping: attack-onset candidate; all values UNVALIDATED (former 130/400 ms superseded).
   - 16. The 4-bar prior strength.
   - 17. Whether repetition may outrank a longer non-repeating fit.

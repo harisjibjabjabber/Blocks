@@ -1,0 +1,12 @@
+== Phrase capture on TUNING fixtures (SYNTHETIC, provisional labels; not Haris's MIDI) [IN-SAMPLE for the reference]
+coverage categories: GOOD = >=90% of intended-phrase groups and <=1 unrelated earlier group; FINAL_TRAP = <=25% of a longer (>=3-group) intended phrase; WHOLE_TRAP = >50% of UNRELATED earlier material. A single-event or whole-session selection is GOOD when that IS the intended phrase
+reference coverage: {"GOOD":3,"PARTIAL":3} | reference period: {"DEFAULT":3,"OTHER":2,"ALTERNATIVE":1}
+main-fdba348 free time (no tempo passed): {"WHOLE_TRAP":4,"PARTIAL":2} | main-fdba348 with the true beat passed as a grid (= a proposed tempo at fdba348): {"FINAL_TRAP":4,"PARTIAL":2}
+main-497894e as App calls it (free time unless the fixture has a locked grid): {"GOOD":3,"WHOLE_TRAP":1,"PARTIAL":2}
+main-3412f61 (CURRENT baseline) as App calls it (beatForCut: locked grid only): {"PARTIAL":4,"GOOD":1,"WHOLE_TRAP":1}
+  PT01-even-4chords-after-noodle               REF proposed-grid 4bar@98.4 GOOD       period=DEFAULT              | expected 4bar@96 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e GOOD       | 3412f61 PARTIAL
+  PT02-uneven-3-1-2-2-plus-2bars               REF proposed-grid 4bar@102.4 GOOD       period=DEFAULT              | expected 4bar@104 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e GOOD       | 3412f61 GOOD
+  PT03-pedal-through-changes                   REF proposed-grid 4bar@84 GOOD       period=DEFAULT              | expected 4bar@84 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e GOOD       | 3412f61 PARTIAL
+  PT04-bass-syncopated                         REF proposed-grid 2bar@96.5 PARTIAL    period=OTHER                | expected 4bar@100 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP | 3412f61 WHOLE_TRAP
+  PT05-legato-melody                           REF proposed-grid 2bar@87.4 PARTIAL    period=ALTERNATIVE          | expected 4bar@90 | fdba348 free PARTIAL    grid PARTIAL    | 497894e PARTIAL    | 3412f61 PARTIAL
+  PT06-free-rubato-chords                      REF proposed-grid 4bar@127.3 PARTIAL    period=OTHER                | expected 4bar@70 | fdba348 free PARTIAL    grid PARTIAL    | 497894e PARTIAL    | 3412f61 PARTIAL

@@ -1,0 +1,756 @@
+[
+ {
+  "set": "regression",
+  "id": "PH01-uneven-6-2-4-4-noodle-final-downbeat",
+  "truthGroups": 62,
+  "s3412": {
+   "n": 35,
+   "exact": 19,
+   "merged": 16,
+   "maxMerge": 6,
+   "split": 0
+  },
+  "ref": {
+   "n": 62,
+   "exact": 62,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 62,
+   "exact": 62,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH02-uneven-2-2-3-1-x2-held-final",
+  "truthGroups": 52,
+  "s3412": {
+   "n": 33,
+   "exact": 21,
+   "merged": 12,
+   "maxMerge": 5,
+   "split": 0
+  },
+  "ref": {
+   "n": 52,
+   "exact": 52,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 52,
+   "exact": 52,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH03-pedal-held-rubato-drift",
+  "truthGroups": 39,
+  "s3412": {
+   "n": 28,
+   "exact": 20,
+   "merged": 8,
+   "maxMerge": 4,
+   "split": 0
+  },
+  "ref": {
+   "n": 39,
+   "exact": 39,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 39,
+   "exact": 39,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH04-pickup-melody-into-bar1",
+  "truthGroups": 40,
+  "s3412": {
+   "n": 26,
+   "exact": 17,
+   "merged": 9,
+   "maxMerge": 4,
+   "split": 0
+  },
+  "ref": {
+   "n": 36,
+   "exact": 32,
+   "merged": 4,
+   "maxMerge": 2,
+   "split": 0
+  },
+  "cand": {
+   "n": 36,
+   "exact": 32,
+   "merged": 4,
+   "maxMerge": 2,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH05-half-double-fast-eighths",
+  "truthGroups": 53,
+  "s3412": {
+   "n": 43,
+   "exact": 36,
+   "merged": 7,
+   "maxMerge": 4,
+   "split": 0
+  },
+  "ref": {
+   "n": 53,
+   "exact": 53,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 53,
+   "exact": 53,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH06-locked-grid-second-layer-bass",
+  "truthGroups": 28,
+  "s3412": {
+   "n": 22,
+   "exact": 19,
+   "merged": 3,
+   "maxMerge": 5,
+   "split": 0
+  },
+  "ref": {
+   "n": 28,
+   "exact": 28,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 28,
+   "exact": 28,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH07-sparse-melody",
+  "truthGroups": 29,
+  "s3412": {
+   "n": 20,
+   "exact": 14,
+   "merged": 6,
+   "maxMerge": 4,
+   "split": 0
+  },
+  "ref": {
+   "n": 29,
+   "exact": 29,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 29,
+   "exact": 29,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH08-arpeggios",
+  "truthGroups": 60,
+  "s3412": {
+   "n": 50,
+   "exact": 43,
+   "merged": 7,
+   "maxMerge": 3,
+   "split": 0
+  },
+  "ref": {
+   "n": 60,
+   "exact": 60,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 60,
+   "exact": 60,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH09-repeated-1bar-motif",
+  "truthGroups": 52,
+  "s3412": {
+   "n": 42,
+   "exact": 34,
+   "merged": 8,
+   "maxMerge": 3,
+   "split": 0
+  },
+  "ref": {
+   "n": 52,
+   "exact": 52,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 52,
+   "exact": 52,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH10-continuous-scalar-runs",
+  "truthGroups": 32,
+  "s3412": {
+   "n": 31,
+   "exact": 30,
+   "merged": 1,
+   "maxMerge": 2,
+   "split": 0
+  },
+  "ref": {
+   "n": 32,
+   "exact": 32,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 32,
+   "exact": 32,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH11-free-rubato-ballad",
+  "truthGroups": 24,
+  "s3412": {
+   "n": 10,
+   "exact": 1,
+   "merged": 9,
+   "maxMerge": 4,
+   "split": 0
+  },
+  "ref": {
+   "n": 26,
+   "exact": 22,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 2
+  },
+  "cand": {
+   "n": 24,
+   "exact": 24,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH12-mixed-hands-trailing-silence",
+  "truthGroups": 50,
+  "s3412": {
+   "n": 30,
+   "exact": 15,
+   "merged": 15,
+   "maxMerge": 4,
+   "split": 0
+  },
+  "ref": {
+   "n": 50,
+   "exact": 50,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 50,
+   "exact": 50,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH13-rolled-60-120ms-after-noodle",
+  "truthGroups": 42,
+  "s3412": {
+   "n": 22,
+   "exact": 14,
+   "merged": 8,
+   "maxMerge": 5,
+   "split": 0
+  },
+  "ref": {
+   "n": 52,
+   "exact": 38,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 4
+  },
+  "cand": {
+   "n": 42,
+   "exact": 42,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH14-rolled-60-120ms-pedal",
+  "truthGroups": 36,
+  "s3412": {
+   "n": 25,
+   "exact": 20,
+   "merged": 5,
+   "maxMerge": 4,
+   "split": 0
+  },
+  "ref": {
+   "n": 46,
+   "exact": 32,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 4
+  },
+  "cand": {
+   "n": 36,
+   "exact": 36,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "regression",
+  "id": "PH15-rolled-60-120ms-locked-grid",
+  "truthGroups": 19,
+  "s3412": {
+   "n": 15,
+   "exact": 13,
+   "merged": 2,
+   "maxMerge": 4,
+   "split": 0
+  },
+  "ref": {
+   "n": 29,
+   "exact": 15,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 4
+  },
+  "cand": {
+   "n": 19,
+   "exact": 19,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "validation",
+  "id": "V01-single-note-take",
+  "truthGroups": 1,
+  "s3412": {
+   "n": 1,
+   "exact": 1,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "ref": {
+   "n": 1,
+   "exact": 1,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 1,
+   "exact": 1,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "validation",
+  "id": "V02-short-complete-motif",
+  "truthGroups": 3,
+  "s3412": {
+   "n": 3,
+   "exact": 3,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "ref": {
+   "n": 3,
+   "exact": 3,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 3,
+   "exact": 3,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "validation",
+  "id": "V03-whole-session-is-2bar-progression",
+  "truthGroups": 2,
+  "s3412": {
+   "n": 2,
+   "exact": 2,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "ref": {
+   "n": 2,
+   "exact": 2,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 2,
+   "exact": 2,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "validation",
+  "id": "V04-legato-melody-after-noodle",
+  "truthGroups": 30,
+  "s3412": {
+   "n": 14,
+   "exact": 8,
+   "merged": 6,
+   "maxMerge": 8,
+   "split": 0
+  },
+  "ref": {
+   "n": 30,
+   "exact": 30,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 29,
+   "exact": 28,
+   "merged": 1,
+   "maxMerge": 2,
+   "split": 0
+  }
+ },
+ {
+  "set": "validation",
+  "id": "V05-pedalled-scalar-runs",
+  "truthGroups": 32,
+  "s3412": {
+   "n": 1,
+   "exact": 0,
+   "merged": 1,
+   "maxMerge": 32,
+   "split": 0
+  },
+  "ref": {
+   "n": 32,
+   "exact": 32,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 32,
+   "exact": 32,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "validation",
+  "id": "V06-bass-syncopated-after-noodle",
+  "truthGroups": 51,
+  "s3412": {
+   "n": 43,
+   "exact": 36,
+   "merged": 7,
+   "maxMerge": 3,
+   "split": 0
+  },
+  "ref": {
+   "n": 51,
+   "exact": 51,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 51,
+   "exact": 51,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "validation",
+  "id": "V07-melody-pickup",
+  "truthGroups": 27,
+  "s3412": {
+   "n": 16,
+   "exact": 11,
+   "merged": 5,
+   "maxMerge": 5,
+   "split": 0
+  },
+  "ref": {
+   "n": 27,
+   "exact": 27,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 25,
+   "exact": 24,
+   "merged": 1,
+   "maxMerge": 3,
+   "split": 0
+  }
+ },
+ {
+  "set": "validation",
+  "id": "V08-mixed-hands",
+  "truthGroups": 44,
+  "s3412": {
+   "n": 27,
+   "exact": 11,
+   "merged": 16,
+   "maxMerge": 3,
+   "split": 0
+  },
+  "ref": {
+   "n": 44,
+   "exact": 44,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 44,
+   "exact": 44,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "validation",
+  "id": "V09-rubato-chords-free",
+  "truthGroups": 32,
+  "s3412": {
+   "n": 23,
+   "exact": 16,
+   "merged": 7,
+   "maxMerge": 3,
+   "split": 0
+  },
+  "ref": {
+   "n": 32,
+   "exact": 32,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 32,
+   "exact": 32,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "validation",
+  "id": "V10-pedal-through-noodle-and-progression",
+  "truthGroups": 28,
+  "s3412": {
+   "n": 19,
+   "exact": 14,
+   "merged": 5,
+   "maxMerge": 4,
+   "split": 0
+  },
+  "ref": {
+   "n": 28,
+   "exact": 28,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 27,
+   "exact": 26,
+   "merged": 1,
+   "maxMerge": 2,
+   "split": 0
+  }
+ },
+ {
+  "set": "validation",
+  "id": "V11-two-chord-idea-after-noodle",
+  "truthGroups": 29,
+  "s3412": {
+   "n": 23,
+   "exact": 19,
+   "merged": 4,
+   "maxMerge": 4,
+   "split": 0
+  },
+  "ref": {
+   "n": 29,
+   "exact": 29,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 29,
+   "exact": 29,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "validation",
+  "id": "V12-progression-plus-postlude-note",
+  "truthGroups": 36,
+  "s3412": {
+   "n": 27,
+   "exact": 19,
+   "merged": 8,
+   "maxMerge": 3,
+   "split": 0
+  },
+  "ref": {
+   "n": 36,
+   "exact": 36,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 35,
+   "exact": 34,
+   "merged": 1,
+   "maxMerge": 2,
+   "split": 0
+  }
+ },
+ {
+  "set": "validation",
+  "id": "V13-sparse-melody-after-noodle",
+  "truthGroups": 32,
+  "s3412": {
+   "n": 24,
+   "exact": 19,
+   "merged": 5,
+   "maxMerge": 4,
+   "split": 0
+  },
+  "ref": {
+   "n": 32,
+   "exact": 32,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 32,
+   "exact": 32,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  }
+ },
+ {
+  "set": "diag-post",
+  "id": "D01-pedal-down-from-first-noodle-note",
+  "truthGroups": 28,
+  "s3412": {
+   "n": 1,
+   "exact": 0,
+   "merged": 1,
+   "maxMerge": 28,
+   "split": 0
+  },
+  "ref": {
+   "n": 28,
+   "exact": 28,
+   "merged": 0,
+   "maxMerge": 0,
+   "split": 0
+  },
+  "cand": {
+   "n": 24,
+   "exact": 21,
+   "merged": 3,
+   "maxMerge": 3,
+   "split": 0
+  }
+ }
+]

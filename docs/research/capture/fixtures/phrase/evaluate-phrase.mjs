@@ -1,17 +1,18 @@
-// Phrase-capture harness: Blocks reference "pulse-first" predictor (OURS, research) vs a transcription of current main.
+// Phrase-capture harness: research predictor vs historical cuts and the 3412f61 research baseline.
 // Run: node --experimental-strip-types evaluate-phrase.mjs [tuning|holdout] [--detail]
-// Not rerun for the handover import. This predictor is not ready to ship and is not the app.
-// Comparison baseline: fdba348124d4cefe6fbeba2a7c187e47de705528 and 497894e170ac150f06e5a8bea34d0d4e7f34e2fd.
-// It does not evaluate 3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e.
-// The two imports are git extracts under historical/, because the archive did not include those copies.
-// "main-fdba348" calls recentPhraseCut like App.capture() (src/ui/App.tsx L216-229 @ fdba348).
-// It does not model the rest of the app, the device, or the deployed bundle.
-// SYNTHETIC fixtures, provisional labels: NOT Haris's MIDI and not an accuracy claim.
+// Not rerun for this import. The predictor is not the app and is not validated to ship.
+// Current research baseline: 3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e.
+// fdba348124d4cefe6fbeba2a7c187e47de705528 and 497894e170ac150f06e5a8bea34d0d4e7f34e2fd stay historical.
+// The archive did not include those source copies. These imports are git extracts under historical/.
+// main-fdba348 is called like App.capture() at that commit. It is not the device or the live bundle.
+// SYNTHETIC fixtures, provisional labels: NOT Haris's MIDI.
 import fs from "node:fs"; import path from "node:path"; import { fileURLToPath } from "node:url";
 import { recentPhraseCut } from "../../historical/fdba348/recent-phrase.ts";
 import { recentPhraseCut as recentPhraseCut497 } from "../../historical/497894e/recent-phrase.ts";
+import { recentPhraseCut as recentPhraseCut341 } from "../../historical/3412f61/recent-phrase.ts";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SET = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : "tuning";
+const DATA = process.env.PHRASE_DATA || path.join(HERE, "data");
 const US = 1e6;
 export const P = { // unvalidated starting values (see phrase-capture-handoff.md §5)
   GROUP_STEP_S: 0.07, GROUP_MAX_S: 0.16, BEAT_MIN_S: 0.33, BEAT_MAX_S: 1.2, IOI_MAX_S: 6, TEMPO_WINDOW_S: 18, CLUSTER_S: 0.025, MAX_TEMPI: 14,
@@ -30,6 +31,14 @@ export function analyseEvents(events) {
   for (const n of notes) { if (n.off === null) { n.off = Infinity; n.open = true; } if (n.snd === null) n.snd = Math.max(n.off, end); }
   notes.sort((a, b) => a.on - b.on);
   const groups = [];
+  if (process.env.GROUPING === "candidate") { // attack-onset candidate (grouping-check.mjs); ABS 130 ms / REL 0.4 UNVALIDATED, set a priori
+    const mono = (ps) => { if (ps.length < 3) return false; const d = ps.slice(1).map((p, i) => p - ps[i]); return d.every((x) => x > 0 && x <= 2) || d.every((x) => x < 0 && x >= -2); };
+    let g = null; for (let i = 0; i < notes.length; i++) { const n = notes[i];
+      if (g) { const prev = notes[i - 1]; const before = g.start > 0 ? notes[g.start].on - notes[g.start - 1].on : Infinity; let k = i + 1; while (k < notes.length && notes[k].on - notes[k - 1].on <= 0.13) k++;
+        const after = k < notes.length ? notes[k].on - notes[k - 1].on : Infinity; const ctx = Math.min(before, after); const win = Math.min(0.13, 0.4 * (Number.isFinite(ctx) ? ctx : 1));
+        if (n.on - prev.on <= win && prev.snd > n.on && !mono([...g.notes.map((x) => x.note), n.note])) { g.notes.push(n); g.lastOn = n.on; continue; } }
+      g = { start: i, t: n.on, lastOn: n.on, notes: [n] }; groups.push(g); }
+  } else
   for (const n of notes) { const g = groups[groups.length - 1];
     if (g && n.on - g.lastOn <= P.GROUP_STEP_S && n.on - g.t <= P.GROUP_MAX_S) { g.notes.push(n); g.lastOn = n.on; } else groups.push({ t: n.on, lastOn: n.on, notes: [n] }); }
   for (const g of groups) { g.snd = Math.max(...g.notes.map((n) => n.snd)); g.dur = Math.max(...g.notes.map((n) => Math.min(n.off, n.snd) - n.on)); g.pitch = g.notes.reduce((s, n) => s + n.note, 0) / g.notes.length; }
@@ -139,37 +148,39 @@ function classify(doc, includedTimes) {
   const isIn = (g) => inc.has(Math.round(g.onUs / 1000));
   const ph = G.filter((g) => g.tag === "phrase" || g.tag === "pickup"), nd = G.filter((g) => g.tag === "noodle");
   const rec = ph.filter(isIn).length / ph.length, nIn = nd.filter(isIn).length;
-  const cat = ph.filter(isIn).length <= Math.max(1, Math.floor(ph.length * 0.25)) ? "FINAL_TRAP" : nd.length && nIn / nd.length > 0.5 ? "WHOLE_TRAP" : rec >= 0.9 && nIn <= 1 ? "GOOD" : "PARTIAL";
+  const cat = ph.length >= 3 && ph.filter(isIn).length <= Math.max(1, Math.floor(ph.length * 0.25)) ? "FINAL_TRAP" : nd.length && nIn / nd.length > 0.5 ? "WHOLE_TRAP" : rec >= 0.9 && nIn <= 1 ? "GOOD" : "PARTIAL";
   return { cat, recall: rec, noodleIncluded: nIn + "/" + nd.length };
 }
 function periodMatch(doc, period, T) { if (!period) return null; const tolS = 0.3 * (60 / doc.trueBpm);
   const m = (x) => Math.abs(period.S - x.startUs / US) <= tolS && Math.abs(period.E - x.endUs / US) <= tolS;
   if (m(doc.expected.period)) return "DEFAULT"; if (doc.expected.acceptable.some(m)) return "ALTERNATIVE"; return "OTHER"; }
-const dir = path.join(HERE, "data", SET); const files = fs.readdirSync(dir).filter((f) => f.endsWith(".json")).sort();
-const tally = { ref: {}, refPeriod: {}, mainFree: {}, mainGrid: {}, m497: {} }; const rows = [];
+const dir = path.join(DATA, SET); const files = fs.readdirSync(dir).filter((f) => f.endsWith(".json")).sort();
+const tally = { ref: {}, refPeriod: {}, mainFree: {}, mainGrid: {}, m497: {}, m341: {} }; const rows = [];
 const inc = (o, k) => (o[k] = (o[k] ?? 0) + 1);
 for (const f of files) {
   const doc = JSON.parse(fs.readFileSync(path.join(dir, f)));
   const evN = doc.events.map((e) => ({ ...e, scheduleElapsed: Number(e.scheduleElapsed) }));
   const r = referencePredict(evN, doc.pressUs, doc.lockedGrid);
   const rc = classify(doc, r.coverage.groups ?? []);
-  let pm = r.mode === "free" ? (doc.expected.freeTimeExpected ? "DEFAULT(free)" : doc.expected.freeTimeOk ? "ALTERNATIVE(free)" : "ABSTAINED") : periodMatch(doc, r.period);
+  let pm = r.mode === "free" ? (doc.expected.freeTimeExpected ? "DEFAULT(free)" : doc.expected.freeTimeOk ? "ALTERNATIVE(free)" : "ABSTAINED") : (periodMatch(doc, r.period) ?? `NO_PERIOD(${r.mode})`);
   if (r.mode !== "free" && doc.expected.freeTimeExpected) pm = pm === "OTHER" ? "OTHER(expected free)" : pm + "(expected free)";
   const altHit = r.mode === "free" ? r.alternatives.some((c) => periodMatch(doc, c) === "DEFAULT") : r.alternatives.some((c) => periodMatch(doc, c) === "DEFAULT");
   const groupsAt = (a, b) => doc.expected.groups.filter((g) => g.onUs / US >= a - 1e-6 && g.onUs / US <= b + 1e-6).map((g) => g.onUs / US);
   const mf = mainPredict(doc, false), mg = mainPredict(doc, true);
   const mfc = classify(doc, groupsAt(mf.from, mf.to)), mgc = classify(doc, groupsAt(mg.from, mg.to));
+  const m3 = mainPredict(doc, !!doc.lockedGrid, recentPhraseCut341); const m3c = classify(doc, groupsAt(m3.from, m3.to)); inc(tally.m341, m3c.cat);
   // 497894e: beatForCut() means a proposed tempo is not a beat until accepted, so a first layer is cut in free time; a locked grid is passed
   const m4 = mainPredict(doc, !!doc.lockedGrid, recentPhraseCut497); const m4c = classify(doc, groupsAt(m4.from, m4.to)); inc(tally.m497, m4c.cat);
   inc(tally.ref, rc.cat); inc(tally.refPeriod, pm.split("(")[0]); inc(tally.mainFree, mfc.cat); inc(tally.mainGrid, mgc.cat);
   rows.push({ id: doc.id, ref: { mode: r.mode, bars: r.period?.bars ?? null, bpm: r.period ? +r.period.bpm.toFixed(1) : null, S: r.period ? +r.period.S.toFixed(2) : null, E: r.period ? +r.period.E.toFixed(2) : null, cov: rc, period: pm, defaultInAlternatives: altHit, reasons: r.reasons },
-    expected: { S: doc.expected.period.startUs / US, E: doc.expected.period.endUs / US, bars: doc.expected.period.bars, bpm: doc.trueBpm }, mainFree: { ...mfc, status: mf.status }, mainGrid: { ...mgc, status: mg.status }, main497: { ...m4c, status: m4.status } });
+    expected: { S: doc.expected.period.startUs / US, E: doc.expected.period.endUs / US, bars: doc.expected.period.bars, bpm: doc.trueBpm }, mainFree: { ...mfc, status: mf.status }, mainGrid: { ...mgc, status: mg.status }, main497: { ...m4c, status: m4.status }, main341: { ...m3c, status: m3.status } });
 }
-console.log(`== Phrase capture on ${SET.toUpperCase()} fixtures (SYNTHETIC, provisional labels; not Haris's MIDI)${SET === "tuning" ? " [IN-SAMPLE for the reference]" : " [HOLDOUT: never used to tune]"}`);
-console.log("coverage categories: GOOD = >=90% of phrase groups and <=1 noodling group; FINAL_TRAP = <=25% of phrase groups; WHOLE_TRAP = >50% of noodling groups");
+console.log(`== Phrase capture on ${(process.env.SET_LABEL ? "VALIDATION" : SET.toUpperCase())} fixtures (SYNTHETIC, provisional labels; not Haris's MIDI)${SET === "tuning" ? " [IN-SAMPLE for the reference]" : process.env.SET_LABEL ? " [" + process.env.SET_LABEL + "]" : " [REGRESSION/DEVELOPMENT SET (formerly holdout): it has influenced design discussion, so it is no longer a fresh holdout]"}`);
+console.log("coverage categories: GOOD = >=90% of intended-phrase groups and <=1 unrelated earlier group; FINAL_TRAP = <=25% of a longer (>=3-group) intended phrase; WHOLE_TRAP = >50% of UNRELATED earlier material. A single-event or whole-session selection is GOOD when that IS the intended phrase");
 console.log("reference coverage:", JSON.stringify(tally.ref), "| reference period:", JSON.stringify(tally.refPeriod));
 console.log("main-fdba348 free time (no tempo passed):", JSON.stringify(tally.mainFree), "| main-fdba348 with the true beat passed as a grid (= a proposed tempo at fdba348):", JSON.stringify(tally.mainGrid));
 console.log("main-497894e as App calls it (free time unless the fixture has a locked grid):", JSON.stringify(tally.m497));
-for (const x of rows) console.log(`  ${x.id.padEnd(44)} REF ${x.ref.mode.padEnd(13)} ${x.ref.bars ? x.ref.bars + "bar@" + x.ref.bpm : "free".padEnd(9)} ${x.ref.cov.cat.padEnd(10)} period=${x.ref.period.padEnd(20)} | expected ${x.expected.bars}bar@${x.expected.bpm} | fdba348 free ${x.mainFree.cat.padEnd(10)} grid ${x.mainGrid.cat.padEnd(10)} | 497894e ${x.main497.cat}`);
+console.log("main-3412f61 (CURRENT baseline) as App calls it (beatForCut: locked grid only):", JSON.stringify(tally.m341));
+for (const x of rows) console.log(`  ${x.id.padEnd(44)} REF ${x.ref.mode.padEnd(13)} ${x.ref.bars ? x.ref.bars + "bar@" + x.ref.bpm : "free".padEnd(9)} ${x.ref.cov.cat.padEnd(10)} period=${x.ref.period.padEnd(20)} | expected ${x.expected.bars}bar@${x.expected.bpm} | fdba348 free ${x.mainFree.cat.padEnd(10)} grid ${x.mainGrid.cat.padEnd(10)} | 497894e ${x.main497.cat.padEnd(10)} | 3412f61 ${x.main341.cat}`);
 if (process.argv.includes("--detail")) console.log(JSON.stringify(rows, null, 1));
 const outJ = process.argv.indexOf("--json"); if (outJ > 0) fs.writeFileSync(process.argv[outJ + 1], JSON.stringify({ set: SET, tally, rows }, null, 1));

@@ -1,0 +1,31 @@
+set | fixture | truth groups | 3412f61 overlapStacks | reference 70/160 ms | candidate attack-onset
+regression PH01-uneven-6-2-4-4-noodle-final-downbeat     62 |  35 grp, exact 19, merged 16 (max 6), split 0 |  62 grp, exact 62, merged  0 (max 0), split 0 |  62 grp, exact 62, merged  0 (max 0), split 0
+regression PH02-uneven-2-2-3-1-x2-held-final             52 |  33 grp, exact 21, merged 12 (max 5), split 0 |  52 grp, exact 52, merged  0 (max 0), split 0 |  52 grp, exact 52, merged  0 (max 0), split 0
+regression PH03-pedal-held-rubato-drift                  39 |  28 grp, exact 20, merged  8 (max 4), split 0 |  39 grp, exact 39, merged  0 (max 0), split 0 |  39 grp, exact 39, merged  0 (max 0), split 0
+regression PH04-pickup-melody-into-bar1                  40 |  26 grp, exact 17, merged  9 (max 4), split 0 |  36 grp, exact 32, merged  4 (max 2), split 0 |  36 grp, exact 32, merged  4 (max 2), split 0
+regression PH05-half-double-fast-eighths                 53 |  43 grp, exact 36, merged  7 (max 4), split 0 |  53 grp, exact 53, merged  0 (max 0), split 0 |  53 grp, exact 53, merged  0 (max 0), split 0
+regression PH06-locked-grid-second-layer-bass            28 |  22 grp, exact 19, merged  3 (max 5), split 0 |  28 grp, exact 28, merged  0 (max 0), split 0 |  28 grp, exact 28, merged  0 (max 0), split 0
+regression PH07-sparse-melody                            29 |  20 grp, exact 14, merged  6 (max 4), split 0 |  29 grp, exact 29, merged  0 (max 0), split 0 |  29 grp, exact 29, merged  0 (max 0), split 0
+regression PH08-arpeggios                                60 |  50 grp, exact 43, merged  7 (max 3), split 0 |  60 grp, exact 60, merged  0 (max 0), split 0 |  60 grp, exact 60, merged  0 (max 0), split 0
+regression PH09-repeated-1bar-motif                      52 |  42 grp, exact 34, merged  8 (max 3), split 0 |  52 grp, exact 52, merged  0 (max 0), split 0 |  52 grp, exact 52, merged  0 (max 0), split 0
+regression PH10-continuous-scalar-runs                   32 |  31 grp, exact 30, merged  1 (max 2), split 0 |  32 grp, exact 32, merged  0 (max 0), split 0 |  32 grp, exact 32, merged  0 (max 0), split 0
+regression PH11-free-rubato-ballad                       24 |  10 grp, exact  1, merged  9 (max 4), split 0 |  26 grp, exact 22, merged  0 (max 0), split 2 |  24 grp, exact 24, merged  0 (max 0), split 0
+regression PH12-mixed-hands-trailing-silence             50 |  30 grp, exact 15, merged 15 (max 4), split 0 |  50 grp, exact 50, merged  0 (max 0), split 0 |  50 grp, exact 50, merged  0 (max 0), split 0
+regression PH13-rolled-60-120ms-after-noodle             42 |  22 grp, exact 14, merged  8 (max 5), split 0 |  52 grp, exact 38, merged  0 (max 0), split 4 |  42 grp, exact 42, merged  0 (max 0), split 0
+regression PH14-rolled-60-120ms-pedal                    36 |  25 grp, exact 20, merged  5 (max 4), split 0 |  46 grp, exact 32, merged  0 (max 0), split 4 |  36 grp, exact 36, merged  0 (max 0), split 0
+regression PH15-rolled-60-120ms-locked-grid              19 |  15 grp, exact 13, merged  2 (max 4), split 0 |  29 grp, exact 15, merged  0 (max 0), split 4 |  19 grp, exact 19, merged  0 (max 0), split 0
+validation V01-single-note-take                           1 |   1 grp, exact  1, merged  0 (max 0), split 0 |   1 grp, exact  1, merged  0 (max 0), split 0 |   1 grp, exact  1, merged  0 (max 0), split 0
+validation V02-short-complete-motif                       3 |   3 grp, exact  3, merged  0 (max 0), split 0 |   3 grp, exact  3, merged  0 (max 0), split 0 |   3 grp, exact  3, merged  0 (max 0), split 0
+validation V03-whole-session-is-2bar-progression          2 |   2 grp, exact  2, merged  0 (max 0), split 0 |   2 grp, exact  2, merged  0 (max 0), split 0 |   2 grp, exact  2, merged  0 (max 0), split 0
+validation V04-legato-melody-after-noodle                30 |  14 grp, exact  8, merged  6 (max 8), split 0 |  30 grp, exact 30, merged  0 (max 0), split 0 |  29 grp, exact 28, merged  1 (max 2), split 0
+validation V05-pedalled-scalar-runs                      32 |   1 grp, exact  0, merged  1 (max 32), split 0 |  32 grp, exact 32, merged  0 (max 0), split 0 |  32 grp, exact 32, merged  0 (max 0), split 0
+validation V06-bass-syncopated-after-noodle              51 |  43 grp, exact 36, merged  7 (max 3), split 0 |  51 grp, exact 51, merged  0 (max 0), split 0 |  51 grp, exact 51, merged  0 (max 0), split 0
+validation V07-melody-pickup                             27 |  16 grp, exact 11, merged  5 (max 5), split 0 |  27 grp, exact 27, merged  0 (max 0), split 0 |  25 grp, exact 24, merged  1 (max 3), split 0
+validation V08-mixed-hands                               44 |  27 grp, exact 11, merged 16 (max 3), split 0 |  44 grp, exact 44, merged  0 (max 0), split 0 |  44 grp, exact 44, merged  0 (max 0), split 0
+validation V09-rubato-chords-free                        32 |  23 grp, exact 16, merged  7 (max 3), split 0 |  32 grp, exact 32, merged  0 (max 0), split 0 |  32 grp, exact 32, merged  0 (max 0), split 0
+validation V10-pedal-through-noodle-and-progression      28 |  19 grp, exact 14, merged  5 (max 4), split 0 |  28 grp, exact 28, merged  0 (max 0), split 0 |  27 grp, exact 26, merged  1 (max 2), split 0
+validation V11-two-chord-idea-after-noodle               29 |  23 grp, exact 19, merged  4 (max 4), split 0 |  29 grp, exact 29, merged  0 (max 0), split 0 |  29 grp, exact 29, merged  0 (max 0), split 0
+validation V12-progression-plus-postlude-note            36 |  27 grp, exact 19, merged  8 (max 3), split 0 |  36 grp, exact 36, merged  0 (max 0), split 0 |  35 grp, exact 34, merged  1 (max 2), split 0
+validation V13-sparse-melody-after-noodle                32 |  24 grp, exact 19, merged  5 (max 4), split 0 |  32 grp, exact 32, merged  0 (max 0), split 0 |  32 grp, exact 32, merged  0 (max 0), split 0
+diag-post  D01-pedal-down-from-first-noodle-note         28 |   1 grp, exact  0, merged  1 (max 28), split 0 |  28 grp, exact 28, merged  0 (max 0), split 0 |  24 grp, exact 21, merged  3 (max 3), split 0
+TOTAL truth groups 993 | 3412f61 {"exact":475,"merged":181,"split":0} | reference {"exact":971,"merged":4,"split":14} | candidate {"exact":969,"merged":11,"split":0}

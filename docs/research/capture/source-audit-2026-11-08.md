@@ -29,7 +29,7 @@ This audits a search-AI summary that Haris supplied and the extra source leads, 
 | a | The player plays the next downbeat; the final burst anchors the END; trailing silence is ignored | **Partly documented.** The *recommendation* is documented; "anchors the END" and "trailing silence ignored" are **plausible hypothesis** | "it is recommended to end playing on the first beat (or "downbeat") of the next bar" (Live 11 §17.10.1 = Live 12 §19.10.1) | Test the final attack as a loop-END candidate kept as a tail (done: anchor kind `final-attack-as-next-downbeat`). It is compared against alternatives, never forced. |
 | b | Works backwards testing 1/2/4/8-bar spans | **Unsupported internal-algorithm assertion.** 1/2/4/8 bars is documented **only for the one-note case** | "resulting in a one, two, four, or eight bar loop" (one-note note, §x.10.1) | We use 1/2/4/8 as our own candidate set with a mild 4-bar prior. This is OURS. |
 | c | IOI / chord-density clustering and earliest-attack fitting | **Unsupported internal-algorithm assertion.** Ableton documents only "analyzes the average tempo" | Help Center | We use IOI histograms (public idea, Dixon 2001) **without** density weighting. Note count must not drive the beat. |
-| d | Rolled chords grouped in a tiny window | **Plausible hypothesis** (not documented) | none | Adaptive grouping (≤ 130 ms step, ≤ 400 ms spread, keys still down) instead of a "tiny" fixed window. Blocks' 40 ms already fails rolls of 60-120 ms between notes. |
+| d | Rolled chords grouped in a tiny window | **Plausible hypothesis** (not documented) | none | Attack-onset grouping relative to local IOIs, with sounding overlap necessary but not sufficient and monotonic stepwise lines excluded (UNVALIDATED values; the former 130/400 ms proposal is superseded). Blocks' 40 ms fails non-overlapping rolls of 60-120 ms; 3412f61's overlap stacks fix overlapping rolls but merge pedalled runs into one stack (handoff §6.3). |
 | e | Tempo bounds 80-160 with half/double | **The 80-160 range is documented** (for a new Set). Half/double is **demonstration-level** (Sound On Sound: "if you play eighth notes at 48 bpm you may wind up with quarter notes at 96 bpm") | "will set the tempo in the 80-160 BPM range" | Soft prior only, with half/double kept as alternatives. Don't clamp. |
 | f | 16,384-event FIFO buffer | **Documented**, but it is "oldest 1024 discarded" in blocks, not a strict FIFO | Help Center | Don't copy it. Blocks keeps D8 (120 s / 4096 events / 256 KiB). |
 | g | Patents and developer interviews | **Unsupported.** None were named, and I found no Ableton Capture patent (ledger A6). The Zya patent below is not Ableton's | — | Ignore as evidence. |
@@ -47,7 +47,7 @@ This audits a search-AI summary that Haris supplied and the extra source leads, 
 **Haris's suggestion** was to combine repetition, beat/bar fit and local boundaries, with resolution only as support, and to keep 2-3 internal candidate cuts. I agree, with an order:
 - **Beat/bar fit and local boundaries are primary.**
 - **Repetition is a bonus only**, so the first good take never needs repeating.
-- Keep 2-3 internal alternatives behind the existing handles. **No new UI.**
+- Keep 2-3 internal alternatives. Candidate alternatives carry **no new UI commitment**.
 - Cost: repetition over a 40 s window is O(bars²) at most, small next to the grid search.
 - Ambiguity: repetition favours 1-2-bar motifs over 4-bar phrases (PH09), so its weight must stay small.
 
@@ -55,11 +55,12 @@ This audits a search-AI summary that Haris supplied and the extra source leads, 
 
 - **534279f** (17:03 London): spec v2.1/v2.2 code references and `repro-four-chords-results.txt` (that repro ran the recent-phrase.ts copy that is byte-identical at 534279f and fadfdcf).
 - **fdba348** (19:31): `phrase-results.txt` "main-fdba348".
-- **497894e** (19:43): "main-497894e" and the retest checkpoint.
-- Deployed bundles **index-DGbe1J8t.js** and **index-CqMoO9xx.js** were **not inspected**.
+- **497894e** (19:43): historical comparison rows (formerly labelled "main-497894e"; it is **not** current main) and the retest checkpoint.
+- **3412f61** (19:50): **current main for this review**; `checkpoints/2026-11-08-baseline-3412f61.md`.
+- Deployed bundles **index-DGbe1J8t.js**, **index-CqMoO9xx.js** and **index-CsEdtvjV.js** were **not inspected**.
 
 ## 5. Evaluation recommendations
 
 - Add Haris's real event log as a private, non-redistributed fixture once he can share it. Until then, don't claim a reproduction.
-- Keep PH13-15 (rolls) and the role-agnostic holdouts frozen. Tune adaptive grouping only on the tuning set and add roll tuning fixtures first.
+- PH01-15 have influenced design discussion: they are now the **regression/development set**, not a holdout. The fresh check is the independent validation set V01-13 (frozen 19:57:01 GMT, sha256 c06e8caa…). Don't tune on it; build a further fresh set before any accuracy claim.
 - Report the coverage categories (GOOD / PARTIAL / FINAL_TRAP / WHOLE_TRAP) and period match separately.
