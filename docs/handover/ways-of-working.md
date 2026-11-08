@@ -8,9 +8,11 @@ Verified with git on 8 Nov 2026, after `git fetch origin main`:
 |---|---|
 | `origin/main` | `7ef7982a6b446af2269d41601703722f71380aab` |
 | Merge-base of `handover/status` and `origin/main` | `497894e170ac150f06e5a8bea34d0d4e7f34e2fd` |
-| `handover/status` tip before this document | `c61829fa8e330d3dadb5989e7cb5416f4644a7cf` |
+| `handover/status` tip before this edit | `82f060bf2a4cbb81bed9ae7f92375a76e4464996` |
 
-`7ef7982a6b446af2269d41601703722f71380aab` is the `main` tip verified by `git fetch` on 8 Nov 2026. `b5150bfd076346e4aca8bd66cad17151a1a59c2c` is the previous ribbon commit. It is not an ancestor of `handover/status`. `957480eda2de13005613d27cc875d2853c9fbde4` is the previous tip and is not an ancestor of this branch either. `handover/status` is not an ancestor of `main`. The app-source diff from the merge-base to this branch is empty. Take application code from the latest `main`. Take these documents from `handover/status`. This branch is not a substitute for `main`.
+`7ef7982a6b446af2269d41601703722f71380aab` is the `main` tip this fetch saw. `b5150bfd076346e4aca8bd66cad17151a1a59c2c` is the previous ribbon commit. Neither is an ancestor of `handover/status`, and this branch is not an ancestor of `main`. Do not merge this branch onto `main`, and do not replace `main` with this older tree. The app-source diff from the merge-base to this branch is empty. Take application code from the latest `main`. Take these documents from `handover/status`. This branch is not a substitute for `main`.
+
+The live script reported for that tip is `/Blocks/assets/index-XkfYLbpj.js`. That build is explicitly not accepted. It is a bare roll with a crowded toolbar and no moving playhead. The editing, grid, and quantise controls were not exercised in the browser. Passing unit tests, or showing a control, is not delivery. That is the lesson from this round. An earlier script, `/Blocks/assets/index-CPO7bfKa.js`, belonged to `91291d80a3c6bb5e91cc6635243f00bf218672f0` and has been overtaken.
 
 ## Roles
 
@@ -32,11 +34,22 @@ Specialist research and design are context and evidence. They are not automatica
 
 The names above are optional role labels for a new human team. They are not required. Map the responsibilities onto people or tools.
 
+## How the work is organized
+
+The overall lead coordinates Blocks. Each component has one product manager, the component owner. Frontend engineering and backend engineering work with that owner and with UX in a focused mini-team. Audio and MIDI, Capture and Timing, QA, Instruments, and UX stay the roles already listed. New names below are organizational owners. They are not separate products and not extra coding projects. The one existing coding project remains the implementation and integration route.
+
+The first mini-team is the piano roll. Its component owner is Blocks · Piano Roll. The team is Frontend Engineering, Backend Engineering, UI/UX, and the overall lead. Backend here means core, data, and playback. There is no server. The room name Blocks · Piano Roll Team is optional context, not a dependency.
+
+The component owner writes one bounded scope and the interface and acceptance handoff. Frontend and backend agree the interfaces and build to the reviewed UX. UX reviews the actual build, not a mock. Browser and touch interaction, plus playback alignment, are required along with automated tests. The lead accepts only after both the design evidence and the function evidence exist.
+
 ## Current practice
 
 - Keep the musician playing. Retrospective Capture comes first.
 - The cut has to cope with chords, melody, bass, arpeggios, and mixed playing.
-- Original MIDI stays immutable. Expressive timing stays. Quantise is opt-in and undoable.
+- Original MIDI stays immutable. Raw timing stays. CC64 stays. Musical silent tails stay. Edits are reversible and happen on a working copy.
+- Bars are used only when tempo, meter, and phase are known.
+- The ribbon and the expanded editor are one piano roll.
+- Expressive timing stays. Quantise is opt-in and undoable.
 - Browser-first. Android code and the existing APK artifact stay. The standalone debug APK was built and never launched.
 - Look at the visual storyboard before building new UI.
 - Keep Graphite structure and Paper character, in light and dark.
@@ -50,7 +63,7 @@ The names above are optional role labels for a new human team. They are not requ
 - Frozen validation is distinct from tuning and regression, and it was labelled by the same designer. Keep known fixture defects, including the V10 pedal wording and unscored D01.
 - Do not ask Haris to refresh or retest again without a stronger end-to-end trace. Do not expand into unrelated scope.
 
-The current design proposal is rev 3.3. The archived Capture research baseline is `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`. Last-chord Capture is still unresolved. Neither is shipped. The live script named for `957480e`, `/Blocks/assets/index-DGlo7_W4.js`, was overtaken by a later `main` commit. `91291d80a3c6bb5e91cc6635243f00bf218672f0` was the `main` tip before the play screen, and its script was `/Blocks/assets/index-CPO7bfKa.js`. The current tip and script are in Play screen shipped in the handover README. At 20:30 GMT Haris said the ending problem has gone in that test. That is user-reported resolved for that hearing, not a universal sign-off. Prefix contamination, older playing captured with the chords, is the open selection miss. At 20:31 GMT he said the phrase is a single loop, so a repeated pattern is not something he can be required to play. At 20:32 GMT he said the bad captures are intermittent. The first few did not include the noodling, and he informally estimates about half of them do now. That 50/50 is his estimate, not a measured rate. At 20:33 GMT he said automatic capture will never be perfect and the priority now includes making a miss fast to fix. That priority sits beside the open prefix miss. At 20:34 GMT he asked for the UI build. The approved slice is the main play screen, Graphite and Paper, dark and light, plus start and end handles on the take ribbon, audition when the finger lifts, and one undo. Frames 11–16 are the relevant storyboard. Frames 17–27 stay unbuilt. Snap and main-screen Quantise stay open. His exact take is not available. The ending report from 20:30 stays user-reported resolved for that hearing. The play-screen slice is deployed. See Play screen shipped. The live script is `/Blocks/assets/index-XkfYLbpj.js` for `7ef7982a6b446af2269d41601703722f71380aab`.
+The current design proposal includes rev 3.3 and the rev 3.4 ribbon contract at `docs/design/hifi/ribbon-rev34-contract.md`. The approved UI slice is the main play screen, Graphite and Paper, dark and light, plus start and end handles on the take ribbon, audition when the finger lifts, and one undo. Frames 11–16 are that ribbon storyboard. Frames 17–27 stay unbuilt. Snap and main-screen Quantise stay open. That approval is not approval to build the full editor. The archived Capture research baseline is `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`. The 20:30 GMT ending report stays user-reported resolved for that hearing, not a universal sign-off. Prefix contamination remains the open selection miss. At 20:31 GMT the phrase was a single loop, so a repeated pattern is not required. At 20:32 GMT the bad captures were intermittent, and the half-and-half figure is his estimate, not a measured rate. `7ef7982a6b446af2269d41601703722f71380aab` and `/Blocks/assets/index-XkfYLbpj.js` are not accepted. Passing unit tests, or showing a control, is not delivery.
 
 ## How a piece of work moves
 
@@ -70,7 +83,7 @@ A new human team should:
 
 1. Read [README.md](README.md) and this file.
 2. Fetch both the latest `main` and `handover/status`. Reproduce the named baseline from `main`, not from this branch.
-3. Keep the design gate and the release gate. Rev 3.3 is not approval to build the production screen. Last-chord Capture is not fixed.
+3. Keep the design gate and the release gate. `7ef7982a6b446af2269d41601703722f71380aab` is not accepted. Frames 17–27 stay unbuilt. The 20:30 ending report is not a universal sign-off.
 4. Map the responsibilities above onto people or tools. The role labels are optional.
 
 **Recommendation.** Keep handover documents on a branch that is not `main`. A push to `main` is what the Pages workflow deploys, so a documentation commit on that other branch does not publish the site, and a clone of `main` alone does not contain the handover. That split is a recommendation for how to continue. It is not a finished process beyond the documents already on `handover/status`.
