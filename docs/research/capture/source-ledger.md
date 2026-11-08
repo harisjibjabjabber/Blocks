@@ -56,6 +56,23 @@ Seen but **not inspected**: AMuSE Grouping (https://code.soundsoftware.ac.uk/pro
 | D6 | https://harisjibjabjabber.github.io/Blocks/ → `assets/index-Ck4Rr643.js` (curl) | String match with the repo capture code |
 | D7 | https://github.com/harisjibjabjabber/Blocks @ **`534279f`** (main, committed 2026-11-08 17:03 London; fetched read-only 8 Nov 2026) | Re-check and pairing audit: `src/audio/web/instrument.ts` (voices, retrigger, sustain), `native/src/instrument.cpp` + `native/include/blocks/events.hpp` (native voices), `src/domain/recent-phrase.ts` (the current cut), `src/ui/App.tsx`, `src/adapters/engine.web.ts`. See `prototype-findings.md` §5-6. Evidence class: CODE (the user's own repo). A read-only copy of `recent-phrase.ts` (`/workspace/research/blocks-534279f/`) is run by the evaluator for local evaluation only; it isn't redistributed |
 
+| D8 | Blocks @ `fdba348` (2026-11-08 19:31 London) and @ `497894e` (19:43 London), read via the cursor-github API (no clone) | `recent-phrase.ts` and `App.tsx` at fdba348; the fdba348..497894e diff; `recent-phrase.ts` at 497894e. The research archive did not include those copies; it pointed at `/workspace/research/blocks-{fdba348,497894e}/` with git blob hashes 1a5c2989dd77 and 3742f05ed36e. This checkout later extracted those blobs to `historical/fdba348/` and `historical/497894e/` so the harness has a path. `fixtures/phrase/evaluate-phrase.mjs` was not rerun. The comparison is those two commits, not `3412f61`. CODE (user's repo) |
+
+## F. Phrase-capture sources added 8 Nov 2026 evening (see `source-audit-2026-11-08.md` for the claim audit table)
+
+| ID | Source | Licence / status | Taken | Class |
+|---|---|---|---|---|
+| F1 | Ableton Live 11 manual §17.10 https://www.ableton.com/en/live-manual/11/recording-new-clips/ (curl, full section) | Proprietary documentation | Same Capture text as A1 (Live 12 §19.10), including the next-downbeat recommendation and notes kept before the clip start | DOC-ABL |
+| F2 | Foote, "Automatic audio segmentation using a measure of audio novelty", ICME 2000, https://ccrma.stanford.edu/workshops/mir2009/references/Foote_00.pdf (search excerpt) | Paper | A checkerboard kernel on a self-similarity matrix gives novelty peaks at boundaries. Idea only (a STAGED feature) | PAPER |
+| F3 | polygon/mucap https://github.com/polygon/mucap | GPL-3.0 (GitHub metadata) | Retrospective MIDI recorder with bar-snapped manual selection. **Idea only, no code** | CODE (not inspected) |
+| F4 | Sound On Sound, "MIDI Capture & Multi-clip Editing In Live" (search excerpt) | Magazine | "Most often you'll get a four-bar loop"; half/double example | Demonstration |
+| F5 | Zya US20180268792A1 (Google Patents) | **Abandoned** per Google (not a legal conclusion); assignee Zya Inc | Description text on repetition subsequences and boundary strengths. Not Ableton | PAPER (patent) |
+| F6 | Dai, Zhang, Dannenberg 2024, Music & Science, doi:10.1177/20592043241234758 | CC BY-NC 4.0 (Crossref) | Abstract only: repetition-based structure hierarchy | PAPER |
+| F7 | Dsqvival/hierarchical-structure-analysis | MIT (GitHub API) | README: 16th-quantised melody and beat-unit chords, i.e. aligned input. Not copied | CODE (README only) |
+| F8 | MusicTech video t-B2aUO1T-c | YouTube | Title, description and chapters only; transcript not reviewed | Demonstration (metadata) |
+| — | Bax-shop blog | — | **Not reviewed** (fetch blocked) | — |
+| — | X search `"capture midi" ableton (bars OR tempo OR loop)` | — | 0 results | — |
+
 ## E. What we took vs. what's ours (summary)
 
 - Taken as **documented observable behaviour** (A1-A4): the two-mode split (an empty stopped Set infers tempo; an existing or running Set uses the existing tempo), the 80-160 BPM band, the advice to end on the next downbeat, keeping notes outside the chosen loop, loop lengths of 1/2/4/8 bars in the one-note case, the first note being the loop start for loops of ≤8 bars (Live 11.1), choosing the iteration with new material when overdubbing, a bounded event buffer, and latency compensation at loop jumps.

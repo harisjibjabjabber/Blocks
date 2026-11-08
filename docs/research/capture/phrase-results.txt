@@ -1,0 +1,39 @@
+SYNTHETIC PHRASE-CAPTURE RESULTS (8 Nov 2026, about 19:52 London). Not Haris's MIDI. Provisional designer labels. Not an accuracy claim.
+Code evaluated (read-only copies, git blob hashes matched to GitHub):
+  main-fdba348 = src/domain/recent-phrase.ts @ fdba348124d4 (blob 1a5c2989dd77), called as App.tsx L223-229 @ fdba348
+  main-497894e = src/domain/recent-phrase.ts @ 497894e170ac (blob 3742f05ed36e); App passes beatForCut(project) -> modelled as free time for a first layer, the locked grid for PH06/PH15
+  Neither the bundle index-DGbe1J8t.js nor index-CqMoO9xx.js was inspected.
+Reference predictor logic: frozen before the first holdout run (harness file sha prefix a419aa7dc2d0ebcd); afterwards only 497894e scoring and three roll fixtures (PH13-15) were added, so the harness file sha is now 6c61e7927c8fe905. referencePredict() was not changed.
+
+== Phrase capture on TUNING fixtures (SYNTHETIC, provisional labels; not Haris's MIDI) [IN-SAMPLE for the reference]
+coverage categories: GOOD = >=90% of phrase groups and <=1 noodling group; FINAL_TRAP = <=25% of phrase groups; WHOLE_TRAP = >50% of noodling groups
+reference coverage: {"GOOD":3,"PARTIAL":3} | reference period: {"DEFAULT":3,"OTHER":2,"ALTERNATIVE":1}
+main-fdba348 free time (no tempo passed): {"WHOLE_TRAP":4,"PARTIAL":2} | main-fdba348 with the true beat passed as a grid (= a proposed tempo at fdba348): {"FINAL_TRAP":4,"PARTIAL":2}
+main-497894e as App calls it (free time unless the fixture has a locked grid): {"GOOD":3,"WHOLE_TRAP":1,"PARTIAL":2}
+  PT01-even-4chords-after-noodle               REF proposed-grid 4bar@98.4 GOOD       period=DEFAULT              | expected 4bar@96 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e GOOD
+  PT02-uneven-3-1-2-2-plus-2bars               REF proposed-grid 4bar@102.4 GOOD       period=DEFAULT              | expected 4bar@104 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e GOOD
+  PT03-pedal-through-changes                   REF proposed-grid 4bar@84 GOOD       period=DEFAULT              | expected 4bar@84 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e GOOD
+  PT04-bass-syncopated                         REF proposed-grid 2bar@96.5 PARTIAL    period=OTHER                | expected 4bar@100 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP
+  PT05-legato-melody                           REF proposed-grid 2bar@87.4 PARTIAL    period=ALTERNATIVE          | expected 4bar@90 | fdba348 free PARTIAL    grid PARTIAL    | 497894e PARTIAL
+  PT06-free-rubato-chords                      REF proposed-grid 4bar@127.3 PARTIAL    period=OTHER                | expected 4bar@70 | fdba348 free PARTIAL    grid PARTIAL    | 497894e PARTIAL
+
+== Phrase capture on HOLDOUT fixtures (SYNTHETIC, provisional labels; not Haris's MIDI) [HOLDOUT: never used to tune]
+coverage categories: GOOD = >=90% of phrase groups and <=1 noodling group; FINAL_TRAP = <=25% of phrase groups; WHOLE_TRAP = >50% of noodling groups
+reference coverage: {"GOOD":7,"PARTIAL":8} | reference period: {"OTHER":7,"DEFAULT":3,"ALTERNATIVE":2,"ABSTAINED":3}
+main-fdba348 free time (no tempo passed): {"WHOLE_TRAP":13,"PARTIAL":1,"FINAL_TRAP":1} | main-fdba348 with the true beat passed as a grid (= a proposed tempo at fdba348): {"FINAL_TRAP":14,"PARTIAL":1}
+main-497894e as App calls it (free time unless the fixture has a locked grid): {"GOOD":2,"WHOLE_TRAP":9,"FINAL_TRAP":3,"PARTIAL":1}
+  PH01-uneven-6-2-4-4-noodle-final-downbeat    REF proposed-grid 4bar@94.6 GOOD       period=OTHER                | expected 4bar@92 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e GOOD
+  PH02-uneven-2-2-3-1-x2-held-final            REF proposed-grid 4bar@108.7 GOOD       period=DEFAULT              | expected 4bar@110 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e GOOD
+  PH03-pedal-held-rubato-drift                 REF proposed-grid 4bar@158.3 PARTIAL    period=OTHER                | expected 4bar@80 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP
+  PH04-pickup-melody-into-bar1                 REF proposed-grid 4bar@120 PARTIAL    period=DEFAULT              | expected 4bar@120 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP
+  PH05-half-double-fast-eighths                REF proposed-grid 4bar@152.2 GOOD       period=OTHER                | expected 4bar@150 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP
+  PH06-locked-grid-second-layer-bass           REF locked-grid   4bar@96 GOOD       period=DEFAULT              | expected 4bar@96 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e FINAL_TRAP
+  PH07-sparse-melody                           REF proposed-grid 4bar@174.8 PARTIAL    period=ALTERNATIVE          | expected 4bar@88 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP
+  PH08-arpeggios                               REF proposed-grid 2bar@104.5 PARTIAL    period=OTHER                | expected 4bar@100 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP
+  PH09-repeated-1bar-motif                     REF proposed-grid 2bar@104.5 PARTIAL    period=OTHER                | expected 4bar@108 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP
+  PH10-continuous-scalar-runs                  REF proposed-grid 2bar@171.4 PARTIAL    period=ALTERNATIVE          | expected 2bar@90 | fdba348 free PARTIAL    grid PARTIAL    | 497894e PARTIAL
+  PH11-free-rubato-ballad                      REF proposed-grid 8bar@140.6 GOOD       period=OTHER(expected free) | expected 4bar@60 | fdba348 free FINAL_TRAP grid FINAL_TRAP | 497894e FINAL_TRAP
+  PH12-mixed-hands-trailing-silence            REF proposed-grid 4bar@115.3 PARTIAL    period=OTHER                | expected 4bar@116 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP
+  PH13-rolled-60-120ms-after-noodle            REF free          free      GOOD       period=ABSTAINED            | expected 4bar@92 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP
+  PH14-rolled-60-120ms-pedal                   REF free          free      PARTIAL    period=ABSTAINED            | expected 4bar@88 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e WHOLE_TRAP
+  PH15-rolled-60-120ms-locked-grid             REF free          free      GOOD       period=ABSTAINED            | expected 4bar@96 | fdba348 free WHOLE_TRAP grid FINAL_TRAP | 497894e FINAL_TRAP

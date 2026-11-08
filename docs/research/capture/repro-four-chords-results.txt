@@ -1,3 +1,4 @@
+EVALUATED: recent-phrase.ts copy byte-identical at 534279f and fadfdcf. NOT fdba348/497894e (see phrase-results.txt). SYNTHETIC hypothesis check only.
 SYNTHETIC hypothesis check: how many of 4 chord attacks land in recentPhraseCut's selection (real function, read-only copy)
 bpm  beats/chord  onset-gap(s)  grid-passed  pedal  chordsSelected  status
 70   2            1.71          false        false  1               recent

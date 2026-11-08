@@ -1,0 +1,471 @@
+{
+  "copy_started_london": "2026-11-08T19:54:46.080141+00:00",
+  "copy_completed_london": "2026-11-08T19:54:46.209508+00:00",
+  "base_manifest_sha256": "a00cc68081b1299b543dc1bb24b88e83f922c956164f77ca98625a7ab3a89491",
+  "actual_delta": [
+    {
+      "path": "blocks-capture-product/README.md",
+      "bytes": 2404,
+      "sha256": "969da6007e1bdd17f43e088b01ce69231b6afc5c1061d2af9b7890435c11dffc",
+      "base_sha256": "fe64e7a4de7062688855cd3cbf9aa175f3a8b5d7990d80d8fa04ba3de7aa85e0",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-capture-product/capture-spec.md",
+      "bytes": 50855,
+      "sha256": "90663b3d1934ab33695d613c230f340b9415b0b595359a6c18f0a7ec97451d1c",
+      "base_sha256": "99fb3877f42009411bac26074bf1ec87b8b402d6e59ebfbc3b6f304fcbcda33e",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-capture-product/checkpoints/2026-11-08-last-chord-retest-497894e.md",
+      "bytes": 1665,
+      "sha256": "34658c7f798afe4c6854e697b0fbfd898a795387a3d8285ba026d93ae4f31473",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/evaluation-plan.md",
+      "bytes": 14294,
+      "sha256": "86066f666b176100b1f7e949b3e95c073bd91f01cf885ac97ec5982e998dc695",
+      "base_sha256": "4d63a2733052e672f09c93fb903d50ea7ec3bee753964aff98e459ce36b3c951",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH01-uneven-6-2-4-4-noodle-final-downbeat.json",
+      "bytes": 31673,
+      "sha256": "6c79e2cbcdd5925488a59e3bc5af49512cf53826b32626a6e6585afa750bbdb5",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH02-uneven-2-2-3-1-x2-held-final.json",
+      "bytes": 26605,
+      "sha256": "a599a44cf120e26fa48b0e175134af6532515754a6fcac8cce232db4bd2702c8",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH03-pedal-held-rubato-drift.json",
+      "bytes": 21619,
+      "sha256": "34a4d0a0f5fafd0d61f7c2033ac61844bce35b28474a60e813ceb3f1a8a1b2a1",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH04-pickup-melody-into-bar1.json",
+      "bytes": 20038,
+      "sha256": "0b27c77cc78ec04f6e7a9ea1f777aa5b3034cc6834d6b8c49372018ee267a310",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH05-half-double-fast-eighths.json",
+      "bytes": 19265,
+      "sha256": "6db37e110286456627295e7d0ffa2c7f9cdeacc2f7a22141b13c729e26f573a3",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH06-locked-grid-second-layer-bass.json",
+      "bytes": 12501,
+      "sha256": "3e94f301f407c11eb553028c1206f2c2e86f47cdbe0639e44c13f81ce0499f7a",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH07-sparse-melody.json",
+      "bytes": 11181,
+      "sha256": "9eca05e660a1aae7f6491e24fd14b4c4f6a68225bb7593f28ee7675655d5bede",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH08-arpeggios.json",
+      "bytes": 23071,
+      "sha256": "07e41641379d313f0c96567cb3c3c3b31533171f92abd7ff6bf6cf26f854e589",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH09-repeated-1bar-motif.json",
+      "bytes": 20052,
+      "sha256": "7cf0588d7ec868da04341e9aaf3782b13f1842df39664e74279a5c5a2a400874",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH10-continuous-scalar-runs.json",
+      "bytes": 10492,
+      "sha256": "8ebf9b3486a39a74592da21f48d5b41d651f4e4920ebb34a69af8e5dd1ebe008",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH11-free-rubato-ballad.json",
+      "bytes": 13916,
+      "sha256": "a730fb04fe084b7bb0b38c309d2fe8cc2311037c30bd9852d24277f0065d51f7",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH12-mixed-hands-trailing-silence.json",
+      "bytes": 28091,
+      "sha256": "6b9f87f42594d393f2b1086ee2a6034e59ebe6af66b322a77d662d96d7a8bc64",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH13-rolled-60-120ms-after-noodle.json",
+      "bytes": 20713,
+      "sha256": "976b12350021f35ca26175db3983d57c4f83b319e3cc52ef1b097bd859700dba",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH14-rolled-60-120ms-pedal.json",
+      "bytes": 20135,
+      "sha256": "c99283828d039054394a0ac3bc376beb00a446bfb3a386f472cf744b2ed124da",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH15-rolled-60-120ms-locked-grid.json",
+      "bytes": 10767,
+      "sha256": "7787f3f9ef829977c36ff8f7e9254bb63e1cb6124d2003a1cf06372790747655",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT01-even-4chords-after-noodle.json",
+      "bytes": 15777,
+      "sha256": "a7327068ad80bdae4164e152cc0cac2ab3c86d45bfb26f5a113c1f13c8baa094",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT02-uneven-3-1-2-2-plus-2bars.json",
+      "bytes": 19277,
+      "sha256": "902f078db9d679bc8b37922685d43f0cc49b0821093022bdba14fa005d2ceba1",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT03-pedal-through-changes.json",
+      "bytes": 16385,
+      "sha256": "73cce16e2124ab261b297e2c24e3be5da81b98e0b1fbab53afd74e1499083f10",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT04-bass-syncopated.json",
+      "bytes": 15502,
+      "sha256": "f1d5a9be74704419c231849bfb81f9d8caedc8cb1f544e2ce3f6e1dc8396ff09",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT05-legato-melody.json",
+      "bytes": 10839,
+      "sha256": "6819a4e1954d925ebf8b7f3e57cd4950275e0b9a06c23c261496a4f2e649aa87",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT06-free-rubato-chords.json",
+      "bytes": 10218,
+      "sha256": "43b15590aaff76b7c0ca8ce608efa530c54a749ff4cf309e30ba0f13f319628b",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/evaluate-phrase.mjs",
+      "bytes": 19669,
+      "sha256": "6c61e7927c8fe9051655fea90533c3ed2ef306cd7b8fc2f52b8af293d8326d4c",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/generate-phrase.mjs",
+      "bytes": 13648,
+      "sha256": "18125ef473da7f84e3b6dbf9d3517bec20ece6d857c015a56ddc62c2a3941647",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-capture-handoff.md",
+      "bytes": 12308,
+      "sha256": "00d90c6bdf013214e2a9cd51ceb2d0c7021ce7d786ba64b2ff6a4b587f30221a",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-holdout.json",
+      "bytes": 15346,
+      "sha256": "e157ed5930f3e490b264c0cefcaf70935b55d261ce54c386ea196ce228713f7e",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-tuning.json",
+      "bytes": 6295,
+      "sha256": "a7cfe8d77c1abb0ac980aff4c033145382ce73d6689d87d2f15f25dc8386cd76",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results.txt",
+      "bytes": 6337,
+      "sha256": "c96278dd34d0c8e52327a2431dbf39b8cf8f045a6ce94593aa6c2544304645d7",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/prototype-findings.md",
+      "bytes": 15761,
+      "sha256": "8d6c409a45592dbde5beb8b3fc6c951314ff666d4a9259c6034a82e3301c0014",
+      "base_sha256": "664f0c9416f7af47528063f31da3fc347e865800a79b63eaf07abafcd06dbd83",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-capture-product/repro-four-chords-results.txt",
+      "bytes": 2774,
+      "sha256": "9a09e8b6431eae7d64ce740b0ccf392ba815e5eeefe78051e18a0bbc32545687",
+      "base_sha256": "b6b5a64c7c4ddd65941b1dd73beef149d85839525ff9212d8e5a50f7e037af82",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-capture-product/source-audit-2026-11-08.md",
+      "bytes": 9613,
+      "sha256": "7da60d367def068030e50d600d0e666881e56509a07ce369b426cd1ce4a2deb6",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-capture-product/source-ledger.md",
+      "bytes": 15995,
+      "sha256": "b7abe289444c4000b92c6aa50fe3e83184771ab41b2a111a2d89b8105189f731",
+      "base_sha256": "a26ac86d1fdf7293b56f23fbe087caaffc9bdd8e3a65ef33300e999c13b30765",
+      "status": "modified"
+    }
+  ],
+  "excluded": [],
+  "missing_base_files": [],
+  "report_provenance": [
+    {
+      "source": "external implementation report; original machine path omitted",
+      "package_path": "blocks-capture-product/handover-evidence/implementation-report-3412f61-overlap-retest.md",
+      "checkout_path": "docs/research/capture/handover-evidence/implementation-report-3412f61-overlap-retest.md",
+      "bytes": 11410,
+      "sha256": "f291f7b34a0a889103c6aed6c08aff917c4fc349adc53875456109927354f3cf",
+      "latest_commit_in_report": "3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e",
+      "evidence_class": "implementation-agent report, synthetic; source bytes unchanged"
+    },
+    {
+      "source": "external implementation report; original machine path omitted",
+      "package_path": "blocks-capture-product/handover-evidence/implementation-report-497894e-rolled-chord-retest.md",
+      "checkout_path": "docs/research/capture/handover-evidence/implementation-report-497894e-rolled-chord-retest.md",
+      "bytes": 9150,
+      "sha256": "6a02b535a08a9042e568c963bcd5fb0454cebe66cf8e71b51787bec4f3738d6f",
+      "latest_commit_in_report": "497894e170ac150f06e5a8bea34d0d4e7f34e2fd",
+      "evidence_class": "implementation-agent report, synthetic; source bytes unchanged"
+    }
+  ],
+  "payload_files": [
+    {
+      "path": "blocks-capture-product/README.md",
+      "bytes": 2404,
+      "sha256": "969da6007e1bdd17f43e088b01ce69231b6afc5c1061d2af9b7890435c11dffc"
+    },
+    {
+      "path": "blocks-capture-product/capture-spec.md",
+      "bytes": 50855,
+      "sha256": "90663b3d1934ab33695d613c230f340b9415b0b595359a6c18f0a7ec97451d1c"
+    },
+    {
+      "path": "blocks-capture-product/checkpoints/2026-11-08-last-chord-retest-497894e.md",
+      "bytes": 1665,
+      "sha256": "34658c7f798afe4c6854e697b0fbfd898a795387a3d8285ba026d93ae4f31473"
+    },
+    {
+      "path": "blocks-capture-product/evaluation-plan.md",
+      "bytes": 14294,
+      "sha256": "86066f666b176100b1f7e949b3e95c073bd91f01cf885ac97ec5982e998dc695"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH01-uneven-6-2-4-4-noodle-final-downbeat.json",
+      "bytes": 31673,
+      "sha256": "6c79e2cbcdd5925488a59e3bc5af49512cf53826b32626a6e6585afa750bbdb5"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH02-uneven-2-2-3-1-x2-held-final.json",
+      "bytes": 26605,
+      "sha256": "a599a44cf120e26fa48b0e175134af6532515754a6fcac8cce232db4bd2702c8"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH03-pedal-held-rubato-drift.json",
+      "bytes": 21619,
+      "sha256": "34a4d0a0f5fafd0d61f7c2033ac61844bce35b28474a60e813ceb3f1a8a1b2a1"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH04-pickup-melody-into-bar1.json",
+      "bytes": 20038,
+      "sha256": "0b27c77cc78ec04f6e7a9ea1f777aa5b3034cc6834d6b8c49372018ee267a310"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH05-half-double-fast-eighths.json",
+      "bytes": 19265,
+      "sha256": "6db37e110286456627295e7d0ffa2c7f9cdeacc2f7a22141b13c729e26f573a3"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH06-locked-grid-second-layer-bass.json",
+      "bytes": 12501,
+      "sha256": "3e94f301f407c11eb553028c1206f2c2e86f47cdbe0639e44c13f81ce0499f7a"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH07-sparse-melody.json",
+      "bytes": 11181,
+      "sha256": "9eca05e660a1aae7f6491e24fd14b4c4f6a68225bb7593f28ee7675655d5bede"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH08-arpeggios.json",
+      "bytes": 23071,
+      "sha256": "07e41641379d313f0c96567cb3c3c3b31533171f92abd7ff6bf6cf26f854e589"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH09-repeated-1bar-motif.json",
+      "bytes": 20052,
+      "sha256": "7cf0588d7ec868da04341e9aaf3782b13f1842df39664e74279a5c5a2a400874"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH10-continuous-scalar-runs.json",
+      "bytes": 10492,
+      "sha256": "8ebf9b3486a39a74592da21f48d5b41d651f4e4920ebb34a69af8e5dd1ebe008"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH11-free-rubato-ballad.json",
+      "bytes": 13916,
+      "sha256": "a730fb04fe084b7bb0b38c309d2fe8cc2311037c30bd9852d24277f0065d51f7"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH12-mixed-hands-trailing-silence.json",
+      "bytes": 28091,
+      "sha256": "6b9f87f42594d393f2b1086ee2a6034e59ebe6af66b322a77d662d96d7a8bc64"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH13-rolled-60-120ms-after-noodle.json",
+      "bytes": 20713,
+      "sha256": "976b12350021f35ca26175db3983d57c4f83b319e3cc52ef1b097bd859700dba"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH14-rolled-60-120ms-pedal.json",
+      "bytes": 20135,
+      "sha256": "c99283828d039054394a0ac3bc376beb00a446bfb3a386f472cf744b2ed124da"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/holdout/PH15-rolled-60-120ms-locked-grid.json",
+      "bytes": 10767,
+      "sha256": "7787f3f9ef829977c36ff8f7e9254bb63e1cb6124d2003a1cf06372790747655"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT01-even-4chords-after-noodle.json",
+      "bytes": 15777,
+      "sha256": "a7327068ad80bdae4164e152cc0cac2ab3c86d45bfb26f5a113c1f13c8baa094"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT02-uneven-3-1-2-2-plus-2bars.json",
+      "bytes": 19277,
+      "sha256": "902f078db9d679bc8b37922685d43f0cc49b0821093022bdba14fa005d2ceba1"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT03-pedal-through-changes.json",
+      "bytes": 16385,
+      "sha256": "73cce16e2124ab261b297e2c24e3be5da81b98e0b1fbab53afd74e1499083f10"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT04-bass-syncopated.json",
+      "bytes": 15502,
+      "sha256": "f1d5a9be74704419c231849bfb81f9d8caedc8cb1f544e2ce3f6e1dc8396ff09"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT05-legato-melody.json",
+      "bytes": 10839,
+      "sha256": "6819a4e1954d925ebf8b7f3e57cd4950275e0b9a06c23c261496a4f2e649aa87"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/data/tuning/PT06-free-rubato-chords.json",
+      "bytes": 10218,
+      "sha256": "43b15590aaff76b7c0ca8ce608efa530c54a749ff4cf309e30ba0f13f319628b"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/evaluate-phrase.mjs",
+      "bytes": 19669,
+      "sha256": "6c61e7927c8fe9051655fea90533c3ed2ef306cd7b8fc2f52b8af293d8326d4c"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/phrase/generate-phrase.mjs",
+      "bytes": 13648,
+      "sha256": "18125ef473da7f84e3b6dbf9d3517bec20ece6d857c015a56ddc62c2a3941647"
+    },
+    {
+      "path": "blocks-capture-product/handover-evidence/PROVENANCE.json",
+      "bytes": 1248,
+      "sha256": "cfa280abf43919111a0933fdf11bcfcb9921e2b3e55fa5ca27d6b68d47ea93c6"
+    },
+    {
+      "path": "blocks-capture-product/handover-evidence/implementation-report-3412f61-overlap-retest.md",
+      "bytes": 11410,
+      "sha256": "f291f7b34a0a889103c6aed6c08aff917c4fc349adc53875456109927354f3cf"
+    },
+    {
+      "path": "blocks-capture-product/handover-evidence/implementation-report-497894e-rolled-chord-retest.md",
+      "bytes": 9150,
+      "sha256": "6a02b535a08a9042e568c963bcd5fb0454cebe66cf8e71b51787bec4f3738d6f"
+    },
+    {
+      "path": "blocks-capture-product/phrase-capture-handoff.md",
+      "bytes": 12308,
+      "sha256": "00d90c6bdf013214e2a9cd51ceb2d0c7021ce7d786ba64b2ff6a4b587f30221a"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-holdout.json",
+      "bytes": 15346,
+      "sha256": "e157ed5930f3e490b264c0cefcaf70935b55d261ce54c386ea196ce228713f7e"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results-tuning.json",
+      "bytes": 6295,
+      "sha256": "a7cfe8d77c1abb0ac980aff4c033145382ce73d6689d87d2f15f25dc8386cd76"
+    },
+    {
+      "path": "blocks-capture-product/phrase-results.txt",
+      "bytes": 6337,
+      "sha256": "c96278dd34d0c8e52327a2431dbf39b8cf8f045a6ce94593aa6c2544304645d7"
+    },
+    {
+      "path": "blocks-capture-product/prototype-findings.md",
+      "bytes": 15761,
+      "sha256": "8d6c409a45592dbde5beb8b3fc6c951314ff666d4a9259c6034a82e3301c0014"
+    },
+    {
+      "path": "blocks-capture-product/repro-four-chords-results.txt",
+      "bytes": 2774,
+      "sha256": "9a09e8b6431eae7d64ce740b0ccf392ba815e5eeefe78051e18a0bbc32545687"
+    },
+    {
+      "path": "blocks-capture-product/source-audit-2026-11-08.md",
+      "bytes": 9613,
+      "sha256": "7da60d367def068030e50d600d0e666881e56509a07ce369b426cd1ce4a2deb6"
+    },
+    {
+      "path": "blocks-capture-product/source-ledger.md",
+      "bytes": 15995,
+      "sha256": "b7abe289444c4000b92c6aa50fe3e83184771ab41b2a111a2d89b8105189f731"
+    },
+    {
+      "path": "blocks-handover-capture-delta/DELTA-NOTE.md",
+      "bytes": 3274,
+      "sha256": "8069a5e68154dd0a0f0da36b8d4a85a9bc4d5a1a2312a3dcb11cd5a2bf0d212c"
+    }
+  ]
+}

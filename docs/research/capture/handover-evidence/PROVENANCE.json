@@ -1,0 +1,21 @@
+[
+  {
+    "source": "external implementation report, not part of this repository; the original machine path was omitted",
+    "package_path": "blocks-capture-product/handover-evidence/implementation-report-3412f61-overlap-retest.md",
+    "checkout_path": "docs/research/capture/handover-evidence/implementation-report-3412f61-overlap-retest.md",
+    "bytes": 11410,
+    "sha256": "f291f7b34a0a889103c6aed6c08aff917c4fc349adc53875456109927354f3cf",
+    "latest_commit_in_report": "3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e",
+    "evidence_class": "implementation-agent report, synthetic; source bytes unchanged",
+    "note": "Not the research comparison baseline. The phrase harness compares fdba348 and 497894e only."
+  },
+  {
+    "source": "external implementation report, not part of this repository; the original machine path was omitted",
+    "package_path": "blocks-capture-product/handover-evidence/implementation-report-497894e-rolled-chord-retest.md",
+    "checkout_path": "docs/research/capture/handover-evidence/implementation-report-497894e-rolled-chord-retest.md",
+    "bytes": 9150,
+    "sha256": "6a02b535a08a9042e568c963bcd5fb0454cebe66cf8e71b51787bec4f3738d6f",
+    "latest_commit_in_report": "497894e170ac150f06e5a8bea34d0d4e7f34e2fd",
+    "evidence_class": "implementation-agent report, synthetic; source bytes unchanged"
+  }
+]

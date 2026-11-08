@@ -53,7 +53,7 @@ The reference implementation of this rule is `fixtures/evaluate.mjs` → `m0Pred
 - The repo's `scheduleElapsed` = source timestamp if present, else receipt timestamp, relative to the first of each kind. That matches v1's intent. Keep it.
 
 
-## 5. Re-check at `534279f` (read-only, 8 Nov 2026; implementation is re-verifying)
+## 5. Re-check as of `534279f` (historical; superseded by fdba348/497894e, see `phrase-capture-handoff.md` §1) (read-only, 8 Nov 2026; implementation is re-verifying)
 
 | # | Status at 534279f | Evidence (file:line at 534279f) |
 |---|---|---|
@@ -95,3 +95,13 @@ The reference implementation of this rule is `fixtures/evaluate.mjs` → `m0Pred
 **Outcome:** the engine policy is **retrigger (last-note-on wins, one voice per channel+note)** on both platforms. **FIFO is not used anywhere.** The spec's derived policy is now retrigger too (capture-spec §4.2), and FIFO was dropped.
 
 **Flagged mismatch:** the spec pairs per `sourceId|portId|channel`, while the engines (and `recent-phrase.ts`) key by `(channel, note)` only. Two devices, or replay plus live input, on the same channel and pitch share a voice in playback. The derived view keeps them apart and raises `CROSS_STREAM_SAME_KEY`. `recent-phrase.ts` L278-280 already tells the user that "a later note-on replaces the earlier one". Also, **neither engine renders CC66**: only one learnable sustain CC is honoured (web `instrument.ts` L32-34, L60-62; native `instrument.cpp` L152). So the derived CC66 latch is MIDI semantics and may differ from what is heard (`ENGINE_NO_SOSTENUTO`).
+
+
+## 7. Later commits (read-only, 8 Nov 2026 evening)
+
+- **fadfdcf** (17:15 London): retained history, a proposed tempo with accept on the second layer, concurrent layers and `joinAtSeam` **appear** addressed in the code. `recent-phrase.ts` and the `(channel, note)` voice keying were unchanged, so CROSS_STREAM_SAME_KEY stays an open hypothesis.
+- **fdba348** (19:31) and **497894e** (19:43): see `phrase-capture-handoff.md` §1 for the root-cause table with file:line.
+
+## 8. Four-chord report
+
+Hypotheses and synthetic checks are in `phrase-capture-handoff.md` §1 and `phrase-results.txt`. These are not a diagnosis, and Haris's MIDI was not reproduced.

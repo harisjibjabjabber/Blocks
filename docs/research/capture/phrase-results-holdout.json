@@ -1,0 +1,719 @@
+{
+ "set": "holdout",
+ "tally": {
+  "ref": {
+   "GOOD": 7,
+   "PARTIAL": 8
+  },
+  "refPeriod": {
+   "OTHER": 7,
+   "DEFAULT": 3,
+   "ALTERNATIVE": 2,
+   "ABSTAINED": 3
+  },
+  "mainFree": {
+   "WHOLE_TRAP": 13,
+   "PARTIAL": 1,
+   "FINAL_TRAP": 1
+  },
+  "mainGrid": {
+   "FINAL_TRAP": 14,
+   "PARTIAL": 1
+  },
+  "m497": {
+   "GOOD": 2,
+   "WHOLE_TRAP": 9,
+   "FINAL_TRAP": 3,
+   "PARTIAL": 1
+  }
+ },
+ "rows": [
+  {
+   "id": "PH01-uneven-6-2-4-4-noodle-final-downbeat",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 4,
+    "bpm": 94.6,
+    "S": 23.79,
+    "E": 33.81,
+    "cov": {
+     "cat": "GOOD",
+     "recall": 1,
+     "noodleIncluded": "0/57"
+    },
+    "period": "OTHER",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "4 bars at about 95 bpm (one reading; half/double kept as alternatives)",
+     "the last attack reads as the next downbeat: it is kept as a tail, not inside the loop",
+     "no attack on the start downbeat (pickup or syncopation)"
+    ]
+   },
+   "expected": {
+    "S": 23.371119,
+    "E": 33.805902,
+    "bars": 4,
+    "bpm": 92
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "57/57",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0,
+    "noodleIncluded": "0/57",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "GOOD",
+    "recall": 1,
+    "noodleIncluded": "1/57",
+    "status": "recent"
+   }
+  },
+  {
+   "id": "PH02-uneven-2-2-3-1-x2-held-final",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 4,
+    "bpm": 108.7,
+    "S": 16.81,
+    "E": 25.53,
+    "cov": {
+     "cat": "GOOD",
+     "recall": 1,
+     "noodleIncluded": "0/44"
+    },
+    "period": "DEFAULT",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "4 bars at about 109 bpm (one reading; half/double kept as alternatives)",
+     "the loop ends where the last notes stop sounding, on the beat grid",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 16.790488,
+    "E": 25.517761,
+    "bars": 4,
+    "bpm": 110
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "44/44",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0.25,
+    "noodleIncluded": "0/44",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "GOOD",
+    "recall": 1,
+    "noodleIncluded": "0/44",
+    "status": "recent"
+   }
+  },
+  {
+   "id": "PH03-pedal-held-rubato-drift",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 4,
+    "bpm": 158.3,
+    "S": 18.64,
+    "E": 24.66,
+    "cov": {
+     "cat": "PARTIAL",
+     "recall": 0.75,
+     "noodleIncluded": "0/35"
+    },
+    "period": "OTHER",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "4 bars at about 158 bpm (one reading; half/double kept as alternatives)",
+     "the loop ends where the last notes stop sounding, on the beat grid",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 15.719409,
+    "E": 27.700659,
+    "bars": 4,
+    "bpm": 80
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "35/35",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0,
+    "noodleIncluded": "0/35",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "35/35",
+    "status": "ambiguous"
+   }
+  },
+  {
+   "id": "PH04-pickup-melody-into-bar1",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 4,
+    "bpm": 120,
+    "S": 12.34,
+    "E": 20.34,
+    "cov": {
+     "cat": "PARTIAL",
+     "recall": 0.6923076923076923,
+     "noodleIncluded": "0/27"
+    },
+    "period": "DEFAULT",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "4 bars at about 120 bpm (one reading; half/double kept as alternatives)",
+     "the loop ends where the last notes stop sounding, on the beat grid",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 12.351797,
+    "E": 20.351797,
+    "bars": 4,
+    "bpm": 120
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "27/27",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0,
+    "noodleIncluded": "0/27",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "27/27",
+    "status": "ambiguous"
+   }
+  },
+  {
+   "id": "PH05-half-double-fast-eighths",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 4,
+    "bpm": 152.2,
+    "S": 10.89,
+    "E": 17.28,
+    "cov": {
+     "cat": "GOOD",
+     "recall": 1,
+     "noodleIncluded": "0/21"
+    },
+    "period": "OTHER",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "4 bars at about 152 bpm (one reading; half/double kept as alternatives)",
+     "the loop ends where the last notes stop sounding, on the beat grid",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 10.700142,
+    "E": 17.100142,
+    "bars": 4,
+    "bpm": 150
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "21/21",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0,
+    "noodleIncluded": "0/21",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "21/21",
+    "status": "ambiguous"
+   }
+  },
+  {
+   "id": "PH06-locked-grid-second-layer-bass",
+   "ref": {
+    "mode": "locked-grid",
+    "bars": 4,
+    "bpm": 96,
+    "S": 7.86,
+    "E": 17.86,
+    "cov": {
+     "cat": "GOOD",
+     "recall": 1,
+     "noodleIncluded": "0/14"
+    },
+    "period": "DEFAULT",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "4 bars at about 96 bpm (one reading; half/double kept as alternatives)",
+     "the last attack reads as the next downbeat: it is kept as a tail, not inside the loop",
+     "no attack on the start downbeat (pickup or syncopation)"
+    ]
+   },
+   "expected": {
+    "S": 7.855297,
+    "E": 17.855297,
+    "bars": 4,
+    "bpm": 96
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "14/14",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0.21428571428571427,
+    "noodleIncluded": "0/14",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "FINAL_TRAP",
+    "recall": 0.21428571428571427,
+    "noodleIncluded": "0/14",
+    "status": "recent"
+   }
+  },
+  {
+   "id": "PH07-sparse-melody",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 4,
+    "bpm": 174.8,
+    "S": 17.33,
+    "E": 22.78,
+    "cov": {
+     "cat": "PARTIAL",
+     "recall": 0.5,
+     "noodleIncluded": "0/23"
+    },
+    "period": "ALTERNATIVE",
+    "defaultInAlternatives": true,
+    "reasons": [
+     "4 bars at about 175 bpm (one reading; half/double kept as alternatives)",
+     "the loop ends where the last notes stop sounding, on the beat grid",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 11.845079,
+    "E": 22.75417,
+    "bars": 4,
+    "bpm": 88
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "23/23",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0.16666666666666666,
+    "noodleIncluded": "0/23",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "23/23",
+    "status": "ambiguous"
+   }
+  },
+  {
+   "id": "PH08-arpeggios",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 2,
+    "bpm": 104.5,
+    "S": 16.28,
+    "E": 21.11,
+    "cov": {
+     "cat": "PARTIAL",
+     "recall": 0.5,
+     "noodleIncluded": "0/28"
+    },
+    "period": "OTHER",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "2 bars at about 104 bpm (one reading; half/double kept as alternatives)",
+     "the last attack reads as the next downbeat: it is kept as a tail, not inside the loop",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 11.786435,
+    "E": 21.386435,
+    "bars": 4,
+    "bpm": 100
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "28/28",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0.09375,
+    "noodleIncluded": "0/28",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "28/28",
+    "status": "ambiguous"
+   }
+  },
+  {
+   "id": "PH09-repeated-1bar-motif",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 2,
+    "bpm": 104.5,
+    "S": 17.56,
+    "E": 22.04,
+    "cov": {
+     "cat": "PARTIAL",
+     "recall": 0.55,
+     "noodleIncluded": "0/32"
+    },
+    "period": "OTHER",
+    "defaultInAlternatives": true,
+    "reasons": [
+     "2 bars at about 104 bpm (one reading; half/double kept as alternatives)",
+     "the last attack reads as the next downbeat: it is kept as a tail, not inside the loop",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 13.681497,
+    "E": 22.570386,
+    "bars": 4,
+    "bpm": 108
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "32/32",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0.1,
+    "noodleIncluded": "0/32",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "32/32",
+    "status": "ambiguous"
+   }
+  },
+  {
+   "id": "PH10-continuous-scalar-runs",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 2,
+    "bpm": 171.4,
+    "S": 3.5,
+    "E": 6.16,
+    "cov": {
+     "cat": "PARTIAL",
+     "recall": 0.5,
+     "noodleIncluded": "0/0"
+    },
+    "period": "ALTERNATIVE",
+    "defaultInAlternatives": true,
+    "reasons": [
+     "2 bars at about 171 bpm (one reading; half/double kept as alternatives)",
+     "the last attack reads as the next downbeat: it is kept as a tail, not inside the loop",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 1,
+    "E": 6.333333,
+    "bars": 2,
+    "bpm": 90
+   },
+   "mainFree": {
+    "cat": "PARTIAL",
+    "recall": 0.28125,
+    "noodleIncluded": "0/0",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "PARTIAL",
+    "recall": 0.5,
+    "noodleIncluded": "0/0",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "PARTIAL",
+    "recall": 0.28125,
+    "noodleIncluded": "0/0",
+    "status": "ambiguous"
+   }
+  },
+  {
+   "id": "PH11-free-rubato-ballad",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 8,
+    "bpm": 140.6,
+    "S": 9.95,
+    "E": 23.61,
+    "cov": {
+     "cat": "GOOD",
+     "recall": 1,
+     "noodleIncluded": "0/20"
+    },
+    "period": "OTHER(expected free)",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "8 bars at about 141 bpm (one reading; half/double kept as alternatives)",
+     "the last attack reads as the next downbeat: it is kept as a tail, not inside the loop",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 10.071003,
+    "E": 25.871003,
+    "bars": 4,
+    "bpm": 60
+   },
+   "mainFree": {
+    "cat": "FINAL_TRAP",
+    "recall": 0.25,
+    "noodleIncluded": "0/20",
+    "status": "recent"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0.25,
+    "noodleIncluded": "0/20",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "FINAL_TRAP",
+    "recall": 0.25,
+    "noodleIncluded": "0/20",
+    "status": "recent"
+   }
+  },
+  {
+   "id": "PH12-mixed-hands-trailing-silence",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 4,
+    "bpm": 115.3,
+    "S": 10.92,
+    "E": 19.19,
+    "cov": {
+     "cat": "PARTIAL",
+     "recall": 0.95,
+     "noodleIncluded": "2/30"
+    },
+    "period": "OTHER",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "4 bars at about 115 bpm (one reading; half/double kept as alternatives)",
+     "the last attack reads as the next downbeat: it is kept as a tail, not inside the loop",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 11.680601,
+    "E": 19.956463,
+    "bars": 4,
+    "bpm": 116
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "30/30",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0,
+    "noodleIncluded": "0/30",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "30/30",
+    "status": "ambiguous"
+   }
+  },
+  {
+   "id": "PH13-rolled-60-120ms-after-noodle",
+   "ref": {
+    "mode": "free",
+    "bars": null,
+    "bpm": null,
+    "S": null,
+    "E": null,
+    "cov": {
+     "cat": "GOOD",
+     "recall": 1,
+     "noodleIncluded": "0/38"
+    },
+    "period": "ABSTAINED",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "no grid candidate had enough material",
+     "free-time window starts at the strongest recent boundary (a sounding silence) and ends with the last sounding note"
+    ]
+   },
+   "expected": {
+    "S": 15.6832,
+    "E": 26.117983,
+    "bars": 4,
+    "bpm": 92
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "38/38",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0,
+    "noodleIncluded": "0/38",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "38/38",
+    "status": "ambiguous"
+   }
+  },
+  {
+   "id": "PH14-rolled-60-120ms-pedal",
+   "ref": {
+    "mode": "free",
+    "bars": null,
+    "bpm": null,
+    "S": null,
+    "E": null,
+    "cov": {
+     "cat": "PARTIAL",
+     "recall": 0.75,
+     "noodleIncluded": "0/32"
+    },
+    "period": "ABSTAINED",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "no grid candidate had enough material",
+     "free-time window starts at the strongest recent boundary (a change in spacing/register) and ends with the last sounding note"
+    ]
+   },
+   "expected": {
+    "S": 13.909563,
+    "E": 24.818654,
+    "bars": 4,
+    "bpm": 88
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "32/32",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0,
+    "noodleIncluded": "0/32",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "32/32",
+    "status": "ambiguous"
+   }
+  },
+  {
+   "id": "PH15-rolled-60-120ms-locked-grid",
+   "ref": {
+    "mode": "free",
+    "bars": null,
+    "bpm": null,
+    "S": null,
+    "E": null,
+    "cov": {
+     "cat": "GOOD",
+     "recall": 1,
+     "noodleIncluded": "0/15"
+    },
+    "period": "ABSTAINED",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "no grid candidate had enough material",
+     "free-time window starts at the strongest recent boundary (a sounding silence) and ends with the last sounding note"
+    ]
+   },
+   "expected": {
+    "S": 7.973332,
+    "E": 17.973332,
+    "bars": 4,
+    "bpm": 96
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "15/15",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0,
+    "noodleIncluded": "0/15",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "FINAL_TRAP",
+    "recall": 0,
+    "noodleIncluded": "0/15",
+    "status": "recent"
+   }
+  }
+ ]
+}

@@ -113,3 +113,41 @@ Six TTF files, each family kept with its `OFL.txt`: Geist Mono, IBM Plex Mono, I
 `page/blocks-design.canvas.tsx` and `checks/check-log.txt` still name `/workspace/blocks-design/` paths. Those strings are the exported review page and the specialist log. They were left as delivered. The font provenance `source_directory` fields are the same kind of inspection path. The files themselves are under `docs/design/`.
 
 After the overlay, `docs/design/README.md` gained one paragraph that points at this note and at `docs/handover/README.md`. Its bytes no longer match the delta hash `cc2c4fab478a203e73a6acce208a560a0d7c6ef43825875b3d6231a7753c8849`. `docs/design/hifi/hybrid/CURRENT-PROPOSAL.md` was not in the delta; it was updated in place so rev 3.2.1 is named as the current proposal.
+
+## Capture research delta
+
+Applied over `docs/research/capture/`, which is the checkout path for the snapshot root `blocks-capture-product/`. The zip was not committed. Checksums below were recorded before the path edits.
+
+| Check | Result |
+|---|---|
+| Zip | `blocks-capture-research-delta_9c4e.zip` |
+| Bytes | 145272 |
+| sha256 | `54e0c0fa76e4e3eb74f540f2e1803e504a4d6b7294e03e5fa24381b46abe6e0b` |
+| `actual_delta` | 35 files: 6 modified, 29 new. Extracted hashes matched the manifest |
+| Extra zip members | 3 evidence files under `handover-evidence/`, plus `DELTA-MANIFEST.json` (`56a2e76fc7d156fd2da8dd2bdbd9f2b585572b1ad018e1cd0f1c0bc57fee973c`) and `DELTA-NOTE.md` (`8069a5e68154dd0a0f0da36b8d4a85a9bc4d5a1a2312a3dcb11cd5a2bf0d212c`) |
+| Missing base files | none |
+| Base manifest named by the delta | `a00cc68081b1299b543dc1bb24b88e83f922c956164f77ca98625a7ab3a89491` |
+
+Before overlay, five modified files still matched the snapshot base hash: `capture-spec.md` `99fb3877f42009411bac26074bf1ec87b8b402d6e59ebfbc3b6f304fcbcda33e`, `evaluation-plan.md` `4d63a2733052e672f09c93fb903d50ea7ec3bee753964aff98e459ce36b3c951`, `prototype-findings.md` `664f0c9416f7af47528063f31da3fc347e865800a79b63eaf07abafcd06dbd83`, `repro-four-chords-results.txt` `b6b5a64c7c4ddd65941b1dd73beef149d85839525ff9212d8e5a50f7e037af82`, `source-ledger.md` `a26ac86d1fdf7293b56f23fbe087caaffc9bdd8e3a65ef33300e999c13b30765`. `README.md` did not: the checkout was `b49e615fc7236525db84d1a33f33ad27d8f3fecabab71d84529a05c0d8c82b35` because an earlier note had been added. The snapshot base hash is `fe64e7a4de7062688855cd3cbf9aa175f3a8b5d7990d80d8fa04ba3de7aa85e0`. The delta replaced that README (delta hash `969da6007e1bdd17f43e088b01ce69231b6afc5c1061d2af9b7890435c11dffc`), and a checkout note was added again afterwards.
+
+### Mapping
+
+| Snapshot path | Repository path |
+|---|---|
+| `blocks-capture-product/` | `docs/research/capture/` |
+| `blocks-handover-capture-delta/DELTA-NOTE.md` | `docs/handover/delta/capture-DELTA-NOTE.md` |
+| `blocks-handover-capture-delta/DELTA-MANIFEST.json` | `docs/handover/delta/capture-DELTA-MANIFEST.json` |
+
+### Path changes after the checksums
+
+| File | Change |
+|---|---|
+| `docs/research/capture/fixtures/phrase/evaluate-phrase.mjs` | Imports were `/workspace/research/blocks-fdba348/recent-phrase.ts` and `/workspace/research/blocks-497894e/recent-phrase.ts`. They now load `historical/fdba348/` and `historical/497894e/`. |
+| `docs/research/capture/historical/fdba348/recent-phrase.ts` | Not in the archive. Git blob `1a5c2989dd77a101b242d8beedef378d7774203f`. File sha256 `a1df23f36092fa315af0ec69489aa70fd04a41a6a8424182a0200e8497b3abb0`. |
+| `docs/research/capture/historical/497894e/recent-phrase.ts` | Not in the archive. Git blob `3742f05ed36ecb93c1e975862e55adb4783f1389`. File sha256 `eb3cfea893460e5abdf24772cff7b1c6c22111ec80f7bb6c2705a499a2c5b864`. |
+| `docs/research/capture/source-ledger.md` | The D8 cell now points at those checkout copies. The archive itself did not redistribute them. |
+| `docs/research/capture/checkpoints/2026-11-08-last-chord-retest-497894e.md` | Original sha256 `34658c7f798afe4c6854e697b0fbfd898a795387a3d8285ba026d93ae4f31473` (1665 bytes) before a machine path was removed. |
+| `docs/research/capture/handover-evidence/PROVENANCE.json` | Original sha256 `cfa280abf43919111a0933fdf11bcfcb9921e2b3e55fa5ca27d6b68d47ea93c6`. Source machine paths were omitted. Report bytes and hashes were kept. |
+| `docs/handover/delta/capture-DELTA-MANIFEST.json` | The same source paths were omitted from `report_provenance`. The zip member hash before that edit was `56a2e76fc7d156fd2da8dd2bdbd9f2b585572b1ad018e1cd0f1c0bc57fee973c`. |
+
+The phrase harness was not rerun. Its comparison baseline is `fdba348` and `497894e`, not `3412f61`. A later team runs those commits, plus live commit `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`, from this repository. `3412f61` was not vendored into the harness.

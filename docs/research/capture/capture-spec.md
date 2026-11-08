@@ -2,7 +2,7 @@
 
 **Revision 8 Nov 2026 (after lead review).** Lead decisions are recorded in §0 and applied throughout. This is still research and design only: no repo edits.
 
-> **Version caveat (v2.2, 8 Nov 2026 evening).** Every code reference, line number and "today" statement about Blocks in this document is **as of `534279f`** (2026-11-08 17:03 London). They describe that commit, **not current deployed behaviour**. The implementation team reports deployments at `69cac94` and then `fadfdcf` (17:15 London) with retained history, concurrent layers, a proposed grid and audio-clock joins. My quick read-only check of `fadfdcf` is in `prototype-findings.md` §7. Those claims **appear** addressed in the code; that isn't verified on a device. Two hypotheses that the deployment claims don't cover stay open: **CROSS_STREAM_SAME_KEY** (web voices are still keyed by channel and note at `fadfdcf`) and the **attack-gap vs sounding-gap** phrase split (`recent-phrase.ts` is byte-identical at `fadfdcf`). A user report that "Capture takes only the final chord of a four-chord progression" is under investigation by the implementation team. My hypotheses for it are in `prototype-findings.md` §8, and they are hypotheses, not a diagnosis. `main` has since moved on to `b19bda9`, which I haven't checked. All synthetic results remain **provisional**: Haris can't review musician cases right now. The new §11 adds harmony and role analysis.
+> **Version caveat (v2.2, 8 Nov 2026 evening).** Every code reference, line number and "today" statement about Blocks in this document is **as of `534279f`** (2026-11-08 17:03 London). They describe that commit, **not current deployed behaviour**. The implementation team reports deployments at `69cac94` and then `fadfdcf` (17:15 London) with retained history, concurrent layers, a proposed grid and audio-clock joins. My quick read-only check of `fadfdcf` is in `prototype-findings.md` §7. Those claims **appear** addressed in the code; that isn't verified on a device. Two hypotheses that the deployment claims don't cover stay open: **CROSS_STREAM_SAME_KEY** (web voices are still keyed by channel and note at `fadfdcf`) and the **attack-gap vs sounding-gap** phrase split (`recent-phrase.ts` is byte-identical at `fadfdcf`). A user report that "Capture takes only the final chord of a four-chord progression" is under investigation by the implementation team. My hypotheses for it are in `prototype-findings.md` §8, and they are hypotheses, not a diagnosis. `main` has since moved on to `b19bda9`, which I haven't checked. All synthetic results remain **provisional**: Haris can't review musician cases right now. Harmony and role analysis is paused and kept as `harmony-analysis-STAGED-DRAFT.md`. **Core phrase capture (§12) now has priority.**
 
 Status: a research and design proposal from Blocks · Capture & Timing, 8 Nov 2026. No app code has been written or changed. This builds on `capture-contract-v1.md` (raw layer, pairing, interpretation and corrections, Web MIDI adapter) and revises it where marked **[rev]**. Evidence classes used here: **DOC-ABL** (documented Ableton behaviour), **CODE** (public code), **PAPER**, **HYP** (hypothesis) and **OURS** (our design). See `source-ledger.md`.
 
@@ -357,6 +357,28 @@ Still open:
 11. **FiloBass licence conflict.** The project site states restricted research terms, while the Zenodo metadata says CC BY 4.0. Don't use it until the owner clarifies.
 12. **Chord-symbol spelling style.** Harte stays internal. Display could use jazz lead-sheet symbols ("Dm9", "G13", "C/E"), a flats-first default, and key-aware spelling at Stage 2.
 13. **Storage.** Should annotations be kept per take, and is there a cap (they're small, but versions accumulate)? I propose keeping the latest valid annotation per analyzer, plus user corrections forever.
+15. **Adaptive onset grouping limits (§12).** I propose a step of up to 130 ms, a total of up to 400 ms, and earlier keys still down. Needs tuning fixtures with real rolls.
+16. **4-bar prior strength (§12).** Haris's observed Ableton experience is a target, not a verified algorithm.
+17. **Repetition weight (§12).** Repetition is support only and must never require repeated playing.
 14. **Default view for layered takes.** Per-layer labels or the combined label? I propose per-layer by default with a "together" toggle, because a rootless piano part only becomes D:min9 with the bass.
 
 *Superseded:* `capture-contract-v1.md` still mentions "confidence" and "10 min / 200k". Those lines are superseded by D2 and D8.
+
+
+## 12. Core phrase capture: pulse-first, end-anchored range selection (v2.2, 8 Nov 2026 evening)
+
+The full handoff, with pseudocode, interfaces, parameters, acceptance examples and tests, is in `phrase-capture-handoff.md`. The evidence is in `phrase-results.txt` and `source-audit-2026-11-08.md`. Commit labels: 534279f, fdba348 and 497894e are each named where they're used. Haris's last-chord bug is **not resolved** by this research.
+
+- **Replaces gap-first segmentation (§4.3) as the default selector.** LBDM and gaps remain boundary *features*.
+  - Group onsets adaptively and role-agnostically.
+  - Fit tempo, phase and range jointly by walking back bar by bar from END anchors. The tolerance is robust and slow drift is allowed.
+  - Default to the largest fitting 1/2/4/8 bars, with a mild 4-bar preference. Keep 2-3 alternatives behind the existing handles.
+  - Otherwise abstain to a bounded free-time window (3-20 s).
+- **Three-way separation** is added to the data model: (a) `LoopPeriod`, (b) `Coverage` (pickups, late attacks) and (c) `SeamPlan` (tails). Tail crossfade and pickup wrapping are STAGED.
+- **No forced quantise or stretch.** Raw times are immutable. Quantise is explicit opt-in.
+- **Minimum content is role-agnostic:** at least 3 onset groups and at least 2 s.
+- **A proposed tempo is not a grid for the cut.** 497894e `beatForCut` does this; keep it as a regression test.
+- **New open decisions** (added to §10):
+  - 15. The adaptive grouping limits (130 ms step / 400 ms spread proposed).
+  - 16. The 4-bar prior strength.
+  - 17. Whether repetition may outrank a longer non-repeating fit.

@@ -66,7 +66,7 @@ Generator: `node fixtures/generate.mjs` → `fixtures/data/*.json` (deterministi
 | LH2 | journey at 150: bass noodles with no silence straight into a 2-bar riff played twice | bass bars 10-11 (last statement) | bars 8-11 | layer without silence, repetition |
 | LH3 | free loop (9.3 s cycle): bass line across two cycles | bass cycles 0-1 | cycle 1 | free cycles, no BPM |
 
-## 3. Harness results (run 8 Nov 2026, synthetic data only; not accuracy claims)
+## 3. Harness results (run 8 Nov 2026, synthetic data only; not accuracy claims; main results are AS OF 534279f; for fdba348/497894e see phrase-results.txt)
 
 There are three predictors:
 - **prototype-f62b2a5**: models the old whole-ribbon selection, cleared after each capture.

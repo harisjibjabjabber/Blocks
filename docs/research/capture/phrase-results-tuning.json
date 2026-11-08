@@ -1,0 +1,305 @@
+{
+ "set": "tuning",
+ "tally": {
+  "ref": {
+   "GOOD": 3,
+   "PARTIAL": 3
+  },
+  "refPeriod": {
+   "DEFAULT": 3,
+   "OTHER": 2,
+   "ALTERNATIVE": 1
+  },
+  "mainFree": {
+   "WHOLE_TRAP": 4,
+   "PARTIAL": 2
+  },
+  "mainGrid": {
+   "FINAL_TRAP": 4,
+   "PARTIAL": 2
+  },
+  "m497": {
+   "GOOD": 3,
+   "WHOLE_TRAP": 1,
+   "PARTIAL": 2
+  }
+ },
+ "rows": [
+  {
+   "id": "PT01-even-4chords-after-noodle",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 4,
+    "bpm": 98.4,
+    "S": 11.48,
+    "E": 21.42,
+    "cov": {
+     "cat": "GOOD",
+     "recall": 1,
+     "noodleIncluded": "0/26"
+    },
+    "period": "DEFAULT",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "4 bars at about 98 bpm (one reading; half/double kept as alternatives)",
+     "the loop ends where the last notes stop sounding, on the beat grid",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 11.477374,
+    "E": 21.477374,
+    "bars": 4,
+    "bpm": 96
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "26/26",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0,
+    "noodleIncluded": "0/26",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "GOOD",
+    "recall": 1,
+    "noodleIncluded": "0/26",
+    "status": "recent"
+   }
+  },
+  {
+   "id": "PT02-uneven-3-1-2-2-plus-2bars",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 4,
+    "bpm": 102.4,
+    "S": 13.74,
+    "E": 23,
+    "cov": {
+     "cat": "GOOD",
+     "recall": 1,
+     "noodleIncluded": "0/30"
+    },
+    "period": "DEFAULT",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "4 bars at about 102 bpm (one reading; half/double kept as alternatives)",
+     "the last attack reads as the next downbeat: it is kept as a tail, not inside the loop",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 13.787044,
+    "E": 23.017814,
+    "bars": 4,
+    "bpm": 104
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "30/30",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0,
+    "noodleIncluded": "0/30",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "GOOD",
+    "recall": 1,
+    "noodleIncluded": "0/30",
+    "status": "recent"
+   }
+  },
+  {
+   "id": "PT03-pedal-through-changes",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 4,
+    "bpm": 84,
+    "S": 9.55,
+    "E": 20.97,
+    "cov": {
+     "cat": "GOOD",
+     "recall": 1,
+     "noodleIncluded": "0/22"
+    },
+    "period": "DEFAULT",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "4 bars at about 84 bpm (one reading; half/double kept as alternatives)",
+     "the loop ends where the last notes stop sounding, on the beat grid",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 9.570775,
+    "E": 20.988632,
+    "bars": 4,
+    "bpm": 84
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "22/22",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0,
+    "noodleIncluded": "0/22",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "GOOD",
+    "recall": 1,
+    "noodleIncluded": "0/22",
+    "status": "recent"
+   }
+  },
+  {
+   "id": "PT04-bass-syncopated",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 2,
+    "bpm": 96.5,
+    "S": 14.71,
+    "E": 19.5,
+    "cov": {
+     "cat": "PARTIAL",
+     "recall": 0.5625,
+     "noodleIncluded": "0/20"
+    },
+    "period": "OTHER",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "2 bars at about 97 bpm (one reading; half/double kept as alternatives)",
+     "the last attack reads as the next downbeat: it is kept as a tail, not inside the loop",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 10.781928,
+    "E": 20.381928,
+    "bars": 4,
+    "bpm": 100
+   },
+   "mainFree": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "20/20",
+    "status": "ambiguous"
+   },
+   "mainGrid": {
+    "cat": "FINAL_TRAP",
+    "recall": 0,
+    "noodleIncluded": "0/20",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "WHOLE_TRAP",
+    "recall": 1,
+    "noodleIncluded": "20/20",
+    "status": "ambiguous"
+   }
+  },
+  {
+   "id": "PT05-legato-melody",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 2,
+    "bpm": 87.4,
+    "S": 15.14,
+    "E": 20.57,
+    "cov": {
+     "cat": "PARTIAL",
+     "recall": 0.42857142857142855,
+     "noodleIncluded": "0/21"
+    },
+    "period": "ALTERNATIVE",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "2 bars at about 87 bpm (one reading; half/double kept as alternatives)",
+     "the loop ends where the last notes stop sounding, on the beat grid",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 9.832257,
+    "E": 20.498923,
+    "bars": 4,
+    "bpm": 90
+   },
+   "mainFree": {
+    "cat": "PARTIAL",
+    "recall": 0.2857142857142857,
+    "noodleIncluded": "0/21",
+    "status": "recent"
+   },
+   "mainGrid": {
+    "cat": "PARTIAL",
+    "recall": 0.2857142857142857,
+    "noodleIncluded": "0/21",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "PARTIAL",
+    "recall": 0.2857142857142857,
+    "noodleIncluded": "0/21",
+    "status": "recent"
+   }
+  },
+  {
+   "id": "PT06-free-rubato-chords",
+   "ref": {
+    "mode": "proposed-grid",
+    "bars": 4,
+    "bpm": 127.3,
+    "S": 10.18,
+    "E": 17.81,
+    "cov": {
+     "cat": "PARTIAL",
+     "recall": 0.75,
+     "noodleIncluded": "0/15"
+    },
+    "period": "OTHER",
+    "defaultInAlternatives": false,
+    "reasons": [
+     "4 bars at about 127 bpm (one reading; half/double kept as alternatives)",
+     "the loop ends where the last notes stop sounding, on the beat grid",
+     "an attack lands on the start downbeat"
+    ]
+   },
+   "expected": {
+    "S": 8.007107,
+    "E": 21.571393,
+    "bars": 4,
+    "bpm": 70
+   },
+   "mainFree": {
+    "cat": "PARTIAL",
+    "recall": 0.5,
+    "noodleIncluded": "0/15",
+    "status": "recent"
+   },
+   "mainGrid": {
+    "cat": "PARTIAL",
+    "recall": 0.5,
+    "noodleIncluded": "0/15",
+    "status": "recent"
+   },
+   "main497": {
+    "cat": "PARTIAL",
+    "recall": 0.5,
+    "noodleIncluded": "0/15",
+    "status": "recent"
+   }
+  }
+ ]
+}
