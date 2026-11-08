@@ -46,10 +46,114 @@ export interface RecentPhraseOptions {
 }
 
 const CHORD_MS = 40;
+/** Unchanged hypothesis. A break still has to clear this. Equal chord spacing is not a break. */
 const FREE_GAP_MS = 1500;
 
 function ms(ticksPerSecond: number, millis: number): bigint {
   return BigInt(Math.round((millis / 1000) * ticksPerSecond));
+}
+
+function medianOf(values: bigint[]): bigint {
+  if (values.length === 0) {
+    return 0n;
+  }
+  const sorted = values.slice().sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  return sorted[Math.floor(sorted.length / 2)];
+}
+
+function pedalAt(events: readonly CapturedEvent[], time: bigint): boolean {
+  let down = false;
+  for (const event of events) {
+    if (event.scheduleElapsed > time) {
+      break;
+    }
+    if (event.kind === "cc" && event.controller === 64) {
+      down = event.value >= 64;
+    }
+  }
+  return down;
+}
+
+/** Silence before the next attack. Note-off gaps under a held CC64 are not silence. Without any release, the attack gap is all the list contains. */
+function silenceBeforeNext(events: readonly CapturedEvent[], prev: bigint, next: bigint, chord: bigint): bigint {
+  const keys = new Set<string>();
+  for (const event of events) {
+    if (event.scheduleElapsed < prev || event.scheduleElapsed > prev + chord) {
+      continue;
+    }
+    if (event.kind === "note-on" && event.velocity > 0) {
+      keys.add(event.channel + ":" + event.note);
+    }
+  }
+  if (keys.size === 0) {
+    return next - prev;
+  }
+  let pedal = pedalAt(events, prev);
+  const released = new Set<string>();
+  let sawRelease = false;
+  let lastSoundOff: bigint | null = null;
+  const allReleased = () => [...keys].every((key) => released.has(key));
+  for (const event of events) {
+    if (event.scheduleElapsed <= prev || event.scheduleElapsed >= next) {
+      continue;
+    }
+    if (event.kind === "cc" && event.controller === 64) {
+      const wasDown = pedal;
+      pedal = event.value >= 64;
+      if (wasDown && !pedal && allReleased()) {
+        lastSoundOff = event.scheduleElapsed;
+      }
+      continue;
+    }
+    const key = event.channel + ":" + event.note;
+    if (!keys.has(key)) {
+      continue;
+    }
+    if (event.kind === "note-off" || (event.kind === "note-on" && event.velocity === 0)) {
+      sawRelease = true;
+      if (!pedal) {
+        released.add(key);
+        if (allReleased()) {
+          lastSoundOff = event.scheduleElapsed;
+        }
+      }
+    }
+  }
+  if (!sawRelease) {
+    return next - prev;
+  }
+  if (lastSoundOff === null) {
+    return 0n;
+  }
+  const silence = next - lastSoundOff;
+  return silence > 0n ? silence : 0n;
+}
+
+function isPhraseBreak(index: number, gaps: bigint[], threshold: bigint): boolean {
+  const gap = gaps[index];
+  if (gap <= threshold) {
+    return false;
+  }
+  const others = gaps.filter((_, other) => other !== index);
+  if (others.length === 0) {
+    return true;
+  }
+  const median = medianOf(others);
+  if (median <= 0n) {
+    return true;
+  }
+  return gap * 2n > median * 5n;
+}
+
+function repeatedSpacing(gaps: bigint[]): boolean {
+  if (gaps.length < 3) {
+    return false;
+  }
+  const median = medianOf(gaps);
+  if (median <= 0n) {
+    return false;
+  }
+  return gaps.every((gap) => gap * 2n <= median * 3n && median * 2n <= gap * 3n);
 }
 
 function clustersOf(events: readonly CapturedEvent[], chord: bigint): bigint[] {
@@ -209,11 +313,19 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
   const beat = options.gridPeriodTicks !== null && options.gridPeriodTicks > 0n ? options.gridPeriodTicks : null;
   const gap = beat !== null && beat * 2n > freeGap ? beat * 2n : freeGap;
   const clusters = clustersOf(events, chord);
-  const breaks: number[] = [];
+  const gaps: bigint[] = [];
   for (let i = 1; i < clusters.length; i += 1) {
-    if (clusters[i] - clusters[i - 1] > gap) {
-      breaks.push(i);
+    gaps.push(silenceBeforeNext(events, clusters[i - 1], clusters[i], chord));
+  }
+  const breaks: number[] = [];
+  for (let i = 0; i < gaps.length; i += 1) {
+    if (isPhraseBreak(i, gaps, gap)) {
+      breaks.push(i + 1);
     }
+  }
+  const attackGaps: bigint[] = [];
+  for (let i = 1; i < clusters.length; i += 1) {
+    attackGaps.push(clusters[i] - clusters[i - 1]);
   }
   const timeNote = beat === null ? "Free time: no locked beat, so the gap hypothesis is 1.5s." : "A locked beat was read and not changed. The gap hypothesis is max(1.5s, 2 beats).";
   let selection: CutBounds = { start: first, end: last };
@@ -250,6 +362,24 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
       }
     } else {
       how = "The recording is shorter than one bar of the locked grid. The window stays the whole ribbon. The grid was not changed.";
+    }
+  } else if (gaps.length > 0 && gaps.every((item) => item === 0n)) {
+    status = "recent";
+    how = "Note-offs under a held CC64 are not rests, so the chords stay one phrase. Basic cut, not finished Capture.";
+  } else if (repeatedSpacing(attackGaps)) {
+    const median = medianOf(attackGaps);
+    const phraseSpan = median * 8n;
+    if (phraseSpan > 0n && last - first > phraseSpan * 2n) {
+      const snapped = [...clusters].reverse().find((time) => time <= last - phraseSpan && time > first);
+      if (snapped !== undefined && snapped < last) {
+        selection = { start: snapped, end: last };
+        status = "ambiguous";
+        how = "No gap stood out from the spacing. This is a bounded recent window, not a found phrase and not the whole ribbon.";
+        priorPhrase = boundsFrom(events, first, snapped - 1n);
+      }
+    } else {
+      status = "recent";
+      how = "These attacks keep one spacing, so they stay one progression. A rest that matches that spacing is not a phrase break. Basic cut, not finished Capture.";
     }
   }
 
