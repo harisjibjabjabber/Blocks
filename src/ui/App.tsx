@@ -3,24 +3,15 @@ import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } fr
 import { createEngine } from "../adapters/engine";
 import { RollingHistory, type CapturedEvent, type RibbonNotice } from "../domain/capture";
 import { inferPulse, type InferenceReport } from "../domain/inference";
-import {
-  capturePerformance,
-  defaultOverlay,
-  loopLonger,
-  loopShorter,
-  loopWindow,
-  nudgeBoundary,
-  recover,
-  shiftBeat,
-  withChoice,
-  type Performance,
-  type PhraseOverlay,
-} from "../domain/phrase";
-import { beatForCut, createProject, gridStatusCopy, projectFromJson, projectToJson, proposeTempo, type Project } from "../domain/project";
-import { eventsInSelection, moveSelectionStart, recentPhraseCut, type RecentPhraseCut } from "../domain/recent-phrase";
+import { capturePerformance, defaultOverlay, loopWindow, type Performance, type PhraseOverlay } from "../domain/phrase";
+import { beatForCut, createProject, projectFromJson, projectToJson, proposeTempo, type Project } from "../domain/project";
+import { eventsInSelection, recentPhraseCut, type RecentPhraseCut } from "../domain/recent-phrase";
 import { routeLearnedControl, type ControlMap, type LearnTarget } from "../domain/learn";
+import { RangeRibbon } from "./RangeRibbon";
 import { ribbonMarks } from "./ribbon-scale";
 import { ReadinessStrip } from "./Readiness";
+import { moveBound, undoRange, type RangeBounds } from "./range";
+import { playChrome, resolveTheme, type ThemeChoice } from "./theme";
 import { touchFromPress, type PressPhase } from "./keys";
 
 const engine = createEngine();
@@ -35,6 +26,8 @@ interface Take {
   overlay: PhraseOverlay;
   report: InferenceReport;
   cut: RecentPhraseCut;
+  /** Inferred period end. The end handle can move through the silence up to here. */
+  rangeCeiling: bigint;
 }
 
 interface UndoCapture {
@@ -57,7 +50,11 @@ function seconds(elapsed: bigint, domain: CapturedEvent["domain"]): string {
 
 export default function App() {
   const { width } = useWindowDimensions();
-  const narrow = width < 720;
+  const chrome = playChrome(width);
+  const narrow = chrome.narrow;
+  const [themeChoice, setThemeChoice] = useState<ThemeChoice>("dark");
+  const [systemDark, setSystemDark] = useState(true);
+  const palette = resolveTheme(themeChoice, systemDark);
   const domain = engine.kind === "android" ? "android-monotonic-ns" : "web-performance-us";
   const history = useMemo(
     () => new RollingHistory(domain, BigInt(unitFor(domain) * 120), EVENT_CAP, BYTE_CAP),
@@ -73,6 +70,7 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [loopingIds, setLoopingIds] = useState<string[]>([]);
   const [undo, setUndo] = useState<UndoCapture | null>(null);
+  const [boundsUndo, setBoundsUndo] = useState<{ id: string; bounds: RangeBounds } | null>(null);
   const [learning, setLearning] = useState<LearnTarget | null>(null);
   const [audioState, setAudioState] = useState(engine.readAudioState());
   const [scheduled, setScheduled] = useState(0);
@@ -95,6 +93,18 @@ export default function App() {
       }
     }
   }
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem("blocks.appearance");
+    if (saved === "light" || saved === "dark" || saved === "system") {
+      setThemeChoice(saved);
+    }
+    const query = window.matchMedia("(prefers-color-scheme: dark)");
+    const apply = () => setSystemDark(query.matches);
+    apply();
+    query.addEventListener("change", apply);
+    return () => query.removeEventListener("change", apply);
+  }, []);
 
   useEffect(() => {
     let stop = false;
@@ -239,7 +249,7 @@ export default function App() {
     const selected = eventsInSelection(events, cut.selection);
     const report = inferPulse(selected.length > 0 ? selected : events, ticksPerSecond);
     const id = "layer-" + (takes.length + 1);
-    const created: Take = { id, performance, overlay, report, cut };
+    const created: Take = { id, performance, overlay, report, cut, rangeCeiling: cut.loop.end };
     setUndo({ takes, ribbon: events, project });
     setTakes((current) => [...current, created]);
     setSelected(id);
@@ -268,23 +278,40 @@ export default function App() {
     engine.saveProject(projectToJson(undo.project));
     setSelected(undo.takes.length ? undo.takes[undo.takes.length - 1].id : null);
     setUndo(null);
+    setBoundsUndo(null);
     setMessage("Capture undone. The pinned layer is gone. The ribbon was left as it is, and other layers keep playing.");
   }
 
-  function applyBounds(item: Take, bounds: { start: bigint; end: bigint }, note: string) {
-    updateTake(
-      item.id,
-      (current) => ({
-        ...current,
-        overlay: { ...current.overlay, selectionStart: bounds.start, selectionEnd: bounds.end, loopStart: bounds.start, loopEnd: bounds.end },
-      }),
-      note,
-    );
+  function commitBounds(item: Take, next: RangeBounds) {
+    const previous: RangeBounds = { start: item.overlay.loopStart ?? item.overlay.selectionStart, end: item.overlay.loopEnd ?? item.overlay.selectionEnd };
+    setBoundsUndo({ id: item.id, bounds: previous });
+    const updated: Take = {
+      ...item,
+      overlay: { ...item.overlay, selectionStart: next.start, selectionEnd: next.end, loopStart: next.start, loopEnd: next.end },
+    };
+    setTakes((current) => current.map((entry) => (entry.id === item.id ? updated : entry)));
+    setMessage("Loop bounds updated. The notes and the pedal were not moved.");
+    playTake(updated);
   }
 
-  function updateTake(id: string, patch: (current: Take) => Take, note: string) {
-    setTakes((current) => current.map((item) => (item.id === id ? patch(item) : item)));
-    setMessage(note + " Your timing is unchanged — only the grid moves.");
+  function undoBounds() {
+    if (!boundsUndo) {
+      return;
+    }
+    const item = takes.find((entry) => entry.id === boundsUndo.id);
+    if (!item) {
+      setBoundsUndo(null);
+      return;
+    }
+    const restored = undoRange(boundsUndo.bounds, { start: item.overlay.loopStart ?? item.overlay.selectionStart, end: item.overlay.loopEnd ?? item.overlay.selectionEnd });
+    const updated: Take = {
+      ...item,
+      overlay: { ...item.overlay, selectionStart: restored.start, selectionEnd: restored.end, loopStart: restored.start, loopEnd: restored.end },
+    };
+    setTakes((current) => current.map((entry) => (entry.id === item.id ? updated : entry)));
+    setBoundsUndo(null);
+    setMessage("Range undone. The ribbon was left as it is.");
+    playTake(updated);
   }
 
   function setAfterCapture(mode: "loop" | "silent") {
@@ -308,161 +335,147 @@ export default function App() {
     }
   };
 
+  function chooseTheme(choice: ThemeChoice) {
+    setThemeChoice(choice);
+    window.localStorage.setItem("blocks.appearance", choice);
+  }
+
   return (
-    <View style={styles.page}>
-      <ScrollView contentContainerStyle={[styles.content, narrow ? styles.contentNarrow : null]}>
-        <Text style={styles.kicker}>Blocks</Text>
-        <Text style={styles.meta}>Early prototype. Hardware unverified.</Text>
-        <Text style={styles.title}>Warm EP</Text>
+    <View style={[styles.page, { backgroundColor: palette.bg }]}>
+      <ScrollView contentContainerStyle={[styles.content, { padding: chrome.pad }, narrow ? styles.contentNarrow : null]}>
+        <Text style={[styles.kicker, { color: palette.muted }]}>Blocks</Text>
+        <Text style={[styles.meta, { color: palette.muted }]}>Early prototype. Hardware unverified.</Text>
+        <Text style={[styles.title, { color: palette.ink }]}>Warm EP</Text>
+        <View style={styles.row} accessibilityLabel="Appearance">
+          {(["dark", "light", "system"] as const).map((choice) => {
+            const on = themeChoice === choice;
+            return (
+              <Pressable
+                key={choice}
+                accessibilityRole="button"
+                accessibilityState={{ selected: on }}
+                onPress={() => chooseTheme(choice)}
+                style={[styles.secondary, { backgroundColor: on ? palette.accent : palette.card, borderWidth: 1, borderColor: palette.line, minHeight: chrome.handlePx }]}
+              >
+                <Text style={[styles.secondaryText, { color: on ? palette.accentInk : palette.ink }]}>{choice === "dark" ? "Dark" : choice === "light" ? "Light" : "System"}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
 
         <View style={styles.row}>
-          <Pressable accessibilityRole="button" style={styles.primary} onPress={enable} disabled={busy}>
-            <Text style={styles.primaryText}>{busy ? "Starting…" : gate.kind === "idle" ? "Enable" : "Try MIDI"}</Text>
+          <Pressable accessibilityRole="button" style={[styles.primary, { backgroundColor: palette.accent, minHeight: chrome.handlePx }]} onPress={enable} disabled={busy}>
+            <Text style={[styles.primaryText, { color: palette.accentInk }]}>{busy ? "Starting…" : gate.kind === "idle" ? "Enable" : "Try MIDI"}</Text>
           </Pressable>
           <View style={styles.status}>
-            <ReadinessStrip audioState={audioState} showContext={false} />
-            <Text style={styles.meta}>Input · {inputCopy(gate.kind, engine.ports().length)}</Text>
-            <Text style={styles.meta}>Buffer · {seconds(age, domain)} kept · {ribbon.length} events</Text>
+            <ReadinessStrip audioState={audioState} showContext={false} ink={palette.ink} />
+            <Text style={[styles.meta, { color: palette.muted }]}>Input · {inputCopy(gate.kind, engine.ports().length)}</Text>
+            <Text style={[styles.meta, { color: palette.muted }]}>Buffer · {seconds(age, domain)} kept · {ribbon.length} events</Text>
           </View>
         </View>
-        {gate.kind === "idle" ? null : <Text style={styles.body}>{gate.detail}</Text>}
+        {gate.kind === "idle" ? null : <Text style={[styles.body, { color: palette.ink }]}>{gate.detail}</Text>}
         {gate.kind === "no-device" ? (
-          <Text style={styles.empty}>MIDI is allowed, and no input is connected. On-screen keys are not a MIDI device.</Text>
+          <Text style={[styles.empty, { color: palette.ink }]}>MIDI is allowed, and no input is connected. On-screen keys are not a MIDI device.</Text>
         ) : engine.ports().length === 0 ? null : (
           engine.ports().map((port) => (
-            <Text key={port.id} style={styles.port}>
+            <Text key={port.id} style={[styles.port, { color: palette.ink }]}>
               {port.name} · {port.state}
             </Text>
           ))
         )}
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Take ribbon</Text>
-          <TakeRibbon events={ribbon} coverageEnd={take ? take.overlay.loopEnd : undefined} />
-          {notice.kind === "none" ? null : <Text style={styles.meta}>{evictionCopy(notice)}</Text>}
+        <View style={[styles.card, { backgroundColor: palette.card, borderWidth: 1, borderColor: palette.line }]}>
+          <Text style={[styles.cardTitle, { color: palette.ink }]}>Take ribbon</Text>
+          {take ? (
+            <RangeRibbon
+              events={take.performance.events}
+              bounds={{ start: take.overlay.loopStart ?? take.overlay.selectionStart, end: take.overlay.loopEnd ?? take.overlay.selectionEnd }}
+              ceiling={take.rangeCeiling}
+              palette={palette}
+              handlePx={chrome.handlePx}
+              onCommit={(next) => commitBounds(take, next)}
+            />
+          ) : (
+            <TakeRibbon events={ribbon} palette={palette} />
+          )}
+          {notice.kind === "none" ? null : <Text style={[styles.meta, { color: palette.muted }]}>{evictionCopy(notice)}</Text>}
         </View>
         {learning ? <Text style={styles.meta}>Learning {learning === "capture" ? "Capture" : "Play/Stop"}. Not CC 64 and not a key.</Text> : null}
-        {message ? <Text style={styles.meta}>{message}</Text> : null}
+        {message ? <Text style={[styles.meta, { color: palette.muted }]}>{message}</Text> : null}
 
         {take ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{take.id}</Text>
-            <Text style={styles.meta}>{gridStatusCopy(project)}</Text>
-            <Text style={styles.meta}>{take.report.pulse === "none" || take.report.bpm === null ? "No pulse reading." : take.report.bpm.toFixed(1) + " bpm · 4/4"} · Quantise off</Text>
-            <Text style={styles.meta}>Your timing is unchanged — only the grid moves.</Text>
-            <View style={styles.wrap}>
-              <Small label="Half" onPress={() => updateTake(take.id, (current) => ({ ...current, overlay: withChoice(current.overlay, "half") }), "Half is a manual grid correction.")} />
-              <Small label="Double" onPress={() => updateTake(take.id, (current) => ({ ...current, overlay: withChoice(current.overlay, "double") }), "Double is a manual grid correction.")} />
-              <Small label="Phase" onPress={() => updateTake(take.id, (current) => ({ ...current, overlay: shiftBeat(current.overlay) }), "Beat one moved by one beat.")} />
-              <Small
-                label="Loop shorter"
-                onPress={() => {
-                  const result = loopShorter(take.overlay, take.report);
-                  updateTake(take.id, (current) => ({ ...current, overlay: result.overlay }), result.note);
-                }}
-              />
-              <Small
-                label="Loop longer"
-                onPress={() => {
-                  const result = loopLonger(take.overlay, take.report, take.performance);
-                  updateTake(take.id, (current) => ({ ...current, overlay: result.overlay }), result.note);
-                }}
-              />
-              <Small
-                label="Boundary"
-                onPress={() => {
-                  const result = nudgeBoundary(take.overlay, take.report, take.performance);
-                  updateTake(take.id, (current) => ({ ...current, overlay: result.overlay }), result.note);
-                }}
-              />
-              <Small label="Recover" onPress={() => updateTake(take.id, (current) => ({ ...current, overlay: recover(current.performance.events) }), "Grid overlay reset. Raw times were not edited.")} />
-              {take.cut.priorPhrase ? <Small label="Prior phrase" onPress={() => applyBounds(take, take.cut.priorPhrase as { start: bigint; end: bigint }, "Prior phrase. A manual alternative, not a second confident reading. Raw times were not edited.")} /> : null}
-              {take.cut.priorBar ? <Small label="Prior bar" onPress={() => applyBounds(take, take.cut.priorBar as { start: bigint; end: bigint }, "Prior bar of the locked grid. The grid was not changed. Raw times were not edited.")} /> : null}
-              <Small label="Recent phrase" onPress={() => applyBounds(take, take.cut.selection, "Back to the basic recent-phrase cut.")} />
-              <Small
-                label="Start later"
-                onPress={() => {
-                  const moved = moveSelectionStart(take.performance.events, { start: take.overlay.selectionStart, end: take.overlay.selectionEnd }, "later", unitFor(domain));
-                  applyBounds(take, moved.selection, moved.note);
-                }}
-              />
-              <Small
-                label="Start earlier"
-                onPress={() => {
-                  const moved = moveSelectionStart(take.performance.events, { start: take.overlay.selectionStart, end: take.overlay.selectionEnd }, "earlier", unitFor(domain));
-                  applyBounds(take, moved.selection, moved.note);
-                }}
-              />
-              <Small label={looping ? "Stop loop" : "Hear loop"} onPress={() => (looping ? stopLoop() : playTake(take))} />
-            </View>
-          </View>
+          <Text style={[styles.meta, { color: palette.muted }]}>{take.id} · Warm EP · drag the ribbon handles to change the loop</Text>
         ) : (
-          <Text style={styles.empty}>No layer yet. Capture writes a new one and does not overwrite an existing layer.</Text>
+          <Text style={[styles.empty, { color: palette.ink }]}>No layer yet. Capture writes a new one and does not overwrite an existing layer.</Text>
         )}
 
-        <Text style={styles.cardTitle}>On-screen keys (this device)</Text>
-        <Text style={styles.meta}>Touch. Not listed as a MIDI input.</Text>
-        <View style={styles.wrap}>
+        <Text style={[styles.cardTitle, { color: palette.ink }]}>On-screen keys (this device)</Text>
+        <Text style={[styles.meta, { color: palette.muted }]}>Touch. Not listed as a MIDI input.</Text>
+        <View style={styles.wrap} dataSet={{ keys: "true" }}>
           {NOTES.map((note, index) => (
             <Pressable
               key={note + "-" + index}
-              style={styles.pad}
+              dataSet={{ key: String(note) }}
+              style={[styles.pad, { backgroundColor: palette.card, borderWidth: 1, borderColor: palette.line, minHeight: chrome.handlePx, minWidth: chrome.handlePx }]}
               onPressIn={() => pressKey(note, "in")}
               onPress={() => pressKey(note, "press")}
               onPressOut={() => pressKey(note, "out")}
             >
-              <Text style={styles.padText}>{NAMES[index]}</Text>
+              <Text style={[styles.padText, { color: palette.ink }]}>{NAMES[index]}</Text>
             </Pressable>
           ))}
         </View>
       </ScrollView>
-      <View style={styles.dock}>
+      <View style={[styles.dock, { backgroundColor: palette.dock, borderTopWidth: 1, borderTopColor: palette.line }]}>
         <View style={styles.layerRow} accessibilityLabel="Layers">
-          {takes.length === 0 ? <Text style={styles.meta}>No layer yet</Text> : takes.map((item, index) => (
+          {takes.length === 0 ? <Text style={[styles.meta, { color: palette.muted }]}>No layer yet</Text> : takes.map((item, index) => (
             <Pressable
               key={item.id}
               accessibilityRole="button"
               accessibilityLabel={item.id + (loopingIds.includes(item.id) ? ", looping" : "")}
-              style={[styles.layerChip, item.id === selected ? styles.layerChipOn : null]}
+              style={[styles.layerChip, { backgroundColor: palette.card, minHeight: chrome.handlePx }, item.id === selected ? { borderWidth: 2, borderColor: palette.accent } : { borderWidth: 1, borderColor: palette.line }]}
               onPress={() => setSelected(item.id)}
             >
-              <Text style={styles.layerText}>{index + 1}{loopingIds.includes(item.id) ? " · looping" : ""}</Text>
+              <Text style={[styles.layerText, { color: palette.ink }]}>{index + 1}{loopingIds.includes(item.id) ? " · looping" : ""} · Warm EP</Text>
             </Pressable>
           ))}
         </View>
-        <Pressable accessibilityRole="button" accessibilityLabel="Capture" style={styles.capture} onPress={capture}>
-          <Text style={styles.captureText}>Capture</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel="Capture" style={[styles.capture, { backgroundColor: palette.accent, borderColor: palette.accent }]} onPress={capture}>
+          <Text style={[styles.captureText, { color: palette.accentInk }]}>Capture</Text>
         </Pressable>
         <View style={styles.row}>
-          <Pressable style={styles.secondary} onPress={undoCapture} disabled={!undo}>
-            <Text style={styles.secondaryText}>Undo capture</Text>
+          <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={undoCapture} disabled={!undo}>
+            <Text style={[styles.secondaryText, { color: palette.ink }]}>Undo capture</Text>
           </Pressable>
-          <Pressable style={styles.secondary} onPress={() => (looping ? stopLoop() : take ? playTake(take) : setMessage("Nothing to play yet."))}>
-            <Text style={styles.secondaryText}>{looping ? "Stop" : "Play"}</Text>
+          <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={undoBounds} disabled={!boundsUndo}>
+            <Text style={[styles.secondaryText, { color: palette.ink }]}>Undo range</Text>
           </Pressable>
-          <Pressable style={styles.secondary} onPress={() => engine.silence()}>
-            <Text style={styles.secondaryText}>Silence notes</Text>
+          <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={() => (looping ? stopLoop() : take ? playTake(take) : setMessage("Nothing to play yet."))}>
+            <Text style={[styles.secondaryText, { color: palette.ink }]}>{looping ? "Stop" : "Play"}</Text>
           </Pressable>
-          <Pressable style={styles.secondary} onPress={() => setAfterCapture(project.afterCapture === "loop" ? "silent" : "loop")}>
-            <Text style={styles.secondaryText}>{project.afterCapture === "loop" ? "After capture: loop" : "After capture: stay silent"}</Text>
+          <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={() => engine.silence()}>
+            <Text style={[styles.secondaryText, { color: palette.ink }]}>Silence notes</Text>
+          </Pressable>
+          <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={() => setAfterCapture(project.afterCapture === "loop" ? "silent" : "loop")}>
+            <Text style={[styles.secondaryText, { color: palette.ink }]}>{project.afterCapture === "loop" ? "After capture: loop" : "After capture: stay silent"}</Text>
           </Pressable>
           <Pressable
-            style={styles.secondary}
+            style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]}
             onPress={() => {
               learningRef.current = "capture";
               setLearning("capture");
             }}
           >
-            <Text style={styles.secondaryText}>Learn Capture</Text>
+            <Text style={[styles.secondaryText, { color: palette.ink }]}>Learn Capture</Text>
           </Pressable>
           <Pressable
-            style={styles.secondary}
+            style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]}
             onPress={() => {
               learningRef.current = "transport";
               setLearning("transport");
             }}
           >
-            <Text style={styles.secondaryText}>Learn Play/Stop</Text>
+            <Text style={[styles.secondaryText, { color: palette.ink }]}>Learn Play/Stop</Text>
           </Pressable>
         </View>
       </View>
@@ -520,33 +533,25 @@ function evictionCopy(notice: RibbonNotice): string {
   return "No eviction.";
 }
 
-function TakeRibbon({ events, coverageEnd }: { events: CapturedEvent[]; coverageEnd?: bigint }) {
+function TakeRibbon({ events, palette }: { events: CapturedEvent[]; palette: { muted: string; plot: string; line: string; note: string } }) {
   const notes = events.filter((event) => event.kind === "note-on" && event.velocity > 0).slice(-64);
   if (notes.length === 0) {
-    return <Text style={styles.meta}>Nothing played yet</Text>;
+    return <Text style={{ color: palette.muted, marginTop: 8 }}>Nothing played yet</Text>;
   }
-  const marks = ribbonMarks(notes, coverageEnd);
+  const marks = ribbonMarks(notes);
   return (
-    <View style={styles.ribbonPlot} accessibilityLabel="Take ribbon">
+    <View style={[styles.ribbonPlot, { backgroundColor: palette.plot, borderWidth: 1, borderColor: palette.line }]} accessibilityLabel="Take ribbon">
       {marks.map((mark) => (
-        <View key={mark.id} style={[styles.ribbonMark, { left: `${Math.min(97, Math.max(0, mark.xPercent))}%`, top: mark.y }]} />
+        <View key={mark.id} style={[styles.ribbonMark, { backgroundColor: palette.note, left: `${Math.min(97, Math.max(0, mark.xPercent))}%`, top: mark.y }]} />
       ))}
     </View>
-  );
-}
-
-function Small({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Pressable style={styles.secondary} onPress={onPress}>
-      <Text style={styles.secondaryText}>{label}</Text>
-    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#0D0F13" },
   content: { padding: 24, paddingBottom: 280, maxWidth: 880, width: "100%", alignSelf: "center" },
-  contentNarrow: { padding: 16, paddingBottom: 320 },
+  contentNarrow: { paddingBottom: 460 },
   kicker: { color: "#9AA3AF", letterSpacing: 1.6, fontSize: 12, fontWeight: "600" },
   title: { color: "#ECEEF2", fontSize: 32, fontWeight: "700", marginTop: 4, letterSpacing: -0.4 },
   preset: { color: "#9AA3AF", marginTop: 4, fontSize: 14 },
@@ -569,7 +574,7 @@ const styles = StyleSheet.create({
   layerChipOn: { borderWidth: 2, borderColor: "#FFFFFF" },
   layerText: { color: "#ECEEF2", fontSize: 14, fontWeight: "600" },
   dock: { position: "fixed", left: 0, right: 0, bottom: 0, padding: 16, backgroundColor: "#0D0F13" },
-  capture: { backgroundColor: "#FF6A3D", borderRadius: 16, minHeight: 112, width: "100%", alignItems: "center", justifyContent: "center" },
+  capture: { backgroundColor: "#FF6A3D", borderRadius: 16, minHeight: 84, width: "100%", alignItems: "center", justifyContent: "center" },
   captureText: { color: "#120C0A", fontSize: 32, fontWeight: "700" },
   secondary: { backgroundColor: "#20252C", borderRadius: 12, minHeight: 48, minWidth: 48, paddingVertical: 12, paddingHorizontal: 12, justifyContent: "center" },
   secondaryText: { color: "#ECEEF2", fontSize: 14 },
