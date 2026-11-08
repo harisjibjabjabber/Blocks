@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CapturedEvent } from "../domain/capture";
-import { applyPreview, drawNote, eraseNote, moveNote, notesFromEvents, quantisePreview, resizeNote, setVelocity, workingPlayback, type RollNote } from "./roll-notes";
+import { applyPreview, drawNote, eraseNote, moveNote, notesFromEvents, quantisePreview, resizeNote, setVelocity, snapDelta, workingPlayback, type RollNote } from "./roll-notes";
 import type { KnownGrid } from "./roll-time";
 
 function event(id: string, kind: CapturedEvent["kind"], note: number, velocity: number, at: bigint, controller = 0, value = 0): CapturedEvent {
@@ -66,6 +66,21 @@ describe("working notes", () => {
     expect(ons).toHaveLength(offs.length);
     expect(ons.map((item) => item.note).sort()).toEqual([62, 67, 72]);
     expect(played.find((item) => item.note === 62 && item.kind === "note-off")?.scheduleElapsed).toBe(300_000n);
+  });
+
+  it("rounds a snap tie away from zero and keeps the note offset in the delta", () => {
+    const step = 1000n;
+    expect(snapDelta(500n, step)).toBe(1000n);
+    expect(snapDelta(-500n, step)).toBe(-1000n);
+    expect(snapDelta(499n, step)).toBe(0n);
+    const grid: KnownGrid = { bpm: 120, beatsPerBar: 4, phase: 0n };
+    const notes = notesFromEvents(source);
+    const before = notes.map((note) => note.start);
+    const preview = quantisePreview(notes, ["e-on"], grid);
+    expect(notes.map((note) => note.start)).toEqual(before);
+    expect(source.find((item) => item.id === "e-on")?.scheduleElapsed).toBe(20_000n);
+    expect(preview[0].start).toBe(10_000n);
+    expect(preview[0].end - preview[0].start).toBe(420_000n - 20_000n);
   });
 
   it("previews quantise without writing it, then applies only the copy", () => {

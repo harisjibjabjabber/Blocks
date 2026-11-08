@@ -93,14 +93,35 @@ export function setVelocity(notes: readonly RollNote[], id: string, velocity: nu
   return notes.map((note) => (note.id === id ? { ...note, velocity: next } : note));
 }
 
-export function nearestBeat(time: bigint, grid: KnownGrid): bigint {
+/** Quarter-note beat divided by 4. Tie at exactly half a step rounds away from zero. */
+export function gridStep(grid: KnownGrid): bigint {
   const beat = beatTicks(grid.bpm);
-  if (beat <= 0n) {
+  const sixteenth = beat / 4n;
+  return sixteenth > 0n ? sixteenth : beat;
+}
+
+export function snapDelta(delta: bigint, step: bigint): bigint {
+  if (step <= 0n) {
+    return delta;
+  }
+  if (delta >= 0n) {
+    return ((delta + step / 2n) / step) * step;
+  }
+  const abs = -delta;
+  return -((abs + step / 2n) / step) * step;
+}
+
+export function nearestStep(time: bigint, grid: KnownGrid): bigint {
+  const step = gridStep(grid);
+  if (step <= 0n) {
     return time;
   }
   const relative = time - grid.phase;
-  const steps = (relative + beat / 2n) / beat;
-  return grid.phase + steps * beat;
+  if (relative >= 0n) {
+    return grid.phase + ((relative + step / 2n) / step) * step;
+  }
+  const abs = -relative;
+  return grid.phase - ((abs + step / 2n) / step) * step;
 }
 
 /** A preview. The notes array and the source events are not written. */
@@ -113,7 +134,8 @@ export function quantisePreview(notes: readonly RollNote[], ids: readonly string
     .filter((note) => chosen.size === 0 || chosen.has(note.id))
     .map((note) => {
       const length = note.end > note.start ? note.end - note.start : 1n;
-      const start = nearestBeat(note.start, grid);
+      const target = nearestStep(note.start, grid);
+      const start = note.start + (target - note.start) / 2n;
       return { id: note.id, start, end: start + length };
     });
 }

@@ -1,6 +1,7 @@
 import { WebElectricPiano } from "../audio/web/instrument";
 import { EP_PRESET } from "../audio/web/preset";
 import { joinAtSeam, liveAudioTime, planFromElapsed, selectDue, type PlannedEvent } from "../audio/web/schedule";
+import { readTransport, type TransportSnapshot } from "../audio/web/transport";
 import type { IncomingEvent } from "../domain/capture";
 import { syncAudioGate } from "../domain/readiness";
 import { bindMidiInputs, enableFromGesture, idleGate, type EnableDeps } from "../midi/web/enable";
@@ -24,8 +25,9 @@ export interface SketchEngine {
   touch(note: number, velocity: number, down: boolean): void;
   setSustain(cc: number): void;
   replay(events: IncomingEvent[], stretch: number): void;
-  loopLayer(id: string, events: IncomingEvent[], stretch: number, durationSec: number): void;
+  loopLayer(id: string, events: IncomingEvent[], stretch: number, durationSec: number, originUs?: bigint): void;
   stopLayer(id: string): void;
+  transport(): TransportSnapshot;
   stopReplay(): void;
   silence(): void;
   stats(): Promise<string>;
@@ -62,6 +64,7 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
   let scheduledNotes = 0;
   let transportEpoch: number | null = null;
   let transportPeriod: number | null = null;
+  let transportRevision = 0;
   let loopTimer: ReturnType<typeof setInterval> | null = null;
   interface LoopSlot {
     id: string;
@@ -70,6 +73,7 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
     generation: number;
     cycleStart: number;
     duration: number;
+    originUs: bigint;
     planned: PlannedEvent[];
     index: number;
   }
@@ -158,7 +162,7 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
   }
 
   function planSlot(slot: LoopSlot, audioStart: number): PlannedEvent[] {
-    const anchor = slot.events[0].scheduleElapsed;
+    const anchor = slot.originUs;
     return slot.events.map((event) => ({
       audioTimeSec: planFromElapsed({
         audioStartSec: audioStart,
@@ -199,6 +203,7 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
         slot.cycleStart += slot.duration;
         slot.planned = planSlot(slot, slot.cycleStart);
         slot.index = 0;
+        transportRevision += 1;
       }
       const selected = selectDue({
         planned: slot.planned,
@@ -229,10 +234,11 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
     }
     piano.releaseSource(layerSource(id), context.currentTime);
     slots = slots.filter((slot) => slot.id !== id);
+    transportRevision += 1;
     clearTransportIfIdle();
   }
 
-  function loopLayer(id: string, events: IncomingEvent[], stretch: number, durationSec: number) {
+  function loopLayer(id: string, events: IncomingEvent[], stretch: number, durationSec: number, originUs?: bigint) {
     stopLayer(id);
     if (context.state !== "running" || events.length === 0) {
       return;
@@ -250,9 +256,11 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
       generation: 1,
       cycleStart: joined.start,
       duration,
+      originUs: originUs ?? events[0].scheduleElapsed,
       planned: [],
       index: 0,
     };
+    transportRevision += 1;
     slot.planned = planSlot(slot, slot.cycleStart);
     slots.push(slot);
     ensureLoopPump();
@@ -345,6 +353,19 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
     },
     loopLayer,
     stopLayer,
+    transport() {
+      const slot = slots[0];
+      return readTransport({
+        audioRunning: context.state === "running",
+        hasSlot: Boolean(slot),
+        now: context.currentTime,
+        cycleStart: slot ? slot.cycleStart : null,
+        duration: slot ? slot.duration : null,
+        originUs: slot ? slot.originUs : null,
+        stretch: slot ? slot.stretch : 1,
+        revision: transportRevision,
+      });
+    },
     replay(events, stretch) {
       stopReplay();
       scheduledNotes = 0;

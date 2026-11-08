@@ -105,6 +105,41 @@ describe("web engine adapter", () => {
     }
   });
 
+  it("reports the loop position from the audio clock and wraps back to the origin", async () => {
+    vi.useFakeTimers();
+    const context = new FakeContext();
+    const engine = createWebEngine({
+      createContext: () => context as unknown as AudioContext,
+      requestMIDIAccess: async () => ({ inputs: new Map(), onstatechange: null }),
+    });
+    context.setState("running");
+    context.currentTime = 10;
+    const started = engine.transport();
+    expect(started.availability).toBe("available");
+    expect(started.state).toBe("stopped");
+    expect(started.positionSeconds).toBeNull();
+    engine.loopLayer("layer", [{ ...note(), scheduleElapsed: 2_000_000n }], 1, 1, 1_000_000n);
+    const scheduled = engine.transport();
+    expect(scheduled.state).toBe("playing");
+    expect(scheduled.positionSeconds).toBeNull();
+    context.currentTime = 10.05 + 0.25;
+    const mid = engine.transport();
+    expect(mid.positionSeconds).toBeCloseTo(1.25, 5);
+    expect(mid.revision).toBe(scheduled.revision);
+    context.currentTime = 10.05 + 1.05;
+    await vi.advanceTimersByTimeAsync(30);
+    const wrapped = engine.transport();
+    expect(wrapped.revision).toBeGreaterThan(mid.revision);
+    expect(wrapped.positionSeconds).not.toBeNull();
+    expect(wrapped.positionSeconds!).toBeGreaterThanOrEqual(1);
+    expect(wrapped.positionSeconds!).toBeLessThan(1.2);
+    engine.stopLayer("layer");
+    const stopped = engine.transport();
+    expect(stopped.state).toBe("stopped");
+    expect(stopped.positionSeconds).toBeNull();
+    vi.useRealTimers();
+  });
+
   it("schedules replay on the audio clock only while the context is running", async () => {
     vi.useFakeTimers();
     const context = new FakeContext();

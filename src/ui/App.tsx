@@ -85,6 +85,7 @@ export default function App() {
   const [rollWindow, setRollWindow] = useState<TimeWindow | null>(null);
   const [bpmText, setBpmText] = useState("120");
   const [meterText, setMeterText] = useState("4");
+  const [provisionalGrid, setProvisionalGrid] = useState(false);
   const [audioState, setAudioState] = useState(engine.readAudioState());
   const [scheduled, setScheduled] = useState(0);
   const loopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -218,7 +219,7 @@ export default function App() {
       }
       engine.stopLayer(item.id);
       const span = bounds.end - bounds.start;
-      engine.loopLayer(item.id, selectedEvents, 1, Math.max(0.4, Number(span) / unitFor(domain)));
+      engine.loopLayer(item.id, selectedEvents, 1, Math.max(0.4, Number(span) / unitFor(domain)), bounds.start);
       setLoopingIds((current) => (current.includes(item.id) ? current : [...current, item.id]));
       return;
     }
@@ -236,7 +237,7 @@ export default function App() {
     }
     const span = bounds.end - bounds.start;
     const durationSec = Math.max(0.4, Number(span) / unitFor(domain));
-    engine.loopLayer(item.id, selectedEvents, 1, durationSec);
+    engine.loopLayer(item.id, selectedEvents, 1, durationSec, bounds.start);
     setLoopingIds((current) => (current.includes(item.id) ? current : [...current, item.id]));
   }
 
@@ -379,7 +380,7 @@ export default function App() {
       return;
     }
     const phase = loopWindow(take.overlay).start;
-    setTakes((current) => current.map((entry) => (entry.id === take.id ? { ...entry, rollGrid: { bpm: Math.round(bpm), beatsPerBar: Math.round(beats), phase } } : entry)));
+    setTakes((current) => current.map((entry) => (entry.id === take.id ? { ...entry, rollGrid: { bpm: Math.round(bpm), beatsPerBar: Math.round(beats), phase, provisional: provisionalGrid } } : entry)));
     setMessage("Grid set. The notes were not moved.");
   }
 
@@ -457,15 +458,17 @@ export default function App() {
           <Text style={[styles.cardTitle, { color: palette.ink }]}>Take ribbon</Text>
           {take && room ? (
             <View style={styles.row}>
-              <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={undoRoll}><Text style={[styles.secondaryText, { color: palette.ink }]}>Undo</Text></Pressable>
-              <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={redoRoll}><Text style={[styles.secondaryText, { color: palette.ink }]}>Redo</Text></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="Undo" style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={undoRoll}><Text style={[styles.secondaryText, { color: palette.ink }]}>Undo</Text></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="Redo" style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={redoRoll}><Text style={[styles.secondaryText, { color: palette.ink }]}>Redo</Text></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="Velocity" style={[styles.secondary, { backgroundColor: rollTool === "velocity" ? palette.accent : palette.card, minHeight: chrome.handlePx }]} onPress={() => setRollTool("velocity")}><Text style={[styles.secondaryText, { color: rollTool === "velocity" ? palette.accentInk : palette.ink }]}>Velocity</Text></Pressable>
               <TextInput value={bpmText} onChangeText={setBpmText} accessibilityLabel="Tempo" style={[styles.field, { color: palette.ink, borderColor: palette.line }]} />
               <TextInput value={meterText} onChangeText={setMeterText} accessibilityLabel="Meter" style={[styles.field, { color: palette.ink, borderColor: palette.line }]} />
-              <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={confirmGrid}><Text style={[styles.secondaryText, { color: palette.ink }]}>Set grid</Text></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="Provisional" style={[styles.secondary, { backgroundColor: provisionalGrid ? palette.accent : palette.card, minHeight: chrome.handlePx }]} onPress={() => setProvisionalGrid((value) => !value)}><Text style={[styles.secondaryText, { color: provisionalGrid ? palette.accentInk : palette.ink }]}>Provisional</Text></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="Set grid" style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={confirmGrid}><Text style={[styles.secondaryText, { color: palette.ink }]}>Set grid</Text></Pressable>
               {take.rollGrid ? (
                 <>
-                  <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={() => setGhosts(ghosts.length ? [] : quantisePreview(take.rollNotes, selectedNote ? [selectedNote] : [], take.rollGrid))}><Text style={[styles.secondaryText, { color: palette.ink }]}>{ghosts.length ? "Hide quantise" : "Preview quantise"}</Text></Pressable>
-                  {ghosts.length ? <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={() => commitRoll(take, applyPreview(take.rollNotes, ghosts))}><Text style={[styles.secondaryText, { color: palette.ink }]}>Apply quantise</Text></Pressable> : null}
+                  <Pressable accessibilityRole="button" accessibilityLabel={ghosts.length ? "Cancel" : "Preview quantise"} style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={() => setGhosts(ghosts.length ? [] : quantisePreview(take.rollNotes, selectedNote ? [selectedNote] : [], take.rollGrid))}><Text style={[styles.secondaryText, { color: palette.ink }]}>{ghosts.length ? "Cancel" : "Preview quantise"}</Text></Pressable>
+                  {ghosts.length ? <Pressable accessibilityRole="button" accessibilityLabel="Apply quantise" style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={() => commitRoll(take, applyPreview(take.rollNotes, ghosts))}><Text style={[styles.secondaryText, { color: palette.ink }]}>Apply quantise</Text></Pressable> : null}
                 </>
               ) : null}
             </View>
@@ -473,7 +476,7 @@ export default function App() {
           {take ? (
             <Roll
               notes={take.rollNotes}
-              window={rollWindow}
+              timeWindow={rollWindow}
               bounds={{ start: take.overlay.loopStart ?? take.overlay.selectionStart, end: take.overlay.loopEnd ?? take.overlay.selectionEnd }}
               ceiling={take.rangeCeiling}
               historyStart={take.performance.events.reduce((min, event) => (event.scheduleElapsed < min ? event.scheduleElapsed : min), take.performance.events[0].scheduleElapsed)}
@@ -490,7 +493,9 @@ export default function App() {
               onCommitNotes={(notes) => commitRoll(take, notes)}
               onEdit={() => setRoom(true)}
               onClose={() => setRoom(false)}
+              showPan={!room}
               onTool={setRollTool}
+              readTransport={() => engine.transport()}
             />
           ) : (
             <LiveRoll events={ribbon} palette={palette} hitPx={chrome.handlePx} />
@@ -640,7 +645,7 @@ function LiveRoll({ events, palette, hitPx }: { events: CapturedEvent[]; palette
   return (
     <Roll
       notes={notes}
-      window={null}
+      timeWindow={null}
       bounds={null}
       ceiling={notes.reduce((max, note) => (note.end > max ? note.end : max), notes[0].end)}
       historyStart={historyStart}

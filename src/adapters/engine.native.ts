@@ -148,6 +148,9 @@ export function createNativeEngine() {
     stopReplay() {
       native.stopReplay();
     },
+    transport() {
+      return { availability: "unavailable" as const, state: "stopped" as const, positionSeconds: null, originSeconds: null, revision: 0 };
+    },
     async stats() {
       return native.stats();
     },

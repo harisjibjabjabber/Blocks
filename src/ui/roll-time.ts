@@ -14,12 +14,15 @@ export interface KnownGrid {
   beatsPerBar: number;
   /** Bar 1, in scheduler ticks. An accepted BPM without this is not a grid. */
   phase: bigint;
+  /** Dashed ruler only when this was explicitly chosen. A tempo alone never sets it. */
+  provisional?: boolean;
 }
 
 export interface RulerMark {
   time: bigint;
   kind: "second" | "bar" | "beat";
   label: string;
+  tentative: boolean;
 }
 
 export function timeToX(time: bigint, window: TimeWindow, width: number): number {
@@ -88,6 +91,7 @@ export function rulerMarks(window: TimeWindow, grid: KnownGrid | null, ticksPerS
         time,
         kind: bar ? "bar" : "beat",
         label: bar ? String(barNumber) : "",
+        tentative: grid.provisional === true,
       });
     }
     index += 1n;
@@ -110,10 +114,11 @@ function secondMarks(window: TimeWindow, ticksPerSecond: number): RulerMark[] {
   for (let guard = 0; guard < 400 && time <= window.end; guard += 1) {
     const index = time / step;
     marks.push({
-      time,
-      kind: "second",
-      label: index % every === 0n ? index.toString() + "s" : "",
-    });
+        time,
+        kind: "second",
+        label: index % every === 0n ? index.toString() + "s" : "",
+        tentative: false,
+      });
     time += step;
   }
   return marks;

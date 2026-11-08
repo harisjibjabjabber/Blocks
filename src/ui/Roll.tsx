@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import {
   framePhrase,
@@ -15,7 +15,8 @@ import {
   type RulerMark,
   type TimeWindow,
 } from "./roll-time";
-import { resizeNote, type RollNote } from "./roll-notes";
+import type { TransportSnapshot } from "../audio/web/transport";
+import { gridStep, nearestStep, resizeNote, snapDelta, type RollNote } from "./roll-notes";
 import type { Palette } from "./theme";
 
 export type RollTool = "select" | "draw" | "erase" | "velocity" | "pan";
@@ -24,7 +25,7 @@ const RULER = 28;
 
 export function Roll({
   notes,
-  window,
+  timeWindow,
   bounds,
   ceiling,
   historyStart,
@@ -43,9 +44,10 @@ export function Roll({
   onClose,
   onTool,
   showPan = true,
+  readTransport,
 }: {
   notes: readonly RollNote[];
-  window: TimeWindow | null;
+  timeWindow: TimeWindow | null;
   bounds: { start: bigint; end: bigint } | null;
   ceiling: bigint;
   historyStart: bigint;
@@ -64,10 +66,13 @@ export function Roll({
   onClose?: () => void;
   onTool?: (tool: RollTool) => void;
   showPan?: boolean;
+  readTransport?: () => TransportSnapshot;
 }) {
   const host = useRef<HTMLElement | null>(null);
   const [plotWidth, setPlotWidth] = useState(640);
   const [topPitch, setTopPitch] = useState(() => topOf(notes));
+  const [playhead, setPlayhead] = useState<number | null>(null);
+  const [noteHeight, setNoteHeight] = useState(mode === "room" ? 480 : 112);
   const [liveNotes, setLiveNotes] = useState<RollNote[] | null>(null);
   const [liveBounds, setLiveBounds] = useState<{ start: bigint; end: bigint } | null>(null);
   const [draft, setDraft] = useState<RollNote | null>(null);
@@ -77,11 +82,29 @@ export function Roll({
   const liveNotesRef = useRef<RollNote[] | null>(null);
   const liveBoundsRef = useRef<{ start: bigint; end: bigint } | null>(null);
   const draftRef = useRef<RollNote | null>(null);
+  const beginRef = useRef<(event: PointerEventLike) => void>(() => undefined);
   const shownNotes = liveNotes ?? notes;
   const shownBounds = liveBounds ?? bounds;
-  const view = window ?? (bounds ? framePhrase(historyStart, bounds.start, bounds.end) : frameOf(notes, historyStart));
+  const view = timeWindow ?? (bounds ? framePhrase(historyStart, bounds.start, bounds.end) : frameOf(notes, historyStart));
   const rowHeight = mode === "room" ? 18 : fitRow(shownNotes);
-  const noteHeight = mode === "room" ? 320 : 112;
+  useEffect(() => {
+    if (!readTransport) {
+      return;
+    }
+    let frame = 0;
+    let last = "";
+    const tick = () => {
+      const snap = readTransport();
+      const key = snap.revision + ":" + snap.state + ":" + snap.positionSeconds;
+      if (key !== last) {
+        last = key;
+        setPlayhead(snap.availability === "available" && snap.state === "playing" && snap.positionSeconds !== null ? snap.positionSeconds : null);
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [readTransport]);
   const labelWidth = mode === "room" ? 48 : 36;
   const pitches = visiblePitches(topPitch, noteHeight, rowHeight);
 
@@ -94,24 +117,42 @@ export function Roll({
     return rect ? clientX - rect.left : 0;
   }
 
+  function snapTime(time: bigint, alt: boolean | undefined): bigint {
+    if (!grid || alt) {
+      return time;
+    }
+    return nearestStep(time, grid);
+  }
+
   function localY(clientY: number) {
     const rect = host.current?.getBoundingClientRect();
     return rect ? clientY - rect.top - RULER : 0;
   }
 
+  const lastBegin = useRef(0);
+
   function begin(event: PointerEventLike) {
+    const now = performance.now();
+    if (now - lastBegin.current < 40) {
+      return;
+    }
+    lastBegin.current = now;
     const pointerId = event.nativeEvent?.pointerId ?? event.pointerId ?? 1;
     const clientX = event.nativeEvent?.clientX ?? event.clientX ?? 0;
     const clientY = event.nativeEvent?.clientY ?? event.clientY ?? 0;
     pointers.current.set(pointerId, { x: clientX, y: clientY });
-    const onMove = (pointer: PointerEvent) => move(pointer);
-    const onUp = (pointer: PointerEvent) => {
+    const onMove = (pointerEvent: PointerEvent) => move(pointerEvent);
+    const onUp = (pointerEvent: PointerEvent) => {
       window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("mousemove", onMove);
       window.removeEventListener("pointerup", onUp);
-      end(pointer);
+      window.removeEventListener("mouseup", onUp);
+      end(pointerEvent);
     };
     window.addEventListener("pointermove", onMove);
+    window.addEventListener("mousemove", onMove);
     window.addEventListener("pointerup", onUp);
+    window.addEventListener("mouseup", onUp);
     if (pointers.current.size === 2) {
       const pts = [...pointers.current.values()];
       pinch.current = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
@@ -120,7 +161,7 @@ export function Roll({
     }
     const x = localX(clientX);
     const y = localY(clientY);
-    if (shownBounds && y < RULER + 8) {
+    if (mode === "compact" && shownBounds && y < RULER + 8) {
       const startX = timeToX(shownBounds.start, view, width());
       const endX = timeToX(shownBounds.end, view, width());
       if (Math.abs(x - startX) <= hitPx / 2 && Math.abs(x - startX) <= Math.abs(x - endX)) {
@@ -147,7 +188,7 @@ export function Roll({
     }
     if (tool === "draw" && !hit) {
       const pitch = yToPitch(Math.max(0, y), topPitch, rowHeight);
-      const start = xToTime(x, view, width());
+      const start = snapTime(xToTime(x, view, width()), event.nativeEvent?.altKey ?? event.altKey);
       const created: RollNote = { id: "draw-" + start.toString(), channel: 0, pitch, start, end: start + 1n, velocity: 96, sourceOnId: null, sourceOffId: null };
       setDraft(created);
       drag.current = { kind: "draw", originX: x, note: created };
@@ -161,12 +202,13 @@ export function Roll({
     if (hit) {
       onSelect(hit.id);
       const box = noteBox(hit.start, hit.end, hit.pitch, view, width(), topPitch, rowHeight);
-      const edge = x - box.x < 10 ? "start" : box.x + box.width - x < 10 ? "end" : "body";
+      const edge = box.x + Math.max(8, box.width) - x < 12 ? "end" : "body";
       drag.current = { kind: edge === "body" ? "move" : "resize", edge: edge === "body" ? "end" : edge, originX: x, originY: y, note: hit };
       return;
     }
     onSelect(null);
   }
+  beginRef.current = begin;
 
   function move(event: PointerEvent) {
     const point = pointers.current.get(event.pointerId);
@@ -212,7 +254,7 @@ export function Roll({
       return;
     }
     if (current.kind === "draw" && current.note) {
-      const time = xToTime(x, view, width());
+      const time = snapTime(xToTime(x, view, width()), event.altKey);
       const end = time > current.note.start ? time : current.note.start + 1n;
       const drawn = { ...current.note, end };
       draftRef.current = drawn;
@@ -229,9 +271,9 @@ export function Roll({
       setLiveNotes(next);
       return;
     }
-    if (current.kind === "resize" && current.edge) {
-      const time = xToTime(x, view, width());
-      const next = resizeNote(shownNotes, current.note.id, current.edge, time);
+    if (current.kind === "resize" && current.edge === "end") {
+      const time = snapTime(xToTime(x, view, width()), event.altKey);
+      const next = resizeNote(shownNotes, current.note.id, "end", time);
       liveNotesRef.current = next;
       setLiveNotes(next);
       return;
@@ -241,7 +283,8 @@ export function Roll({
       const now = xToTime(x, view, width());
       const pitch = yToPitch(Math.max(0, y), topPitch, rowHeight);
       const length = current.note.end - current.note.start;
-      const start = current.note.start + (now - origin);
+      const delta = grid && !event.altKey ? snapDelta(now - origin, gridStep(grid)) : now - origin;
+      const start = current.note.start + delta;
       const next = shownNotes.map((note) => (note.id === current.note?.id ? { ...note, pitch, start, end: start + length } : note));
       liveNotesRef.current = next;
       setLiveNotes(next);
@@ -288,18 +331,16 @@ export function Roll({
   return (
     <View accessibilityLabel={mode === "room" ? "Piano roll" : "Take ribbon"} style={{ marginTop: 8 }}>
       <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 6 }}>
-        <Text style={{ color: palette.ink, fontWeight: "700", fontSize: 14 }}>{grid ? "Tempo " + grid.bpm + " · " + grid.beatsPerBar + "/4" : "Seconds"}</Text>
+        <Text style={{ color: palette.ink, fontWeight: "700", fontSize: 14 }}>{grid ? (grid.provisional ? "Tempo " + grid.bpm + " · provisional" : "Tempo " + grid.bpm + " · " + grid.beatsPerBar + "/4") : "Seconds"}{mode === "room" ? " · Loop locked" : ""}</Text>
         {mode === "compact" && onEdit ? <Tool label="Edit" onPress={onEdit} palette={palette} hit={hitPx} on /> : null}
         {mode === "room" && onClose ? <Tool label="Play view" onPress={onClose} palette={palette} hit={hitPx} /> : null}
         {mode === "room" && onTool ? (
           <>
-            {(["select", "draw", "erase", "velocity", "pan"] as const).map((name) => (
-              <Tool key={name} label={name === "select" ? "Select" : name === "draw" ? "Draw" : name === "erase" ? "Erase" : name === "velocity" ? "Velocity" : "Pan"} onPress={() => onTool(name)} palette={palette} hit={hitPx} on={tool === name} />
+            {(["draw", "select", "erase"] as const).map((name) => (
+              <Tool key={name} label={name === "draw" ? "Draw" : name === "select" ? "Select" : "Erase"} onPress={() => onTool(name)} palette={palette} hit={hitPx} on={tool === name} />
             ))}
             <Tool label="Zoom in" onPress={() => onWindow(zoomWindow(view, 0.5, view.start + (view.end - view.start) / 2n, 50_000n, 120_000_000n))} palette={palette} hit={hitPx} />
             <Tool label="Zoom out" onPress={() => onWindow(zoomWindow(view, 2, view.start + (view.end - view.start) / 2n, 50_000n, 120_000_000n))} palette={palette} hit={hitPx} />
-            <Tool label="Higher" onPress={() => setTopPitch((pitch) => Math.min(120, pitch + 4))} palette={palette} hit={hitPx} />
-            <Tool label="Lower" onPress={() => setTopPitch((pitch) => Math.max(24, pitch - 4))} palette={palette} hit={hitPx} />
           </>
         ) : null}
         {showPan ? <Tool label="Earlier" onPress={() => onWindow(panWindow(view, -(view.end - view.start), historyStart))} palette={palette} hit={hitPx} /> : null}
@@ -315,19 +356,39 @@ export function Roll({
         </View>
         <View
           ref={(node) => {
-            host.current = node as unknown as HTMLElement | null;
+            const el = node as unknown as HTMLElement | null;
+            host.current = el;
+            if (el && el.dataset.rollBound !== "1") {
+              el.dataset.rollBound = "1";
+              el.addEventListener("mousedown", (mouse) => {
+                beginRef.current({
+                  clientX: mouse.clientX,
+                  clientY: mouse.clientY,
+                  altKey: mouse.altKey,
+                  nativeEvent: { clientX: mouse.clientX, clientY: mouse.clientY, altKey: mouse.altKey },
+                });
+              });
+            }
           }}
+          onPointerDown={begin as unknown as () => void}
+          onMouseDown={begin as unknown as () => void}
+          dataSet={{ roll: "true" }}
           onLayout={(event) => {
             const next = event.nativeEvent.layout.width;
             if (next > 0 && Math.abs(next - plotWidth) > 1) {
               setPlotWidth(next);
             }
+            if (mode === "room" && event.nativeEvent.layout.height > RULER + 80) {
+              setNoteHeight(event.nativeEvent.layout.height - RULER);
+            }
           }}
-          onPointerDown={begin as unknown as () => void}
-          style={{ position: "relative", flex: 1, height: RULER + noteHeight, backgroundColor: palette.plot, borderRadius: 12, borderWidth: 1, borderColor: palette.line, overflow: "hidden" }}
+          style={{ position: "relative", flex: 1, height: RULER + noteHeight, minHeight: mode === "room" ? "55vh" : RULER + 112, backgroundColor: palette.plot, borderRadius: 12, borderWidth: 1, borderColor: palette.line, overflow: "hidden" }}
         >
+          {pitches.map((pitch) => blackKey(pitch) ? (
+            <View key={"row-" + pitch} pointerEvents="none" style={{ position: "absolute", left: 0, right: 0, top: RULER + pitchToY(pitch, topPitch, rowHeight), height: rowHeight, backgroundColor: palette.line, opacity: 0.45 }} />
+          ) : null)}
           {marks.map((mark) => (
-            <Tick key={mark.kind + mark.time.toString()} mark={mark} x={timeToX(mark.time, view, width())} color={palette.muted} strong={mark.kind !== "beat"} />
+            <Tick key={mark.kind + mark.time.toString()} mark={mark} x={timeToX(mark.time, view, width())} color={mark.tentative ? palette.muted : palette.ink} strong={mark.kind !== "beat"} />
           ))}
           {shownBounds ? (
             <View pointerEvents="none" style={{ position: "absolute", left: timeToX(shownBounds.start, view, width()), width: Math.max(0, timeToX(shownBounds.end, view, width()) - timeToX(shownBounds.start, view, width())), top: RULER, bottom: 0, backgroundColor: palette.ink, opacity: 0.05 }} />
@@ -336,8 +397,7 @@ export function Roll({
             const box = noteBox(note.start, note.end, note.pitch, view, width(), topPitch, rowHeight);
             const ghost = ghosts.find((item) => item.id === note.id);
             return (
-              <View key={note.id} pointerEvents="none">
-                <View style={{ position: "absolute", left: box.x, top: RULER + box.y + 1, width: Math.max(2, box.width), height: box.height, borderRadius: 3, backgroundColor: note.id === selectedId ? palette.accent : palette.note, opacity: note.velocity / 127 }} />
+              <View key={note.id} pointerEvents="none" dataSet={{ note: note.id, start: note.start.toString(), end: note.end.toString(), velocity: String(note.velocity) }} style={{ position: "absolute", left: box.x, top: RULER + box.y + 1, width: Math.max(8, box.width), height: box.height, borderRadius: 3, backgroundColor: note.id === selectedId ? palette.accent : palette.note, opacity: Math.max(0.35, note.velocity / 160) }}>
                 {ghost ? <View style={{ position: "absolute", left: timeToX(ghost.start, view, width()), top: RULER + box.y + 1, width: Math.max(2, timeToX(ghost.end, view, width()) - timeToX(ghost.start, view, width())), height: box.height, borderRadius: 3, borderWidth: 1, borderColor: palette.accent }} /> : null}
               </View>
             );
@@ -347,6 +407,9 @@ export function Roll({
               <Grip x={timeToX(shownBounds.start, view, width())} color={palette.ink} />
               <Grip x={timeToX(shownBounds.end < ceiling ? shownBounds.end : ceiling, view, width())} color={palette.ink} />
             </>
+          ) : null}
+          {playhead !== null ? (
+            <View pointerEvents="none" dataSet={{ playhead: String(playhead) }} style={{ position: "absolute", left: timeToX(BigInt(Math.round(playhead * 1_000_000)), view, width()), top: 0, bottom: 0, width: 2, backgroundColor: palette.accent }} />
           ) : null}
         </View>
       </View>
@@ -410,9 +473,13 @@ function noteAt(notes: readonly RollNote[], x: number, y: number, view: TimeWind
   return null;
 }
 
+function blackKey(pitch: number): boolean {
+  return [1, 3, 6, 8, 10].includes(((pitch % 12) + 12) % 12);
+}
+
 function Tick({ mark, x, color, strong }: { mark: RulerMark; x: number; color: string; strong: boolean }) {
   return (
-    <View pointerEvents="none" style={{ position: "absolute", left: x, top: strong ? 0 : 10, height: strong ? RULER : 12, width: 1, backgroundColor: color }}>
+    <View pointerEvents="none" style={{ position: "absolute", left: x, top: strong ? 0 : 10, height: mark.tentative ? 8 : strong ? RULER : 12, width: 1, backgroundColor: color, opacity: mark.tentative ? 0.45 : 1 }}>
       {mark.label ? <Text style={{ position: "absolute", left: 3, top: 1, color, fontSize: 10, width: 36 }}>{mark.label}</Text> : null}
     </View>
   );
@@ -431,10 +498,11 @@ function Tool({ label, onPress, palette, hit, on }: { label: string; onPress: ()
 }
 
 type PointerEventLike = {
-  nativeEvent?: { clientX?: number; clientY?: number; pointerId?: number };
+  nativeEvent?: { clientX?: number; clientY?: number; pointerId?: number; altKey?: boolean };
   clientX?: number;
   clientY?: number;
   pointerId?: number;
+  altKey?: boolean;
 };
 
 type Drag = {
