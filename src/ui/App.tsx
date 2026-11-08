@@ -397,7 +397,8 @@ export default function App() {
                 tempoBpm: project.tempoBpm,
                 proposedTempoBpm: project.proposedTempoBpm,
                 gridLocked: project.gridLocked,
-                phase: gridPhase(project.gridLocked ? takes[0] ?? take : take),
+                beatPhase: gridPhase(project.gridLocked ? takes[0] ?? take : take),
+                barPhase: null,
               })}
               ticksPerSecond={unitFor(domain)}
               onCommit={(next) => commitBounds(take, next)}

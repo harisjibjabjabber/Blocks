@@ -46,6 +46,17 @@ describe("range handles over a retained history", () => {
     expect(history).toHaveLength(4);
   });
 
+  it("does not let the handles swap or lengthen a note", () => {
+    const bounds = { start: 1_000n, end: 2_000n };
+    const past = moveBound(bounds, "start", 9_000n, 0n, 9_000n);
+    expect(past.start).toBe(1_999n);
+    expect(past.end).toBe(bounds.end);
+    const under = moveBound(bounds, "end", 0n, 0n, 9_000n);
+    expect(under.end).toBe(1_001n);
+    expect(under.start).toBe(bounds.start);
+    expect(history[0].scheduleElapsed).toBe(0n);
+  });
+
   it("drags the end through the silent ceiling and does not pass it", () => {
     const earlier = moveBound(captured, "end", 1_000_000n, 0n, 2_000_000n);
     expect(earlier.end).toBe(1_000_000n);

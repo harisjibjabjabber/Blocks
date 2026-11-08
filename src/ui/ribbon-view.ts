@@ -7,16 +7,21 @@ export interface RibbonWindow {
   end: bigint;
 }
 
+/** Beats when only a BPM is known. Solid bars only when a bar phase is known. */
 export type RibbonGrid =
   | { kind: "free" }
-  | { kind: "bars"; bpm: number; phase: bigint; tentative: boolean };
+  | { kind: "beats"; bpm: number; phase: bigint; proposed: boolean }
+  | { kind: "bars"; bpm: number; phase: bigint };
 
 export interface RulerMark {
   time: bigint;
   kind: "bar" | "beat" | "second";
   label: string;
+  /** Dashed. A BPM without a known bar phase stays tentative, including an accepted BPM. */
   tentative: boolean;
 }
+
+export const RULER_BAND = 28;
 
 export interface HitBox {
   left: number;
@@ -32,17 +37,11 @@ export function beatTicks(bpm: number, ticksPerSecond: number): bigint {
   return BigInt(Math.round((60 / bpm) * ticksPerSecond));
 }
 
-/** A little time before the phrase. One beat when a grid exists, otherwise at most a second and a half. */
-export function contextTicks(phraseTicks: bigint, grid: RibbonGrid, ticksPerSecond: number): bigint {
-  if (grid.kind === "bars") {
-    const beat = beatTicks(grid.bpm, ticksPerSecond);
-    return beat > 0n ? beat : 0n;
-  }
-  const cap = BigInt(Math.round(ticksPerSecond * 1.5));
-  const slice = phraseTicks > 0n ? phraseTicks / 5n : cap;
-  const chosen = slice < cap ? slice : cap;
-  const floor = BigInt(Math.round(ticksPerSecond * 0.4));
-  return chosen > floor ? chosen : floor;
+/** A little time before the phrase. About a tenth of the phrase, not the whole history. */
+export function contextTicks(phraseTicks: bigint, ticksPerSecond: number): bigint {
+  const tenth = phraseTicks > 0n ? phraseTicks / 10n : 0n;
+  const floor = BigInt(Math.round(ticksPerSecond * 0.25));
+  return tenth > floor ? tenth : floor;
 }
 
 /**
@@ -79,21 +78,46 @@ export function nudgeWindow(window: RibbonWindow, edge: "start" | "end", step: b
   return { start: window.start, end };
 }
 
-export function ribbonGrid(input: { tempoBpm: number | null; proposedTempoBpm: number | null; gridLocked: boolean; phase: bigint }): RibbonGrid {
-  if (input.gridLocked && input.tempoBpm !== null && Number.isFinite(input.tempoBpm)) {
-    return { kind: "bars", bpm: input.tempoBpm, phase: input.phase, tentative: false };
+/**
+ * Pan one view earlier. The loop bounds are not an argument and are not changed.
+ * One step does not fit the whole history into the ribbon.
+ */
+export function earlierWindow(window: RibbonWindow, historyStart: bigint): RibbonWindow {
+  const span = window.end > window.start ? window.end - window.start : 1n;
+  const start = window.start - span < historyStart ? historyStart : window.start - span;
+  return { start, end: start + span };
+}
+
+export function sameWindow(a: RibbonWindow, b: RibbonWindow): boolean {
+  return a.start === b.start && a.end === b.end;
+}
+
+export function ribbonGrid(input: {
+  tempoBpm: number | null;
+  proposedTempoBpm: number | null;
+  gridLocked: boolean;
+  beatPhase: bigint;
+  /** Null unless a bar downbeat was actually measured. An accepted BPM is not one. */
+  barPhase: bigint | null;
+}): RibbonGrid {
+  const bpm = input.gridLocked && input.tempoBpm !== null && Number.isFinite(input.tempoBpm) ? input.tempoBpm : input.proposedTempoBpm;
+  if (bpm === null || !Number.isFinite(bpm)) {
+    return { kind: "free" };
   }
-  if (input.proposedTempoBpm !== null && Number.isFinite(input.proposedTempoBpm)) {
-    return { kind: "bars", bpm: input.proposedTempoBpm, phase: input.phase, tentative: true };
+  if (input.barPhase !== null) {
+    return { kind: "bars", bpm, phase: input.barPhase };
   }
-  return { kind: "free" };
+  return { kind: "beats", bpm, phase: input.beatPhase, proposed: !(input.gridLocked && input.tempoBpm !== null) };
 }
 
 export function rulerCaption(grid: RibbonGrid): string {
   if (grid.kind === "free") {
     return "Seconds";
   }
-  return grid.tentative ? "Tempo " + grid.bpm + " · proposed" : "Tempo " + grid.bpm;
+  if (grid.kind === "bars") {
+    return "Tempo " + grid.bpm;
+  }
+  return grid.proposed ? "Tempo " + grid.bpm + " · proposed" : "Tempo " + grid.bpm + " · beats only";
 }
 
 export function rulerMarks(window: RibbonWindow, grid: RibbonGrid, ticksPerSecond: number): RulerMark[] {
@@ -148,13 +172,13 @@ export function rulerMarks(window: RibbonWindow, grid: RibbonGrid, ticksPerSecon
       break;
     }
     if (time >= window.start) {
-      const bar = index % 4n === 0n;
+      const bar = grid.kind === "bars" && index % 4n === 0n;
       const barNumber = index / 4n;
       marks.push({
         time,
         kind: bar ? "bar" : "beat",
         label: bar && index >= 0n ? String(barNumber + 1n) : "",
-        tentative: grid.tentative,
+        tentative: grid.kind !== "bars",
       });
     }
     index += 1n;
@@ -222,4 +246,43 @@ export function gripHitBox(boundPx: number, plotWidth: number, plotHeight: numbe
     top = Math.max(0, plotHeight - height);
   }
   return { left, top, width, height };
+}
+
+export interface GripMark {
+  left: number;
+  top: number;
+  size: number;
+}
+
+/** The drawn triangle. It stays inside the ruler band and points into the range. */
+/** Nearest boundary wins when the invisible zones overlap. A miss returns null. */
+export function handleAt(x: number, startPx: number, endPx: number, hit: number): "start" | "end" | null {
+  const reach = Math.max(hit, 44) / 2;
+  const startDist = Math.abs(x - startPx);
+  const endDist = Math.abs(x - endPx);
+  const startHit = startDist <= reach;
+  const endHit = endDist <= reach;
+  if (!startHit && !endHit) {
+    return null;
+  }
+  if (startHit && endHit) {
+    return startDist <= endDist ? "start" : "end";
+  }
+  return startHit ? "start" : "end";
+}
+
+export function gripInRuler(boundPx: number, plotWidth: number, edge: "start" | "end", splayed: boolean): GripMark {
+  const size = 12;
+  let left = edge === "start" ? boundPx + 1 : boundPx - size - 1;
+  if (splayed) {
+    left = edge === "start" ? boundPx - size - 1 : boundPx + 1;
+  }
+  if (left < 0) {
+    left = 0;
+  }
+  if (left + size > plotWidth) {
+    left = Math.max(0, plotWidth - size);
+  }
+  const top = splayed && edge === "end" ? 14 : 2;
+  return { left, top, size };
 }

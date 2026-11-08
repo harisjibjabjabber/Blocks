@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { focusWindow, gripHitBox, notesInRecentWindow, nudgeWindow, placedNotes, ribbonGrid, rulerCaption, rulerMarks } from "./ribbon-view";
+import { earlierWindow, focusWindow, gripHitBox, gripInRuler, handleAt, notesInRecentWindow, nudgeWindow, placedNotes, ribbonGrid, RULER_BAND, rulerCaption, rulerMarks } from "./ribbon-view";
 
 const TICKS = 1_000_000;
 
@@ -57,26 +57,33 @@ describe("ribbon ruler", () => {
   const phase = 1_000_000n;
   const window = { start: phase, end: phase + 4_000_000n };
 
-  it("draws the same bars for a proposed tempo and marks them tentative", () => {
-    const grid = ribbonGrid({ tempoBpm: null, proposedTempoBpm: 60, gridLocked: false, phase });
+  it("keeps a proposed tempo tentative and does not invent bar 1", () => {
+    const grid = ribbonGrid({ tempoBpm: null, proposedTempoBpm: 60, gridLocked: false, beatPhase: phase, barPhase: null });
     expect(rulerCaption(grid)).toBe("Tempo 60 · proposed");
     const marks = rulerMarks(window, grid, TICKS);
-    expect(marks.filter((mark) => mark.kind === "bar").map((mark) => mark.label)).toEqual(["1", "2"]);
-    expect(marks.filter((mark) => mark.kind === "beat")).toHaveLength(3);
-    expect(marks.every((mark) => mark.tentative)).toBe(true);
+    expect(marks.every((mark) => mark.kind === "beat" && mark.tentative && mark.label === "")).toBe(true);
     expect(marks.map((mark) => mark.time)).toEqual([1_000_000n, 2_000_000n, 3_000_000n, 4_000_000n, 5_000_000n]);
   });
 
-  it("draws that grid from the same phase once the tempo is accepted", () => {
-    const grid = ribbonGrid({ tempoBpm: 60, proposedTempoBpm: 60, gridLocked: true, phase });
+  it("keeps an accepted BPM tentative until a bar phase is known", () => {
+    const grid = ribbonGrid({ tempoBpm: 60, proposedTempoBpm: 60, gridLocked: true, beatPhase: phase, barPhase: null });
+    expect(rulerCaption(grid)).toBe("Tempo 60 · beats only");
+    const marks = rulerMarks(window, grid, TICKS);
+    expect(marks.every((mark) => mark.kind === "beat" && mark.tentative)).toBe(true);
+    expect(marks.some((mark) => mark.label === "1")).toBe(false);
+  });
+
+  it("draws solid bars only from a known bar phase", () => {
+    const grid = ribbonGrid({ tempoBpm: 60, proposedTempoBpm: null, gridLocked: true, beatPhase: phase, barPhase: phase });
+    expect(grid.kind).toBe("bars");
     expect(rulerCaption(grid)).toBe("Tempo 60");
     const marks = rulerMarks(window, grid, TICKS);
-    expect(marks.map((mark) => mark.time)).toEqual([1_000_000n, 2_000_000n, 3_000_000n, 4_000_000n, 5_000_000n]);
-    expect(marks.every((mark) => mark.tentative)).toBe(false);
+    expect(marks.filter((mark) => mark.kind === "bar").map((mark) => mark.label)).toEqual(["1", "2"]);
+    expect(marks.every((mark) => mark.tentative === false)).toBe(true);
   });
 
   it("marks seconds in free time and does not invent a bar", () => {
-    const grid = ribbonGrid({ tempoBpm: null, proposedTempoBpm: null, gridLocked: false, phase: 0n });
+    const grid = ribbonGrid({ tempoBpm: null, proposedTempoBpm: null, gridLocked: false, beatPhase: 0n, barPhase: null });
     expect(rulerCaption(grid)).toBe("Seconds");
     const marks = rulerMarks({ start: 0n, end: 3_000_000n }, grid, TICKS);
     expect(marks.every((mark) => mark.kind === "second")).toBe(true);
@@ -89,6 +96,16 @@ describe("ribbon ruler", () => {
     expect(note.scheduleElapsed).toBe(1_370_000n);
     expect(placed[0].xPercent).toBeGreaterThan(30);
     expect(placed[0].xPercent).toBeLessThan(45);
+  });
+});
+
+describe("earlier history", () => {
+  it("pans one view back and leaves the span intact", () => {
+    const framed = { start: 80_000_000n, end: 90_000_000n };
+    const earlier = earlierWindow(framed, 0n);
+    expect(earlier).toEqual({ start: 70_000_000n, end: 80_000_000n });
+    expect(earlier.end - earlier.start).toBe(framed.end - framed.start);
+    expect(earlier.end - earlier.start).toBeLessThan(90_000_000n);
   });
 });
 
@@ -111,5 +128,28 @@ describe("ribbon grips", () => {
     expect(overlaps).toBe(false);
     expect(start.height).toBeGreaterThanOrEqual(44);
     expect(end.height).toBeGreaterThanOrEqual(44);
+  });
+
+  it("draws the triangles inside the ruler, splayed when the lines are close", () => {
+    const start = gripInRuler(40, 280, "start", false);
+    const end = gripInRuler(240, 280, "end", false);
+    expect(start.top + start.size).toBeLessThanOrEqual(RULER_BAND);
+    expect(end.top + end.size).toBeLessThanOrEqual(RULER_BAND);
+    expect(start.left).toBeGreaterThanOrEqual(40);
+    expect(end.left + end.size).toBeLessThanOrEqual(240);
+    const tightStart = gripInRuler(140, 280, "start", true);
+    const tightEnd = gripInRuler(144, 280, "end", true);
+    expect(tightStart.left + tightStart.size).toBeLessThanOrEqual(140);
+    expect(tightEnd.left).toBeGreaterThanOrEqual(144);
+    expect(tightEnd.top).toBeGreaterThan(tightStart.top);
+    expect(tightEnd.top + tightEnd.size).toBeLessThanOrEqual(RULER_BAND);
+  });
+
+  it("gives a wide invisible zone to the nearer line and ignores a miss", () => {
+    expect(handleAt(28, 40, 240, 44)).toBe("start");
+    expect(handleAt(226, 40, 240, 44)).toBe("end");
+    expect(handleAt(140, 40, 240, 44)).toBeNull();
+    expect(handleAt(100, 90, 110, 44)).toBe("start");
+    expect(handleAt(108, 90, 110, 44)).toBe("end");
   });
 });
