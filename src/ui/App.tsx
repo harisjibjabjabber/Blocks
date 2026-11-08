@@ -356,9 +356,9 @@ export default function App() {
           </View>
         </View>
         <Text style={styles.body}>{gate.detail}</Text>
-        {gate.kind === "denied" || gate.kind === "unsupported" ? null : engine.ports().length === 0 ? (
-          <Text style={styles.empty}>No MIDI input is listed. On-screen keys are not a MIDI device.</Text>
-        ) : (
+        {gate.kind === "no-device" ? (
+          <Text style={styles.empty}>MIDI is allowed, and no input is connected. On-screen keys are not a MIDI device.</Text>
+        ) : engine.ports().length === 0 ? null : (
           engine.ports().map((port) => (
             <Text key={port.id} style={styles.port}>
               {port.name} · {port.state}
