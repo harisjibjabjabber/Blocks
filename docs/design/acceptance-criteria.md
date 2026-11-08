@@ -138,6 +138,23 @@ Numbers are provisional until device testing (spec OQ-3). Check codes as above (
 | AC-ED-14 | Text in the editor meets WCAG AA (4.5:1) and non-text cues (ring, handle, playhead, ghost/preview outlines) meet 3:1 in both hybrid themes (`hifi/contrast-rev33.tsv`). Screen reader: notes announce pitch, position, length, velocity and selection; tools are a radio group. | A/SR |
 | AC-ED-15 | The play screen gains no Quantise button (spec §0c.10); quantise is reachable from the editor in two taps from Play. | L |
 
+## Rev 3.4 additions — take ribbon (PROPOSED; values provisional; source of truth `ribbon-contract.md` §10)
+| ID | Criterion | Check |
+|---|---|---|
+| AC-RIB-01 | Boundary lines are ≤ 2 dp wide; grips are ≤ 16 dp and sit inside the ruler band; no handle element paints over the note area beyond its 2 dp line (screenshot diff against a notes-only render). | L/A |
+| AC-RIB-02 | Each handle accepts touches anywhere in a ≥ 48 dp-wide zone (and 48 × 48 dp around the grip); the zone is invisible. | A/M |
+| AC-RIB-03 | Hit-test order is grip → line → picker → minimap/Earlier → pan; a touch in a handle zone never pans; pan starts after 10 dp outside zones; handle drag after 8 dp. | A |
+| AC-RIB-04 | With lines < 24 dp apart, both grips stay fully visible (splayed and stacked); nearest line wins; a tie within 8 dp or a 500 ms long-press shows the Start/End picker; handles never swap and stop at the minimum range. | A/U |
+| AC-RIB-05 | The ruler shows bars + beats when the grid is established, dashed ticks + italic labels + "?" chip when only proposed, and seconds with no bars in free time; labels are never closer than 28 dp. | L |
+| AC-RIB-06 | After a capture proposal the view frames the range + 10 % each side within the zoom clamp (2–16 bars / 4–40 s); the full history is never fitted to the ribbon width. With 90 s of history and a 4-bar phrase on a 390 dp phone, the phrase spans ≥ 75 % of the ribbon width. | A |
+| AC-RIB-07 | Earlier history is reachable by ‹ Earlier, the minimap and left pan; each pauses follow and shows Refocus; Refocus restores the default frame. | A/U |
+| AC-RIB-08 | Dragging a handle within 32 dp of the edge auto-scrolls; the start handle can reach any retained history in one continuous drag. | M |
+| AC-RIB-09 | On release the new range plays from its start line (next downbeat if grid established); playback of the previous range continues uninterrupted during the drag. | M |
+| AC-RIB-10 | Every committed boundary edit is one undo step; Undo restores the exact previous range; raw events are byte-identical before and after any number of boundary edits and Trim silence. | A |
+| AC-RIB-11 | A silent tail ≥ 1 beat (free: ≥ 1 s) is dimmed + hatched and labelled; "Trim silence?" never applies without a tap; Trim is undoable. | A/L |
+| AC-RIB-12 | Screen reader: both lines are sliders with value text; onset/beat/bar actions and Earlier/Refocus are reachable; keyboard map in §8 works on desktop. | SR/K |
+| AC-RIB-13 | Dimmed out-of-range notes ≥ 3:1 against the ribbon background in both themes; lines, grips and ruler labels meet 3:1 / 4.5:1. | A |
+
 ## Stage P1
 | ID | Criterion |
 |---|---|
@@ -150,3 +167,18 @@ Numbers are provisional until device testing (spec OQ-3). Check codes as above (
 | AC-P1-07 | Tabletop posture layout (content top, controls bottom). |
 | AC-P1-08 | Desktop three-region layout with full shortcut set and visible shortcut hints. |
 | AC-P1-09 | Count-in option for capture-while-stopped. |
+
+## Rev 3.5 amendments (8 Nov 2026, agreed in Piano Roll Team chat; PROPOSED, not implemented)
+
+| ID | Criterion | Check |
+|---|---|---|
+| AC-KEY-01 | Editor shows a real piano keyboard on the left edge (≥ 40 dp desktop/Fold, ~28 dp phone) with true black/white key shapes; each key row aligns with its note row within 1 px at three zoom levels and scrolls/zooms vertically with the notes. Replaces the plain pitch-label strip of AC-ED-02. | Browser, populated take |
+| AC-KEY-02 | Octave convention: C4 = MIDI 60 = middle C everywhere (labels, readouts, export notes); C4 carries a small middle-C marker. | Browser + unit |
+| AC-KEY-03 | Ribbon shows a slim display-only keyboard (16–20 dp) using the same row mapping; it never auditions. | Browser |
+| AC-KEY-04 | Editor key audition: hit target is the full pitch row across the whole keyboard width (not the painted black-key shape); audition is enabled only when row height ≥ 24 dp, otherwise display-only. Audition uses a separate audio path and never creates a note, capture event or undo step. | Browser + real touch (label outstanding if not done) |
+| AC-KEY-05 | Sounding-key highlight comes only from engine-reported sounding pitches for the selected layer, including pedal-held notes; uses a non-colour cue too. If the engine state is unavailable, highlighting is off (no playhead-crossing guess). | Browser |
+| AC-PH-01 | Playhead is driven by authoritative engine position (never wall-clock animation): follows play, pause, seek and loop wrap, continues through the silent tail, within one 16th of audible playback at 90 and 140 BPM, in ribbon and editor. If engine position is unavailable, NO playhead is shown (no frozen or estimated line). | Screen recording, phone + desktop widths |
+| AC-ALN-01 | Notes, grid, keyboard, loop lines and playhead share one time→pixel and pitch→pixel transform. "Aligned" means faithful coordinates, not snapping: a take with a pickup 30 ms early and a rolled chord renders each note at its played offset at every zoom; any unquantised note drawn snapped is a fail. | Browser, populated take |
+| AC-EVD-01 | Acceptance evidence is real deployed-build interaction (recordings), not unit tests or static screenshots alone; real-touch verification is labelled outstanding until done on a device. | Process |
+
+Review rule (Haris): departures from the mockups are accepted only if they are a clear improvement; neutral or worse departures return to the design. The build must stay recognisably the Graphite hybrid and look sleek.

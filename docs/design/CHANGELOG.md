@@ -1,5 +1,13 @@
 # Blocks design package — changelog
 
+## Rev 3.4 — 8 Nov 2026 (take ribbon revision after review of the live build; bounded)
+Haris's review of the live ribbon in UI 9b5f1ed (screenshot): no bar/beat ruler; a large End button over the notes; the whole 90 s history squashing the recent take; worse on a phone and in long sessions. Still PROPOSED; example data; all values provisional.
+- New **`ribbon-contract.md`**: implementation contract for the coding project. It covers the baseline vs the changes, geometry, hit zones and gesture precedence, ruler formatting, framing math (phrase + 10 %, zoom 2–16 bars / 4–40 s), auto-follow, edge cases, audition, Undo, accessibility, states, and AC-RIB-01–13.
+- New frames (hybrid dark + light): `28a-ribbon-focused`, `28b-ribbon-drag-earlier`, `28c-ribbon-tight-handles`, `28d-ribbon-free-silent-tail`, `fold-28-ribbon`, `desktop-28-ribbon`, plus `ribbon-overview.png` (with the eight ordered recommendations).
+- Generator `hifi/src/ribbon.py`, wired into `hybrid.py` (frames, alternates, overview, prototype hotspots).
+- Docs: spec §0d (supersedes §0b where they differ), `gestures.md` §11, AC-RIB-01–13 in `acceptance-criteria.md`, `LIMITATIONS.md` item 14, READMEs. Contrast: rev 3.4 rows in `hifi/contrast-rev33.tsv` (out-of-range dim lowered so dimmed notes stay ≥ 3:1). Checks: `run_checks.sh` covers the rev 3.4 frames.
+- Page: rev 3.4 section, status and changelog.
+
 ## Rev 3.3 — 8 Nov 2026 (full-screen piano-roll editor, storyboarded before implementation; Haris via lead)
 Still PROPOSED. Nothing implemented or tested; no claim that engine capture or editing works today. All notes and counts are example data; all numbers provisional.
 - **New frames 17–27** (hybrid dark + light; boards `*.png`, 2x screens `src/*@2x.png`, editable `src/*.html`): 17 entry from Play (tap a layer's notes; loop keeps playing), 18 legible editor (keys, ruler, layer strip, other layers as ghosts, Select), 19 move pitch + time with loupe readout, 20 marquee and two-finger ownership, 21 resize with end handle, 22 Draw, 23 Erase with Undo, 24 velocity panel tied to the selection (bars, numbers, drag-to-scale), 25 quantise preview (explicit scope, grid, strength, swing; originals as dashed ghosts; never automatic), 26 ⋯ Duplicate/Copy/Paste/Select all/Delete, 27 return to Play with playhead and loop preserved. Plus `fold-18-editor` and `desktop-18-editor` (keyboard + mouse) and `editor-overview.png`.
@@ -101,3 +109,7 @@ Still PROPOSED: not implemented and not user-tested. All numbers are proposals p
 
 ## Rev 1 — 8 Nov 2026
 Initial package: research, spec, gestures, acceptance criteria, state machines, components, tokens, QA, test script, and 16 wireframes.
+
+## Rev 3.5 — 8 Nov 2026 (acceptance amendments, docs only)
+- Added AC-KEY-01–05 (piano keyboard, C4 = MIDI 60, audition rules, engine-driven key lighting), AC-PH-01 (engine-driven playhead, hidden when unavailable), AC-ALN-01 (shared transform, no visual snapping), AC-EVD-01 (evidence rule) to acceptance-criteria.md.
+- Context: correction of build 7ef7982 (not accepted: crowded controls, bare roll, no moving playhead). See HANDOVER.md.
