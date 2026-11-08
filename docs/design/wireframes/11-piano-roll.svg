@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 820" width="800" height="820" font-family="Inter, Roboto, Arial, sans-serif" role="img" aria-labelledby="t">
+<title id="t">Touch piano roll — phone (edit tool, chord selected, dragging with loupe) (PROPOSED · visual north star style)</title>
+<defs><linearGradient id="cap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8A63"/><stop offset="1" stop-color="#E2512A"/></linearGradient><linearGradient id="ctl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#20252C"/><stop offset="1" stop-color="#181B21"/></linearGradient></defs>
+<rect width="100%" height="100%" fill="#F4F5F7"/>
+<rect x="0" y="0" width="360" height="820" rx="28" fill="#0D0F13" stroke="#05060A" stroke-width="6"/>
+<text x="352" y="812" font-size="9" text-anchor="end" fill="#9AA3AF" font-weight="400">PROPOSED · not implemented · sizes are proposals pending measurement</text>
+<rect x="8" y="8" width="48" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="20" y1="9" x2="44" y2="9" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="32.0" y="37.6" font-size="16" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">←</text>
+<text x="64" y="30" font-size="14" text-anchor="start" fill="#ECEEF2" font-weight="650">Layer 2 · Warm EP</text>
+<text x="64" y="48" font-size="10" text-anchor="start" fill="#9AA3AF" font-weight="400">Edit · drag notes · 2 fingers navigate</text>
+<rect x="256" y="8" width="48" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="268" y1="9" x2="292" y2="9" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="280.0" y="37.6" font-size="16" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">↶</text>
+<rect x="304" y="8" width="48" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="316" y1="9" x2="340" y2="9" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="328.0" y="37.6" font-size="16" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">↷</text>
+<rect x="8" y="64" width="80" height="48" rx="12" fill="#262B33" stroke="#FFFFFF" stroke-width="2"/>
+<text x="48.0" y="92.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="650" letter-spacing="0.2">Edit ✓</text>
+<rect x="92" y="64" width="80" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="104" y1="65" x2="160" y2="65" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="132.0" y="92.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Draw</text>
+<rect x="176" y="64" width="80" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="188" y1="65" x2="244" y2="65" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="216.0" y="92.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Range</text>
+<rect x="260" y="64" width="92" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="272" y1="65" x2="340" y2="65" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="306.0" y="92.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">▶︎ Loop</text>
+<rect x="8" y="120" width="344" height="24" rx="6" fill="#14171C" stroke="none" stroke-width="0"/>
+<rect x="60" y="122" width="140" height="20" rx="6" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<text x="130" y="136" font-size="9" text-anchor="middle" fill="#9AA3AF" font-weight="400">view</text>
+<rect x="56" y="150" width="296" height="32" rx="6" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="64" y="170" font-size="11" text-anchor="start" fill="#ECEEF2" font-weight="650">1</text>
+<text x="138" y="170" font-size="11" text-anchor="start" fill="#ECEEF2" font-weight="400">2</text>
+<text x="212" y="170" font-size="11" text-anchor="start" fill="#ECEEF2" font-weight="400">3</text>
+<text x="286" y="170" font-size="11" text-anchor="start" fill="#ECEEF2" font-weight="400">4</text>
+<rect x="58" y="150" width="24" height="32" rx="6" fill="#262B33" stroke="#FFFFFF" stroke-width="2"/>
+<text x="70.0" y="170.55" font-size="13" text-anchor="middle" fill="#ECEEF2" font-weight="650" letter-spacing="0.2">[</text>
+<rect x="326" y="150" width="24" height="32" rx="6" fill="#262B33" stroke="#FFFFFF" stroke-width="2"/>
+<text x="338.0" y="170.55" font-size="13" text-anchor="middle" fill="#ECEEF2" font-weight="650" letter-spacing="0.2">]</text>
+<rect x="8" y="188" width="44" height="30" rx="6" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<text x="30.0" y="206.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">B3</text>
+<line x1="56" y1="188" x2="352" y2="188" stroke="#20242B" stroke-width="1"/>
+<rect x="8" y="220" width="44" height="30" rx="6" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="30.0" y="238.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">A#</text>
+<line x1="56" y1="220" x2="352" y2="220" stroke="#20242B" stroke-width="1"/>
+<rect x="8" y="252" width="44" height="30" rx="6" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<text x="30.0" y="270.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">A3</text>
+<line x1="56" y1="252" x2="352" y2="252" stroke="#20242B" stroke-width="1"/>
+<rect x="8" y="284" width="44" height="30" rx="6" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="30.0" y="302.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">G#</text>
+<line x1="56" y1="284" x2="352" y2="284" stroke="#20242B" stroke-width="1"/>
+<rect x="8" y="316" width="44" height="30" rx="6" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<text x="30.0" y="334.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">G3</text>
+<line x1="56" y1="316" x2="352" y2="316" stroke="#20242B" stroke-width="1"/>
+<rect x="8" y="348" width="44" height="30" rx="6" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<text x="30.0" y="366.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">F#</text>
+<line x1="56" y1="348" x2="352" y2="348" stroke="#20242B" stroke-width="1"/>
+<rect x="8" y="380" width="44" height="30" rx="6" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="30.0" y="398.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">F3</text>
+<line x1="56" y1="380" x2="352" y2="380" stroke="#20242B" stroke-width="1"/>
+<rect x="8" y="412" width="44" height="30" rx="6" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<text x="30.0" y="430.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">E3</text>
+<line x1="56" y1="412" x2="352" y2="412" stroke="#20242B" stroke-width="1"/>
+<rect x="8" y="444" width="44" height="30" rx="6" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="30.0" y="462.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">D#</text>
+<line x1="56" y1="444" x2="352" y2="444" stroke="#20242B" stroke-width="1"/>
+<rect x="8" y="476" width="44" height="30" rx="6" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<text x="30.0" y="494.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">D3</text>
+<line x1="56" y1="476" x2="352" y2="476" stroke="#20242B" stroke-width="1"/>
+<rect x="8" y="508" width="44" height="30" rx="6" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="30.0" y="526.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">C#</text>
+<line x1="56" y1="508" x2="352" y2="508" stroke="#20242B" stroke-width="1"/>
+<rect x="8" y="540" width="44" height="30" rx="6" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<text x="30.0" y="558.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">C3</text>
+<line x1="56" y1="540" x2="352" y2="540" stroke="#20242B" stroke-width="1"/>
+<rect x="8" y="572" width="44" height="30" rx="6" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<text x="30.0" y="590.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">B2</text>
+<line x1="56" y1="572" x2="352" y2="572" stroke="#20242B" stroke-width="1"/>
+<rect x="8" y="604" width="44" height="30" rx="6" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="30.0" y="622.15" font-size="9" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">A#</text>
+<line x1="56" y1="604" x2="352" y2="604" stroke="#20242B" stroke-width="1"/>
+<line x1="56.0" y1="188" x2="56.0" y2="636" stroke="#363D47" stroke-width="1.5"/>
+<line x1="74.5" y1="188" x2="74.5" y2="636" stroke="#20242B" stroke-width="1"/>
+<line x1="93.0" y1="188" x2="93.0" y2="636" stroke="#20242B" stroke-width="1"/>
+<line x1="111.5" y1="188" x2="111.5" y2="636" stroke="#20242B" stroke-width="1"/>
+<line x1="130.0" y1="188" x2="130.0" y2="636" stroke="#363D47" stroke-width="1.5"/>
+<line x1="148.5" y1="188" x2="148.5" y2="636" stroke="#20242B" stroke-width="1"/>
+<line x1="167.0" y1="188" x2="167.0" y2="636" stroke="#20242B" stroke-width="1"/>
+<line x1="185.5" y1="188" x2="185.5" y2="636" stroke="#20242B" stroke-width="1"/>
+<line x1="204.0" y1="188" x2="204.0" y2="636" stroke="#363D47" stroke-width="1.5"/>
+<line x1="222.5" y1="188" x2="222.5" y2="636" stroke="#20242B" stroke-width="1"/>
+<line x1="241.0" y1="188" x2="241.0" y2="636" stroke="#20242B" stroke-width="1"/>
+<line x1="259.5" y1="188" x2="259.5" y2="636" stroke="#20242B" stroke-width="1"/>
+<line x1="278.0" y1="188" x2="278.0" y2="636" stroke="#363D47" stroke-width="1.5"/>
+<line x1="296.5" y1="188" x2="296.5" y2="636" stroke="#20242B" stroke-width="1"/>
+<line x1="315.0" y1="188" x2="315.0" y2="636" stroke="#20242B" stroke-width="1"/>
+<line x1="333.5" y1="188" x2="333.5" y2="636" stroke="#20242B" stroke-width="1"/>
+<line x1="352.0" y1="188" x2="352.0" y2="636" stroke="#363D47" stroke-width="1.5"/>
+<rect x="56.0" y="318" width="37.0" height="28" rx="6" fill="#FF6A3D" stroke="#FFFFFF" stroke-width="2"/>
+<rect x="56.0" y="414" width="37.0" height="28" rx="6" fill="#FF6A3D" stroke="#FFFFFF" stroke-width="2"/>
+<rect x="56.0" y="542" width="37.0" height="28" rx="6" fill="#FF6A3D" stroke="#FFFFFF" stroke-width="2"/>
+<rect x="102.25" y="318" width="18.5" height="28" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="130.0" y="254" width="55.5" height="28" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="204.0" y="414" width="37.0" height="28" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="204.0" y="318" width="37.0" height="28" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="250.25" y="478" width="18.5" height="28" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="278.0" y="382" width="55.5" height="28" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="56" y="414" width="8" height="28" rx="6" fill="#FF6A3D" stroke="#FFFFFF" stroke-width="2"/>
+<rect x="92" y="414" width="8" height="28" rx="6" fill="#FF6A3D" stroke="#FFFFFF" stroke-width="2"/>
+<rect x="148" y="236" width="180" height="120" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="160" y1="237" x2="316" y2="237" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="156" y="252" font-size="9" text-anchor="start" fill="#9AA3AF" font-weight="400">loupe ×2.5</text>
+<line x1="160" y1="258" x2="160" y2="348" stroke="#20242B" stroke-width="1"/>
+<line x1="200" y1="258" x2="200" y2="348" stroke="#20242B" stroke-width="1"/>
+<line x1="240" y1="258" x2="240" y2="348" stroke="#20242B" stroke-width="1"/>
+<line x1="280" y1="258" x2="280" y2="348" stroke="#20242B" stroke-width="1"/>
+<line x1="320" y1="258" x2="320" y2="348" stroke="#20242B" stroke-width="1"/>
+<rect x="176" y="286" width="80" height="40" rx="12" fill="#262B33" stroke="#FFFFFF" stroke-width="2"/>
+<text x="238" y="344" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="650">G3 · 1.1.1 · ⅛</text>
+<rect x="96" y="470" width="64" height="64" rx="12" fill="none" stroke="#9AA3AF" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="128" y="506" font-size="9" text-anchor="middle" fill="#9AA3AF" font-weight="400">finger</text>
+<rect x="8" y="640" width="344" height="40" rx="12" fill="#14171C" stroke="none" stroke-width="0"/>
+<line x1="60.0" y1="678" x2="60.0" y2="660.0" stroke="#363D47" stroke-width="1.5"/>
+<line x1="60.0" y1="678" x2="60.0" y2="649.2" stroke="#363D47" stroke-width="1.5"/>
+<line x1="60.0" y1="678" x2="60.0" y2="643.8" stroke="#363D47" stroke-width="1.5"/>
+<line x1="106.25" y1="678" x2="106.25" y2="664.5" stroke="#363D47" stroke-width="1.5"/>
+<line x1="134.0" y1="678" x2="134.0" y2="655.5" stroke="#363D47" stroke-width="1.5"/>
+<line x1="208.0" y1="678" x2="208.0" y2="651.9" stroke="#363D47" stroke-width="1.5"/>
+<line x1="208.0" y1="678" x2="208.0" y2="657.3" stroke="#363D47" stroke-width="1.5"/>
+<line x1="254.25" y1="678" x2="254.25" y2="646.5" stroke="#363D47" stroke-width="1.5"/>
+<line x1="282.0" y1="678" x2="282.0" y2="661.8" stroke="#363D47" stroke-width="1.5"/>
+<text x="16" y="656" font-size="10" text-anchor="start" fill="#9AA3AF" font-weight="400">Vel</text>
+<rect x="8" y="688" width="344" height="112" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="20" y1="689" x2="340" y2="689" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<rect x="14" y="694" width="80" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="26" y1="695" x2="82" y2="695" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="54.0" y="721.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Delete</text>
+<rect x="98" y="694" width="80" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="110" y1="695" x2="166" y2="695" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="138.0" y="721.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Duplicate</text>
+<rect x="182" y="694" width="80" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="194" y1="695" x2="250" y2="695" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="222.0" y="721.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Len −</text>
+<rect x="266" y="694" width="80" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="278" y1="695" x2="334" y2="695" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="306.0" y="721.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Len +</text>
+<rect x="14" y="746" width="108" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="26" y1="747" x2="110" y2="747" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="68.0" y="773.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Vel 84 ±</text>
+<rect x="126" y="746" width="108" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="138" y1="747" x2="222" y2="747" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="180.0" y="773.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Quantise…</text>
+<rect x="238" y="746" width="108" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="250" y1="747" x2="334" y2="747" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="292.0" y="773.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Chord</text>
+<circle cx="12" cy="68" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="12" y="72" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<circle cx="62" cy="124" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="62" y="128" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<circle cx="60" cy="154" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="60" y="158" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<circle cx="150" cy="240" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="150" y="244" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">4</text>
+<circle cx="60" cy="418" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="60" y="422" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">5</text>
+<circle cx="12" cy="644" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="12" y="648" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">6</text>
+<circle cx="18" cy="738" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="18" y="742" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">7</text>
+<circle cx="398" cy="24" r="8" fill="#0E7C86"/><text x="398" y="28" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<text x="412" y="28" font-size="11" fill="#1F2328">Explicit tools with text labels. Current tool shown 3</text>
+<text x="412" y="44" font-size="11" fill="#1F2328">ways: pressed chip, subtitle text, and grid hint.</text>
+<text x="412" y="60" font-size="11" fill="#1F2328">Delete/duplicate are actions, not modes.</text>
+<circle cx="398" cy="78" r="8" fill="#0E7C86"/><text x="398" y="82" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<text x="412" y="82" font-size="11" fill="#1F2328">Overview strip: 1-finger drag pans; the box is the visible</text>
+<text x="412" y="98" font-size="11" fill="#1F2328">window. Rulers: drag time ruler = pan time; drag keys =</text>
+<text x="412" y="114" font-size="11" fill="#1F2328">pan pitch.</text>
+<circle cx="398" cy="132" r="8" fill="#0E7C86"/><text x="398" y="136" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<text x="412" y="136" font-size="11" fill="#1F2328">Loop brace handles [ ] are 48dp hit targets on the time</text>
+<text x="412" y="152" font-size="11" fill="#1F2328">ruler; they snap to beats and edit the loop, never notes.</text>
+<circle cx="398" cy="170" r="8" fill="#0E7C86"/><text x="398" y="174" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">4</text>
+<text x="412" y="174" font-size="11" fill="#1F2328">Loupe appears 96dp above the finger during any drag (flips</text>
+<text x="412" y="190" font-size="11" fill="#1F2328">below near the top edge): ×2.5 view + pitch · position ·</text>
+<text x="412" y="206" font-size="11" fill="#1F2328">length readout.</text>
+<circle cx="398" cy="224" r="8" fill="#0E7C86"/><text x="398" y="228" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">5</text>
+<text x="412" y="228" font-size="11" fill="#1F2328">Selected notes: thick outline + side handle tabs (outside</text>
+<text x="412" y="244" font-size="11" fill="#1F2328">short notes so they stay ≥48dp to hit) + count in action</text>
+<text x="412" y="260" font-size="11" fill="#1F2328">bar.</text>
+<circle cx="398" cy="278" r="8" fill="#0E7C86"/><text x="398" y="282" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">6</text>
+<text x="412" y="282" font-size="11" fill="#1F2328">Velocity lane: stem height (not colour) shows velocity;</text>
+<text x="412" y="298" font-size="11" fill="#1F2328">selected notes&#x27; stems are bold. Drag a stem, or use &#x27;Vel</text>
+<text x="412" y="314" font-size="11" fill="#1F2328">±&#x27; stepper.</text>
+<circle cx="398" cy="332" r="8" fill="#0E7C86"/><text x="398" y="336" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">7</text>
+<text x="412" y="336" font-size="11" fill="#1F2328">Action bar works on the selection — every drag has a tap</text>
+<text x="412" y="352" font-size="11" fill="#1F2328">alternative (Len ±, nudge by arrows in the overflow, Vel</text>
+<text x="412" y="368" font-size="11" fill="#1F2328">±).</text>
+</svg>

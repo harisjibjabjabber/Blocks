@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 780" width="800" height="780" font-family="Inter, Roboto, Arial, sans-serif" role="img" aria-labelledby="t">
+<title id="t">Sound browser (sheet) — audition by playing (PROPOSED)</title>
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<rect x="0" y="0" width="360" height="780" rx="8" fill="#FFFFFF" stroke="#1F2328" stroke-width="2"/>
+<text x="352" y="772" font-size="9" text-anchor="end" fill="#5B6470" font-weight="400">PROPOSED · not implemented · sizes are proposals pending measurement</text>
+<rect x="8" y="8" width="344" height="80" rx="8" fill="#F3F4F6" stroke="#E3E6EA" stroke-width="1"/>
+<text x="180.0" y="51.85" font-size="11" text-anchor="middle" fill="#1F2328" font-weight="400">Play screen (live)</text>
+<rect x="0" y="96" width="360" height="684" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="16" y="130" font-size="16" text-anchor="start" fill="#1F2328" font-weight="600">Sound for Layer 2</text>
+<rect x="300" y="104" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="324.0" y="132.9" font-size="14" text-anchor="middle" fill="#1F2328" font-weight="400">✕</text>
+<rect x="16" y="156" width="328" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="180.0" y="184.55" font-size="13" text-anchor="middle" fill="#1F2328" font-weight="400">🔍  Search sounds</text>
+<rect x="16" y="212" width="104" height="48" rx="8" fill="#FFFFFF" stroke="#1F2328" stroke-width="3"/>
+<text x="68.0" y="240.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="600">Keys</text>
+<rect x="126" y="212" width="104" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="178.0" y="240.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Bass</text>
+<rect x="236" y="212" width="104" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="288.0" y="240.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Pads</text>
+<rect x="16" y="268" width="104" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="68.0" y="296.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Leads</text>
+<rect x="126" y="268" width="104" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="178.0" y="296.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Drums</text>
+<rect x="236" y="268" width="104" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="288.0" y="296.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Texture</text>
+<text x="16" y="344" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">Play your keyboard to try a sound — it loads instantly.</text>
+<rect x="16" y="356" width="328" height="60" rx="8" fill="#FFFFFF" stroke="#1F2328" stroke-width="3"/>
+<text x="28" y="382" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Warm EP</text>
+<text x="28" y="402" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">keys · placeholder name</text>
+<text x="280" y="382" font-size="10" text-anchor="end" fill="#5B6470" font-weight="400">✓ current</text>
+<rect x="292" y="362" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="316.0" y="390.9" font-size="14" text-anchor="middle" fill="#1F2328" font-weight="400">☆</text>
+<rect x="16" y="420" width="328" height="60" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="28" y="446" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Keys sound B</text>
+<text x="28" y="466" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">keys · placeholder</text>
+<text x="280" y="446" font-size="10" text-anchor="end" fill="#5B6470" font-weight="400"></text>
+<rect x="292" y="426" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="316.0" y="454.9" font-size="14" text-anchor="middle" fill="#1F2328" font-weight="400">☆</text>
+<rect x="16" y="484" width="328" height="60" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="28" y="510" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Keys sound C</text>
+<text x="28" y="530" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">keys · placeholder</text>
+<text x="280" y="510" font-size="10" text-anchor="end" fill="#5B6470" font-weight="400"></text>
+<rect x="292" y="490" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="316.0" y="518.9" font-size="14" text-anchor="middle" fill="#1F2328" font-weight="400">☆</text>
+<rect x="16" y="548" width="328" height="60" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="28" y="574" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Keys sound D</text>
+<text x="28" y="594" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">keys · placeholder</text>
+<text x="280" y="574" font-size="10" text-anchor="end" fill="#5B6470" font-weight="400"></text>
+<rect x="292" y="554" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="316.0" y="582.9" font-size="14" text-anchor="middle" fill="#1F2328" font-weight="400">☆</text>
+<rect x="16" y="612" width="328" height="60" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="28" y="638" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Keys sound E</text>
+<text x="28" y="658" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">keys · placeholder</text>
+<text x="280" y="638" font-size="10" text-anchor="end" fill="#5B6470" font-weight="400"></text>
+<rect x="292" y="618" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="316.0" y="646.9" font-size="14" text-anchor="middle" fill="#1F2328" font-weight="400">☆</text>
+<rect x="16" y="676" width="328" height="60" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="28" y="702" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Keys sound F</text>
+<text x="28" y="722" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">keys · placeholder</text>
+<text x="280" y="702" font-size="10" text-anchor="end" fill="#5B6470" font-weight="400"></text>
+<rect x="292" y="682" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="316.0" y="710.9" font-size="14" text-anchor="middle" fill="#1F2328" font-weight="400">☆</text>
+<rect x="16" y="744" width="160" height="32" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="96.0" y="763.85" font-size="11" text-anchor="middle" fill="#1F2328" font-weight="400">↶ Back to previous</text>
+<rect x="184" y="744" width="160" height="32" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="264.0" y="763.85" font-size="11" text-anchor="middle" fill="#1F2328" font-weight="400">Recent ▾</text>
+<circle cx="20" cy="348" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="0"/><text x="20" y="352" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<circle cx="20" cy="160" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="0"/><text x="20" y="164" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<circle cx="296" cy="362" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="0"/><text x="296" y="366" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<circle cx="20" cy="748" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="0"/><text x="20" y="752" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">4</text>
+<circle cx="398" cy="24" r="8" fill="#0E7C86"/><text x="398" y="28" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<text x="412" y="28" font-size="11" fill="#1F2328">Audition is playing: tapping a row loads it on the target</text>
+<text x="412" y="44" font-size="11" fill="#1F2328">layer while you keep playing. No separate preview mode to</text>
+<text x="412" y="60" font-size="11" fill="#1F2328">forget.</text>
+<circle cx="398" cy="78" r="8" fill="#0E7C86"/><text x="398" y="82" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<text x="412" y="82" font-size="11" fill="#1F2328">Categories are large chips (48dp, proposed); search for</text>
+<text x="412" y="98" font-size="11" fill="#1F2328">names. Sound names are PLACEHOLDERS until the sound set is</text>
+<text x="412" y="114" font-size="11" fill="#1F2328">chosen — no asset is promised.</text>
+<circle cx="398" cy="132" r="8" fill="#0E7C86"/><text x="398" y="136" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<text x="412" y="136" font-size="11" fill="#1F2328">Favourite star is its own 48dp target, separated from the</text>
+<text x="412" y="152" font-size="11" fill="#1F2328">row action by 8dp; state read as &#x27;Favourite, on&#x27;.</text>
+<circle cx="398" cy="170" r="8" fill="#0E7C86"/><text x="398" y="174" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">4</text>
+<text x="412" y="174" font-size="11" fill="#1F2328">Every sound change is one undo step (&#x27;Back to previous&#x27;).</text>
+<text x="412" y="190" font-size="11" fill="#1F2328">Controller ◀ ▶ sound steps are learnable.</text>
+</svg>

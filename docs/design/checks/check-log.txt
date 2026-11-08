@@ -1,0 +1,22 @@
+# Blocks package checks — run 2026-11-08 19:49 GMT
+python: Python 3.13.5
+chrome: Google Chrome 156.0.8078.47 
+node: v24.22.1
+## 1. SVG wireframes parse (xml.etree)
+17 files; failures: []
+## 2. tokens.json parses
+ok
+## 3. Contrast (rev 3.2 pairings, themes C/D)
+fails: []
+contrast.tsv fails: 0
+## 4. Copy hygiene greps (expect 0)
+Rhodes: 1 files
+Samsung Internet lines without 'not checked'/'have not': 1
+## 5. Prototype script syntax
+node --check ok
+## 6. Prototype interaction test (headless Chrome)
+data-test="before:auto: 1 bar ; after:4 bars · end fixed ; key:3.63 bars · end fixed ; menu-&gt;08-settings-appearance ; tone:light ; mode-&gt;13b-range-slide-phase ; alts:Fold expanded|Desktop browser"
+## 7. Package fonts load for the generator
+6 @font-face rules from /workspace/blocks-design/hifi/src/build.py
+## 8. Link check
+Sources were opened with WebFetch and HTTP re-checked on 8 Nov 2026: link-check.tsv (36 rows; non-200: 0). Not re-run by this script (needs network; some sites block scripted fetches).

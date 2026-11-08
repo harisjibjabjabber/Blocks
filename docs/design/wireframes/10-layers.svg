@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 780" width="800" height="780" font-family="Inter, Roboto, Arial, sans-serif" role="img" aria-labelledby="t">
+<title id="t">Four-layer overview — phone portrait (PROPOSED)</title>
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<rect x="0" y="0" width="360" height="780" rx="8" fill="#FFFFFF" stroke="#1F2328" stroke-width="2"/>
+<text x="352" y="772" font-size="9" text-anchor="end" fill="#5B6470" font-weight="400">PROPOSED · not implemented · sizes are proposals pending measurement</text>
+<rect x="8" y="8" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="32.0" y="37.6" font-size="16" text-anchor="middle" fill="#1F2328" font-weight="400">←</text>
+<text x="68" y="40" font-size="16" text-anchor="start" fill="#1F2328" font-weight="600">Layers · Sketch 14</text>
+<rect x="304" y="8" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="328.0" y="37.6" font-size="16" text-anchor="middle" fill="#1F2328" font-weight="400">⋮</text>
+<rect x="8" y="64" width="344" height="40" rx="8" fill="#F3F4F6" stroke="#E3E6EA" stroke-width="1"/>
+<text x="180.0" y="87.85" font-size="11" text-anchor="middle" fill="#1F2328" font-weight="400">Grid 92 · 4/4 · from Layer 1 · Review grid</text>
+<rect x="8" y="112" width="344" height="142" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<rect x="16" y="120" width="44" height="44" rx="8" fill="#F3F4F6" stroke="#E3E6EA" stroke-width="1"/>
+<text x="38.0" y="147.6" font-size="16" text-anchor="middle" fill="#1F2328" font-weight="400">1</text>
+<text x="68" y="140" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Bass (placeholder)</text>
+<text x="68" y="158" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">4 bars · playing</text>
+<rect x="22.0" y="182" width="24.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="58.0" y="202" width="18.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="94.0" y="192" width="33.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="142.0" y="212" width="18.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="184.0" y="182" width="27.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="226.0" y="202" width="21.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="274.0" y="192" width="18.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="304.0" y="212" width="18.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="16" y="200" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="40.0" y="228.55" font-size="13" text-anchor="middle" fill="#1F2328" font-weight="400">M</text>
+<rect x="70" y="200" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="94.0" y="228.55" font-size="13" text-anchor="middle" fill="#1F2328" font-weight="400">S</text>
+<rect x="124" y="200" width="108" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="178.0" y="228.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Edit notes</text>
+<rect x="238" y="200" width="106" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="291.0" y="228.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Sound</text>
+<rect x="8" y="262" width="344" height="142" rx="8" fill="#FFFFFF" stroke="#1F2328" stroke-width="3"/>
+<rect x="16" y="270" width="44" height="44" rx="8" fill="#F3F4F6" stroke="#E3E6EA" stroke-width="1"/>
+<text x="38.0" y="297.6" font-size="16" text-anchor="middle" fill="#1F2328" font-weight="400">2</text>
+<text x="68" y="290" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Keys · Warm EP</text>
+<text x="68" y="308" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">8 bars · ◎ capture target</text>
+<rect x="22.0" y="332" width="24.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="58.0" y="352" width="18.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="94.0" y="342" width="33.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="142.0" y="362" width="18.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="184.0" y="332" width="27.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="226.0" y="352" width="21.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="274.0" y="342" width="18.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="304.0" y="362" width="18.0" height="8" rx="2" fill="#7FA6F5" stroke="#3D6FD8" stroke-width="1"/>
+<rect x="16" y="350" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="40.0" y="378.55" font-size="13" text-anchor="middle" fill="#1F2328" font-weight="400">M</text>
+<rect x="70" y="350" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="94.0" y="378.55" font-size="13" text-anchor="middle" fill="#1F2328" font-weight="400">S</text>
+<rect x="124" y="350" width="108" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="178.0" y="378.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Edit notes</text>
+<rect x="238" y="350" width="106" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="291.0" y="378.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Sound</text>
+<rect x="8" y="412" width="344" height="142" rx="8" fill="#F3F4F6" stroke="#5B6470" stroke-width="1.5" stroke-dasharray="6 4"/>
+<rect x="16" y="420" width="44" height="44" rx="8" fill="#F3F4F6" stroke="#E3E6EA" stroke-width="1"/>
+<text x="38.0" y="447.6" font-size="16" text-anchor="middle" fill="#1F2328" font-weight="400">3</text>
+<text x="68" y="440" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Pad (placeholder)</text>
+<text x="68" y="458" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">8 bars · MUTED</text>
+<rect x="22.0" y="482" width="24.0" height="8" rx="2" fill="#C9D1DC" stroke="#5B6470" stroke-width="1" stroke-dasharray="3 2"/>
+<rect x="58.0" y="502" width="18.0" height="8" rx="2" fill="#C9D1DC" stroke="#5B6470" stroke-width="1" stroke-dasharray="3 2"/>
+<rect x="94.0" y="492" width="33.0" height="8" rx="2" fill="#C9D1DC" stroke="#5B6470" stroke-width="1" stroke-dasharray="3 2"/>
+<rect x="142.0" y="512" width="18.0" height="8" rx="2" fill="#C9D1DC" stroke="#5B6470" stroke-width="1" stroke-dasharray="3 2"/>
+<rect x="184.0" y="482" width="27.0" height="8" rx="2" fill="#C9D1DC" stroke="#5B6470" stroke-width="1" stroke-dasharray="3 2"/>
+<rect x="226.0" y="502" width="21.0" height="8" rx="2" fill="#C9D1DC" stroke="#5B6470" stroke-width="1" stroke-dasharray="3 2"/>
+<rect x="274.0" y="492" width="18.0" height="8" rx="2" fill="#C9D1DC" stroke="#5B6470" stroke-width="1" stroke-dasharray="3 2"/>
+<rect x="304.0" y="512" width="18.0" height="8" rx="2" fill="#C9D1DC" stroke="#5B6470" stroke-width="1" stroke-dasharray="3 2"/>
+<rect x="16" y="500" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="40.0" y="528.55" font-size="13" text-anchor="middle" fill="#1F2328" font-weight="400">M</text>
+<rect x="70" y="500" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="94.0" y="528.55" font-size="13" text-anchor="middle" fill="#1F2328" font-weight="400">S</text>
+<rect x="124" y="500" width="108" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="178.0" y="528.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Edit notes</text>
+<rect x="238" y="500" width="106" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="291.0" y="528.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Sound</text>
+<rect x="8" y="562" width="344" height="142" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<rect x="16" y="570" width="44" height="44" rx="8" fill="#F3F4F6" stroke="#E3E6EA" stroke-width="1"/>
+<text x="38.0" y="597.6" font-size="16" text-anchor="middle" fill="#1F2328" font-weight="400">4</text>
+<text x="68" y="590" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">empty</text>
+<text x="68" y="608" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">Capture goes here next if 2 is full</text>
+<rect x="16" y="622" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="40.0" y="650.55" font-size="13" text-anchor="middle" fill="#1F2328" font-weight="400">M</text>
+<rect x="70" y="622" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="94.0" y="650.55" font-size="13" text-anchor="middle" fill="#1F2328" font-weight="400">S</text>
+<rect x="124" y="622" width="108" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="178.0" y="650.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Edit notes</text>
+<rect x="238" y="622" width="106" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="291.0" y="650.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Sound</text>
+<circle cx="20" cy="68" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="0"/><text x="20" y="72" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<circle cx="22" cy="268" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="0"/><text x="22" y="272" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<circle cx="22" cy="418" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="0"/><text x="22" y="422" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<circle cx="22" cy="568" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="0"/><text x="22" y="572" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">4</text>
+<circle cx="398" cy="24" r="8" fill="#0E7C86"/><text x="398" y="28" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<text x="412" y="28" font-size="11" fill="#1F2328">The grid belongs to the sketch (set by the first capture).</text>
+<text x="412" y="44" font-size="11" fill="#1F2328">&#x27;Review grid&#x27; re-opens corrections; notes never move.</text>
+<circle cx="398" cy="62" r="8" fill="#0E7C86"/><text x="398" y="66" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<text x="412" y="66" font-size="11" fill="#1F2328">Selected/target layer: thick outline + ◎ + text &#x27;capture</text>
+<text x="412" y="82" font-size="11" fill="#1F2328">target&#x27;. Tap the row body to retarget; no colour-only</text>
+<text x="412" y="98" font-size="11" fill="#1F2328">state.</text>
+<circle cx="398" cy="116" r="8" fill="#0E7C86"/><text x="398" y="120" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<text x="412" y="120" font-size="11" fill="#1F2328">Muted: dashed outline, hollow notes, the word MUTED, and M</text>
+<text x="412" y="136" font-size="11" fill="#1F2328">shown pressed. Screen reader: &#x27;Layer 3, Pad, muted&#x27;.</text>
+<circle cx="398" cy="154" r="8" fill="#0E7C86"/><text x="398" y="158" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">4</text>
+<text x="412" y="158" font-size="11" fill="#1F2328">Empty layer explains what will happen. Four parts is a</text>
+<text x="412" y="174" font-size="11" fill="#1F2328">milestone, not a max; the first slice ships one part. All</text>
+<text x="412" y="190" font-size="11" fill="#1F2328">full → Capture asks (never replaces).</text>
+</svg>

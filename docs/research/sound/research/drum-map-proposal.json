@@ -1,0 +1,325 @@
+{
+  "status": "proposal_pending_audio_approval_not_converted",
+  "source_not_gm": true,
+  "all_mapping": [
+    {
+      "midi_note": 35,
+      "sample": "Kick06.wav",
+      "label": "Bass drum 2",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 36,
+      "sample": "Kick04.wav",
+      "label": "Bass drum 1",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 38,
+      "sample": "Snare09.wav",
+      "label": "Snare 1",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 40,
+      "sample": "Snare14.wav",
+      "label": "Snare 2",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 42,
+      "sample": "ClosedHiHat01-01.wav",
+      "label": "Closed hi-hat",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": "hihat"
+    },
+    {
+      "midi_note": 44,
+      "sample": "ClosedHiHat02-01.wav",
+      "label": "Pedal hi-hat surrogate, not a recorded pedal",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": "hihat"
+    },
+    {
+      "midi_note": 46,
+      "sample": "OpenHiHat02-01.wav",
+      "label": "Open hi-hat",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": "hihat"
+    },
+    {
+      "midi_note": 49,
+      "sample": "Cymbal01-01.wav",
+      "label": "Crash slot; source says Cymbal 1",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 51,
+      "sample": "Cymbal02.wav",
+      "label": "Ride slot surrogate; source says Cymbal 2",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 41,
+      "sample": "LowTom02-01.wav",
+      "label": "Low floor tom",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 43,
+      "sample": "LowTom02-02.wav",
+      "label": "High floor tom",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 45,
+      "sample": "MidTom02-01.wav",
+      "label": "Low tom",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 47,
+      "sample": "MidTom02-02.wav",
+      "label": "Low-mid tom",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 48,
+      "sample": "HighTom02-01.wav",
+      "label": "Hi-mid tom",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 50,
+      "sample": "HighTom02-02.wav",
+      "label": "High tom",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 39,
+      "sample": "Clap01.wav",
+      "label": "Hand clap",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 70,
+      "sample": "Shaker04.wav",
+      "label": "Maracas surrogate",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 82,
+      "sample": "ShakerLong01.wav",
+      "label": "Shaker",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 75,
+      "sample": "Claves01.wav",
+      "label": "Claves",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    }
+  ],
+  "gate1_mapping": [
+    {
+      "midi_note": 36,
+      "sample": "Kick04.wav",
+      "label": "Bass drum 1",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 38,
+      "sample": "Snare09.wav",
+      "label": "Snare 1",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 40,
+      "sample": "Snare14.wav",
+      "label": "Snare 2",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 42,
+      "sample": "ClosedHiHat01-01.wav",
+      "label": "Closed hi-hat",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": "hihat"
+    },
+    {
+      "midi_note": 44,
+      "sample": "ClosedHiHat02-01.wav",
+      "label": "Pedal hi-hat surrogate, not a recorded pedal",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": "hihat"
+    },
+    {
+      "midi_note": 46,
+      "sample": "OpenHiHat02-01.wav",
+      "label": "Open hi-hat",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": "hihat"
+    },
+    {
+      "midi_note": 49,
+      "sample": "Cymbal01-01.wav",
+      "label": "Crash slot; source says Cymbal 1",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 51,
+      "sample": "Cymbal02.wav",
+      "label": "Ride slot surrogate; source says Cymbal 2",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 41,
+      "sample": "LowTom02-01.wav",
+      "label": "Low floor tom",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 45,
+      "sample": "MidTom02-01.wav",
+      "label": "Low tom",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 48,
+      "sample": "HighTom02-01.wav",
+      "label": "Hi-mid tom",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    },
+    {
+      "midi_note": 39,
+      "sample": "Clap01.wav",
+      "label": "Hand clap",
+      "velocity_range_proposed": [
+        1,
+        127
+      ],
+      "choke_group_proposed": null
+    }
+  ],
+  "gate1_region_count": 12,
+  "gate1_unique_sample_count": 12,
+  "gate1_original_wav_file_bytes": 1294882,
+  "gate1_decoded_source_pcm_bytes": 1294353,
+  "gate1_decoded_float32_bytes": 1725804,
+  "transport_compressed_subset_bytes": null,
+  "note": "Retain single fixed Cymbal01-01; omit source random variants. Do not transpose at GM remap: new root equals new key to play original rate. Hats need explicit choke design. No real ride/pedal/brush articulation verified."
+}

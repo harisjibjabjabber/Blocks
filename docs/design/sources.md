@@ -1,0 +1,42 @@
+# Sources (all opened 8 Nov 2026)
+
+Read via = how the content was actually read (WebFetch tool, or curl from the box when WebFetch output was empty/oversized). HTTP = re-check status (curl -L, 8 Nov 2026; raw in `link-check.tsv`). Opened but **not cited** (no usable content): Teenage Engineering OP-XY guide (TOC only), Elektron Digitakt II product page (marketing only). An Oboe docs URL returned 404 → not cited.
+
+| ID | Source | Read via | HTTP |
+|---|---|---|---|
+| S1 | [Ableton Live 12 Manual — Recording New Clips (§19.10 Capturing MIDI)](https://www.ableton.com/en/manual/recording-new-clips/) | WebFetch | 200 |
+| S2 | [Ableton Live 12 Manual — Editing MIDI (note editor)](https://www.ableton.com/en/manual/editing-midi/) | WebFetch | 200 |
+| S3 | [Ableton Live 12 Manual — Session View](https://www.ableton.com/en/manual/session-view/) | WebFetch | 200 |
+| S4 | [Ableton Live 12 Manual — MIDI Fact Sheet](https://www.ableton.com/en/manual/midi-fact-sheet/) | curl | 200 |
+| S5 | [Ableton Push 3 Manual (Capture, Quantize)](https://www.ableton.com/en/push/manual/) | curl | 200 |
+| S6 | [Ableton Note product page](https://www.ableton.com/en/note/) | curl | 200 |
+| S7 | [Logic Pro for Mac — Flashback Capture (MIDI)](https://support.apple.com/guide/logicpro/capture-your-most-recent-midi-performance-lgcpdc0bf889/mac) | WebFetch | 200 |
+| S8 | [Logic Pro for iPad — Intro to Flashback Capture](https://support.apple.com/guide/logicpro-ipad/lpip64c413e6/ipados) | curl | 200 |
+| S9 | [Logic Pro for iPad — Piano Roll Editor overview](https://support.apple.com/guide/logicpro-ipad/piano-roll-editor-overview-lpip2bd3cd79/ipados) | curl | 200 |
+| S10 | [Logic Pro for iPad — Move notes](https://support.apple.com/guide/logicpro-ipad/move-notes-lpipb2cc590e/ipados) | curl | 200 |
+| S11 | [Logic Pro for iPad — VoiceOver note editing](https://support.apple.com/guide/logicpro-ipad/voiceover-edit-notes-piano-roll-editor-lpip4c9fd172/ipados) | curl | 200 |
+| S12 | [FL Studio Manual — Tools menu (Score logger)](https://www.image-line.com/fl-studio-learning/fl-studio-online-manual/html/menu_tools.htm) | WebFetch | 200 |
+| S13 | [FL Studio Mobile Manual — Editors (Piano roll)](https://www.image-line.com/fl-studio-learning/fl-studio-mobile-online-manual/html/plugins/FL%20Studio%20Mobile_Editors.htm) | curl | 200 |
+| S14 | [GarageBand for iPhone — Play the Keyboard](https://support.apple.com/guide/garageband-iphone/play-the-keyboard-chs39282dbe/ios) | curl | 200 |
+| S15 | [Android Accessibility Help — Touch target size](https://support.google.com/accessibility/android/answer/7101858?hl=en) | WebFetch | 200 |
+| S16 | [Apple HIG — Accessibility (control sizes)](https://developer.apple.com/design/human-interface-guidelines/accessibility) | curl(JSON) | 200 |
+| S17 | [WCAG 2.2 Understanding 2.5.8 Target Size (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html) | WebFetch | 200 |
+| S18 | [WCAG 2.2 Understanding 1.4.1 Use of Color](https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html) | WebFetch | 200 |
+| S19 | [WCAG 2.2 Understanding 2.5.7 Dragging Movements](https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements.html) | curl | 200 |
+| S20 | [WCAG 2.2 Understanding 2.5.1 Pointer Gestures](https://www.w3.org/WAI/WCAG22/Understanding/pointer-gestures.html) | curl | 200 |
+| S21 | [NN/g — Touch Targets on Touchscreens](https://www.nngroup.com/articles/touch-target-size/) | WebFetch | 200 |
+| S22 | [NN/g — Modes in User Interfaces](https://www.nngroup.com/articles/modes/) | WebFetch | 200 |
+| S23 | [Hoober — How Do Users Really Hold Mobile Devices? (2013)](https://www.uxmatters.com/mt/archives/2013/02/how-do-users-really-hold-mobile-devices.php) | WebFetch | 200 |
+| S24 | [Hoober — Design for Fingers, Touch, and People, Part 1 (2017)](https://www.uxmatters.com/mt/archives/2017/03/design-for-fingers-touch-and-people-part-1.php) | curl | 200 |
+| S25 | [Android Developers — Use window size classes](https://developer.android.com/develop/ui/compose/layouts/adaptive/use-window-size-classes) | WebFetch | 200 |
+| S26 | [Android Developers — Make your app fold aware](https://developer.android.com/develop/ui/compose/layouts/adaptive/foldables/make-your-app-fold-aware) | WebFetch | 200 |
+| S27 | [Android API — android.media.midi package](https://developer.android.com/reference/android/media/midi/package-summary) | WebFetch | 200 |
+| S28 | [Chrome for Developers — Autoplay policy (Web Audio)](https://developer.chrome.com/blog/autoplay) | WebFetch | 200 |
+| S29 | [Chrome for Developers — Web MIDI permission prompt](https://developer.chrome.com/blog/web-midi-permission-prompt) | curl | 200 |
+| S30 | [Can I use — Web MIDI API](https://caniuse.com/midi) | WebFetch | 200 |
+| S31 | [MDN — Navigator.requestMIDIAccess()](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess) | WebFetch | 200 |
+| S32 | [MDN — MIDIAccess statechange event](https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess/statechange_event) | WebFetch | 200 |
+| S33 | [MDN — MIDIMessageEvent](https://developer.mozilla.org/en-US/docs/Web/API/MIDIMessageEvent) | WebFetch | 200 |
+| S34 | [MDN — AudioContext.getOutputTimestamp()](https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/getOutputTimestamp) | WebFetch | 200 |
+| S35 | [MDN — BaseAudioContext.state](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/state) | curl | 200 |
+| S36 | [React Native — Accessibility](https://reactnative.dev/docs/accessibility) | curl | 200 |

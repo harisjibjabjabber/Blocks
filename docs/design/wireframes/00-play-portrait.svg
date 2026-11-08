@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 780" width="800" height="780" font-family="Inter, Roboto, Arial, sans-serif" role="img" aria-labelledby="t">
+<title id="t">Play &amp; Capture — phone portrait (compact width) (PROPOSED · visual north star style)</title>
+<defs><linearGradient id="cap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8A63"/><stop offset="1" stop-color="#E2512A"/></linearGradient><linearGradient id="ctl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#20252C"/><stop offset="1" stop-color="#181B21"/></linearGradient></defs>
+<rect width="100%" height="100%" fill="#F4F5F7"/>
+<rect x="0" y="0" width="360" height="780" rx="28" fill="#0D0F13" stroke="#05060A" stroke-width="6"/>
+<text x="352" y="772" font-size="9" text-anchor="end" fill="#9AA3AF" font-weight="400">PROPOSED · not implemented · sizes are proposals pending measurement</text>
+<rect x="8" y="8" width="148" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="20" y1="9" x2="144" y2="9" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="82.0" y="36.9" font-size="14" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Sketch 14 ▾</text>
+<rect x="164" y="8" width="92" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="176" y1="9" x2="244" y2="9" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="210.0" y="36.55" font-size="13" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">92 · 4/4</text>
+<text x="210" y="52" font-size="8" text-anchor="middle" fill="#9AA3AF" font-weight="400">grid inferred</text>
+<rect x="260" y="8" width="44" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="272" y1="9" x2="292" y2="9" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="282.0" y="38.3" font-size="18" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">↶</text>
+<rect x="308" y="8" width="44" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="320" y1="9" x2="340" y2="9" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="330.0" y="38.3" font-size="18" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">⋮</text>
+<circle cx="16" cy="12" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="16" y="16" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<circle cx="170" cy="12" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="170" y="16" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<circle cx="266" cy="12" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="266" y="16" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<rect x="8" y="64" width="176" height="40" rx="12" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="96.0" y="87.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">● Keystation 61 · receiving</text>
+<rect x="190" y="64" width="80" height="40" rx="12" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="230.0" y="87.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">🔊 Sound on</text>
+<rect x="276" y="64" width="76" height="40" rx="12" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="314.0" y="87.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">⏺ 1:58 kept</text>
+<circle cx="12" cy="66" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="12" y="70" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">4</text>
+<circle cx="194" cy="66" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="194" y="70" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">5</text>
+<circle cx="280" cy="66" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="280" y="70" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">6</text>
+<rect x="8" y="112" width="48" height="56" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="20" y1="113" x2="44" y2="113" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="32.0" y="145.6" font-size="16" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">◀</text>
+<rect x="60" y="112" width="240" height="56" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="72" y1="113" x2="288" y2="113" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="180.0" y="144.9" font-size="14" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Layer 2 · Warm EP</text>
+<rect x="304" y="112" width="48" height="56" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="316" y1="113" x2="340" y2="113" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="328.0" y="145.6" font-size="16" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">▶</text>
+<circle cx="64" cy="116" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="64" y="120" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">7</text>
+<rect x="8" y="176" width="344" height="236" rx="12" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="16" y="194" font-size="11" text-anchor="start" fill="#9AA3AF" font-weight="400">Recent playing · last 30 s</text>
+<line x1="16" y1="200" x2="16" y2="404" stroke="#20242B" stroke-width="1"/>
+<line x1="56" y1="200" x2="56" y2="404" stroke="#20242B" stroke-width="1"/>
+<line x1="96" y1="200" x2="96" y2="404" stroke="#20242B" stroke-width="1"/>
+<line x1="136" y1="200" x2="136" y2="404" stroke="#20242B" stroke-width="1"/>
+<line x1="176" y1="200" x2="176" y2="404" stroke="#20242B" stroke-width="1"/>
+<line x1="216" y1="200" x2="216" y2="404" stroke="#20242B" stroke-width="1"/>
+<line x1="256" y1="200" x2="256" y2="404" stroke="#20242B" stroke-width="1"/>
+<line x1="296" y1="200" x2="296" y2="404" stroke="#20242B" stroke-width="1"/>
+<line x1="336" y1="200" x2="336" y2="404" stroke="#20242B" stroke-width="1"/>
+<rect x="24.0" y="370" width="24.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="52.0" y="338" width="16.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="72.0" y="354" width="36.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="120.0" y="322" width="20.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="140.0" y="386" width="16.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="156.0" y="346" width="48.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="212.0" y="330" width="16.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="228.0" y="362" width="28.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="264.0" y="314" width="20.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="288.0" y="378" width="32.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="324.0" y="338" width="16.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="92" y="204" width="248" height="200" rx="12" fill="none" stroke="#9AA3AF" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="216" y="400" font-size="9" text-anchor="middle" fill="#9AA3AF" font-weight="400">likely phrase (preview)</text>
+<line x1="342" y1="200" x2="342" y2="404" stroke="#FF6A3D" stroke-width="2"/>
+<text x="338" y="214" font-size="9" text-anchor="end" fill="#9AA3AF" font-weight="400">now</text>
+<circle cx="20" cy="214" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="20" y="218" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">8</text>
+<rect x="8" y="420" width="82" height="56" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="20" y1="421" x2="78" y2="421" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="49.0" y="452.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">1 Bass ▶</text>
+<rect x="95" y="420" width="82" height="56" rx="12" fill="#262B33" stroke="#FFFFFF" stroke-width="2"/>
+<text x="136.0" y="452.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="650" letter-spacing="0.2">2 ◎ next</text>
+<rect x="182" y="420" width="82" height="56" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="194" y1="421" x2="252" y2="421" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="223.0" y="452.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">3 empty</text>
+<rect x="269" y="420" width="82" height="56" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="281" y1="421" x2="339" y2="421" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="310.0" y="452.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">4 empty</text>
+<circle cx="96" cy="424" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="96" y="428" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">9</text>
+<rect x="8" y="484" width="64" height="56" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="20" y1="485" x2="60" y2="485" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="40.0" y="516.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">▶︎ Play</text>
+<rect x="78" y="484" width="100" height="56" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="90" y1="485" x2="166" y2="485" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="128.0" y="516.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Click: off</text>
+<rect x="184" y="484" width="168" height="56" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="196" y1="485" x2="340" y2="485" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="268.0" y="516.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Layers  ▦</text>
+<circle cx="12" cy="488" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="12" y="492" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">10</text>
+<rect x="8" y="552" width="344" height="112" rx="12" fill="url(#cap)" stroke="none" stroke-width="0"/>
+<line x1="20" y1="553" x2="340" y2="553" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1"/>
+<text x="180" y="600" font-size="26" text-anchor="middle" fill="#120C0A" font-weight="750" letter-spacing="-0.4">Capture</text>
+<text x="180" y="628" font-size="12" text-anchor="middle" fill="#120C0A" font-weight="400">last phrase → Layer 2</text>
+<text x="180" y="648" font-size="10" text-anchor="middle" fill="#120C0A" font-weight="400">optional mapping: CC 67</text>
+<circle cx="20" cy="560" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="20" y="564" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">11</text>
+<rect x="8" y="676" width="344" height="56" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="20" y1="677" x2="340" y2="677" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="180.0" y="708.55" font-size="13" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Touch keys (on screen) ▴</text>
+<circle cx="20" cy="680" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="20" y="684" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">12</text>
+<text x="180" y="760" font-size="9" text-anchor="middle" fill="#9AA3AF" font-weight="400">Live region: &#x27;Captured 8 bars at 92 BPM into layer 2. Looping.&#x27;</text>
+<circle cx="398" cy="24" r="8" fill="#0E7C86"/><text x="398" y="28" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<text x="412" y="28" font-size="11" fill="#1F2328">Sketch menu: library, rename, save state, export. One</text>
+<text x="412" y="44" font-size="11" fill="#1F2328">sketch = one shared tempo/meter + its parts (first slice:</text>
+<text x="412" y="60" font-size="11" fill="#1F2328">one part; four is a milestone, not a max).</text>
+<circle cx="398" cy="78" r="8" fill="#0E7C86"/><text x="398" y="82" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<text x="412" y="82" font-size="11" fill="#1F2328">Grid chip shows the inferred grid (tempo · meter). Tap =</text>
+<text x="412" y="98" font-size="11" fill="#1F2328">re-open grid review. Never changes playback speed.</text>
+<circle cx="398" cy="116" r="8" fill="#0E7C86"/><text x="398" y="120" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<text x="412" y="120" font-size="11" fill="#1F2328">Undo is always visible (48dp). Label read aloud: &#x27;Undo</text>
+<text x="412" y="136" font-size="11" fill="#1F2328">Capture layer 2&#x27;.</text>
+<circle cx="398" cy="154" r="8" fill="#0E7C86"/><text x="398" y="158" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">4</text>
+<text x="412" y="158" font-size="11" fill="#1F2328">Input chip: device name + &#x27;receiving&#x27; only after a real</text>
+<text x="412" y="174" font-size="11" fill="#1F2328">message arrived. Shape: filled dot = live, ring =</text>
+<text x="412" y="190" font-size="11" fill="#1F2328">connected-silent, ✕ = none.</text>
+<circle cx="398" cy="208" r="8" fill="#0E7C86"/><text x="398" y="212" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">5</text>
+<text x="412" y="212" font-size="11" fill="#1F2328">Audio chip: &#x27;Sound on&#x27; / &#x27;Tap to start sound&#x27; /</text>
+<text x="412" y="228" font-size="11" fill="#1F2328">&#x27;Interrupted – tap to resume&#x27;. Text + icon, not colour</text>
+<text x="412" y="244" font-size="11" fill="#1F2328">alone.</text>
+<circle cx="398" cy="262" r="8" fill="#0E7C86"/><text x="398" y="266" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">6</text>
+<text x="412" y="266" font-size="11" fill="#1F2328">History chip: how much recent playing Capture can reach</text>
+<text x="412" y="282" font-size="11" fill="#1F2328">(proposed 120 s rolling + hard event/byte cap). Shows</text>
+<text x="412" y="298" font-size="11" fill="#1F2328">&#x27;gap&#x27; if events were dropped under overload. No arming.</text>
+<circle cx="398" cy="316" r="8" fill="#0E7C86"/><text x="398" y="320" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">7</text>
+<text x="412" y="320" font-size="11" fill="#1F2328">Sound pill targets the selected layer. ◀ ▶ step sounds</text>
+<text x="412" y="336" font-size="11" fill="#1F2328">while you keep playing; centre opens the Sound browser</text>
+<text x="412" y="352" font-size="11" fill="#1F2328">sheet.</text>
+<circle cx="398" cy="370" r="8" fill="#0E7C86"/><text x="398" y="374" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">8</text>
+<text x="412" y="374" font-size="11" fill="#1F2328">Ribbon = the buffer made visible: what Capture will take.</text>
+<text x="412" y="390" font-size="11" fill="#1F2328">Dashed bracket previews the likely phrase so the result is</text>
+<text x="412" y="406" font-size="11" fill="#1F2328">predictable.</text>
+<circle cx="398" cy="424" r="8" fill="#0E7C86"/><text x="398" y="428" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">9</text>
+<text x="412" y="428" font-size="11" fill="#1F2328">Layer strip: ◎ marks the capture target (text &#x27;next&#x27;, ring</text>
+<text x="412" y="444" font-size="11" fill="#1F2328">shape). Tap any layer to retarget. Long-press → layer</text>
+<text x="412" y="460" font-size="11" fill="#1F2328">actions.</text>
+<circle cx="398" cy="478" r="8" fill="#0E7C86"/><text x="398" y="482" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">10</text>
+<text x="412" y="482" font-size="11" fill="#1F2328">Transport is secondary: capture never needs Play first.</text>
+<text x="412" y="498" font-size="11" fill="#1F2328">Click (metronome) is opt-in.</text>
+<circle cx="398" cy="516" r="8" fill="#0E7C86"/><text x="398" y="520" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">11</text>
+<text x="412" y="520" font-size="11" fill="#1F2328">Capture: 112dp (proposed) tall, full width, bottom-centre.</text>
+<text x="412" y="536" font-size="11" fill="#1F2328">Optionally mapped to any spare CC/button/pad (no spare</text>
+<text x="412" y="552" font-size="11" fill="#1F2328">pedal required); sustain and playing keys are never taken</text>
+<text x="412" y="568" font-size="11" fill="#1F2328">by default.</text>
+<circle cx="398" cy="586" r="8" fill="#0E7C86"/><text x="398" y="590" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">12</text>
+<text x="412" y="590" font-size="11" fill="#1F2328">Touch keys open as a drawer. Always labelled &#x27;on screen&#x27;</text>
+<text x="412" y="606" font-size="11" fill="#1F2328">and never appear in the MIDI device list.</text>
+</svg>

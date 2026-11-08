@@ -1,0 +1,39 @@
+{
+  "scope": "Local provenance verification only; no upstream release/hash pin or fresh download claimed.",
+  "source_directory": "/workspace/blocks-design/hifi/fonts/Geist Mono",
+  "local_licence_file": "OFL.txt",
+  "licence_sha256": "1781d2806a07d91c4edf4740b88449fab7d0eadad53f7c351b94cd4d4eb8c00f",
+  "assessment": "Unmodified copied font binaries identify expected family and SIL OFL 1.1 in embedded name metadata, consistent with corresponding full OFL.txt. Redistribution bundled with documentation allowed with copyright/licence retained; do not sell fonts alone or imply endorsement. Respect Reserved Font Names for future modifications.",
+  "fonts": [
+    {
+      "file": "GeistMono-VariableFont_wght.ttf",
+      "sha256": "e8acfc9d5331733427582e4c906174dde5fe57af8f82cdaf906e80d729ff2b18",
+      "embedded_name_table": {
+        "0": [
+          "Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font.git)"
+        ],
+        "1": [
+          "Geist Mono"
+        ],
+        "5": [
+          "Version 1.701"
+        ],
+        "8": [
+          "Basement.studio, Vercel, Andrés Briganti, Guido Ferreyra, Mateo Zaragoza"
+        ],
+        "9": [
+          "Basement.studio, Andrés Briganti, Mateo Zaragoza"
+        ],
+        "11": [
+          "https://basement.studio/"
+        ],
+        "13": [
+          "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org"
+        ],
+        "14": [
+          "https://openfontlicense.org"
+        ]
+      }
+    }
+  ]
+}

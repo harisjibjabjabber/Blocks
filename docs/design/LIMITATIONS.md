@@ -1,0 +1,14 @@
+# Blocks design package — limitations (as of 8 Nov 2026, rev 3.2.1)
+
+1. **Nothing is implemented or user-tested.** Every screen, flow and number is PROPOSED. No document claims the current Blocks build supports any of it. Interaction counts are walkthrough estimates, not measurements.
+2. **All numbers are provisional.** Numeric limits, timings and UI dimensions (dp, ms, s, px, counts) are proposals pending measurement on device. This specifically includes the rev 3.2 gesture values: 48 dp handle zones, 72 dp magnifier offset, 40 dp slide-up override, 32 dp edge auto-scroll zone, ≥ 6 s Undo toast, zoom limits (≈1 bar / 4 s to all retained history), 15 px label cap, and the 120 s rolling-history target (A1).
+3. **Repeating pickup is PROPOSED behaviour, not an engine contract.** Replaying a kept pickup before every loop repeat is a proposal; "first pass only" is an unresolved audition/test question (spec §0b.9 OQ-1; `qa-review.md` item 18; `usability-test-script.md` task R4). No control is planned. Frame 14's caption ("wraps") shows the proposal, not a decision.
+4. **Harmony labels and role tags are optional and research-gated.** All chord names and role tags are mock data; no recognition accuracy is claimed. No further visual work is planned. Only chord and melody tags are drawn; arpeggio and bass tags are deliberately not drawn.
+5. **Example data.** All notes, chord progressions, device names ("Keystation 61"), tempos and sound names ("Warm EP", "Bass (placeholder)", "Kit (placeholder)") are design/example data or placeholders.
+6. **The prototype is a simulation**, not working MIDI or audio. Handle dragging, snapping, keyboard nudges, theme switching and navigation are faked in the page's script.
+7. **Fold and desktop** frames exist only for key moments (05, 07, 11). Fold-expanded size (≈840×1000 dp) is an assumption, not a measured device.
+8. **Fonts.** The PNGs were rendered with Inter Tight, Geist Mono, Instrument Serif/Sans and IBM Plex Mono (SIL OFL 1.1, copied into `hifi/fonts/`). Standalone frame HTML files name these fonts but do not embed them; open them on a machine with the fonts installed or they fall back to system faces. The prototype embeds subsets. The review Page uses the host's system fonts.
+9. **Rendering** depends on headless Google Chrome; a different Chrome version may shift text by a pixel or two. PNGs were rendered with Chrome 156.0.8078.47 on 8 Nov 2026.
+10. **Sources and links** were opened and HTTP re-checked on 8 Nov 2026 (`link-check.tsv`). Links can rot; the check script does not re-run them.
+11. **Accessibility** claims are design intent plus computed contrast (`hifi/contrast.tsv`, `hifi/contrast-rev32.tsv`). No screen-reader or user testing has been done.
+12. **The review Page** (`page/blocks-design.canvas.tsx`) only builds inside the Grok canvas host; its content is duplicated in the package files (`page/README.md`).

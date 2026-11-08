@@ -1,0 +1,2444 @@
+{
+  "schema_version": "1.0-research",
+  "as_of": "2026-11-08",
+  "timezone": "Europe/London",
+  "decision_status": "recommendation_only_no_engine_format_or_budget_approved",
+  "summary": "Procedural EP/bass/pad plus compact CC0 synthesized-drum recordings; optional CC0 small upright piano. Acoustic jazz realism deliberately not claimed.",
+  "engine_context": "Parent steering: Oboe Android app-owned renderer + separate Web Audio; raw MIDI timing/velocity/pedal/expression preserved independently.",
+  "selected_external_asset_ids": [
+    "blocks.drums.electro.v1",
+    "blocks.piano.kw-small.v1"
+  ],
+  "candidates": [
+    {
+      "id": "blocks.drums.electro.v1",
+      "name": "FreePats synthesizer percussion",
+      "category": "drums",
+      "status": "recommended_default_source_pending_approval",
+      "author": "Roberto (FreePats)",
+      "source_url": "https://freepats.zenvoid.org/Percussion/electric-percussion.html",
+      "download_url": "https://freepats.zenvoid.org/Percussion/SynthesizerPercussion/SynthesizerPercussion-SFZ-20220718.7z",
+      "version": "2022-07-18",
+      "licence": "CC0-1.0",
+      "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "licence_evidence_path": "licences/verification-notes.md",
+      "archive_licence_text_path": "licences/synth-drums-CC0-1.0.txt",
+      "required_attribution": false,
+      "voluntary_credit": "FreePats synthesizer percussion (2022-07-18), Roberto / FreePats; CC0 1.0. GM remap/subset by Blocks if produced.",
+      "restrictions": "CC0 excludes trademark/patent rights; no warranty of third-party rights. No sampled acoustic kit/brush or authentic ride claim.",
+      "commercial_android_bundle_allowed": true,
+      "public_raw_web_serving_allowed": true,
+      "modified_trimmed_conversion_allowed": true,
+      "formats": [
+        "SFZ",
+        "WAV PCM"
+      ],
+      "source_reported_size": {
+        "download": "1.8 MiB",
+        "unpacked": "2.4 MiB"
+      },
+      "measured_download_bytes": 1853650,
+      "decoded_float32_bytes": 3296132,
+      "region_count": 21,
+      "sample_count": 21,
+      "sample_rates_hz": [
+        48000
+      ],
+      "channels": [
+        1
+      ],
+      "velocity_layer_count": 1,
+      "velocity_ranges": {
+        "source": "No lovel/hivel specified: SFZ default, not multisampled dynamics",
+        "proposed": [
+          1,
+          127
+        ]
+      },
+      "note_range": {
+        "source": [
+          48,
+          66
+        ],
+        "proposed_map": "research/drum-map-proposal.json"
+      },
+      "loop_support": {
+        "source": "no_loop"
+      },
+      "sustain_support": "Propose ignoring CC64 for drum one-shots; not implemented",
+      "release_support": {
+        "source_ampeg_release_seconds": 100,
+        "release_samples": false,
+        "proposed": "one-shot with explicit hi-hat choke, not 100-second voice lifetime"
+      },
+      "browser_feasibility": "PCM WAV feasible to decode/load; SFZ itself cannot play natively. Off-main/audio-thread decoding and choke mapping need implementation.",
+      "downloaded": true,
+      "metadata_inspected": true,
+      "decoded": true,
+      "listened": false,
+      "integrated": false,
+      "engine_tested": false,
+      "source_inventory_path": "research/inspected-audio.json",
+      "gm_map_proposal": {
+        "status": "proposal_pending_audio_approval_not_converted",
+        "source_not_gm": true,
+        "all_mapping": [
+          {
+            "midi_note": 35,
+            "sample": "Kick06.wav",
+            "label": "Bass drum 2",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 36,
+            "sample": "Kick04.wav",
+            "label": "Bass drum 1",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 38,
+            "sample": "Snare09.wav",
+            "label": "Snare 1",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 40,
+            "sample": "Snare14.wav",
+            "label": "Snare 2",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 42,
+            "sample": "ClosedHiHat01-01.wav",
+            "label": "Closed hi-hat",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": "hihat"
+          },
+          {
+            "midi_note": 44,
+            "sample": "ClosedHiHat02-01.wav",
+            "label": "Pedal hi-hat surrogate, not a recorded pedal",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": "hihat"
+          },
+          {
+            "midi_note": 46,
+            "sample": "OpenHiHat02-01.wav",
+            "label": "Open hi-hat",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": "hihat"
+          },
+          {
+            "midi_note": 49,
+            "sample": "Cymbal01-01.wav",
+            "label": "Crash slot; source says Cymbal 1",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 51,
+            "sample": "Cymbal02.wav",
+            "label": "Ride slot surrogate; source says Cymbal 2",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 41,
+            "sample": "LowTom02-01.wav",
+            "label": "Low floor tom",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 43,
+            "sample": "LowTom02-02.wav",
+            "label": "High floor tom",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 45,
+            "sample": "MidTom02-01.wav",
+            "label": "Low tom",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 47,
+            "sample": "MidTom02-02.wav",
+            "label": "Low-mid tom",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 48,
+            "sample": "HighTom02-01.wav",
+            "label": "Hi-mid tom",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 50,
+            "sample": "HighTom02-02.wav",
+            "label": "High tom",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 39,
+            "sample": "Clap01.wav",
+            "label": "Hand clap",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 70,
+            "sample": "Shaker04.wav",
+            "label": "Maracas surrogate",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 82,
+            "sample": "ShakerLong01.wav",
+            "label": "Shaker",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 75,
+            "sample": "Claves01.wav",
+            "label": "Claves",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          }
+        ],
+        "gate1_mapping": [
+          {
+            "midi_note": 36,
+            "sample": "Kick04.wav",
+            "label": "Bass drum 1",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 38,
+            "sample": "Snare09.wav",
+            "label": "Snare 1",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 40,
+            "sample": "Snare14.wav",
+            "label": "Snare 2",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 42,
+            "sample": "ClosedHiHat01-01.wav",
+            "label": "Closed hi-hat",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": "hihat"
+          },
+          {
+            "midi_note": 44,
+            "sample": "ClosedHiHat02-01.wav",
+            "label": "Pedal hi-hat surrogate, not a recorded pedal",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": "hihat"
+          },
+          {
+            "midi_note": 46,
+            "sample": "OpenHiHat02-01.wav",
+            "label": "Open hi-hat",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": "hihat"
+          },
+          {
+            "midi_note": 49,
+            "sample": "Cymbal01-01.wav",
+            "label": "Crash slot; source says Cymbal 1",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 51,
+            "sample": "Cymbal02.wav",
+            "label": "Ride slot surrogate; source says Cymbal 2",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 41,
+            "sample": "LowTom02-01.wav",
+            "label": "Low floor tom",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 45,
+            "sample": "MidTom02-01.wav",
+            "label": "Low tom",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 48,
+            "sample": "HighTom02-01.wav",
+            "label": "Hi-mid tom",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          },
+          {
+            "midi_note": 39,
+            "sample": "Clap01.wav",
+            "label": "Hand clap",
+            "velocity_range_proposed": [
+              1,
+              127
+            ],
+            "choke_group_proposed": null
+          }
+        ],
+        "gate1_region_count": 12,
+        "gate1_unique_sample_count": 12,
+        "gate1_original_wav_file_bytes": 1294882,
+        "gate1_decoded_source_pcm_bytes": 1294353,
+        "gate1_decoded_float32_bytes": 1725804,
+        "transport_compressed_subset_bytes": null,
+        "note": "Retain single fixed Cymbal01-01; omit source random variants. Do not transpose at GM remap: new root equals new key to play original rate. Hats need explicit choke design. No real ride/pedal/brush articulation verified."
+      },
+      "archive_sha256": "dbb2e5bb8268022fffa6dcc3d11a93368316038bf3ae81a965c58e9d490ed23b"
+    },
+    {
+      "id": "blocks.piano.kw-small.v1",
+      "name": "Upright Piano KW small",
+      "category": "piano",
+      "status": "recommended_optional_small_piano_pending_approval",
+      "author": [
+        "Gonzalo",
+        "Roberto (FreePats)"
+      ],
+      "source_url": "https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html",
+      "download_url": "https://freepats.zenvoid.org/Piano/UprightPianoKW/UprightPianoKW-small-SFZ+FLAC-20190703.7z",
+      "version": "2019-07-03",
+      "licence": "CC0-1.0",
+      "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "licence_evidence_path": "licences/verification-notes.md",
+      "archive_licence_text_path": "licences/piano-kw-small-flac-CC0-1.0.txt",
+      "required_attribution": false,
+      "voluntary_credit": "Upright piano KW (small, 2019-07-03), recorded by Gonzalo and Roberto, processed by Roberto / FreePats; CC0 1.0. Thanks to Inma Martínez de Miguel.",
+      "restrictions": "Single recorded high-velocity layer; not the 2022 stereo two-layer version. Do not include unassessed photo/branding.",
+      "commercial_android_bundle_allowed": true,
+      "public_raw_web_serving_allowed": true,
+      "modified_trimmed_conversion_allowed": true,
+      "formats": [
+        "SFZ",
+        "FLAC 16-bit mono"
+      ],
+      "source_reported_size": {
+        "download": "2.9 MiB",
+        "unpacked": "3.3 MiB"
+      },
+      "measured_download_bytes": 3092715,
+      "decoded_float32_bytes": 18903700,
+      "region_count": 26,
+      "sample_count": 26,
+      "sample_rates_hz": [
+        44100
+      ],
+      "channels": [
+        1
+      ],
+      "velocity_layer_count": 1,
+      "velocity_ranges": {
+        "source": "No lovel/hivel specified; one recorded vH layer",
+        "proposed": [
+          1,
+          127
+        ]
+      },
+      "note_range": [
+        21,
+        108
+      ],
+      "loop_support": {
+        "continuous_regions": 12,
+        "no_loop_regions": 14,
+        "points": "source SFZ copied in source inventory; frame units; validate end inclusivity in converter"
+      },
+      "sustain_support": "CC64 must defer per-voice note-off; recorded pedal/resonance not present",
+      "release_support": {
+        "source_ampeg_release_seconds": 0.6,
+        "release_samples": false
+      },
+      "browser_feasibility": "Convert FLAC off-line to PCM/WAV; avoid assuming uniform FLAC decode support. Source loops/ADSR need own region renderer or Web Audio buffers+gain nodes.",
+      "downloaded": true,
+      "metadata_inspected": true,
+      "decoded": true,
+      "listened": false,
+      "integrated": false,
+      "engine_tested": false,
+      "archive_sha256": "e346ef198fcda0694fc66ddb80c2db2a1c700e96e3a1801930e3cebfed37047f",
+      "source_inventory_path": "research/inspected-audio.json",
+      "inspection_note": "WAV archive also downloaded (4551289 bytes), metadata licence extracted but WAV extraction incomplete due py7zr unsupported compression options. Selected FLAC equivalent fully extracted and decoded; no malformed piano PCM assumed valid."
+    },
+    {
+      "id": "blocks.ep.fm.v1",
+      "name": "Procedural electric piano",
+      "category": "ep",
+      "status": "recommended_procedural_pending_approval_implementation_not_assigned",
+      "author": "Blocks original implementation (proposed)",
+      "source_url": null,
+      "download_url": null,
+      "version": null,
+      "licence": null,
+      "licence_url": null,
+      "licence_evidence_path": "licences/verification-notes.md",
+      "archive_licence_text_path": null,
+      "required_attribution": false,
+      "voluntary_credit": null,
+      "restrictions": "No external audio asset proposed. No code is supplied, commissioned, integrated, or licence-cleared by this research. Any later third-party DSP/code needs independent licence review.",
+      "commercial_android_bundle_allowed": null,
+      "public_raw_web_serving_allowed": null,
+      "modified_trimmed_conversion_allowed": null,
+      "formats": [
+        "procedural preset descriptor (proposal)"
+      ],
+      "source_reported_size": null,
+      "measured_download_bytes": null,
+      "decoded_float32_bytes": null,
+      "region_count": null,
+      "sample_count": null,
+      "sample_rates_hz": null,
+      "channels": null,
+      "velocity_layer_count": null,
+      "velocity_ranges": {
+        "proposed": [
+          1,
+          127
+        ]
+      },
+      "note_range": {
+        "proposed": [
+          0,
+          127
+        ]
+      },
+      "loop_support": null,
+      "sustain_support": "Propose CC64 defers note-off for pitched voices; expression and raw velocity retained independently",
+      "release_support": "Propose per-voice envelope release; values not approved",
+      "browser_feasibility": "Separate Android renderer/Web Audio implementations must agree on public preset semantics; exact waveform parity not assumed",
+      "downloaded": false,
+      "metadata_inspected": false,
+      "decoded": false,
+      "listened": false,
+      "integrated": false,
+      "engine_tested": false,
+      "proposal": {
+        "stable_id": "blocks.ep.fm.v1",
+        "parameter_names": [
+          "tuning_a4_hz",
+          "velocity_curve",
+          "brightness",
+          "decay_seconds",
+          "release_seconds",
+          "tremolo_rate_hz",
+          "tremolo_depth",
+          "output_gain_db"
+        ],
+        "parameter_values": null,
+        "determinism_seed": null,
+        "seed_policy": "Explicit seed and generator/version metadata if noise/randomization used; seed is not yet chosen. No gate-1 round robin.",
+        "code_size_bytes": null,
+        "working_memory_bytes": null
+      }
+    },
+    {
+      "id": "blocks.bass.pluck.v1",
+      "name": "Procedural pluck bass",
+      "category": "bass",
+      "status": "recommended_procedural_pending_approval_implementation_not_assigned",
+      "author": "Blocks original implementation (proposed)",
+      "source_url": null,
+      "download_url": null,
+      "version": null,
+      "licence": null,
+      "licence_url": null,
+      "licence_evidence_path": "licences/verification-notes.md",
+      "archive_licence_text_path": null,
+      "required_attribution": false,
+      "voluntary_credit": null,
+      "restrictions": "No external audio asset proposed. No code is supplied, commissioned, integrated, or licence-cleared by this research. Any later third-party DSP/code needs independent licence review.",
+      "commercial_android_bundle_allowed": null,
+      "public_raw_web_serving_allowed": null,
+      "modified_trimmed_conversion_allowed": null,
+      "formats": [
+        "procedural preset descriptor (proposal)"
+      ],
+      "source_reported_size": null,
+      "measured_download_bytes": null,
+      "decoded_float32_bytes": null,
+      "region_count": null,
+      "sample_count": null,
+      "sample_rates_hz": null,
+      "channels": null,
+      "velocity_layer_count": null,
+      "velocity_ranges": {
+        "proposed": [
+          1,
+          127
+        ]
+      },
+      "note_range": {
+        "proposed": [
+          0,
+          127
+        ]
+      },
+      "loop_support": null,
+      "sustain_support": "Propose CC64 defers note-off for pitched voices; expression and raw velocity retained independently",
+      "release_support": "Propose per-voice envelope release; values not approved",
+      "browser_feasibility": "Separate Android renderer/Web Audio implementations must agree on public preset semantics; exact waveform parity not assumed",
+      "downloaded": false,
+      "metadata_inspected": false,
+      "decoded": false,
+      "listened": false,
+      "integrated": false,
+      "engine_tested": false,
+      "proposal": {
+        "stable_id": "blocks.bass.pluck.v1",
+        "parameter_names": [
+          "tuning_a4_hz",
+          "velocity_curve",
+          "brightness",
+          "decay_seconds",
+          "release_seconds",
+          "output_gain_db"
+        ],
+        "parameter_values": null,
+        "determinism_seed": null,
+        "seed_policy": "Explicit seed and generator/version metadata if noise/randomization used; seed is not yet chosen. No gate-1 round robin.",
+        "code_size_bytes": null,
+        "working_memory_bytes": null
+      }
+    },
+    {
+      "id": "blocks.pad.soft.v1",
+      "name": "Procedural soft pad",
+      "category": "synth_pad",
+      "status": "recommended_procedural_pending_approval_implementation_not_assigned",
+      "author": "Blocks original implementation (proposed)",
+      "source_url": null,
+      "download_url": null,
+      "version": null,
+      "licence": null,
+      "licence_url": null,
+      "licence_evidence_path": "licences/verification-notes.md",
+      "archive_licence_text_path": null,
+      "required_attribution": false,
+      "voluntary_credit": null,
+      "restrictions": "No external audio asset proposed. No code is supplied, commissioned, integrated, or licence-cleared by this research. Any later third-party DSP/code needs independent licence review.",
+      "commercial_android_bundle_allowed": null,
+      "public_raw_web_serving_allowed": null,
+      "modified_trimmed_conversion_allowed": null,
+      "formats": [
+        "procedural preset descriptor (proposal)"
+      ],
+      "source_reported_size": null,
+      "measured_download_bytes": null,
+      "decoded_float32_bytes": null,
+      "region_count": null,
+      "sample_count": null,
+      "sample_rates_hz": null,
+      "channels": null,
+      "velocity_layer_count": null,
+      "velocity_ranges": {
+        "proposed": [
+          1,
+          127
+        ]
+      },
+      "note_range": {
+        "proposed": [
+          0,
+          127
+        ]
+      },
+      "loop_support": null,
+      "sustain_support": "Propose CC64 defers note-off for pitched voices; expression and raw velocity retained independently",
+      "release_support": "Propose per-voice envelope release; values not approved",
+      "browser_feasibility": "Separate Android renderer/Web Audio implementations must agree on public preset semantics; exact waveform parity not assumed",
+      "downloaded": false,
+      "metadata_inspected": false,
+      "decoded": false,
+      "listened": false,
+      "integrated": false,
+      "engine_tested": false,
+      "proposal": {
+        "stable_id": "blocks.pad.soft.v1",
+        "parameter_names": [
+          "tuning_a4_hz",
+          "attack_seconds",
+          "sustain_level",
+          "release_seconds",
+          "brightness",
+          "detune_cents",
+          "output_gain_db"
+        ],
+        "parameter_values": null,
+        "determinism_seed": null,
+        "seed_policy": "Explicit seed and generator/version metadata if noise/randomization used; seed is not yet chosen. No gate-1 round robin.",
+        "code_size_bytes": null,
+        "working_memory_bytes": null
+      }
+    },
+    {
+      "id": "freepats.kw-full",
+      "name": "Upright Piano KW full",
+      "category": "piano",
+      "status": "held_optional_quality_upgrade",
+      "author": [
+        "Gonzalo",
+        "Roberto"
+      ],
+      "source_url": "https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html",
+      "download_url": "https://freepats.zenvoid.org/Piano/UprightPianoKW/UprightPianoKW-SFZ-20220221.7z",
+      "version": "2022-02-21",
+      "licence": "CC0-1.0",
+      "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "licence_evidence_path": "licences/verification-notes.md",
+      "archive_licence_text_path": null,
+      "required_attribution": false,
+      "voluntary_credit": null,
+      "restrictions": null,
+      "commercial_android_bundle_allowed": true,
+      "public_raw_web_serving_allowed": true,
+      "modified_trimmed_conversion_allowed": true,
+      "formats": [
+        "SFZ WAV",
+        "SFZ FLAC",
+        "SF2"
+      ],
+      "source_reported_size": {
+        "SFZ_WAV_download": "69 MiB",
+        "SFZ_WAV_unpacked": "83 MiB",
+        "SFZ_FLAC_download": "32 MiB",
+        "SFZ_FLAC_unpacked": "32 MiB"
+      },
+      "measured_download_bytes": null,
+      "decoded_float32_bytes": null,
+      "region_count": null,
+      "sample_count": null,
+      "sample_rates_hz": null,
+      "channels": [
+        2
+      ],
+      "velocity_layer_count": 2,
+      "velocity_ranges": null,
+      "note_range": null,
+      "loop_support": "Source says bass notes have loops; exact regions not inspected",
+      "sustain_support": null,
+      "release_support": null,
+      "browser_feasibility": "Likely PCM conversion feasible; decoded memory unknown pending archive inspection.",
+      "downloaded": false,
+      "metadata_inspected": false,
+      "decoded": false,
+      "listened": false,
+      "integrated": false,
+      "engine_tested": false
+    },
+    {
+      "id": "salamander.grand",
+      "name": "Salamander Grand Piano",
+      "category": "piano",
+      "status": "held_large_relicensing_and_derivative_scope",
+      "author": "Alexander Holm; FreePats derivative processing/mapping not fully assessed",
+      "source_url": "https://rytmenpinne.wordpress.com/sounds-and-such/salamander-grandpiano/",
+      "download_url": "https://freepats.zenvoid.org/Piano/SalamanderGrandPiano/SalamanderGrandPiano-SFZ+FLAC-V3+20200602.tar.gz",
+      "version": "V3+2020-06-02 (FreePats derivative)",
+      "licence": "CC-BY-3.0 on FreePats derivative; author declares originals public domain 4.3.2022",
+      "licence_url": "https://creativecommons.org/licenses/by/3.0/",
+      "licence_evidence_path": "licences/verification-notes.md",
+      "archive_licence_text_path": null,
+      "required_attribution": "Conservatively retain author credit, licence link and modification notice under exact derivative terms; attribution-free status of all derivative work not established.",
+      "voluntary_credit": null,
+      "restrictions": null,
+      "commercial_android_bundle_allowed": null,
+      "public_raw_web_serving_allowed": null,
+      "modified_trimmed_conversion_allowed": null,
+      "formats": [
+        "SFZ WAV",
+        "SFZ FLAC",
+        "SF2"
+      ],
+      "source_reported_size": {
+        "SFZ_FLAC_download": "707 MiB",
+        "48k24_WAV_download": "1.18 GiB",
+        "44k16_WAV_download": "394 MiB",
+        "SF2_download": "296 MiB"
+      },
+      "measured_download_bytes": null,
+      "decoded_float32_bytes": null,
+      "region_count": null,
+      "sample_count": null,
+      "sample_rates_hz": [
+        48000
+      ],
+      "channels": null,
+      "velocity_layer_count": 16,
+      "velocity_ranges": null,
+      "note_range": null,
+      "loop_support": null,
+      "sustain_support": null,
+      "release_support": "Source reports chromatic hammer-noise releases (one layer) and string-resonance releases in minor thirds (three layers).",
+      "browser_feasibility": "Not default footprint; requires instrument-specific mapping conversion and staged loading.",
+      "downloaded": false,
+      "metadata_inspected": false,
+      "decoded": false,
+      "listened": false,
+      "integrated": false,
+      "engine_tested": false
+    },
+    {
+      "id": "salamander.drums",
+      "name": "Salamander Drumkit",
+      "category": "drums",
+      "status": "held_large_public_domain_declaration_not_CC0_instrument",
+      "author": "Alexander Holm",
+      "source_url": "https://rytmenpinne.wordpress.com/sounds-and-such/salamander-drumkit/",
+      "download_url": "https://archive.org/download/SalamanderDrumkit/salamanderDrumkit.tar.bz2",
+      "version": null,
+      "licence": "Author public-domain declaration 4.3.2022; older mirrors CC-BY-SA-3.0",
+      "licence_url": null,
+      "licence_evidence_path": "licences/verification-notes.md",
+      "archive_licence_text_path": null,
+      "required_attribution": null,
+      "voluntary_credit": null,
+      "restrictions": "Original author reports normalization clicks and suggests external kick fade-out fix. Fix provenance/licence not inspected. Public-domain declaration not asserted to be CC0 legal text.",
+      "commercial_android_bundle_allowed": null,
+      "public_raw_web_serving_allowed": null,
+      "modified_trimmed_conversion_allowed": null,
+      "formats": [
+        "SFZ",
+        "WAV"
+      ],
+      "source_reported_size": null,
+      "measured_download_bytes": null,
+      "decoded_float32_bytes": null,
+      "region_count": null,
+      "sample_count": null,
+      "sample_rates_hz": null,
+      "channels": null,
+      "velocity_layer_count": null,
+      "velocity_ranges": null,
+      "note_range": null,
+      "loop_support": null,
+      "sustain_support": null,
+      "release_support": null,
+      "browser_feasibility": "Large source not inspected; defer until actual archive and trimmed-subset design reviewed.",
+      "downloaded": false,
+      "metadata_inspected": false,
+      "decoded": false,
+      "listened": false,
+      "integrated": false,
+      "engine_tested": false
+    },
+    {
+      "id": "vsco2.ce",
+      "name": "VSCO 2 Community Edition",
+      "category": "multi_instrument",
+      "status": "held_optional_large",
+      "author": "Versilian Studios LLC; Sam Gossner and Simon Dalzell; cutting Elan Hickler/Soundemote",
+      "source_url": "https://versilian-studios.com/vsco-community/",
+      "download_url": "https://github.com/sgossner/VSCO-2-CE/archive/refs/tags/1.1.0.zip",
+      "version": "1.1.0 SFZ release; current website heading 2.1.1 distinct",
+      "licence": "CC0-1.0",
+      "licence_url": "https://github.com/sgossner/VSCO-2-CE/blob/1.1.0/LICENSE",
+      "licence_evidence_path": "licences/verification-notes.md",
+      "archive_licence_text_path": null,
+      "required_attribution": false,
+      "voluntary_credit": null,
+      "restrictions": null,
+      "commercial_android_bundle_allowed": true,
+      "public_raw_web_serving_allowed": true,
+      "modified_trimmed_conversion_allowed": true,
+      "formats": [
+        "SFZ",
+        "WAV 16/24-bit"
+      ],
+      "source_reported_size": {
+        "official_library_size": "3 GB (not decoded RAM)"
+      },
+      "measured_download_bytes": null,
+      "decoded_float32_bytes": null,
+      "region_count": null,
+      "sample_count": null,
+      "sample_rates_hz": [
+        44100
+      ],
+      "channels": null,
+      "velocity_layer_count": null,
+      "velocity_ranges": null,
+      "note_range": null,
+      "loop_support": null,
+      "sustain_support": null,
+      "release_support": null,
+      "browser_feasibility": "Use pinned raw/SFZ subset only; not a complete orchestral download in initial browser bundle.",
+      "downloaded": false,
+      "metadata_inspected": false,
+      "decoded": false,
+      "listened": false,
+      "integrated": false,
+      "engine_tested": false
+    },
+    {
+      "id": "karoryfer.meatbass",
+      "name": "Meatbass",
+      "category": "bass",
+      "status": "held_optional_version_pin_and_mapping_inspection",
+      "author": "Karoryfer Samples; Drogomir Smolken performance/mapping; Ludwik Zamenhof recording",
+      "source_url": "https://shop.karoryfer.com/pages/free-meatbass",
+      "download_url": "https://github.com/sfzinstruments/karoryfer.meatbass/",
+      "version": null,
+      "licence": "CC0 current blanket relicense",
+      "licence_url": "https://shop.karoryfer.com/pages/free-samples",
+      "licence_evidence_path": "licences/verification-notes.md",
+      "archive_licence_text_path": null,
+      "required_attribution": false,
+      "voluntary_credit": null,
+      "restrictions": "Current primary blanket CC0 clear; exact archive/version licence not inspected. Do not bundle Sforzando executable or signed GUI assets.",
+      "commercial_android_bundle_allowed": null,
+      "public_raw_web_serving_allowed": null,
+      "modified_trimmed_conversion_allowed": null,
+      "formats": [
+        "SFZ",
+        "WAV",
+        "Sforzando GUI"
+      ],
+      "source_reported_size": {
+        "download": "242 MB"
+      },
+      "measured_download_bytes": null,
+      "decoded_float32_bytes": null,
+      "region_count": null,
+      "sample_count": 434,
+      "sample_rates_hz": null,
+      "channels": null,
+      "velocity_layer_count": null,
+      "velocity_ranges": null,
+      "note_range": null,
+      "loop_support": null,
+      "sustain_support": null,
+      "release_support": null,
+      "browser_feasibility": "Subset pizzicato could be useful; exact regions and ARIA/Sforzando-specific controls need flattening review.",
+      "downloaded": false,
+      "metadata_inspected": false,
+      "decoded": false,
+      "listened": false,
+      "integrated": false,
+      "engine_tested": false
+    },
+    {
+      "id": "jlearman.jrhodes3d",
+      "name": "jRhodes3d",
+      "category": "ep",
+      "status": "rejected_NC_raw_sample_redistribution",
+      "author": "Jeffrey Learman",
+      "source_url": "https://github.com/sfzinstruments/jlearman.jRhodes3d/",
+      "download_url": null,
+      "version": null,
+      "licence": "CC-BY-NC-4.0 samples; CC0 controls/output",
+      "licence_url": "https://github.com/sfzinstruments/jlearman.jRhodes3d/blob/master/LICENSE",
+      "licence_evidence_path": "licences/verification-notes.md",
+      "archive_licence_text_path": null,
+      "required_attribution": true,
+      "voluntary_credit": null,
+      "restrictions": "Commercial musical output allowed does not authorize samples in commercial application. No contact sent.",
+      "commercial_android_bundle_allowed": false,
+      "public_raw_web_serving_allowed": false,
+      "modified_trimmed_conversion_allowed": "Only within NC terms; commercial separate permission not obtained",
+      "formats": [
+        "SFZ",
+        "FLAC"
+      ],
+      "source_reported_size": null,
+      "measured_download_bytes": null,
+      "decoded_float32_bytes": null,
+      "region_count": null,
+      "sample_count": null,
+      "sample_rates_hz": null,
+      "channels": null,
+      "velocity_layer_count": null,
+      "velocity_ranges": null,
+      "note_range": null,
+      "loop_support": null,
+      "sustain_support": null,
+      "release_support": null,
+      "browser_feasibility": "Not selected regardless of technical suitability.",
+      "downloaded": false,
+      "metadata_inspected": false,
+      "decoded": false,
+      "listened": false,
+      "integrated": false,
+      "engine_tested": false
+    },
+    {
+      "id": "tinysoundfont.florestan",
+      "name": "TinySoundFont florestan-subset.sf2 example",
+      "category": "multi_instrument",
+      "status": "held_unverified_recording_permission",
+      "author": "Underlying recording authors not verified",
+      "source_url": "https://github.com/schellingb/TinySoundFont/tree/main/examples",
+      "download_url": "https://raw.githubusercontent.com/schellingb/TinySoundFont/main/examples/florestan-subset.sf2",
+      "version": "Git blob 56a930aca967777ede5084d7fe117493d57c2237",
+      "licence": null,
+      "licence_url": null,
+      "licence_evidence_path": "licences/verification-notes.md",
+      "archive_licence_text_path": null,
+      "required_attribution": null,
+      "voluntary_credit": null,
+      "restrictions": "Engine README MIT alone is not sample-provenance evidence.",
+      "commercial_android_bundle_allowed": null,
+      "public_raw_web_serving_allowed": null,
+      "modified_trimmed_conversion_allowed": null,
+      "formats": [
+        "SF2"
+      ],
+      "source_reported_size": {
+        "GitHub_API_file_bytes": 531786
+      },
+      "measured_download_bytes": null,
+      "decoded_float32_bytes": null,
+      "region_count": null,
+      "sample_count": null,
+      "sample_rates_hz": null,
+      "channels": null,
+      "velocity_layer_count": null,
+      "velocity_ranges": null,
+      "note_range": null,
+      "loop_support": null,
+      "sustain_support": null,
+      "release_support": null,
+      "browser_feasibility": "SF2 engine or conversion needed; asset rights unresolved.",
+      "downloaded": false,
+      "metadata_inspected": false,
+      "decoded": false,
+      "listened": false,
+      "integrated": false,
+      "engine_tested": false
+    },
+    {
+      "id": "freepats.muldjord",
+      "name": "MuldjordKit FreePats stereo",
+      "category": "drums",
+      "status": "held_optional_large_attribution_required",
+      "author": [
+        "Lars Muldjord",
+        "Roberto / FreePats"
+      ],
+      "source_url": "https://freepats.zenvoid.org/Percussion/acoustic-drum-kit.html",
+      "download_url": null,
+      "version": "2020-10-18",
+      "licence": "CC-BY-4.0",
+      "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+      "licence_evidence_path": "licences/verification-notes.md",
+      "archive_licence_text_path": null,
+      "required_attribution": true,
+      "voluntary_credit": null,
+      "restrictions": null,
+      "commercial_android_bundle_allowed": null,
+      "public_raw_web_serving_allowed": null,
+      "modified_trimmed_conversion_allowed": null,
+      "formats": [
+        "SFZ FLAC",
+        "SFZ WAV",
+        "H2",
+        "SF2"
+      ],
+      "source_reported_size": {
+        "SFZ_WAV_download": "223 MiB",
+        "SFZ_WAV_unpacked": "380 MiB",
+        "SFZ_FLAC_download": "157 MiB",
+        "SFZ_FLAC_unpacked": "160 MiB"
+      },
+      "measured_download_bytes": null,
+      "decoded_float32_bytes": null,
+      "region_count": null,
+      "sample_count": null,
+      "sample_rates_hz": null,
+      "channels": [
+        2
+      ],
+      "velocity_layer_count": null,
+      "velocity_ranges": {
+        "source": "Velocity layers and randomized sounds reported; count/ranges not inspected"
+      },
+      "note_range": null,
+      "loop_support": null,
+      "sustain_support": null,
+      "release_support": null,
+      "browser_feasibility": "Potential later acoustic pack; no import/runtime approval.",
+      "downloaded": false,
+      "metadata_inspected": false,
+      "decoded": false,
+      "listened": false,
+      "integrated": false,
+      "engine_tested": false
+    }
+  ],
+  "download_provenance": [
+    {
+      "id": "piano-kw-small",
+      "url": "https://freepats.zenvoid.org/Piano/UprightPianoKW/UprightPianoKW-small-SFZ-20190703.7z",
+      "path": "/workspace/blocks-sound-library/assets/UprightPianoKW-small-SFZ-20190703.7z",
+      "bytes": 4551289,
+      "sha256": "ffb547fceb91eeb93d78cf8d220d1d5f726dcac891afc15e517805ac48abb39d",
+      "retrieved_at": "2026-11-08T15:15:46.612426+00:00",
+      "headers": {
+        "Server": "nginx",
+        "Date": "Sun, 08 Nov 2026 15:15:45 GMT",
+        "Content-Type": "application/x-7z-compressed",
+        "Content-Length": "4551289",
+        "Last-Modified": "Sat, 26 Feb 2022 13:02:55 GMT",
+        "Connection": "close",
+        "ETag": "\"621a24ff-457279\"",
+        "Accept-Ranges": "bytes"
+      }
+    },
+    {
+      "id": "synth-drums",
+      "url": "https://freepats.zenvoid.org/Percussion/SynthesizerPercussion/SynthesizerPercussion-SFZ-20220718.7z",
+      "path": "/workspace/blocks-sound-library/assets/SynthesizerPercussion-SFZ-20220718.7z",
+      "bytes": 1853650,
+      "sha256": "dbb2e5bb8268022fffa6dcc3d11a93368316038bf3ae81a965c58e9d490ed23b",
+      "retrieved_at": "2026-11-08T15:15:48.143117+00:00",
+      "headers": {
+        "Server": "nginx",
+        "Date": "Sun, 08 Nov 2026 15:15:47 GMT",
+        "Content-Type": "application/x-7z-compressed",
+        "Content-Length": "1853650",
+        "Last-Modified": "Mon, 18 Jul 2022 11:50:05 GMT",
+        "Connection": "close",
+        "ETag": "\"62d548ed-1c48d2\"",
+        "Accept-Ranges": "bytes"
+      }
+    },
+    {
+      "id": "piano-kw-small-flac",
+      "url": "https://freepats.zenvoid.org/Piano/UprightPianoKW/UprightPianoKW-small-SFZ+FLAC-20190703.7z",
+      "path": "/workspace/blocks-sound-library/assets/UprightPianoKW-small-SFZ+FLAC-20190703.7z",
+      "bytes": 3092715,
+      "sha256": "e346ef198fcda0694fc66ddb80c2db2a1c700e96e3a1801930e3cebfed37047f",
+      "retrieved_at": "2026-11-08T15:16:25.924425+00:00",
+      "headers": {
+        "Server": "nginx",
+        "Date": "Sun, 08 Nov 2026 15:16:25 GMT",
+        "Content-Type": "application/x-7z-compressed",
+        "Content-Length": "3092715",
+        "Last-Modified": "Sat, 26 Feb 2022 13:03:03 GMT",
+        "Connection": "close",
+        "ETag": "\"621a2507-2f30eb\"",
+        "Accept-Ranges": "bytes"
+      }
+    }
+  ],
+  "source_provenance": [
+    {
+      "id": "piano-kw-small",
+      "url": "https://freepats.zenvoid.org/Piano/UprightPianoKW/UprightPianoKW-small-SFZ-20190703.7z",
+      "path": "/workspace/blocks-sound-library/assets/UprightPianoKW-small-SFZ-20190703.7z",
+      "bytes": 4551289,
+      "sha256": "ffb547fceb91eeb93d78cf8d220d1d5f726dcac891afc15e517805ac48abb39d",
+      "retrieved_at": "2026-11-08T15:15:46.612426+00:00",
+      "headers": {
+        "Server": "nginx",
+        "Date": "Sun, 08 Nov 2026 15:15:45 GMT",
+        "Content-Type": "application/x-7z-compressed",
+        "Content-Length": "4551289",
+        "Last-Modified": "Sat, 26 Feb 2022 13:02:55 GMT",
+        "Connection": "close",
+        "ETag": "\"621a24ff-457279\"",
+        "Accept-Ranges": "bytes"
+      }
+    },
+    {
+      "id": "synth-drums",
+      "url": "https://freepats.zenvoid.org/Percussion/SynthesizerPercussion/SynthesizerPercussion-SFZ-20220718.7z",
+      "path": "/workspace/blocks-sound-library/assets/SynthesizerPercussion-SFZ-20220718.7z",
+      "bytes": 1853650,
+      "sha256": "dbb2e5bb8268022fffa6dcc3d11a93368316038bf3ae81a965c58e9d490ed23b",
+      "retrieved_at": "2026-11-08T15:15:48.143117+00:00",
+      "headers": {
+        "Server": "nginx",
+        "Date": "Sun, 08 Nov 2026 15:15:47 GMT",
+        "Content-Type": "application/x-7z-compressed",
+        "Content-Length": "1853650",
+        "Last-Modified": "Mon, 18 Jul 2022 11:50:05 GMT",
+        "Connection": "close",
+        "ETag": "\"62d548ed-1c48d2\"",
+        "Accept-Ranges": "bytes"
+      }
+    },
+    {
+      "id": "piano-kw-small-flac",
+      "url": "https://freepats.zenvoid.org/Piano/UprightPianoKW/UprightPianoKW-small-SFZ+FLAC-20190703.7z",
+      "path": "/workspace/blocks-sound-library/assets/UprightPianoKW-small-SFZ+FLAC-20190703.7z",
+      "bytes": 3092715,
+      "sha256": "e346ef198fcda0694fc66ddb80c2db2a1c700e96e3a1801930e3cebfed37047f",
+      "retrieved_at": "2026-11-08T15:16:25.924425+00:00",
+      "headers": {
+        "Server": "nginx",
+        "Date": "Sun, 08 Nov 2026 15:16:25 GMT",
+        "Content-Type": "application/x-7z-compressed",
+        "Content-Length": "3092715",
+        "Last-Modified": "Sat, 26 Feb 2022 13:03:03 GMT",
+        "Connection": "close",
+        "ETag": "\"621a2507-2f30eb\"",
+        "Accept-Ranges": "bytes"
+      }
+    },
+    {
+      "id": "salamander-author-piano",
+      "url": "https://rytmenpinne.wordpress.com/sounds-and-such/salamander-grandpiano/",
+      "path": "/workspace/blocks-sound-library/research/salamander-author-piano.html",
+      "bytes": 118128,
+      "sha256": "67018032e668fe7c8e7b4c6570b6cdb38651ace78f05c99081de5bd98c9f9e07",
+      "retrieved_at": "2026-11-08T15:16:43.772004+00:00"
+    },
+    {
+      "id": "salamander-author-drums",
+      "url": "https://rytmenpinne.wordpress.com/sounds-and-such/salamander-drumkit/",
+      "path": "/workspace/blocks-sound-library/research/salamander-author-drums.html",
+      "bytes": 81120,
+      "sha256": "317d445c8dbf2cb44fcd9802e213410bdbad51d5b0eacea90ab48615376e19a0",
+      "retrieved_at": "2026-11-08T15:16:44.534244+00:00"
+    },
+    {
+      "id": "karoryfer-free-samples",
+      "url": "https://shop.karoryfer.com/pages/free-samples",
+      "path": "/workspace/blocks-sound-library/research/karoryfer-free-samples.html",
+      "bytes": 140232,
+      "sha256": "b82c5a13364910a8141ef324f116b08fe659a4bcf74e55f286d2d614a5bfde4a",
+      "retrieved_at": "2026-11-08T15:16:44.953958+00:00"
+    },
+    {
+      "id": "karoryfer-meatbass",
+      "url": "https://shop.karoryfer.com/pages/free-meatbass",
+      "path": "/workspace/blocks-sound-library/research/karoryfer-meatbass.html",
+      "bytes": 130656,
+      "sha256": "e646c790b067f7288ab6937285e8db718fb53ae0f58197ab08e4b15c5e4d5a5f",
+      "retrieved_at": "2026-11-08T15:16:45.289124+00:00"
+    },
+    {
+      "id": "vsco-community",
+      "url": "https://versilian-studios.com/vsco-community/",
+      "path": "/workspace/blocks-sound-library/research/vsco-community.html",
+      "bytes": 176550,
+      "sha256": "4e5bed5dba29df90e86ccf6237961a0bb37f2da71a52dd815db5e00b939a8821",
+      "retrieved_at": "2026-11-08T15:16:46.427775+00:00"
+    },
+    {
+      "id": "freepats-acoustic-drums",
+      "url": "https://freepats.zenvoid.org/Percussion/acoustic-drum-kit.html",
+      "path": "/workspace/blocks-sound-library/research/freepats-acoustic-drums.html",
+      "bytes": 10654,
+      "sha256": "d9800e70c101081868cda7f8ad961b5b02a75cb17e136afc28738775f13fef7c",
+      "retrieved_at": "2026-11-08T15:16:47.059374+00:00"
+    },
+    {
+      "id": "freepats-licences",
+      "url": "https://freepats.zenvoid.org/licenses.html",
+      "path": "/workspace/blocks-sound-library/research/freepats-licences.html",
+      "bytes": 12029,
+      "sha256": "ef9b18895503ea6cd98176e5cf9b3546d5610ed39e0158ed087a94da4c7f9f50",
+      "retrieved_at": "2026-11-08T15:16:47.951839+00:00"
+    },
+    {
+      "id": "freepats-piano",
+      "url": "https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html",
+      "path": "/workspace/blocks-sound-library/research/freepats-piano.html",
+      "bytes": 15105,
+      "sha256": "b46621c9ed55008986c10a050531de2a3a2631a991e0333117f767365c847fdc",
+      "retrieved_date": "2026-11-08"
+    },
+    {
+      "id": "freepats-electronic-drums",
+      "url": "https://freepats.zenvoid.org/Percussion/electric-percussion.html",
+      "path": "/workspace/blocks-sound-library/research/freepats-electronic-drums.html",
+      "bytes": 9795,
+      "sha256": "437f16f722deb1d28bb24f26ce5ce5c81844642bfedec26a471abed7f4a5e99b",
+      "retrieved_date": "2026-11-08"
+    },
+    {
+      "id": "freepats-world-percussion",
+      "url": "https://freepats.zenvoid.org/Percussion/world-and-rare-percussion.html",
+      "path": "/workspace/blocks-sound-library/research/freepats-world-percussion.html",
+      "bytes": 11888,
+      "sha256": "445fd944bd726b755b74827fd215a600c165c8b8360f96b76a93b18fee7bf6f3",
+      "retrieved_date": "2026-11-08"
+    }
+  ],
+  "inspected_source_inventory": {
+    "piano-kw-small-flac": {
+      "id": "piano-kw-small-flac",
+      "source_sfz": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-20190703.sfz",
+      "sfz_sha256": "ecde9590f69fbcf6ce23c85e1d4bbe82aab898d8f5f920751b9e97f871952e39",
+      "sample_count": 26,
+      "source_region_count": 26,
+      "source_regions": [
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "loop_continuous",
+          "lokey": "21",
+          "hikey": "26",
+          "pitch_keycenter": "24",
+          "loop_start": "306378",
+          "loop_end": "424657",
+          "sample": "samples/C1vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "loop_continuous",
+          "lokey": "27",
+          "hikey": "32",
+          "pitch_keycenter": "30",
+          "loop_start": "240705",
+          "loop_end": "351556",
+          "sample": "samples/F#1vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "loop_continuous",
+          "lokey": "33",
+          "hikey": "36",
+          "pitch_keycenter": "35",
+          "loop_start": "256475",
+          "loop_end": "366932",
+          "sample": "samples/B1vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "loop_continuous",
+          "lokey": "37",
+          "hikey": "40",
+          "pitch_keycenter": "39",
+          "loop_start": "288169",
+          "loop_end": "398441",
+          "sample": "samples/D#2vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "loop_continuous",
+          "lokey": "41",
+          "hikey": "44",
+          "pitch_keycenter": "42",
+          "loop_start": "250236",
+          "loop_end": "393511",
+          "sample": "samples/F#2vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "loop_continuous",
+          "lokey": "45",
+          "hikey": "48",
+          "pitch_keycenter": "47",
+          "loop_start": "238940",
+          "loop_end": "341297",
+          "sample": "samples/B2vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "loop_continuous",
+          "lokey": "49",
+          "hikey": "52",
+          "pitch_keycenter": "51",
+          "loop_start": "162986",
+          "loop_end": "240314",
+          "sample": "samples/D#3vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "loop_continuous",
+          "lokey": "53",
+          "hikey": "55",
+          "pitch_keycenter": "54",
+          "loop_start": "194343",
+          "loop_end": "265634",
+          "sample": "samples/F#3vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "loop_continuous",
+          "lokey": "56",
+          "hikey": "58",
+          "pitch_keycenter": "57",
+          "loop_start": "120679",
+          "loop_end": "186801",
+          "sample": "samples/A3vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "loop_continuous",
+          "lokey": "59",
+          "hikey": "61",
+          "pitch_keycenter": "60",
+          "loop_start": "145927",
+          "loop_end": "213379",
+          "sample": "samples/C4vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "loop_continuous",
+          "lokey": "62",
+          "hikey": "64",
+          "pitch_keycenter": "63",
+          "loop_start": "151896",
+          "loop_end": "217597",
+          "sample": "samples/D#4vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "loop_continuous",
+          "lokey": "65",
+          "hikey": "67",
+          "pitch_keycenter": "66",
+          "loop_start": "138527",
+          "loop_end": "185330",
+          "sample": "samples/F#4vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "68",
+          "hikey": "70",
+          "pitch_keycenter": "69",
+          "sample": "samples/A4vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "71",
+          "hikey": "73",
+          "pitch_keycenter": "72",
+          "sample": "samples/C5vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "74",
+          "hikey": "76",
+          "pitch_keycenter": "75",
+          "sample": "samples/D#5vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "77",
+          "hikey": "79",
+          "pitch_keycenter": "78",
+          "sample": "samples/F#5vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "80",
+          "hikey": "82",
+          "pitch_keycenter": "81",
+          "sample": "samples/A5vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "83",
+          "hikey": "85",
+          "pitch_keycenter": "84",
+          "sample": "samples/C6vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "86",
+          "hikey": "88",
+          "pitch_keycenter": "87",
+          "sample": "samples/D#6vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "89",
+          "hikey": "91",
+          "pitch_keycenter": "90",
+          "sample": "samples/F#6vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "92",
+          "hikey": "94",
+          "pitch_keycenter": "93",
+          "sample": "samples/A6vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "95",
+          "hikey": "97",
+          "pitch_keycenter": "96",
+          "sample": "samples/C7vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "98",
+          "hikey": "100",
+          "pitch_keycenter": "99",
+          "sample": "samples/D#7vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "101",
+          "hikey": "103",
+          "pitch_keycenter": "102",
+          "sample": "samples/F#7vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "104",
+          "hikey": "105",
+          "pitch_keycenter": "105",
+          "sample": "samples/A7vH.flac"
+        },
+        {
+          "ampeg_release": "0.6",
+          "loop_mode": "no_loop",
+          "lokey": "106",
+          "hikey": "108",
+          "pitch_keycenter": "107",
+          "sample": "samples/B7vH.flac"
+        }
+      ],
+      "samples": [
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/A3vH.flac",
+          "name": "A3vH.flac",
+          "sha256": "cedf59f6a388a8251e51f4dff8a95ae1904a47235c3b97405dd1df330d7559ef",
+          "file_bytes": 96303,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 186817,
+          "duration_seconds": 4.236213151927438,
+          "decoded_source_pcm_bytes": 373634,
+          "decoded_float32_bytes": 747268,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/A4vH.flac",
+          "name": "A4vH.flac",
+          "sha256": "df907e4fcca293287ec5a485bd47b147e982a979e8bccc4ed3b38559637547b5",
+          "file_bytes": 69461,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 130506,
+          "duration_seconds": 2.9593197278911565,
+          "decoded_source_pcm_bytes": 261012,
+          "decoded_float32_bytes": 522024,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/A5vH.flac",
+          "name": "A5vH.flac",
+          "sha256": "408e26fa033524d775a6c9f3fd866c09c921a7d280a91dddbd8a8dabd10d8d37",
+          "file_bytes": 64079,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 125209,
+          "duration_seconds": 2.839206349206349,
+          "decoded_source_pcm_bytes": 250418,
+          "decoded_float32_bytes": 500836,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/A6vH.flac",
+          "name": "A6vH.flac",
+          "sha256": "84b31f3d66d52e58cda34b1a79008b1f4651106a028f8ce1498541f1cf0ce2ca",
+          "file_bytes": 38162,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 55198,
+          "duration_seconds": 1.251655328798186,
+          "decoded_source_pcm_bytes": 110396,
+          "decoded_float32_bytes": 220792,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/A7vH.flac",
+          "name": "A7vH.flac",
+          "sha256": "667e9a434251905aaa84103767cb66c0f8e04b67fe19293e71e33d2eb991e76a",
+          "file_bytes": 29550,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 40042,
+          "duration_seconds": 0.9079818594104309,
+          "decoded_source_pcm_bytes": 80084,
+          "decoded_float32_bytes": 160168,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/B1vH.flac",
+          "name": "B1vH.flac",
+          "sha256": "d0ae25fd5a456f2893624758ebc4275429392979fe1f2189246471008f67d4af",
+          "file_bytes": 167714,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 366948,
+          "duration_seconds": 8.320816326530613,
+          "decoded_source_pcm_bytes": 733896,
+          "decoded_float32_bytes": 1467792,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/B2vH.flac",
+          "name": "B2vH.flac",
+          "sha256": "42ee1418297e97980064b724b53de733358185d4a6f25db14fd490bf7fa6060a",
+          "file_bytes": 163381,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 341313,
+          "duration_seconds": 7.73952380952381,
+          "decoded_source_pcm_bytes": 682626,
+          "decoded_float32_bytes": 1365252,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/B7vH.flac",
+          "name": "B7vH.flac",
+          "sha256": "3b034a6a3efd338c2a233f37cbb6593b5656efd192aaaa4d6a193c772c2d4a9f",
+          "file_bytes": 27419,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 36807,
+          "duration_seconds": 0.834625850340136,
+          "decoded_source_pcm_bytes": 73614,
+          "decoded_float32_bytes": 147228,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/C1vH.flac",
+          "name": "C1vH.flac",
+          "sha256": "9cf02940a14d313122eb39ebf913a8af6e3955626067faf621f231f5691ae73a",
+          "file_bytes": 180957,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 424673,
+          "duration_seconds": 9.629773242630385,
+          "decoded_source_pcm_bytes": 849346,
+          "decoded_float32_bytes": 1698692,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/C4vH.flac",
+          "name": "C4vH.flac",
+          "sha256": "a4d156e55564bbd03f1ad214574ce9e7452b7351f5ac44f57fb8dbc52337ffc2",
+          "file_bytes": 114366,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 213395,
+          "duration_seconds": 4.838888888888889,
+          "decoded_source_pcm_bytes": 426790,
+          "decoded_float32_bytes": 853580,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/C5vH.flac",
+          "name": "C5vH.flac",
+          "sha256": "8430b92e75c2b720db5900e1cb357e4824bf625fcf458bc34aaaab44a6873306",
+          "file_bytes": 77895,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 153040,
+          "duration_seconds": 3.470294784580499,
+          "decoded_source_pcm_bytes": 306080,
+          "decoded_float32_bytes": 612160,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/C6vH.flac",
+          "name": "C6vH.flac",
+          "sha256": "955e295be02fd475a5a2c1ce9b982749c2407168e8ea744c5d6485213cf8ac45",
+          "file_bytes": 54077,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 97471,
+          "duration_seconds": 2.2102267573696146,
+          "decoded_source_pcm_bytes": 194942,
+          "decoded_float32_bytes": 389884,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/C7vH.flac",
+          "name": "C7vH.flac",
+          "sha256": "484bde5e0ade025761260340de566c1d9b7e4c0ad3fde9a3c2999f662d0efaf0",
+          "file_bytes": 43919,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 78992,
+          "duration_seconds": 1.791201814058957,
+          "decoded_source_pcm_bytes": 157984,
+          "decoded_float32_bytes": 315968,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/D#2vH.flac",
+          "name": "D#2vH.flac",
+          "sha256": "ca8eff163a38db282fa5f15e5bf0d414b3bf463a97e1adb73bc05647aabf8386",
+          "file_bytes": 178707,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 398457,
+          "duration_seconds": 9.03530612244898,
+          "decoded_source_pcm_bytes": 796914,
+          "decoded_float32_bytes": 1593828,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/D#3vH.flac",
+          "name": "D#3vH.flac",
+          "sha256": "ce253d35223e33ab0cd8fc3923ba290d8ef8ac84b23acd7ac4d3a59be031990b",
+          "file_bytes": 121253,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 240330,
+          "duration_seconds": 5.449659863945579,
+          "decoded_source_pcm_bytes": 480660,
+          "decoded_float32_bytes": 961320,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/D#4vH.flac",
+          "name": "D#4vH.flac",
+          "sha256": "424ba9c60f4d646d0554d502de9bcc51c186fd83140f397320fd9268b1f7e7db",
+          "file_bytes": 106328,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 217613,
+          "duration_seconds": 4.93453514739229,
+          "decoded_source_pcm_bytes": 435226,
+          "decoded_float32_bytes": 870452,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/D#5vH.flac",
+          "name": "D#5vH.flac",
+          "sha256": "5f50e827f6414d733379a27493ff9431e7a8f3b9d51c78ed794f65b07c4fa479",
+          "file_bytes": 76021,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 139250,
+          "duration_seconds": 3.1575963718820863,
+          "decoded_source_pcm_bytes": 278500,
+          "decoded_float32_bytes": 557000,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/D#6vH.flac",
+          "name": "D#6vH.flac",
+          "sha256": "6f9c0312ccffad8396f657a2721bc2a75d68151a49c1f667c16de042217cf2c6",
+          "file_bytes": 45912,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 80974,
+          "duration_seconds": 1.8361451247165532,
+          "decoded_source_pcm_bytes": 161948,
+          "decoded_float32_bytes": 323896,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/D#7vH.flac",
+          "name": "D#7vH.flac",
+          "sha256": "2ae29e99a253f6586fce55d03e0fa304ca7c43a5d920954d67cb38db6369d098",
+          "file_bytes": 25499,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 31225,
+          "duration_seconds": 0.7080498866213152,
+          "decoded_source_pcm_bytes": 62450,
+          "decoded_float32_bytes": 124900,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#1vH.flac",
+          "name": "F#1vH.flac",
+          "sha256": "4d9dc111132b89e34307e563ae214ac8d3b0040373ffd6b625ed17c475b6d915",
+          "file_bytes": 152021,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 351572,
+          "duration_seconds": 7.9721541950113375,
+          "decoded_source_pcm_bytes": 703144,
+          "decoded_float32_bytes": 1406288,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#2vH.flac",
+          "name": "F#2vH.flac",
+          "sha256": "483037a37e7d82bb8744ce756e13faad778f7be623966799c4cf4efa36a36123",
+          "file_bytes": 177899,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 393527,
+          "duration_seconds": 8.923514739229025,
+          "decoded_source_pcm_bytes": 787054,
+          "decoded_float32_bytes": 1574108,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#3vH.flac",
+          "name": "F#3vH.flac",
+          "sha256": "abdbb744ed9a7e0cdd41cbd63ffb9f181cfc34f81a0a6d884d411656c1e8a978",
+          "file_bytes": 123867,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 265650,
+          "duration_seconds": 6.023809523809524,
+          "decoded_source_pcm_bytes": 531300,
+          "decoded_float32_bytes": 1062600,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#4vH.flac",
+          "name": "F#4vH.flac",
+          "sha256": "7910cab70deffce97cf48be43c5fc4442bf64db2f396c9897884beaa9f68ff9c",
+          "file_bytes": 100031,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 185346,
+          "duration_seconds": 4.202857142857143,
+          "decoded_source_pcm_bytes": 370692,
+          "decoded_float32_bytes": 741384,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#5vH.flac",
+          "name": "F#5vH.flac",
+          "sha256": "59b43ecb8e7717c2462ab81df55879eec29f5e336d330bc6936a6698aa1e9c1d",
+          "file_bytes": 48665,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 86730,
+          "duration_seconds": 1.9666666666666666,
+          "decoded_source_pcm_bytes": 173460,
+          "decoded_float32_bytes": 346920,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#6vH.flac",
+          "name": "F#6vH.flac",
+          "sha256": "a6b4299ba2afd51fd69665bcf6dc5f90f79e395339ed36ca35d5069f1f564c3b",
+          "file_bytes": 37346,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 55370,
+          "duration_seconds": 1.2555555555555555,
+          "decoded_source_pcm_bytes": 110740,
+          "decoded_float32_bytes": 221480,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#7vH.flac",
+          "name": "F#7vH.flac",
+          "sha256": "7aaa2c00e5a8fc69daa359b460463602d7244fb991126595e22d91771e6fa981",
+          "file_bytes": 25265,
+          "sample_rate_hz": 44100,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 29470,
+          "duration_seconds": 0.6682539682539682,
+          "decoded_source_pcm_bytes": 58940,
+          "decoded_float32_bytes": 117880,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        }
+      ],
+      "source_audio_file_bytes": 2346097,
+      "decoded_source_pcm_bytes": 9451850,
+      "decoded_float32_bytes": 18903700,
+      "sample_rates_hz": [
+        44100
+      ],
+      "channels": [
+        1
+      ],
+      "source_bits": [
+        16
+      ],
+      "decode_verified": true
+    },
+    "synth-drums": {
+      "id": "synth-drums",
+      "source_sfz": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-20220718.sfz",
+      "sfz_sha256": "4128b1ba608227afcdfc5e1f9c5e965c1e419d929fa6b0977b12cddb30cc40f5",
+      "sample_count": 21,
+      "source_region_count": 21,
+      "source_regions": [
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "48",
+          "sample": "samples/Kick04.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "49",
+          "sample": "samples/Kick06.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "50",
+          "sample": "samples/Snare09.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "51",
+          "sample": "samples/Snare14.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "52",
+          "sample": "samples/ClosedHiHat01-01.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "53",
+          "sample": "samples/ClosedHiHat02-01.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "54",
+          "volume": "-2",
+          "sample": "samples/OpenHiHat02-01.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "55",
+          "lorand": "0",
+          "hirand": "0.333333",
+          "sample": "samples/Cymbal01-01.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "55",
+          "lorand": "0.333333",
+          "hirand": "0.666666",
+          "sample": "samples/Cymbal01-02.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "55",
+          "lorand": "0.666666",
+          "hirand": "1",
+          "sample": "samples/Cymbal01-03.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "56",
+          "volume": "-3",
+          "sample": "samples/Cymbal02.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "57",
+          "sample": "samples/LowTom02-01.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "58",
+          "sample": "samples/LowTom02-02.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "59",
+          "sample": "samples/MidTom02-01.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "60",
+          "sample": "samples/MidTom02-02.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "61",
+          "sample": "samples/HighTom02-01.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "62",
+          "sample": "samples/HighTom02-02.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "63",
+          "sample": "samples/Clap01.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "64",
+          "volume": "-7",
+          "sample": "samples/Shaker04.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "65",
+          "volume": "-4",
+          "sample": "samples/ShakerLong01.wav"
+        },
+        {
+          "ampeg_release": "100",
+          "loop_mode": "no_loop",
+          "key": "66",
+          "volume": "-2",
+          "sample": "samples/Claves01.wav"
+        }
+      ],
+      "samples": [
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Clap01.wav",
+          "name": "Clap01.wav",
+          "sha256": "5a469c1e1072b210426e14ca2b020f27f1f4ce459fe116b0af837e4413e47742",
+          "file_bytes": 122924,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 40960,
+          "duration_seconds": 0.8533333333333334,
+          "decoded_source_pcm_bytes": 122880,
+          "decoded_float32_bytes": 163840,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Claves01.wav",
+          "name": "Claves01.wav",
+          "sha256": "fd21ac523dc7c80c069297c081b64ac45448a6941d529429feacd744d9c31944",
+          "file_bytes": 7607,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 2521,
+          "duration_seconds": 0.052520833333333336,
+          "decoded_source_pcm_bytes": 7563,
+          "decoded_float32_bytes": 10084,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/ClosedHiHat01-01.wav",
+          "name": "ClosedHiHat01-01.wav",
+          "sha256": "4159b05c0d04a5da8c20eeeb5d465da44c9dc23de1807ea34404a8e2c7a162a4",
+          "file_bytes": 26162,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 8706,
+          "duration_seconds": 0.181375,
+          "decoded_source_pcm_bytes": 26118,
+          "decoded_float32_bytes": 34824,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/ClosedHiHat02-01.wav",
+          "name": "ClosedHiHat02-01.wav",
+          "sha256": "17c5f4c12eb4b8aecb29a3242cb8b141fbc4775e8d77639fb7be876658d208d0",
+          "file_bytes": 47012,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 15656,
+          "duration_seconds": 0.32616666666666666,
+          "decoded_source_pcm_bytes": 46968,
+          "decoded_float32_bytes": 62624,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Cymbal01-01.wav",
+          "name": "Cymbal01-01.wav",
+          "sha256": "43cc3d70d265dd8bae22cf4d7802b04f912300c162cc3418e47cfe511daeee9a",
+          "file_bytes": 428870,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 142942,
+          "duration_seconds": 2.9779583333333335,
+          "decoded_source_pcm_bytes": 428826,
+          "decoded_float32_bytes": 571768,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Cymbal01-02.wav",
+          "name": "Cymbal01-02.wav",
+          "sha256": "95a70fe452481e67b35a58124f591472f3ee6fb09752eddaa8fdbacac490b61e",
+          "file_bytes": 430541,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 143499,
+          "duration_seconds": 2.9895625,
+          "decoded_source_pcm_bytes": 430497,
+          "decoded_float32_bytes": 573996,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Cymbal01-03.wav",
+          "name": "Cymbal01-03.wav",
+          "sha256": "d58406fad3d2f2f1a4d1e4abfeae208f90dbd5990b3cbdb80171e6ba5cc26a70",
+          "file_bytes": 420512,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 140156,
+          "duration_seconds": 2.9199166666666665,
+          "decoded_source_pcm_bytes": 420468,
+          "decoded_float32_bytes": 560624,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Cymbal02.wav",
+          "name": "Cymbal02.wav",
+          "sha256": "aec5c4bdb06822c9d9eadcf3f4ba0f4dc71550818d1d73553087c903df11cfdf",
+          "file_bytes": 267540,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 89165,
+          "duration_seconds": 1.8576041666666667,
+          "decoded_source_pcm_bytes": 267495,
+          "decoded_float32_bytes": 356660,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/HighTom02-01.wav",
+          "name": "HighTom02-01.wav",
+          "sha256": "82873710c70f0d5d90ef78dde5d5558ba0a18317a5410889927e3014b3c080ab",
+          "file_bytes": 77261,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 25739,
+          "duration_seconds": 0.5362291666666666,
+          "decoded_source_pcm_bytes": 77217,
+          "decoded_float32_bytes": 102956,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/HighTom02-02.wav",
+          "name": "HighTom02-02.wav",
+          "sha256": "7469ae58decde604b5738dcaa54ea9864c4a9fb96fecfead52036ad6b47375ab",
+          "file_bytes": 77471,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 25809,
+          "duration_seconds": 0.5376875,
+          "decoded_source_pcm_bytes": 77427,
+          "decoded_float32_bytes": 103236,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Kick04.wav",
+          "name": "Kick04.wav",
+          "sha256": "fe8bfae55a9838bfd71ab04685c8dcba7fda114bb85087acdb915641c39b390d",
+          "file_bytes": 32618,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 10858,
+          "duration_seconds": 0.22620833333333334,
+          "decoded_source_pcm_bytes": 32574,
+          "decoded_float32_bytes": 43432,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Kick06.wav",
+          "name": "Kick06.wav",
+          "sha256": "665775ce7e719f9c89a93e990317cd5aa731b22c7ecac12b1424e356c788c23f",
+          "file_bytes": 55007,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 18321,
+          "duration_seconds": 0.3816875,
+          "decoded_source_pcm_bytes": 54963,
+          "decoded_float32_bytes": 73284,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/LowTom02-01.wav",
+          "name": "LowTom02-01.wav",
+          "sha256": "3a739daf27956f690e0aeb25e22257b96f5bda415cd31a6d27e679a9e0d49b4a",
+          "file_bytes": 77054,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 25670,
+          "duration_seconds": 0.5347916666666667,
+          "decoded_source_pcm_bytes": 77010,
+          "decoded_float32_bytes": 102680,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/LowTom02-02.wav",
+          "name": "LowTom02-02.wav",
+          "sha256": "43c6980a74f0750f47bed9943211c67b581d922c4c382e0c961b8385289b8a5a",
+          "file_bytes": 51384,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 16,
+          "frames": 25670,
+          "duration_seconds": 0.5347916666666667,
+          "decoded_source_pcm_bytes": 51340,
+          "decoded_float32_bytes": 102680,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/MidTom02-01.wav",
+          "name": "MidTom02-01.wav",
+          "sha256": "18a89a25aacb02e80f928ad630e713387c649c552d9e94fd6686ff5e49820fae",
+          "file_bytes": 77420,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 25792,
+          "duration_seconds": 0.5373333333333333,
+          "decoded_source_pcm_bytes": 77376,
+          "decoded_float32_bytes": 103168,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/MidTom02-02.wav",
+          "name": "MidTom02-02.wav",
+          "sha256": "ca101a7f8ebb6bfe7321951df3469216662b96edd2e68c1bc51a2fdd42452984",
+          "file_bytes": 77198,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 25718,
+          "duration_seconds": 0.5357916666666667,
+          "decoded_source_pcm_bytes": 77154,
+          "decoded_float32_bytes": 102872,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/OpenHiHat02-01.wav",
+          "name": "OpenHiHat02-01.wav",
+          "sha256": "a5558181f324b8cab6a0900c4aaa127c3ddd766163230d3aaa494a0b5e82768c",
+          "file_bytes": 58559,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 19505,
+          "duration_seconds": 0.4063541666666667,
+          "decoded_source_pcm_bytes": 58515,
+          "decoded_float32_bytes": 78020,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Shaker04.wav",
+          "name": "Shaker04.wav",
+          "sha256": "693079ea17e19f7bfbc6322571d68d151189c9e55e4e373ee8eed08086deceb8",
+          "file_bytes": 8663,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 2873,
+          "duration_seconds": 0.05985416666666667,
+          "decoded_source_pcm_bytes": 8619,
+          "decoded_float32_bytes": 11492,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/ShakerLong01.wav",
+          "name": "ShakerLong01.wav",
+          "sha256": "44a4b07dc631698f03a14f9d6d0fb4a910e3f08f7c076fd37e042897ff70f5cf",
+          "file_bytes": 24089,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 8015,
+          "duration_seconds": 0.16697916666666668,
+          "decoded_source_pcm_bytes": 24045,
+          "decoded_float32_bytes": 32060,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Snare09.wav",
+          "name": "Snare09.wav",
+          "sha256": "6d39ad1e54bb792a8bdfb47b98fffecc3d05d795e251116aaef310015ff82dca",
+          "file_bytes": 32006,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 10654,
+          "duration_seconds": 0.22195833333333334,
+          "decoded_source_pcm_bytes": 31962,
+          "decoded_float32_bytes": 42616,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        },
+        {
+          "path": "assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Snare14.wav",
+          "name": "Snare14.wav",
+          "sha256": "1bcec0c2fe06b0f35231b81a90602102db8e858236a578af8f47fb40a2bddc77",
+          "file_bytes": 47456,
+          "sample_rate_hz": 48000,
+          "channels": 1,
+          "source_bits": 24,
+          "frames": 15804,
+          "duration_seconds": 0.32925,
+          "decoded_source_pcm_bytes": 47412,
+          "decoded_float32_bytes": 63216,
+          "decode_verified": true,
+          "decoded_float32_bytes_method": "measured ffmpeg raw f32le output byte length, source sample rate/channels"
+        }
+      ],
+      "source_audio_file_bytes": 2447354,
+      "decoded_source_pcm_bytes": 2446429,
+      "decoded_float32_bytes": 3296132,
+      "sample_rates_hz": [
+        48000
+      ],
+      "channels": [
+        1
+      ],
+      "source_bits": [
+        16,
+        24
+      ],
+      "decode_verified": true
+    }
+  },
+  "proposed_preset_contract": {
+    "status": "pending_audio_and_product_approval",
+    "runtime_format": "flattened PCM plus own region/preset manifest; SFZ/SF2 import only",
+    "region_fields": [
+      "sample_id",
+      "root_midi_note",
+      "key_low",
+      "key_high",
+      "velocity_low",
+      "velocity_high",
+      "sample_rate_hz",
+      "channels",
+      "start_frame",
+      "end_frame_exclusive",
+      "loop_start_frame",
+      "loop_end_frame_exclusive",
+      "loop_mode",
+      "gain_db",
+      "tune_cents",
+      "release_seconds"
+    ],
+    "note": "Unknown absent source values stay null, not fabricated. A converter must normalize source defaults and SFZ inclusive loop semantics explicitly; manifests here retain original source opcodes, not production-ready converted regions.",
+    "velocity": "Nonoverlapping regions first; no gate-1 round robin. Preserve original velocity 0..127 and note-off separately.",
+    "sustain": "Pitched voices: per-voice note-off release; CC64 defers note-off; release samples optional.",
+    "realtime": "Decode/load off audio thread; renderer no file IO or allocations; bound voices and stealing, sizes not yet approved.",
+    "alignment": "Same preset IDs + preset version + source/derived checksums + parameter values + seed (where used), event ordering/timebase, tuning, sample rate policy, gain, envelope and choke semantics across platforms and future stem render. IDs alone do not imply bit-identical output or alignment. Preserve MIDI provenance independently.",
+    "export": "No native Ableton export or integrated stem render claimed."
+  },
+  "validation_status": {
+    "licence_evidence_selected": true,
+    "selected_source_decodes": true,
+    "auditioned": false,
+    "android_tested": false,
+    "browser_tested": false,
+    "integrated": false,
+    "engine_or_memory_budget_approved": false
+  },
+  "page": {
+    "url": null,
+    "status": "Direct WriteCanvas tool not exposed to executor; skill forbids dynamic invocation. Parent must publish Page from ledger using direct tool."
+  }
+}

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 866" width="1280" height="866" font-family="Inter, Roboto, Arial, sans-serif" role="img" aria-labelledby="t">
+<title id="t">Desktop browser (expanded / large width) — three regions (PROPOSED · visual north star style)</title>
+<defs><linearGradient id="cap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8A63"/><stop offset="1" stop-color="#E2512A"/></linearGradient><linearGradient id="ctl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#20252C"/><stop offset="1" stop-color="#181B21"/></linearGradient></defs>
+<rect width="100%" height="100%" fill="#F4F5F7"/>
+<rect x="0" y="0" width="1280" height="760" rx="28" fill="#0D0F13" stroke="#05060A" stroke-width="6"/>
+<text x="1272" y="752" font-size="9" text-anchor="end" fill="#9AA3AF" font-weight="400">PROPOSED · not implemented · sizes are proposals pending measurement</text>
+<rect x="8" y="8" width="1264" height="48" rx="12" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="20" y="38" font-size="14" text-anchor="start" fill="#ECEEF2" font-weight="650">Blocks · Sketch 14 ▾</text>
+<rect x="260" y="12" width="120" height="40" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="272" y1="13" x2="368" y2="13" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="320.0" y="36.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">92 · 4/4 grid</text>
+<rect x="388" y="12" width="260" height="40" rx="12" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="518.0" y="35.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">● Keystation 61 (Web MIDI) · receiving</text>
+<rect x="656" y="12" width="150" height="40" rx="12" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="731.0" y="35.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">🔊 Sound on</text>
+<rect x="1120" y="12" width="72" height="40" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="1132" y1="13" x2="1180" y2="13" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="1156.0" y="36.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">↶ ⌘Z</text>
+<rect x="1196" y="12" width="72" height="40" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="1208" y1="13" x2="1256" y2="13" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="1232.0" y="36.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Export</text>
+<rect x="8" y="64" width="280" height="688" rx="12" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="16" y="84" font-size="11" text-anchor="start" fill="#9AA3AF" font-weight="400" letter-spacing="0.8">LAYERS</text>
+<rect x="16" y="96" width="264" height="84" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="28" y1="97" x2="268" y2="97" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="148.0" y="142.55" font-size="13" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">1 · Bass · 4 bars</text>
+<rect x="16" y="188" width="264" height="84" rx="12" fill="#262B33" stroke="#FFFFFF" stroke-width="2"/>
+<text x="148.0" y="234.55" font-size="13" text-anchor="middle" fill="#ECEEF2" font-weight="650" letter-spacing="0.2">2 · Warm EP ◎ next</text>
+<rect x="16" y="280" width="264" height="84" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="28" y1="281" x2="268" y2="281" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="148.0" y="326.55" font-size="13" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">3 · empty</text>
+<rect x="16" y="372" width="264" height="84" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="28" y1="373" x2="268" y2="373" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="148.0" y="418.55" font-size="13" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">4 · empty</text>
+<rect x="296" y="64" width="680" height="688" rx="12" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="304" y="84" font-size="11" text-anchor="start" fill="#9AA3AF" font-weight="400">PLAY / EDIT (centre)</text>
+<rect x="304" y="96" width="664" height="260" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="316" y1="97" x2="956" y2="97" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="312" y="114" font-size="10" text-anchor="start" fill="#9AA3AF" font-weight="400">Recent playing · last 60 s</text>
+<rect x="320.0" y="284" width="24.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="352.0" y="252" width="20.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="384.0" y="316" width="36.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="432.0" y="236" width="20.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="456.0" y="332" width="16.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="488.0" y="260" width="48.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="544.0" y="324" width="16.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="576.0" y="276" width="28.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="608.0" y="228" width="16.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="656.0" y="300" width="36.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="696.0" y="268" width="20.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="752" y="244" width="40" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="812.0" y="292" width="28.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="872" y="252" width="36.0" height="6" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="304" y="364" width="664" height="100" rx="12" fill="url(#cap)" stroke="none" stroke-width="0"/>
+<line x1="316" y1="365" x2="956" y2="365" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1"/>
+<text x="636" y="410" font-size="24" text-anchor="middle" fill="#120C0A" font-weight="750" letter-spacing="-0.4">Capture   (C or mapped control)</text>
+<text x="636" y="438" font-size="12" text-anchor="middle" fill="#120C0A" font-weight="400">last phrase → Layer 2</text>
+<rect x="304" y="472" width="664" height="272" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="316" y1="473" x2="956" y2="473" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="636.0" y="612.55" font-size="13" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Touch keys (on screen) — or computer keys A–K when enabled</text>
+<rect x="984" y="64" width="288" height="688" rx="12" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="992" y="84" font-size="11" text-anchor="start" fill="#9AA3AF" font-weight="400" letter-spacing="0.8">INSPECTOR</text>
+<rect x="992" y="96" width="272" height="180" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="1004" y1="97" x2="1252" y2="97" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="1128.0" y="190.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Sound: Warm EP  (browse ⌘K)</text>
+<rect x="992" y="284" width="272" height="220" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="1004" y1="285" x2="1252" y2="285" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="1128.0" y="398.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Last capture review</text>
+<rect x="992" y="512" width="272" height="232" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="1004" y1="513" x2="1252" y2="513" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="1128.0" y="632.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Controller map</text>
+<circle cx="24" cy="100" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="24" y="104" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<circle cx="312" cy="370" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="312" y="374" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<circle cx="400" cy="16" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="400" y="20" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<circle cx="14" cy="784" r="8" fill="#0E7C86"/><text x="14" y="788" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<text x="28" y="788" font-size="11" fill="#1F2328">Expanded/large: layers left, play/edit centre, inspector right (sound, review, controller). Nothing is hidden behind sheets.</text>
+<circle cx="14" cy="806" r="8" fill="#0E7C86"/><text x="14" y="810" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<text x="28" y="810" font-size="11" fill="#1F2328">Every touch action has a key: C capture, Space play, ⌘Z undo, 1–4 target layer, E/D/R tools, ⌘K sounds. Shown in tooltips.</text>
+<circle cx="14" cy="828" r="8" fill="#0E7C86"/><text x="14" y="832" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<text x="28" y="832" font-size="11" fill="#1F2328">Web: chip names the transport (&#x27;Web MIDI&#x27;). Unsupported/denied browsers show the reason here, never a fake &#x27;connected&#x27;.</text>
+</svg>

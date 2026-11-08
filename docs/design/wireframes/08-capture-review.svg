@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 780" width="800" height="780" font-family="Inter, Roboto, Arial, sans-serif" role="img" aria-labelledby="t">
+<title id="t">Capture review &amp; grid corrections (sheet over Play, loop keeps playing) (PROPOSED · visual north star style)</title>
+<defs><linearGradient id="cap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8A63"/><stop offset="1" stop-color="#E2512A"/></linearGradient><linearGradient id="ctl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#20252C"/><stop offset="1" stop-color="#181B21"/></linearGradient></defs>
+<rect width="100%" height="100%" fill="#F4F5F7"/>
+<rect x="0" y="0" width="360" height="780" rx="28" fill="#0D0F13" stroke="#05060A" stroke-width="6"/>
+<text x="352" y="772" font-size="9" text-anchor="end" fill="#9AA3AF" font-weight="400">PROPOSED · not implemented · sizes are proposals pending measurement</text>
+<rect x="8" y="8" width="344" height="160" rx="12" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="180.0" y="91.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">(Play screen dimmed but live — keys still play)</text>
+<rect x="0" y="176" width="360" height="604" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="12" y1="177" x2="348" y2="177" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<rect x="156" y="184" width="48" height="6" rx="6" fill="#14171C" stroke="none" stroke-width="0"/>
+<text x="16" y="214" font-size="16" text-anchor="start" fill="#ECEEF2" font-weight="650">Captured → Layer 1</text>
+<text x="16" y="236" font-size="12" text-anchor="start" fill="#9AA3AF" font-weight="400">8 bars · 92 BPM · 4/4 · looping ▶</text>
+<rect x="240" y="196" width="112" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="252" y1="197" x2="340" y2="197" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="296.0" y="224.55" font-size="13" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Discard</text>
+<rect x="16" y="252" width="328" height="120" rx="12" fill="#14171C" stroke="none" stroke-width="0"/>
+<line x1="24" y1="260" x2="24" y2="364" stroke="#20242B" stroke-width="1"/>
+<line x1="63" y1="260" x2="63" y2="364" stroke="#20242B" stroke-width="1"/>
+<line x1="102" y1="260" x2="102" y2="364" stroke="#20242B" stroke-width="1"/>
+<line x1="141" y1="260" x2="141" y2="364" stroke="#20242B" stroke-width="1"/>
+<line x1="180" y1="260" x2="180" y2="364" stroke="#20242B" stroke-width="1"/>
+<line x1="219" y1="260" x2="219" y2="364" stroke="#20242B" stroke-width="1"/>
+<line x1="258" y1="260" x2="258" y2="364" stroke="#20242B" stroke-width="1"/>
+<line x1="297" y1="260" x2="297" y2="364" stroke="#20242B" stroke-width="1"/>
+<line x1="336" y1="260" x2="336" y2="364" stroke="#20242B" stroke-width="1"/>
+<rect x="8.0" y="286" width="19.5" height="7" rx="3" fill="none" stroke="#6B7480" stroke-width="1.2" stroke-dasharray="3 2"/>
+<rect x="19.7" y="322" width="15.600000000000001" height="7" rx="3" fill="none" stroke="#6B7480" stroke-width="1.2" stroke-dasharray="3 2"/>
+<rect x="39.6" y="304" width="23.4" height="7" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="66.9" y="277" width="19.5" height="7" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="94.2" y="313" width="35.1" height="7" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="141.0" y="286" width="19.5" height="7" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="164.4" y="331" width="15.600000000000001" height="7" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="195.60000000000002" y="295" width="46.8" height="7" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="250.2" y="268" width="15.600000000000001" height="7" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="281.4" y="322" width="27.299999999999997" height="7" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<rect x="312.6" y="286" width="15.600000000000001" height="7" rx="3" fill="#C9D1DC" stroke="none" stroke-width="0"/>
+<line x1="40" y1="256" x2="40" y2="368" stroke="#FF6A3D" stroke-width="2"/>
+<text x="44" y="270" font-size="12" text-anchor="start" fill="#ECEEF2" font-weight="650">1</text>
+<rect x="30" y="348" width="22" height="22" rx="6" fill="#262B33" stroke="#FFFFFF" stroke-width="2"/>
+<text x="41.0" y="362.5" font-size="10" text-anchor="middle" fill="#ECEEF2" font-weight="650" letter-spacing="0.2">◆</text>
+<text x="24" y="384" font-size="11" text-anchor="start" fill="#9AA3AF" font-weight="400">Your timing is unchanged — only the grid moves.</text>
+<text x="16" y="412" font-size="12" text-anchor="start" fill="#ECEEF2" font-weight="650">Loop length</text>
+<rect x="16" y="420" width="62" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="28" y1="421" x2="66" y2="421" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="47.0" y="448.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">½</text>
+<rect x="82" y="420" width="62" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="94" y1="421" x2="132" y2="421" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="113.0" y="448.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">4 bars</text>
+<rect x="148" y="420" width="62" height="48" rx="12" fill="#262B33" stroke="#FFFFFF" stroke-width="2"/>
+<text x="179.0" y="448.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="650" letter-spacing="0.2">8 bars ✓</text>
+<rect x="214" y="420" width="62" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="226" y1="421" x2="264" y2="421" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="245.0" y="448.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">16</text>
+<rect x="280" y="420" width="62" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="292" y1="421" x2="330" y2="421" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="311.0" y="448.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">×2</text>
+<text x="16" y="494" font-size="12" text-anchor="start" fill="#ECEEF2" font-weight="650">Beat one</text>
+<rect x="16" y="502" width="64" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="28" y1="503" x2="68" y2="503" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="48.0" y="529.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">◀ beat</text>
+<rect x="84" y="502" width="176" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="96" y1="503" x2="248" y2="503" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="172.0" y="529.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Tap a note to set &#x27;1&#x27;</text>
+<rect x="264" y="502" width="80" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="276" y1="503" x2="332" y2="503" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="304.0" y="529.85" font-size="11" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">beat ▶</text>
+<text x="16" y="576" font-size="12" text-anchor="start" fill="#ECEEF2" font-weight="650">Count it as</text>
+<rect x="16" y="584" width="78" height="48" rx="12" fill="#262B33" stroke="#FFFFFF" stroke-width="2"/>
+<text x="55.0" y="612.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="650" letter-spacing="0.2">92 ✓</text>
+<rect x="98" y="584" width="78" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="110" y1="585" x2="164" y2="585" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="137.0" y="612.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">×2 (184)</text>
+<rect x="180" y="584" width="78" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="192" y1="585" x2="246" y2="585" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="219.0" y="612.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">½ (46)</text>
+<rect x="262" y="584" width="78" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="274" y1="585" x2="328" y2="585" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="301.0" y="612.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Set BPM…</text>
+<text x="16" y="652" font-size="12" text-anchor="start" fill="#ECEEF2" font-weight="650">Hear</text>
+<rect x="16" y="660" width="160" height="48" rx="12" fill="#262B33" stroke="#FFFFFF" stroke-width="2"/>
+<text x="96.0" y="688.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="650" letter-spacing="0.2">Loop ✓</text>
+<rect x="184" y="660" width="160" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="196" y1="661" x2="332" y2="661" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="264.0" y="688.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Original take</text>
+<rect x="16" y="720" width="160" height="48" rx="12" fill="url(#ctl)" stroke="#2A3038" stroke-width="1"/>
+<line x1="28" y1="721" x2="164" y2="721" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+<text x="96.0" y="748.2" font-size="12" text-anchor="middle" fill="#ECEEF2" font-weight="500" letter-spacing="0.2">Fine shift ±</text>
+<rect x="184" y="720" width="160" height="48" rx="12" fill="url(#cap)" stroke="none" stroke-width="0"/>
+<line x1="196" y1="721" x2="332" y2="721" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1"/>
+<text x="264.0" y="748.9" font-size="14" text-anchor="middle" fill="#120C0A" font-weight="700" letter-spacing="0.2">Keep  ✓</text>
+<circle cx="340" cy="222" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="340" y="226" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<circle cx="60" cy="262" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="60" y="266" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<circle cx="340" cy="420" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="340" y="424" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<circle cx="340" cy="502" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="340" y="506" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">4</text>
+<circle cx="340" cy="584" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="340" y="588" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">5</text>
+<circle cx="340" cy="660" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="340" y="664" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">6</text>
+<circle cx="340" cy="712" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="1.5"/><text x="340" y="716" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">7</text>
+<circle cx="398" cy="24" r="8" fill="#0E7C86"/><text x="398" y="28" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<text x="412" y="28" font-size="11" fill="#1F2328">Sheet is non-blocking: the loop keeps playing and the</text>
+<text x="412" y="44" font-size="11" fill="#1F2328">controller keeps sounding. Undo reverts the capture. For</text>
+<text x="412" y="60" font-size="11" fill="#1F2328">later layers the tempo is locked to the sketch.</text>
+<circle cx="398" cy="78" r="8" fill="#0E7C86"/><text x="398" y="82" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<text x="412" y="82" font-size="11" fill="#1F2328">Notes played before the loop start stay in the take</text>
+<text x="412" y="98" font-size="11" fill="#1F2328">(greyed, dashed). Moving the loop brings them back —</text>
+<text x="412" y="114" font-size="11" fill="#1F2328">nothing is cropped.</text>
+<circle cx="398" cy="132" r="8" fill="#0E7C86"/><text x="398" y="136" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<text x="412" y="136" font-size="11" fill="#1F2328">Loop length chips re-map bars; never stretch audio or</text>
+<text x="412" y="152" font-size="11" fill="#1F2328">notes. Selected chip has ✓ + filled shape.</text>
+<circle cx="398" cy="170" r="8" fill="#0E7C86"/><text x="398" y="174" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">4</text>
+<text x="412" y="174" font-size="11" fill="#1F2328">Beat one: step by beat, or tap any note in the mini-</text>
+<text x="412" y="190" font-size="11" fill="#1F2328">timeline to make it &#x27;1&#x27;. Moves bar lines, not notes.</text>
+<circle cx="398" cy="208" r="8" fill="#0E7C86"/><text x="398" y="212" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">5</text>
+<text x="412" y="212" font-size="11" fill="#1F2328">&#x27;Count it as&#x27;: inferred tempo plus ½ / ×2 / manual</text>
+<text x="412" y="228" font-size="11" fill="#1F2328">controls, always shown. Extra alternatives only when</text>
+<text x="412" y="244" font-size="11" fill="#1F2328">inference justifies them; no confidence %. Meter 4/4 at</text>
+<text x="412" y="260" font-size="11" fill="#1F2328">first. Re-maps bars; never speeds playback.</text>
+<circle cx="398" cy="278" r="8" fill="#0E7C86"/><text x="398" y="282" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">6</text>
+<text x="412" y="282" font-size="11" fill="#1F2328">Original take = hear the raw, unlooped performance exactly</text>
+<text x="412" y="298" font-size="11" fill="#1F2328">as played. Always one tap away, in review and later from</text>
+<text x="412" y="314" font-size="11" fill="#1F2328">the layer menu.</text>
+<circle cx="398" cy="332" r="8" fill="#0E7C86"/><text x="398" y="336" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">7</text>
+<text x="412" y="336" font-size="11" fill="#1F2328">Keep is the default: dismissing the sheet, playing on, or</text>
+<text x="412" y="352" font-size="11" fill="#1F2328">capturing again keeps it. Discard is explicit and</text>
+<text x="412" y="368" font-size="11" fill="#1F2328">undoable.</text>
+</svg>

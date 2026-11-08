@@ -2,6 +2,14 @@
 
 A musical sketchbook for Android and the web. Play MIDI into a procedural electric piano, keep a short rolling history, and capture that history into layers.
 
+## Continue from here
+
+Start at [docs/handover/README.md](docs/handover/README.md). That page is the handover: what is implemented, proposed, tested, and broken, how to build and test, and where the imported design and research live.
+
+The public site is https://harisjibjabjabber.github.io/Blocks/ with base path `/Blocks/`. Last-chord Capture is not fixed. Commit `fdba348` (script `/Blocks/assets/index-DGbe1J8t.js`) is the build Haris refreshed and still heard as only the last chord. Commit `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e` is on `main` and is not in this branch. On synthetic traces it stores all 12 chord notes for the tight chords and for the 60–120 ms roll. The live script is `/Blocks/assets/index-CsEdtvjV.js`. That is still not his take. Do not treat a documentation commit as a new UI.
+
+The current UI proposal is rev 3.2.1 in [docs/design/hifi/hybrid](docs/design/hifi/hybrid), dark and light, including settings and the range frames. It wins over the earlier hybrid files. It is proposed and uses mock data. The changelog sentence that says this revision changed no PNG, HTML frame, or prototype is wrong; frame 14, the range overviews, and the prototype did change. That is not approval to implement the UI. Original storyboard and comparison PNGs are history. No production UI until Haris reviews that storyboard.
+
 ## Implemented
 
 - Warm EP, preset `blocks.ep.fm.v1`. Procedural FM electric piano with velocity and sustain. It is not a sampled piano and not a brand name.

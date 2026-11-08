@@ -1,0 +1,136 @@
+[
+  {
+    "id": "piano-kw-small",
+    "url": "https://freepats.zenvoid.org/Piano/UprightPianoKW/UprightPianoKW-small-SFZ-20190703.7z",
+    "path": "/workspace/blocks-sound-library/assets/UprightPianoKW-small-SFZ-20190703.7z",
+    "bytes": 4551289,
+    "sha256": "ffb547fceb91eeb93d78cf8d220d1d5f726dcac891afc15e517805ac48abb39d",
+    "retrieved_at": "2026-11-08T15:15:46.612426+00:00",
+    "headers": {
+      "Server": "nginx",
+      "Date": "Sun, 08 Nov 2026 15:15:45 GMT",
+      "Content-Type": "application/x-7z-compressed",
+      "Content-Length": "4551289",
+      "Last-Modified": "Sat, 26 Feb 2022 13:02:55 GMT",
+      "Connection": "close",
+      "ETag": "\"621a24ff-457279\"",
+      "Accept-Ranges": "bytes"
+    }
+  },
+  {
+    "id": "synth-drums",
+    "url": "https://freepats.zenvoid.org/Percussion/SynthesizerPercussion/SynthesizerPercussion-SFZ-20220718.7z",
+    "path": "/workspace/blocks-sound-library/assets/SynthesizerPercussion-SFZ-20220718.7z",
+    "bytes": 1853650,
+    "sha256": "dbb2e5bb8268022fffa6dcc3d11a93368316038bf3ae81a965c58e9d490ed23b",
+    "retrieved_at": "2026-11-08T15:15:48.143117+00:00",
+    "headers": {
+      "Server": "nginx",
+      "Date": "Sun, 08 Nov 2026 15:15:47 GMT",
+      "Content-Type": "application/x-7z-compressed",
+      "Content-Length": "1853650",
+      "Last-Modified": "Mon, 18 Jul 2022 11:50:05 GMT",
+      "Connection": "close",
+      "ETag": "\"62d548ed-1c48d2\"",
+      "Accept-Ranges": "bytes"
+    }
+  },
+  {
+    "id": "piano-kw-small-flac",
+    "url": "https://freepats.zenvoid.org/Piano/UprightPianoKW/UprightPianoKW-small-SFZ+FLAC-20190703.7z",
+    "path": "/workspace/blocks-sound-library/assets/UprightPianoKW-small-SFZ+FLAC-20190703.7z",
+    "bytes": 3092715,
+    "sha256": "e346ef198fcda0694fc66ddb80c2db2a1c700e96e3a1801930e3cebfed37047f",
+    "retrieved_at": "2026-11-08T15:16:25.924425+00:00",
+    "headers": {
+      "Server": "nginx",
+      "Date": "Sun, 08 Nov 2026 15:16:25 GMT",
+      "Content-Type": "application/x-7z-compressed",
+      "Content-Length": "3092715",
+      "Last-Modified": "Sat, 26 Feb 2022 13:03:03 GMT",
+      "Connection": "close",
+      "ETag": "\"621a2507-2f30eb\"",
+      "Accept-Ranges": "bytes"
+    }
+  },
+  {
+    "id": "salamander-author-piano",
+    "url": "https://rytmenpinne.wordpress.com/sounds-and-such/salamander-grandpiano/",
+    "path": "/workspace/blocks-sound-library/research/salamander-author-piano.html",
+    "bytes": 118128,
+    "sha256": "67018032e668fe7c8e7b4c6570b6cdb38651ace78f05c99081de5bd98c9f9e07",
+    "retrieved_at": "2026-11-08T15:16:43.772004+00:00"
+  },
+  {
+    "id": "salamander-author-drums",
+    "url": "https://rytmenpinne.wordpress.com/sounds-and-such/salamander-drumkit/",
+    "path": "/workspace/blocks-sound-library/research/salamander-author-drums.html",
+    "bytes": 81120,
+    "sha256": "317d445c8dbf2cb44fcd9802e213410bdbad51d5b0eacea90ab48615376e19a0",
+    "retrieved_at": "2026-11-08T15:16:44.534244+00:00"
+  },
+  {
+    "id": "karoryfer-free-samples",
+    "url": "https://shop.karoryfer.com/pages/free-samples",
+    "path": "/workspace/blocks-sound-library/research/karoryfer-free-samples.html",
+    "bytes": 140232,
+    "sha256": "b82c5a13364910a8141ef324f116b08fe659a4bcf74e55f286d2d614a5bfde4a",
+    "retrieved_at": "2026-11-08T15:16:44.953958+00:00"
+  },
+  {
+    "id": "karoryfer-meatbass",
+    "url": "https://shop.karoryfer.com/pages/free-meatbass",
+    "path": "/workspace/blocks-sound-library/research/karoryfer-meatbass.html",
+    "bytes": 130656,
+    "sha256": "e646c790b067f7288ab6937285e8db718fb53ae0f58197ab08e4b15c5e4d5a5f",
+    "retrieved_at": "2026-11-08T15:16:45.289124+00:00"
+  },
+  {
+    "id": "vsco-community",
+    "url": "https://versilian-studios.com/vsco-community/",
+    "path": "/workspace/blocks-sound-library/research/vsco-community.html",
+    "bytes": 176550,
+    "sha256": "4e5bed5dba29df90e86ccf6237961a0bb37f2da71a52dd815db5e00b939a8821",
+    "retrieved_at": "2026-11-08T15:16:46.427775+00:00"
+  },
+  {
+    "id": "freepats-acoustic-drums",
+    "url": "https://freepats.zenvoid.org/Percussion/acoustic-drum-kit.html",
+    "path": "/workspace/blocks-sound-library/research/freepats-acoustic-drums.html",
+    "bytes": 10654,
+    "sha256": "d9800e70c101081868cda7f8ad961b5b02a75cb17e136afc28738775f13fef7c",
+    "retrieved_at": "2026-11-08T15:16:47.059374+00:00"
+  },
+  {
+    "id": "freepats-licences",
+    "url": "https://freepats.zenvoid.org/licenses.html",
+    "path": "/workspace/blocks-sound-library/research/freepats-licences.html",
+    "bytes": 12029,
+    "sha256": "ef9b18895503ea6cd98176e5cf9b3546d5610ed39e0158ed087a94da4c7f9f50",
+    "retrieved_at": "2026-11-08T15:16:47.951839+00:00"
+  },
+  {
+    "id": "freepats-piano",
+    "url": "https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html",
+    "path": "/workspace/blocks-sound-library/research/freepats-piano.html",
+    "bytes": 15105,
+    "sha256": "b46621c9ed55008986c10a050531de2a3a2631a991e0333117f767365c847fdc",
+    "retrieved_date": "2026-11-08"
+  },
+  {
+    "id": "freepats-electronic-drums",
+    "url": "https://freepats.zenvoid.org/Percussion/electric-percussion.html",
+    "path": "/workspace/blocks-sound-library/research/freepats-electronic-drums.html",
+    "bytes": 9795,
+    "sha256": "437f16f722deb1d28bb24f26ce5ce5c81844642bfedec26a471abed7f4a5e99b",
+    "retrieved_date": "2026-11-08"
+  },
+  {
+    "id": "freepats-world-percussion",
+    "url": "https://freepats.zenvoid.org/Percussion/world-and-rare-percussion.html",
+    "path": "/workspace/blocks-sound-library/research/freepats-world-percussion.html",
+    "bytes": 11888,
+    "sha256": "445fd944bd726b755b74827fd215a600c165c8b8360f96b76a93b18fee7bf6f3",
+    "retrieved_date": "2026-11-08"
+  }
+]

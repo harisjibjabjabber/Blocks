@@ -1,0 +1,86 @@
+{
+ "set": "holdout",
+ "analyzer": {
+  "id": "blocks.harmony.stage1-reference",
+  "version": "0.1.0"
+ },
+ "pairs": [
+  {
+   "id": "HH01-rootless-ii-V-I-F",
+   "scope": "piano",
+   "ref": "G:min9",
+   "est": "Bb:maj7",
+   "durS": 2.222222222
+  },
+  {
+   "id": "HH01-rootless-ii-V-I-F",
+   "scope": "piano",
+   "ref": "C:13",
+   "est": "Bb:maj7(#11)",
+   "durS": 2.222222222
+  },
+  {
+   "id": "HH01-rootless-ii-V-I-F",
+   "scope": "piano",
+   "ref": "F:maj9",
+   "est": "C:maj6",
+   "durS": 2.222222223
+  },
+  {
+   "id": "HH02-inversion-and-slash-Bb",
+   "scope": "piano",
+   "ref": "Bb:maj/3",
+   "est": "Bb:maj/3",
+   "durS": 2.5
+  },
+  {
+   "id": "HH02-inversion-and-slash-Bb",
+   "scope": "piano",
+   "ref": "Eb:maj/9",
+   "est": "F:sus4(b7,9)",
+   "durS": 2.5
+  },
+  {
+   "id": "HH03-pedal-blur-Dm7-G7",
+   "scope": "piano",
+   "ref": "D:min7",
+   "est": "D:min7",
+   "durS": 2.727272727
+  },
+  {
+   "id": "HH03-pedal-blur-Dm7-G7",
+   "scope": "piano",
+   "ref": "G:7",
+   "est": "G:9",
+   "durS": 2.727272728
+  },
+  {
+   "id": "HH04-walking-bass-Bb",
+   "scope": "bass",
+   "ref": "C:min7",
+   "est": "C:min",
+   "durS": 1.5
+  },
+  {
+   "id": "HH04-walking-bass-Bb",
+   "scope": "bass",
+   "ref": "F:7",
+   "est": "F:maj",
+   "durS": 1.5
+  },
+  {
+   "id": "HH04-walking-bass-Bb",
+   "scope": "bass",
+   "ref": "Bb:maj7",
+   "est": "Bb:maj7",
+   "durS": 1.5
+  },
+  {
+   "id": "HH05-melody-over-held-Ebmaj7-and-roll",
+   "scope": "piano",
+   "ref": "Eb:maj7",
+   "est": "Eb:maj9",
+   "durS": 4.137931034
+  }
+ ]
+}

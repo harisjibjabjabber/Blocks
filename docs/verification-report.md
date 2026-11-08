@@ -1,5 +1,7 @@
 # Verification report
 
+This file is an earlier pass. The current handover, including later tests, the Pages URL, and the open last-chord failure, is [handover/README.md](handover/README.md). "No hosted URL exists" below is not the current site status.
+
 This pass finished the Sound chip, the first-grid rule, and the static `/Blocks/` build. It did not rebuild an APK and did not boot an emulator. USB, a Fold, a pedal, and latency were not tested. No hosted URL exists.
 
 ## Tests

@@ -1,0 +1,39 @@
+{
+  "scope": "Local provenance verification only; no upstream release/hash pin or fresh download claimed.",
+  "source_directory": "/workspace/blocks-design/hifi/fonts/Inter Tight",
+  "local_licence_file": "OFL.txt",
+  "licence_sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58",
+  "assessment": "Unmodified copied font binaries identify expected family and SIL OFL 1.1 in embedded name metadata, consistent with corresponding full OFL.txt. Redistribution bundled with documentation allowed with copyright/licence retained; do not sell fonts alone or imply endorsement. Respect Reserved Font Names for future modifications.",
+  "fonts": [
+    {
+      "file": "InterTight-VariableFont_wght.ttf",
+      "sha256": "4b8ef9ed255ebe7341aa566554c0f3e87ee10ce06d2085f07ccf66f41ef96c28",
+      "embedded_name_table": {
+        "0": [
+          "Copyright 2022 The Inter Project Authors (https://github.com/rsms/inter-tight)"
+        ],
+        "1": [
+          "Inter Tight"
+        ],
+        "5": [
+          "Version 3.004"
+        ],
+        "8": [
+          "rsms"
+        ],
+        "9": [
+          "Rasmus Andersson"
+        ],
+        "11": [
+          "https://rsms.me/"
+        ],
+        "13": [
+          "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL"
+        ],
+        "14": [
+          "https://scripts.sil.org/OFL"
+        ]
+      }
+    }
+  ]
+}

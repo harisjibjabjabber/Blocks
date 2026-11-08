@@ -1,0 +1,320 @@
+{
+ "label": "SYNTHETIC, provisional, not an accuracy claim",
+ "predictorHashPrefix": "c0c218202ab0da62",
+ "mirEval": {
+  "tuning": {
+   "root": 0.629,
+   "root_n": 29,
+   "thirds": 0.629,
+   "thirds_n": 29,
+   "sevenths": 0.6,
+   "sevenths_n": 28,
+   "mirex": 0.837,
+   "mirex_n": 29,
+   "majmin": 0.654,
+   "majmin_n": 28,
+   "tetrads": 0.577,
+   "tetrads_n": 29
+  },
+  "holdout": {
+   "root": 0.644,
+   "root_n": 11,
+   "thirds": 0.644,
+   "thirds_n": 11,
+   "sevenths": 0.584,
+   "sevenths_n": 10,
+   "mirex": 0.914,
+   "mirex_n": 11,
+   "majmin": 0.713,
+   "majmin_n": 10,
+   "tetrads": 0.528,
+   "tetrads_n": 11
+  }
+ },
+ "pairs": {
+  "tuning": [
+   {
+    "id": "HT01-rootless-AB-ii-V-I-C",
+    "scope": "piano",
+    "ref": "D:min9",
+    "est": "F:maj7",
+    "durS": 2
+   },
+   {
+    "id": "HT01-rootless-AB-ii-V-I-C",
+    "scope": "piano",
+    "ref": "G:13",
+    "est": "F:maj7(#11)",
+    "durS": 2
+   },
+   {
+    "id": "HT01-rootless-AB-ii-V-I-C",
+    "scope": "piano",
+    "ref": "C:maj9",
+    "est": "E:min7",
+    "durS": 2
+   },
+   {
+    "id": "HT02-inversion-vs-slash",
+    "scope": "piano",
+    "ref": "C:maj/3",
+    "est": "C:maj/3",
+    "durS": 2.4
+   },
+   {
+    "id": "HT02-inversion-vs-slash",
+    "scope": "piano",
+    "ref": "F:maj/9",
+    "est": "G:sus4(b7,9)",
+    "durS": 2.4
+   },
+   {
+    "id": "HT03-enharmonic-ger6-vs-Ab7",
+    "scope": "piano",
+    "ref": "Ab:7",
+    "est": "Ab:7",
+    "durS": 2.666666667
+   },
+   {
+    "id": "HT03-enharmonic-ger6-vs-Ab7",
+    "scope": "piano",
+    "ref": "C:min/5",
+    "est": "C:min/5",
+    "durS": 2.666666666
+   },
+   {
+    "id": "HT04-rolled-vs-arpeggio",
+    "scope": "piano",
+    "ref": "C:maj7",
+    "est": "C:maj7",
+    "durS": 2
+   },
+   {
+    "id": "HT04-rolled-vs-arpeggio",
+    "scope": "piano",
+    "ref": "C:maj7",
+    "est": "C:maj7",
+    "durS": 2
+   },
+   {
+    "id": "HT05-pedal-blur-Cmaj7-F7",
+    "scope": "piano",
+    "ref": "C:maj7",
+    "est": "C:maj7",
+    "durS": 2.4
+   },
+   {
+    "id": "HT05-pedal-blur-Cmaj7-F7",
+    "scope": "piano",
+    "ref": "F:7",
+    "est": "F:9",
+    "durS": 2.4
+   },
+   {
+    "id": "HT06-melody-over-held-Bbmaj7",
+    "scope": "piano",
+    "ref": "Bb:maj7",
+    "est": "Bb:maj7",
+    "durS": 4
+   },
+   {
+    "id": "HT07-two-hands-bass-and-comp",
+    "scope": "piano",
+    "ref": "D:min7",
+    "est": "D:min7",
+    "durS": 1.818181818
+   },
+   {
+    "id": "HT07-two-hands-bass-and-comp",
+    "scope": "piano",
+    "ref": "G:7",
+    "est": "G:7",
+    "durS": 1.818181818
+   },
+   {
+    "id": "HT07-two-hands-bass-and-comp",
+    "scope": "piano",
+    "ref": "C:maj7",
+    "est": "C:maj7",
+    "durS": 1.818181819
+   },
+   {
+    "id": "HT07-two-hands-bass-and-comp",
+    "scope": "piano",
+    "ref": "A:7",
+    "est": "A:7",
+    "durS": 1.818181818
+   },
+   {
+    "id": "HT08-walking-bass-ii-V-I",
+    "scope": "bass",
+    "ref": "D:min7",
+    "est": "D:min",
+    "durS": 1.6
+   },
+   {
+    "id": "HT08-walking-bass-ii-V-I",
+    "scope": "bass",
+    "ref": "G:7",
+    "est": "G:maj",
+    "durS": 1.6
+   },
+   {
+    "id": "HT08-walking-bass-ii-V-I",
+    "scope": "bass",
+    "ref": "C:maj7",
+    "est": "C:maj7",
+    "durS": 1.6
+   },
+   {
+    "id": "HT09-layers-rootless-piano-plus-bass",
+    "scope": "piano",
+    "ref": "D:min9",
+    "est": "F:maj7",
+    "durS": 2
+   },
+   {
+    "id": "HT09-layers-rootless-piano-plus-bass",
+    "scope": "piano",
+    "ref": "G:13",
+    "est": "F:maj7(#11)",
+    "durS": 2
+   },
+   {
+    "id": "HT09-layers-rootless-piano-plus-bass",
+    "scope": "piano",
+    "ref": "C:maj9",
+    "est": "E:min7",
+    "durS": 2
+   },
+   {
+    "id": "HT09-layers-rootless-piano-plus-bass",
+    "scope": "bass",
+    "ref": "D:min7",
+    "est": "N",
+    "durS": 2
+   },
+   {
+    "id": "HT09-layers-rootless-piano-plus-bass",
+    "scope": "bass",
+    "ref": "G:maj",
+    "est": "N",
+    "durS": 2
+   },
+   {
+    "id": "HT09-layers-rootless-piano-plus-bass",
+    "scope": "bass",
+    "ref": "C:maj",
+    "est": "N",
+    "durS": 2
+   },
+   {
+    "id": "HT09-layers-rootless-piano-plus-bass",
+    "scope": "combined",
+    "ref": "D:min9",
+    "est": "D:min9",
+    "durS": 2
+   },
+   {
+    "id": "HT09-layers-rootless-piano-plus-bass",
+    "scope": "combined",
+    "ref": "G:13",
+    "est": "G:13",
+    "durS": 2
+   },
+   {
+    "id": "HT09-layers-rootless-piano-plus-bass",
+    "scope": "combined",
+    "ref": "C:maj9",
+    "est": "C:maj9",
+    "durS": 2
+   },
+   {
+    "id": "HT10-abstain-dyad-and-quartal",
+    "scope": "piano",
+    "ref": "E:min11",
+    "est": "G:maj6(9)/6",
+    "durS": 2.4
+   }
+  ],
+  "holdout": [
+   {
+    "id": "HH01-rootless-ii-V-I-F",
+    "scope": "piano",
+    "ref": "G:min9",
+    "est": "Bb:maj7",
+    "durS": 2.222222222
+   },
+   {
+    "id": "HH01-rootless-ii-V-I-F",
+    "scope": "piano",
+    "ref": "C:13",
+    "est": "Bb:maj7(#11)",
+    "durS": 2.222222222
+   },
+   {
+    "id": "HH01-rootless-ii-V-I-F",
+    "scope": "piano",
+    "ref": "F:maj9",
+    "est": "C:maj6",
+    "durS": 2.222222223
+   },
+   {
+    "id": "HH02-inversion-and-slash-Bb",
+    "scope": "piano",
+    "ref": "Bb:maj/3",
+    "est": "Bb:maj/3",
+    "durS": 2.5
+   },
+   {
+    "id": "HH02-inversion-and-slash-Bb",
+    "scope": "piano",
+    "ref": "Eb:maj/9",
+    "est": "F:sus4(b7,9)",
+    "durS": 2.5
+   },
+   {
+    "id": "HH03-pedal-blur-Dm7-G7",
+    "scope": "piano",
+    "ref": "D:min7",
+    "est": "D:min7",
+    "durS": 2.727272727
+   },
+   {
+    "id": "HH03-pedal-blur-Dm7-G7",
+    "scope": "piano",
+    "ref": "G:7",
+    "est": "G:9",
+    "durS": 2.727272728
+   },
+   {
+    "id": "HH04-walking-bass-Bb",
+    "scope": "bass",
+    "ref": "C:min7",
+    "est": "C:min",
+    "durS": 1.5
+   },
+   {
+    "id": "HH04-walking-bass-Bb",
+    "scope": "bass",
+    "ref": "F:7",
+    "est": "F:maj",
+    "durS": 1.5
+   },
+   {
+    "id": "HH04-walking-bass-Bb",
+    "scope": "bass",
+    "ref": "Bb:maj7",
+    "est": "Bb:maj7",
+    "durS": 1.5
+   },
+   {
+    "id": "HH05-melody-over-held-Ebmaj7-and-roll",
+    "scope": "piano",
+    "ref": "Eb:maj7",
+    "est": "Eb:maj9",
+    "durS": 4.137931034
+   }
+  ]
+ }
+}

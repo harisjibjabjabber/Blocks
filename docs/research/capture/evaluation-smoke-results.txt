@@ -1,0 +1,77 @@
+validated 18 fixtures, 0 invalid
+set=TUNING data=data m0Predict+deriveNotes+P hash=50c2c3c16c5d3077  [IN-SAMPLE: m0 parameters were tuned on this set]
+
+== prototype-f62b2a5 (SYNTHETIC smoke test, designer-intent labels, not an accuracy claim)
+steps 22 | default selection ok 6 | acceptable-not-default 2 | unacceptable 3 | mode ok 0 | raw unchanged 22/22
+  J01-long-improv-then-idea              first-capture        default=n acc=- bad=! mode=unknown/grid rank=- startErr=77300ms missingFlags=-
+  J02-pedal-held-no-silence              first-capture        default=n acc=- bad=- mode=unknown/grid rank=- startErr=48200ms missingFlags=NO_SILENCE_FOUND,OPEN_NOTES_AT_CAPTURE,PEDAL_DOWN_AT_CAPTURE
+  J03-capture-while-held                 first-capture        default=n acc=- bad=! mode=unknown/grid rank=- startErr=14450ms missingFlags=OPEN_NOTES_AT_CAPTURE,PEDAL_DOWN_AT_CAPTURE
+  J04-sounding-rest-vs-pause             first-capture        default=n acc=Y bad=- mode=unknown/grid rank=- startErr=4713ms missingFlags=LABEL_UNCERTAIN
+  J05-swing-pickup                       first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=2ms missingFlags=PICKUP
+  J06-rubato-ballad-free                 first-capture        default=n acc=- bad=- mode=unknown/free rank=- startErr=40444ms missingFlags=TEMPO_UNSTABLE
+  J07-rolled-chords-charleston           first-capture        default=n acc=- bad=- mode=unknown/grid rank=- startErr=10009ms missingFlags=-
+  J08-half-double-ambiguous              first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=0ms missingFlags=TEMPO_AMBIGUOUS_HALF_DOUBLE
+  J09-jazz-waltz-3-4                     first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=8ms missingFlags=METER_ALTERNATIVE
+  J10-false-start                        first-capture        default=n acc=Y bad=- mode=unknown/grid rank=- startErr=2580ms missingFlags=-
+  J11-sostenuto-latch                    first-capture        default=n acc=- bad=- mode=unknown/free rank=- startErr=5950ms missingFlags=-
+  J12-repeated-notes-two-sources         first-capture        default=Y acc=- bad=- mode=unknown/free rank=1 startErr=0ms missingFlags=ORPHAN_NOTE_OFF,CROSS_STREAM_SAME_KEY
+  J13-eviction-watermark                 first-capture        default=n acc=- bad=- mode=unknown/free rank=- startErr=30100ms missingFlags=HISTORY_TRUNCATED,ONSET_EVICTED
+  J14-expression-initial-state           first-capture        default=n acc=- bad=- mode=unknown/free rank=- startErr=5500ms missingFlags=-
+  J15-delayed-capture                    first-capture        default=n acc=- bad=- mode=unknown/grid rank=- startErr=22937ms missingFlags=-
+  L01-journey-piano-bass-drums           first-capture:piano  default=n acc=- bad=! mode=unknown/grid rank=- startErr=39918ms missingFlags=-
+  L01-journey-piano-bass-drums           layer-capture:bass   default=n acc=- bad=- mode=unknown/bar-range rank=- startErr=15515ms missingFlags=PICKUP tempoKept=true
+  L01-journey-piano-bass-drums           layer-capture:drums  default=n acc=- bad=- mode=unknown/bar-range rank=- startErr=8000ms missingFlags=DELAYED_CAPTURE tempoKept=true
+  L02-journey-repeats-and-corrections    first-capture:piano  default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=50ms missingFlags=TAIL_ACROSS_SEAM
+  L02-journey-repeats-and-corrections    layer-capture:bass   default=n acc=- bad=- mode=unknown/bar-range rank=- startErr=9990ms missingFlags=INCOMPLETE_CURRENT_BAR_EXCLUDED tempoKept=true
+  L03-journey-free-loop-cycle-lock       first-capture:piano  default=Y acc=- bad=- mode=unknown/free rank=1 startErr=50ms missingFlags=TEMPO_UNSTABLE
+  L03-journey-free-loop-cycle-lock       layer-capture:bass   default=n acc=- bad=- mode=unknown/cycle-range rank=- startErr=7200ms missingFlags=- tempoKept=true
+
+== m0-reference (SYNTHETIC smoke test, designer-intent labels, not an accuracy claim)
+steps 22 | default selection ok 19 | acceptable-not-default 1 | unacceptable 0 | mode ok 10 | raw unchanged 22/22
+  J01-long-improv-then-idea              first-capture        default=Y acc=- bad=- mode=free/grid rank=1 startErr=0ms missingFlags=-
+  J02-pedal-held-no-silence              first-capture        default=n acc=- bad=- mode=free/grid rank=- startErr=9600ms missingFlags=-
+  J03-capture-while-held                 first-capture        default=Y acc=- bad=- mode=free/grid rank=1 startErr=8ms missingFlags=-
+  J04-sounding-rest-vs-pause             first-capture        default=n acc=Y bad=- mode=free/grid rank=2 startErr=4713ms missingFlags=LABEL_UNCERTAIN
+  J05-swing-pickup                       first-capture        default=Y acc=- bad=- mode=free/grid rank=1 startErr=2ms missingFlags=PICKUP
+  J06-rubato-ballad-free                 first-capture        default=Y acc=- bad=- mode=free/free rank=1 startErr=0ms missingFlags=TEMPO_UNSTABLE
+  J07-rolled-chords-charleston           first-capture        default=Y acc=- bad=- mode=free/grid rank=1 startErr=0ms missingFlags=-
+  J08-half-double-ambiguous              first-capture        default=Y acc=- bad=- mode=free/grid rank=1 startErr=0ms missingFlags=TEMPO_AMBIGUOUS_HALF_DOUBLE
+  J09-jazz-waltz-3-4                     first-capture        default=Y acc=- bad=- mode=free/grid rank=1 startErr=8ms missingFlags=METER_ALTERNATIVE
+  J10-false-start                        first-capture        default=Y acc=- bad=- mode=free/grid rank=1 startErr=0ms missingFlags=-
+  J11-sostenuto-latch                    first-capture        default=Y acc=- bad=- mode=free/free rank=1 startErr=0ms missingFlags=-
+  J12-repeated-notes-two-sources         first-capture        default=Y acc=- bad=- mode=free/free rank=1 startErr=0ms missingFlags=- pairing=ok
+  J13-eviction-watermark                 first-capture        default=Y acc=- bad=- mode=free/free rank=1 startErr=0ms missingFlags=-
+  J14-expression-initial-state           first-capture        default=Y acc=- bad=- mode=free/free rank=1 startErr=0ms missingFlags=-
+  J15-delayed-capture                    first-capture        default=Y acc=- bad=- mode=free/grid rank=1 startErr=0ms missingFlags=-
+  L01-journey-piano-bass-drums           first-capture:piano  default=Y acc=- bad=- mode=free/grid rank=1 startErr=3ms missingFlags=-
+  L01-journey-piano-bass-drums           layer-capture:bass   default=Y acc=- bad=- mode=bar-range/bar-range rank=1 startErr=0ms missingFlags=- tempoKept=true
+  L01-journey-piano-bass-drums           layer-capture:drums  default=Y acc=- bad=- mode=bar-range/bar-range rank=1 startErr=0ms missingFlags=DELAYED_CAPTURE tempoKept=true
+  L02-journey-repeats-and-corrections    first-capture:piano  default=Y acc=- bad=- mode=free/grid rank=1 startErr=0ms missingFlags=TAIL_ACROSS_SEAM
+  L02-journey-repeats-and-corrections    layer-capture:bass   default=n acc=- bad=- mode=bar-range/bar-range rank=- startErr=27500ms missingFlags=- tempoKept=true
+  L03-journey-free-loop-cycle-lock       first-capture:piano  default=Y acc=- bad=- mode=free/free rank=1 startErr=0ms missingFlags=TEMPO_UNSTABLE
+  L03-journey-free-loop-cycle-lock       layer-capture:bass   default=Y acc=- bad=- mode=cycle-range/cycle-range rank=1 startErr=0ms missingFlags=- tempoKept=true
+
+== main-534279f (SYNTHETIC smoke test, designer-intent labels, not an accuracy claim)
+steps 22 | default selection ok 14 | acceptable-not-default 0 | unacceptable 0 | mode ok 0 | raw unchanged 22/22
+  J01-long-improv-then-idea              first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=0ms missingFlags=-
+  J02-pedal-held-no-silence              first-capture        default=n acc=- bad=- mode=unknown/grid rank=- startErr=48200ms missingFlags=NO_SILENCE_FOUND,OPEN_NOTES_AT_CAPTURE,PEDAL_DOWN_AT_CAPTURE
+  J03-capture-while-held                 first-capture        default=n acc=- bad=- mode=unknown/grid rank=- startErr=6667ms missingFlags=OPEN_NOTES_AT_CAPTURE,PEDAL_DOWN_AT_CAPTURE
+  J04-sounding-rest-vs-pause             first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=0ms missingFlags=LABEL_UNCERTAIN
+  J05-swing-pickup                       first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=2ms missingFlags=PICKUP
+  J06-rubato-ballad-free                 first-capture        default=n acc=- bad=- mode=unknown/free rank=- startErr=15831ms missingFlags=TEMPO_UNSTABLE
+  J07-rolled-chords-charleston           first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=0ms missingFlags=-
+  J08-half-double-ambiguous              first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=0ms missingFlags=TEMPO_AMBIGUOUS_HALF_DOUBLE
+  J09-jazz-waltz-3-4                     first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=8ms missingFlags=METER_ALTERNATIVE
+  J10-false-start                        first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=0ms missingFlags=-
+  J11-sostenuto-latch                    first-capture        default=Y acc=- bad=- mode=unknown/free rank=1 startErr=0ms missingFlags=-
+  J12-repeated-notes-two-sources         first-capture        default=Y acc=- bad=- mode=unknown/free rank=1 startErr=0ms missingFlags=ORPHAN_NOTE_OFF,CROSS_STREAM_SAME_KEY
+  J13-eviction-watermark                 first-capture        default=Y acc=- bad=- mode=unknown/free rank=1 startErr=0ms missingFlags=HISTORY_TRUNCATED,ONSET_EVICTED
+  J14-expression-initial-state           first-capture        default=Y acc=- bad=- mode=unknown/free rank=1 startErr=0ms missingFlags=-
+  J15-delayed-capture                    first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=0ms missingFlags=-
+  L01-journey-piano-bass-drums           first-capture:piano  default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=3ms missingFlags=-
+  L01-journey-piano-bass-drums           layer-capture:bass   default=n acc=- bad=- mode=unknown/bar-range rank=- startErr=190ms missingFlags=PICKUP tempoKept=true
+  L01-journey-piano-bass-drums           layer-capture:drums  default=n acc=- bad=- mode=unknown/bar-range rank=- startErr=3ms missingFlags=DELAYED_CAPTURE tempoKept=true
+  L02-journey-repeats-and-corrections    first-capture:piano  default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=50ms missingFlags=TAIL_ACROSS_SEAM
+  L02-journey-repeats-and-corrections    layer-capture:bass   default=n acc=- bad=- mode=unknown/bar-range rank=- startErr=12500ms missingFlags=INCOMPLETE_CURRENT_BAR_EXCLUDED tempoKept=true
+  L03-journey-free-loop-cycle-lock       first-capture:piano  default=n acc=- bad=- mode=unknown/free rank=- startErr=4900ms missingFlags=TEMPO_UNSTABLE
+  L03-journey-free-loop-cycle-lock       layer-capture:bass   default=n acc=- bad=- mode=unknown/cycle-range rank=- startErr=4920ms missingFlags=- tempoKept=true

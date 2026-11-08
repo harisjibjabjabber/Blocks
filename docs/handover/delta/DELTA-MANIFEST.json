@@ -1,0 +1,593 @@
+{
+  "copy_started_london": "2026-11-08T19:50:56.251093+00:00",
+  "copy_completed_london": "2026-11-08T19:50:56.497380+00:00",
+  "base_manifest_sha256": "a00cc68081b1299b543dc1bb24b88e83f922c956164f77ca98625a7ab3a89491",
+  "actual_delta": [
+    {
+      "path": "blocks-design/.gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/CHANGELOG.md",
+      "bytes": 10672,
+      "sha256": "467a972d6ab38fad50855955dbfe06f73c19cfb4681891cb7eb416e176ac15d9",
+      "base_sha256": "65c1cba9218f2f9ecaab2550678a5f2bf56913ed0072c57ef1411d95d7a02bc3",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/LIMITATIONS.md",
+      "bytes": 2911,
+      "sha256": "f34b404664c25e679fa6817f55322c436c44c0ecb6c7b7920d25bb206acb6c22",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/README.md",
+      "bytes": 8295,
+      "sha256": "cc2c4fab478a203e73a6acce208a560a0d7c6ef43825875b3d6231a7753c8849",
+      "base_sha256": "b0d16219e766615386471c90b1e79c413529f76a83871c24d3927f85755d5a1f",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/acceptance-criteria.md",
+      "bytes": 16168,
+      "sha256": "2d6e9c06966ba0b301d9ea50aeb9b76f2c13c04f3f0dfc2b24afd8b04ac91906",
+      "base_sha256": "0c047eadc3ec6c1d073a2d81abe7c380c1b8e64fa5ac70da7b594b380742e5e2",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/checks/check-log.txt",
+      "bytes": 1020,
+      "sha256": "20a564d62c1a2601ac33084755b764ea6300f9b1564431d384a393554ebf99d8",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/checks/prototype-test.js",
+      "bytes": 1499,
+      "sha256": "2a9b97fdd282b1fdb581755fb80c981ed3392dfce1309d5c7392f5c12985a780",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/checks/run_checks.sh",
+      "bytes": 2579,
+      "sha256": "08ae93022bd590048ecaff0dd53577fd4d6081fb3a24b46b5b7a739769887ccc",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/gestures.md",
+      "bytes": 10278,
+      "sha256": "bbb1f4758ac3c29bf29115bae7f81e109d76e1eeb84027b2acc19c3e74d3143c",
+      "base_sha256": "86d064a73e72c87579b699c6df41846fb56eed9138e578e3087613209485ce8d",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/README.md",
+      "bytes": 7122,
+      "sha256": "b5a55b3cdcfacefae72570b91dcb2495dbd135202226052828db01098633222c",
+      "base_sha256": "1004abfdfb42df68904dd24dd9f79d57dc85035bc5c7939c170c0fa1b776b7ff",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Geist Mono/GeistMono-VariableFont_wght.ttf",
+      "bytes": 173204,
+      "sha256": "e8acfc9d5331733427582e4c906174dde5fe57af8f82cdaf906e80d729ff2b18",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Geist Mono/OFL.txt",
+      "bytes": 4387,
+      "sha256": "1781d2806a07d91c4edf4740b88449fab7d0eadad53f7c351b94cd4d4eb8c00f",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/IBM Plex Mono/IBMPlexMono-Regular.ttf",
+      "bytes": 133796,
+      "sha256": "ab08018ccd276b79fb2c636bb95b9c543598f9d50505fe92506fcb4dae7810cd",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/IBM Plex Mono/OFL.txt",
+      "bytes": 4456,
+      "sha256": "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Instrument Sans/InstrumentSans-VariableFont_wdth,wght.ttf",
+      "bytes": 193312,
+      "sha256": "55748ab364d5408ceb15fc3de300e4f643617d060fa2132b704484f11cb507c5",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Instrument Sans/OFL.txt",
+      "bytes": 4403,
+      "sha256": "9e27a72ed30eb49a08678f6a5d6ed98ec7ba5368f541637ee0683ec9134ef966",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Instrument Serif/InstrumentSerif-Italic.ttf",
+      "bytes": 70868,
+      "sha256": "9c86e4d5a47b50224a2463a9eca8535835257c8e85c470c2c6b454b1af6f046e",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Instrument Serif/InstrumentSerif-Regular.ttf",
+      "bytes": 69312,
+      "sha256": "56ac3be03ac3ba283196b3e77850ab2ffcf56cfb6fd3212c5620109a972f8c99",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Instrument Serif/OFL.txt",
+      "bytes": 4405,
+      "sha256": "129ed7618959716959f2941fdd5b49e0ad6e6c1d78726761786a00253d865521",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Inter Tight/InterTight-VariableFont_wght.ttf",
+      "bytes": 580572,
+      "sha256": "4b8ef9ed255ebe7341aa566554c0f3e87ee10ce06d2085f07ccf66f41ef96c28",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Inter Tight/OFL.txt",
+      "bytes": 4383,
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/14-range-loop-edges.png",
+      "bytes": 333180,
+      "sha256": "12870ab7bb398f16eb1e74164bc79c7658e162a549d2e5e4620a755b50a7b863",
+      "base_sha256": "c6953b689d48051930a21dc5eb9c0341ed8f73669e09dbb8d6f34a9655ed67ed",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/range-overview.html",
+      "bytes": 298088,
+      "sha256": "e4be7edd74b31cc87bee91de430f86a40794542d7412a61a036cf572ed43efbe",
+      "base_sha256": "acea98fb8d4e3a5b0a1a9968bb39a56c26c7a4e051b7a27b00f2e543e232a6dc",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/range-overview.png",
+      "bytes": 1248658,
+      "sha256": "36f56995c5831130f2e5b9876c055b8ed2d9ae444bfa37eb6a1141f77761d81a",
+      "base_sha256": "f29001f080510eebc3dff29b030200bc5d8ec6b5d09879eecbce59289e19a8a7",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/14-range-loop-edges.board.html",
+      "bytes": 23460,
+      "sha256": "fb17213558317ae0133c2d6a31055cb6ada988b79067634706dcd1fa24701266",
+      "base_sha256": "52cd16c237cd61507da20e4ceddf91db9f9feecfc8e0d78bb6c068b22b30f267",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/14-range-loop-edges.html",
+      "bytes": 22120,
+      "sha256": "a405f7d11d695d4ff3f8aeb21e31e38470be7b0c466157f221f7a3e1d421f875",
+      "base_sha256": "566e47512aeeb58443e0de8aa9b5049d0c2c6f818e053de87ff6438e45668d46",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/14-range-loop-edges@2x.png",
+      "bytes": 168315,
+      "sha256": "d1b72cdc8733a2a2e709d71f5603b172d067fbbcf3641cd0e4d560015f74614e",
+      "base_sha256": "063e61e3c26a7236bf0cf05c267e49dfcd72c4510fd42f5bfe335a9575206549",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/14-range-loop-edges.png",
+      "bytes": 394461,
+      "sha256": "0b4471161895de177f2d4e1bb15d8bd2d0dcc3f04f6d820f39de670d246e6d17",
+      "base_sha256": "29fed2bad67de9d58b7ab28aea1ef4176cf251ae671d36de650321fc66df294b",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/range-overview.html",
+      "bytes": 297302,
+      "sha256": "4ef844cf18a221123840ce96158066ebb45058f3c7c34ac6eda51f17ff8dbcda",
+      "base_sha256": "bb8ec38d3ac7abc46b7b105c3792344b3e9f181527b08ea891e139eb94ed56af",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/range-overview.png",
+      "bytes": 1367547,
+      "sha256": "1263c0e270276fff7006224b9df9b37d97676b88db859c59d3d3c136823a0713",
+      "base_sha256": "b3ef08ce4a01393f119a36fec5f80c2a0e919947e2d11b918327879e309b0be5",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/14-range-loop-edges.board.html",
+      "bytes": 23427,
+      "sha256": "51bd06f7c82196f672ba610107969c1a105174f3becf825bc376ddb8bf4db5d3",
+      "base_sha256": "f595e666d1e374450c463a99cb648817973e3ccf288aaac7c039c00ab65fc69e",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/14-range-loop-edges.html",
+      "bytes": 22086,
+      "sha256": "6046e8fd513878e75ede9dbb902899d59888b0b7378c9c50848dafc66d021e78",
+      "base_sha256": "ff2171121a543b4cd5c941219d5d20f69080f5328444e46746f84cfeeb95c949",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/14-range-loop-edges@2x.png",
+      "bytes": 163228,
+      "sha256": "d44bee70e2e7b1993b7a7903b23bc6cd6a29e71d9ad98d3667e8f7311bc55304",
+      "base_sha256": "f5e8a42fa7fae97494073e1359c2146b42be95f9cfdf2eedc83561c59dac5d8a",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/prototype/index.html",
+      "bytes": 1605829,
+      "sha256": "a15c9df8c11cf1778ae6b4e4a9bdf9170500589dec5ef891ccc85766d38eb46d",
+      "base_sha256": "3531775a3ba0a4881d31ec1ef0fcededa51f77bcaf9547422daede8c51175201",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/src/build.py",
+      "bytes": 28012,
+      "sha256": "29ddbdf7ae89476971a5b2c8f8d984b1e4d99107f3432ffc7fcf68bf8991ddf4",
+      "base_sha256": "03bb0babb34502db621b6c59ba08e6e5b1c004a2167b767f268f42dd8bedd0e5",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/hifi/src/contrast_rev32.py",
+      "bytes": 1131,
+      "sha256": "c19941564c5be6eb62c24681093c87e9defe111598bf52242a969192f6caceb3",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/hifi/src/rangeview.py",
+      "bytes": 34592,
+      "sha256": "f6627a49ecdaa9f75db4022b05979cb181a86645ef2b087eed011281af270b96",
+      "base_sha256": "95cbe4d54e7c2e4ed9b205f9ce4e2fd9e1b9f60ab26b4d03dbdc97dd1e8b06d5",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/page/README.md",
+      "bytes": 3540,
+      "sha256": "8b98acfb92ff68340af605488a012eff59065768cc2f638f0983aafbf45541b5",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/page/blocks-design.canvas.tsx",
+      "bytes": 163793,
+      "sha256": "154a347afff13e6f720a6b843292ae39d732928a1eedd86615818b5e6c868e19",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/qa-review.md",
+      "bytes": 3965,
+      "sha256": "259055b7861e65f076ed2f1f23cfe6075d4399cb626b163a1acd00ee302d3737",
+      "base_sha256": "fd2dfd2bc6861f9377b9a2b1acef17b907515da9c724bb89fea97f511e60daf3",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/spec.md",
+      "bytes": 49135,
+      "sha256": "30ce06b0236a20ba98823840a93b71d8c3aa36ab8111662da07f38cae26dff8f",
+      "base_sha256": "59e7b8860624d228a3886d68901aedb4e54bc801d99e475b26ec8b3a3d05bc4e",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/state-machines.md",
+      "bytes": 5999,
+      "sha256": "52567ad8535f306b3f5219d5234114e9b652fda40ac32ddddcb681c4b525c031",
+      "base_sha256": "0ccef8a2b44ddde99531b2e0f4163651a813f553e0c00f1d331ae53e6f383aef",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/tokens.json",
+      "bytes": 12489,
+      "sha256": "ec847f1d028b89cb6a5b3dfc1d2b949505fad8e74ad84f7492799fb597e1024f",
+      "base_sha256": "d24d0a4e99a5f0b19f2adc3bb98c6052e69578bc0dc7ce739d566848fb736880",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/usability-test-script.md",
+      "bytes": 3768,
+      "sha256": "b0de23a8432e7d79473e7a95e28b827bcf3745a86a2dec7ab5dc07fea979c79b",
+      "base_sha256": "91195c53dded9699f63f9d9bc40243aace0fcc7bf26820d3b91c094ba6085e69",
+      "status": "modified"
+    },
+    {
+      "path": "blocks-design/wireframes/src/gen_wire.py",
+      "bytes": 42064,
+      "sha256": "daca68a040ffc6156e6a7bdabdbed42a476df1ad807f8571c88705e10fee040b",
+      "base_sha256": null,
+      "status": "new"
+    },
+    {
+      "path": "blocks-design/wireframes/src/wire.json",
+      "bytes": 50960,
+      "sha256": "d657606ae7dea79454ae13d99b7a5f4c0c78e77f788efe162d79418d0b410006",
+      "base_sha256": null,
+      "status": "new"
+    }
+  ],
+  "excluded": [],
+  "deleted_noncache_base_design_files": [],
+  "payload_files": [
+    {
+      "path": "blocks-design/.gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "path": "blocks-design/CHANGELOG.md",
+      "bytes": 10672,
+      "sha256": "467a972d6ab38fad50855955dbfe06f73c19cfb4681891cb7eb416e176ac15d9"
+    },
+    {
+      "path": "blocks-design/LIMITATIONS.md",
+      "bytes": 2911,
+      "sha256": "f34b404664c25e679fa6817f55322c436c44c0ecb6c7b7920d25bb206acb6c22"
+    },
+    {
+      "path": "blocks-design/README.md",
+      "bytes": 8295,
+      "sha256": "cc2c4fab478a203e73a6acce208a560a0d7c6ef43825875b3d6231a7753c8849"
+    },
+    {
+      "path": "blocks-design/acceptance-criteria.md",
+      "bytes": 16168,
+      "sha256": "2d6e9c06966ba0b301d9ea50aeb9b76f2c13c04f3f0dfc2b24afd8b04ac91906"
+    },
+    {
+      "path": "blocks-design/checks/check-log.txt",
+      "bytes": 1020,
+      "sha256": "20a564d62c1a2601ac33084755b764ea6300f9b1564431d384a393554ebf99d8"
+    },
+    {
+      "path": "blocks-design/checks/prototype-test.js",
+      "bytes": 1499,
+      "sha256": "2a9b97fdd282b1fdb581755fb80c981ed3392dfce1309d5c7392f5c12985a780"
+    },
+    {
+      "path": "blocks-design/checks/run_checks.sh",
+      "bytes": 2579,
+      "sha256": "08ae93022bd590048ecaff0dd53577fd4d6081fb3a24b46b5b7a739769887ccc"
+    },
+    {
+      "path": "blocks-design/gestures.md",
+      "bytes": 10278,
+      "sha256": "bbb1f4758ac3c29bf29115bae7f81e109d76e1eeb84027b2acc19c3e74d3143c"
+    },
+    {
+      "path": "blocks-design/hifi/README.md",
+      "bytes": 7122,
+      "sha256": "b5a55b3cdcfacefae72570b91dcb2495dbd135202226052828db01098633222c"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Geist Mono/GeistMono-VariableFont_wght.ttf",
+      "bytes": 173204,
+      "sha256": "e8acfc9d5331733427582e4c906174dde5fe57af8f82cdaf906e80d729ff2b18"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Geist Mono/HANDOVER-FONT-PROVENANCE.json",
+      "bytes": 1590,
+      "sha256": "be1bafc472ef5ba887c37271fcf4c68ee6fa55711e1048f40bcfe746b267a6a2"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Geist Mono/OFL.txt",
+      "bytes": 4387,
+      "sha256": "1781d2806a07d91c4edf4740b88449fab7d0eadad53f7c351b94cd4d4eb8c00f"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/IBM Plex Mono/HANDOVER-FONT-PROVENANCE.json",
+      "bytes": 1487,
+      "sha256": "58101be7f9fb5166fc4e5b59aef099474301bbb5813ecb9eebeec5b2bdf5cc9b"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/IBM Plex Mono/IBMPlexMono-Regular.ttf",
+      "bytes": 133796,
+      "sha256": "ab08018ccd276b79fb2c636bb95b9c543598f9d50505fe92506fcb4dae7810cd"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/IBM Plex Mono/OFL.txt",
+      "bytes": 4456,
+      "sha256": "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Instrument Sans/HANDOVER-FONT-PROVENANCE.json",
+      "bytes": 1544,
+      "sha256": "1bf14e53aeb781375d86143d583bf99861b8612aa1488473961dd0fe3ffb8dda"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Instrument Sans/InstrumentSans-VariableFont_wdth,wght.ttf",
+      "bytes": 193312,
+      "sha256": "55748ab364d5408ceb15fc3de300e4f643617d060fa2132b704484f11cb507c5"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Instrument Sans/OFL.txt",
+      "bytes": 4403,
+      "sha256": "9e27a72ed30eb49a08678f6a5d6ed98ec7ba5368f541637ee0683ec9134ef966"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Instrument Serif/HANDOVER-FONT-PROVENANCE.json",
+      "bytes": 2452,
+      "sha256": "5d70cec8ff8257f70471ca15164d9a2e98ac7d748bf149a2e3267b99f97bdb12"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Instrument Serif/InstrumentSerif-Italic.ttf",
+      "bytes": 70868,
+      "sha256": "9c86e4d5a47b50224a2463a9eca8535835257c8e85c470c2c6b454b1af6f046e"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Instrument Serif/InstrumentSerif-Regular.ttf",
+      "bytes": 69312,
+      "sha256": "56ac3be03ac3ba283196b3e77850ab2ffcf56cfb6fd3212c5620109a972f8c99"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Instrument Serif/OFL.txt",
+      "bytes": 4405,
+      "sha256": "129ed7618959716959f2941fdd5b49e0ad6e6c1d78726761786a00253d865521"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Inter Tight/HANDOVER-FONT-PROVENANCE.json",
+      "bytes": 1478,
+      "sha256": "97bf4472bde1df47b982fd857e6327a76fc506cd5c159552e6e7e6f44560324e"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Inter Tight/InterTight-VariableFont_wght.ttf",
+      "bytes": 580572,
+      "sha256": "4b8ef9ed255ebe7341aa566554c0f3e87ee10ce06d2085f07ccf66f41ef96c28"
+    },
+    {
+      "path": "blocks-design/hifi/fonts/Inter Tight/OFL.txt",
+      "bytes": 4383,
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/14-range-loop-edges.png",
+      "bytes": 333180,
+      "sha256": "12870ab7bb398f16eb1e74164bc79c7658e162a549d2e5e4620a755b50a7b863"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/range-overview.html",
+      "bytes": 298088,
+      "sha256": "e4be7edd74b31cc87bee91de430f86a40794542d7412a61a036cf572ed43efbe"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/range-overview.png",
+      "bytes": 1248658,
+      "sha256": "36f56995c5831130f2e5b9876c055b8ed2d9ae444bfa37eb6a1141f77761d81a"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/14-range-loop-edges.board.html",
+      "bytes": 23460,
+      "sha256": "fb17213558317ae0133c2d6a31055cb6ada988b79067634706dcd1fa24701266"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/14-range-loop-edges.html",
+      "bytes": 22120,
+      "sha256": "a405f7d11d695d4ff3f8aeb21e31e38470be7b0c466157f221f7a3e1d421f875"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/14-range-loop-edges@2x.png",
+      "bytes": 168315,
+      "sha256": "d1b72cdc8733a2a2e709d71f5603b172d067fbbcf3641cd0e4d560015f74614e"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/14-range-loop-edges.png",
+      "bytes": 394461,
+      "sha256": "0b4471161895de177f2d4e1bb15d8bd2d0dcc3f04f6d820f39de670d246e6d17"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/range-overview.html",
+      "bytes": 297302,
+      "sha256": "4ef844cf18a221123840ce96158066ebb45058f3c7c34ac6eda51f17ff8dbcda"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/range-overview.png",
+      "bytes": 1367547,
+      "sha256": "1263c0e270276fff7006224b9df9b37d97676b88db859c59d3d3c136823a0713"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/14-range-loop-edges.board.html",
+      "bytes": 23427,
+      "sha256": "51bd06f7c82196f672ba610107969c1a105174f3becf825bc376ddb8bf4db5d3"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/14-range-loop-edges.html",
+      "bytes": 22086,
+      "sha256": "6046e8fd513878e75ede9dbb902899d59888b0b7378c9c50848dafc66d021e78"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/14-range-loop-edges@2x.png",
+      "bytes": 163228,
+      "sha256": "d44bee70e2e7b1993b7a7903b23bc6cd6a29e71d9ad98d3667e8f7311bc55304"
+    },
+    {
+      "path": "blocks-design/hifi/prototype/index.html",
+      "bytes": 1605829,
+      "sha256": "a15c9df8c11cf1778ae6b4e4a9bdf9170500589dec5ef891ccc85766d38eb46d"
+    },
+    {
+      "path": "blocks-design/hifi/src/build.py",
+      "bytes": 28012,
+      "sha256": "29ddbdf7ae89476971a5b2c8f8d984b1e4d99107f3432ffc7fcf68bf8991ddf4"
+    },
+    {
+      "path": "blocks-design/hifi/src/contrast_rev32.py",
+      "bytes": 1131,
+      "sha256": "c19941564c5be6eb62c24681093c87e9defe111598bf52242a969192f6caceb3"
+    },
+    {
+      "path": "blocks-design/hifi/src/rangeview.py",
+      "bytes": 34592,
+      "sha256": "f6627a49ecdaa9f75db4022b05979cb181a86645ef2b087eed011281af270b96"
+    },
+    {
+      "path": "blocks-design/page/README.md",
+      "bytes": 3540,
+      "sha256": "8b98acfb92ff68340af605488a012eff59065768cc2f638f0983aafbf45541b5"
+    },
+    {
+      "path": "blocks-design/page/blocks-design.canvas.tsx",
+      "bytes": 163793,
+      "sha256": "154a347afff13e6f720a6b843292ae39d732928a1eedd86615818b5e6c868e19"
+    },
+    {
+      "path": "blocks-design/qa-review.md",
+      "bytes": 3965,
+      "sha256": "259055b7861e65f076ed2f1f23cfe6075d4399cb626b163a1acd00ee302d3737"
+    },
+    {
+      "path": "blocks-design/spec.md",
+      "bytes": 49135,
+      "sha256": "30ce06b0236a20ba98823840a93b71d8c3aa36ab8111662da07f38cae26dff8f"
+    },
+    {
+      "path": "blocks-design/state-machines.md",
+      "bytes": 5999,
+      "sha256": "52567ad8535f306b3f5219d5234114e9b652fda40ac32ddddcb681c4b525c031"
+    },
+    {
+      "path": "blocks-design/tokens.json",
+      "bytes": 12489,
+      "sha256": "ec847f1d028b89cb6a5b3dfc1d2b949505fad8e74ad84f7492799fb597e1024f"
+    },
+    {
+      "path": "blocks-design/usability-test-script.md",
+      "bytes": 3768,
+      "sha256": "b0de23a8432e7d79473e7a95e28b827bcf3745a86a2dec7ab5dc07fea979c79b"
+    },
+    {
+      "path": "blocks-design/wireframes/src/gen_wire.py",
+      "bytes": 42064,
+      "sha256": "daca68a040ffc6156e6a7bdabdbed42a476df1ad807f8571c88705e10fee040b"
+    },
+    {
+      "path": "blocks-design/wireframes/src/wire.json",
+      "bytes": 50960,
+      "sha256": "d657606ae7dea79454ae13d99b7a5f4c0c78e77f788efe162d79418d0b410006"
+    },
+    {
+      "path": "blocks-handover-delta-rev321/DELTA-NOTE.md",
+      "bytes": 4217,
+      "sha256": "e525cdbbf741f9c5c402e7bd40c4b9440479d07e11e881385f5f636f641f0773"
+    }
+  ]
+}

@@ -1,0 +1,4653 @@
+{
+  "snapshot_started_london": "20261108-194317",
+  "included": [
+    {
+      "path": "blocks-design/CHANGELOG.md",
+      "bytes": 8835,
+      "sha256": "65c1cba9218f2f9ecaab2550678a5f2bf56913ed0072c57ef1411d95d7a02bc3"
+    },
+    {
+      "path": "blocks-design/README.md",
+      "bytes": 1977,
+      "sha256": "b0d16219e766615386471c90b1e79c413529f76a83871c24d3927f85755d5a1f"
+    },
+    {
+      "path": "blocks-design/acceptance-criteria.md",
+      "bytes": 16011,
+      "sha256": "0c047eadc3ec6c1d073a2d81abe7c380c1b8e64fa5ac70da7b594b380742e5e2"
+    },
+    {
+      "path": "blocks-design/components.md",
+      "bytes": 4005,
+      "sha256": "28a14273c17cfc12f0395a83d76c8165fdcc0cde2ae559d88f9b2d39ebff4f1d"
+    },
+    {
+      "path": "blocks-design/gestures.md",
+      "bytes": 9983,
+      "sha256": "86d064a73e72c87579b699c6df41846fb56eed9138e578e3087613209485ce8d"
+    },
+    {
+      "path": "blocks-design/hifi/README.md",
+      "bytes": 6798,
+      "sha256": "1004abfdfb42df68904dd24dd9f79d57dc85035bc5c7939c170c0fa1b776b7ff"
+    },
+    {
+      "path": "blocks-design/hifi/contrast-rev32.tsv",
+      "bytes": 880,
+      "sha256": "ec6c4b2d1403f6ba1592d1cee4e3ecae634c603f0ef2134f5f09daaf86839b90"
+    },
+    {
+      "path": "blocks-design/hifi/contrast.tsv",
+      "bytes": 2827,
+      "sha256": "edd96e40f5f18ab8c1168d7b6ddb2819fa72d5dba07feac585906a71acf46394"
+    },
+    {
+      "path": "blocks-design/hifi/directions/A-vs-B-recommendation.html",
+      "bytes": 47106,
+      "sha256": "f70c2654bd316c4474f9cad63cfa87ed89227dee9aa5d52f491478c5931bb28a"
+    },
+    {
+      "path": "blocks-design/hifi/directions/A-vs-B-recommendation.png",
+      "bytes": 491209,
+      "sha256": "c99e598b79f55c1b044ef02c3a44723789886707710de14fb7362d1dd4b88a81"
+    },
+    {
+      "path": "blocks-design/hifi/directions/B-capture-proposal.html",
+      "bytes": 19070,
+      "sha256": "d45c6de5e7494814568b0f6937da8af223d32f71158836988b0d7891ca10bcfd"
+    },
+    {
+      "path": "blocks-design/hifi/directions/B-capture-proposal@2x.png",
+      "bytes": 141113,
+      "sha256": "4de6c0932e8e47daad7162f59fbc03fff5018d480bf5642008b326ea372db9d1"
+    },
+    {
+      "path": "blocks-design/hifi/directions/B-hero-bass-over-loop.html",
+      "bytes": 22496,
+      "sha256": "fa7f56c64559885fa59ca6dbcae015d930de9c9a811b0aeb04ad9f788cba789a"
+    },
+    {
+      "path": "blocks-design/hifi/directions/B-hero-bass-over-loop@2x.png",
+      "bytes": 116445,
+      "sha256": "679bbf643df18c4bab89ec57b3dbf339b7d00b3f10562278d1989a81f5162551"
+    },
+    {
+      "path": "blocks-design/hifi/directions/direction-A-graphite-studio.html",
+      "bytes": 55795,
+      "sha256": "5541e914f6bb1f4e7c1724b3a8fcb9744e6bf4f6e822616e431f70bd3be15a8f"
+    },
+    {
+      "path": "blocks-design/hifi/directions/direction-A-graphite-studio.png",
+      "bytes": 1411095,
+      "sha256": "1d55f328e2d0089ff9907eaaef12218403c56e3afee04cc1acf9e42571b11eea"
+    },
+    {
+      "path": "blocks-design/hifi/directions/direction-B-paper-score.html",
+      "bytes": 41541,
+      "sha256": "341d9a29aead595797bf0ab48b71044a3ec338239693b50ad6c56afd36caf801"
+    },
+    {
+      "path": "blocks-design/hifi/directions/direction-B-paper-score.png",
+      "bytes": 1569839,
+      "sha256": "d333e8b0136e1d0e071399783e6ae0dcbe5b998dc9ff9fe3a67a8c9a469831c4"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/01-free-play.png",
+      "bytes": 307368,
+      "sha256": "963383901b6f3ab35c9e85e81fb625160e01cad4677b4b8eb20e91fb9a65ab91"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/02-capture-proposal.png",
+      "bytes": 369095,
+      "sha256": "13732312dc349d23962c11f72f80d9abf02f61c916221cd380656787f2e30a21"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/03-no-steady-pulse.png",
+      "bytes": 351422,
+      "sha256": "fba7c57a1c4bbcfc9c269447fa1155fef60edd6f304dedcc9b14da9c579149ef"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/04-bass-over-loop.png",
+      "bytes": 332783,
+      "sha256": "9fe67f3ad5f6f5e7e3f112935c45275f6c104fbe6f440e6e058273a411c99b75"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/05-bass-captured-undo.png",
+      "bytes": 356347,
+      "sha256": "dc04bddd73e8da27e7968cd98fad79daed866a502a0acbdab3b4f5bc02e0e890"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/06-drums.png",
+      "bytes": 339730,
+      "sha256": "7e1405183cbfc24e245b2311826d6b927dd7c58f765f0e7343b84be2c5253511"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/07-edit-quantise.png",
+      "bytes": 270527,
+      "sha256": "67d168c53020b08b0ed7304482bbfbc4491727d0509af2f1ba1b24c5e876cf55"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/08-settings-appearance.png",
+      "bytes": 320828,
+      "sha256": "a230fa25b402e9245bf0a01508f47d4cba93c8214d60c7a21fd2e5d962fd7d7a"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/09-range-auto-success.png",
+      "bytes": 341017,
+      "sha256": "89b4f95b6f58cc8e54db4277b8362312cb04ed5a21bb9fcacf9006351009228e"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/10-range-auto-too-short.png",
+      "bytes": 333915,
+      "sha256": "e0228702f4d63a84f44732e8a13504aa26de0bab2cbde1118e49e8b9a84b38f3"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/11-range-drag-start.png",
+      "bytes": 342273,
+      "sha256": "0cbb9c037067c2b5e64c915051a6593df1a425717ad75d2388d17e1010c81f73"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/12-range-four-chords.png",
+      "bytes": 337489,
+      "sha256": "2cf12889d9b80539514935004ca05ca4a35c809ef6e8ec0703dc0011ad2783a8"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/13a-range-boundaries.png",
+      "bytes": 345596,
+      "sha256": "d513aa7b4e1710e261bf8b042765c77e18f20d7cba2c78b544f6dee6283c8f3f"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/13b-range-slide-phase.png",
+      "bytes": 351008,
+      "sha256": "20d28958c8d7c2507e2c2aa6b51b39647a948f0c9a45e2d28e4e509ef01011b9"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/14-range-loop-edges.png",
+      "bytes": 332699,
+      "sha256": "c6953b689d48051930a21dc5eb9c0341ed8f73669e09dbb8d6f34a9655ed67ed"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/15-range-free-time.png",
+      "bytes": 319377,
+      "sha256": "3dae3c9eef95dea1dbb98d39e286c8d55de3d25a45094d6e1531a5cb50fb3b45"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/16-range-zoom-snap.png",
+      "bytes": 349473,
+      "sha256": "c92bbc214d4827bed7e1ed32a245899475a74af46364cca42ca09760e56126f0"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/desktop-07-edit-quantise.png",
+      "bytes": 550278,
+      "sha256": "c551fb3d09d940c8bc1ad924a11079b5bacadc5941510c99287c19b3830427db"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/desktop-11-range-drag.png",
+      "bytes": 478283,
+      "sha256": "abf892ee7b1f9b30dc8e7f2c63284c7181528e524bdd0724c88799acfe0a99f2"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/fold-05-bass-captured.png",
+      "bytes": 462341,
+      "sha256": "19eed2a62e78ec84ed7ae920cc806a0bd7f62ef245333c4a26c027bf4bca148e"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/fold-11-range-drag.png",
+      "bytes": 456189,
+      "sha256": "2c5e208e1d2a036937c7dd25a6b01dcb45a9a197853d1016e18387cc08f1aab3"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/range-overview.html",
+      "bytes": 297966,
+      "sha256": "acea98fb8d4e3a5b0a1a9968bb39a56c26c7a4e051b7a27b00f2e543e232a6dc"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/range-overview.png",
+      "bytes": 1248479,
+      "sha256": "f29001f080510eebc3dff29b030200bc5d8ec6b5d09879eecbce59289e19a8a7"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/01-free-play.board.html",
+      "bytes": 18540,
+      "sha256": "e1686fb0b4ad9b9d0db6f6a07b6c4319364fc6293e1f7685feb11e1d7c850c2c"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/01-free-play.html",
+      "bytes": 17201,
+      "sha256": "9c4504e8bdf6484ea7145dfe809e3ddaf7723d00ce2436e463f25593353a0659"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/01-free-play@2x.png",
+      "bytes": 143251,
+      "sha256": "dba2eca5082d8713185a5343753af933b8894d47590aa5f25b6598e2a8390a45"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/02-capture-proposal.board.html",
+      "bytes": 30198,
+      "sha256": "3d700058a61255727d32c9b63aa46859a61bf17a4a6ec7ad16b7e7cc475f135a"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/02-capture-proposal.html",
+      "bytes": 28813,
+      "sha256": "6a162d2000eeb578f91a2efb029ecb58ca1978859c5ee95f6b829e3f57bbd07f"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/02-capture-proposal@2x.png",
+      "bytes": 190445,
+      "sha256": "1eb5aadd92ba2b09c7cc12216b11e00500f7b931a16fd1794a530f2100140332"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/03-no-steady-pulse.board.html",
+      "bytes": 20373,
+      "sha256": "896daf261b963006bf30fcb980136980a622000eefdc1f2999266c916db75738"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/03-no-steady-pulse.html",
+      "bytes": 19022,
+      "sha256": "9086f98672cd1f2d3d868133d042b3c1ff6daa2194b3d19050fb84ed4e397dc2"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/03-no-steady-pulse@2x.png",
+      "bytes": 182663,
+      "sha256": "ca343f708f326901d23ce01fe4b1a97fa72250d3945c748619c17ba0622d3a13"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/04-bass-over-loop.board.html",
+      "bytes": 29514,
+      "sha256": "b34ac7846a962ed823f3f7ecdef4641b9f5c584ee2e076b7f14f8db16513f83a"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/04-bass-over-loop.html",
+      "bytes": 28147,
+      "sha256": "7b090ac9ce3f70a3c110e0299fdd52aa8960731b02e82c88a4ad5d58228f0b31"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/04-bass-over-loop@2x.png",
+      "bytes": 157383,
+      "sha256": "1579e32c61f48580ea86be1da286b4abfe16d6103ec3948f04e1c5c3aee94fa0"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/05-bass-captured-undo.board.html",
+      "bytes": 34245,
+      "sha256": "59f37495f99402a1535f21b15460f1ccba3447bc66d75824f68de22f5bba056c"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/05-bass-captured-undo.html",
+      "bytes": 32889,
+      "sha256": "5b274a4d52cffde2931a22aceacc6c0eeac7105179f0838f8e3286c6019e55d4"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/05-bass-captured-undo@2x.png",
+      "bytes": 185073,
+      "sha256": "ac7c99dd21c569682740652d9d3b2873b3ac91b921099c5aaef7295d500ebe3e"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/06-drums.board.html",
+      "bytes": 33990,
+      "sha256": "77c590ec84781c71b1f666b3270d7e378420cc17b0d0ff27d4fcfba7425ce931"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/06-drums.html",
+      "bytes": 32647,
+      "sha256": "2a7717a42ba5ee323216646aacd2c7d9c33d0f6e956e501757d4331b0dc00d82"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/06-drums@2x.png",
+      "bytes": 174041,
+      "sha256": "9fbb8a24d26d380dbb2e4417cea2b6f4f5fcaf15d120da0b556bf01711a5304c"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/07-edit-quantise.board.html",
+      "bytes": 22508,
+      "sha256": "4f8970bfafef6a0d4813f14c2eceb1ffbe9f341a8336f3e7cc887fa0f03f9cb2"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/07-edit-quantise.html",
+      "bytes": 21175,
+      "sha256": "8ce6ae54b30d9b816809434d5848b4b127bf677076cb2bbd328a815acdbee075"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/07-edit-quantise@2x.png",
+      "bytes": 106778,
+      "sha256": "d16f7e4340c3c7a2a825dd9256035b24ab1794625b4394bc57935923293f6dc7"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/08-settings-appearance.board.html",
+      "bytes": 12590,
+      "sha256": "5381600e78298e1d523b78a56bd759e437d2ab1a687473868a77e77088308017"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/08-settings-appearance.html",
+      "bytes": 11250,
+      "sha256": "71dab42466136071d4462df0235ab368aef126a1f2c657a1fb7a76d1c9c5be25"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/08-settings-appearance@2x.png",
+      "bytes": 150824,
+      "sha256": "f4c46e87268b6d81f4a3cc275c5e90acc83a5d3ecaa3f66e9ea9795e21146476"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/09-range-auto-success.board.html",
+      "bytes": 38908,
+      "sha256": "f131fe3d197cbdaebf33a649d531d7cd834abce1be55e8c5d6f07177daa69316"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/09-range-auto-success.html",
+      "bytes": 37559,
+      "sha256": "543fafa651f13580ba55fef5e294b4b7a00225e2dcc539a8172d619bc2173990"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/09-range-auto-success@2x.png",
+      "bytes": 170629,
+      "sha256": "1f924de60dfdbae91604e8c960f15e1aa34b648cd1982423cf641f5f4b9be6ad"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/10-range-auto-too-short.board.html",
+      "bytes": 38753,
+      "sha256": "58ae8e61612ce67cb7a7b89f290d555b4e873f351ac431b6dacf67e3baa439e7"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/10-range-auto-too-short.html",
+      "bytes": 37436,
+      "sha256": "aa6b1b6c102f2b8becd0385427081a23600b65e62c00cdb1d252cd0895c1e9f8"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/10-range-auto-too-short@2x.png",
+      "bytes": 172033,
+      "sha256": "5fe4cac71760f3c59e1521d466e3283ce754925cfaf122accea5ff1c1c97753b"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/11-range-drag-start.board.html",
+      "bytes": 38814,
+      "sha256": "4e800f1952bd795b914f30133738400e3b4a138abb51e7fc228b4ddac85183e0"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/11-range-drag-start.html",
+      "bytes": 37413,
+      "sha256": "f711cebbc2f36e3715407d389cb55690a801d4fcb256170c143cfc888c305444"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/11-range-drag-start@2x.png",
+      "bytes": 165716,
+      "sha256": "1938e95a5c2fadb3c1e318b72bfa6654e50208cf7fc380819deb0be89384a531"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/12-range-four-chords.board.html",
+      "bytes": 39312,
+      "sha256": "2a2971a8174dec881be044be0840dbde478b90aa977e4430fc8c2a2a2a94ceb2"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/12-range-four-chords.html",
+      "bytes": 38020,
+      "sha256": "76d9832f5be8e3db480d23b00669491a1ef80d9d7de8f2611cf0a1318af8eeb0"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/12-range-four-chords@2x.png",
+      "bytes": 180519,
+      "sha256": "1977b18e451af10a2a01b2507619e20d2e148b1fe3d1a0956faa88a06144e008"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/13a-range-boundaries.board.html",
+      "bytes": 45756,
+      "sha256": "dd2de4151ea2d9681fb265d3125fa6ecf00c7afd6574b4fd28c37b76e5f0f19c"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/13a-range-boundaries.html",
+      "bytes": 44423,
+      "sha256": "6521f41b0c8f3d52d1bb63e1cdcc81efb99b39315b9ea7e7435a18af731bfce1"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/13a-range-boundaries@2x.png",
+      "bytes": 177788,
+      "sha256": "7b4ae4673a869851ae7c2f5c1e3896530d28af1639b65d9d851123960629fed8"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/13b-range-slide-phase.board.html",
+      "bytes": 46115,
+      "sha256": "859b97a7e7dc4db0239b6a0e0170424b14b2aef99bafc6f8fe3817ebf946063c"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/13b-range-slide-phase.html",
+      "bytes": 44750,
+      "sha256": "c04d3dbf5ba0d58525142a8ee508e123bb1e7cc28f759f745407962624593cf5"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/13b-range-slide-phase@2x.png",
+      "bytes": 180549,
+      "sha256": "19f86319dc375a3bb1d84a6fe3a1e360c45663e4387bf326067c5445215be974"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/14-range-loop-edges.board.html",
+      "bytes": 23338,
+      "sha256": "52cd16c237cd61507da20e4ceddf91db9f9feecfc8e0d78bb6c068b22b30f267"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/14-range-loop-edges.html",
+      "bytes": 21998,
+      "sha256": "566e47512aeeb58443e0de8aa9b5049d0c2c6f818e053de87ff6438e45668d46"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/14-range-loop-edges@2x.png",
+      "bytes": 167895,
+      "sha256": "063e61e3c26a7236bf0cf05c267e49dfcd72c4510fd42f5bfe335a9575206549"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/15-range-free-time.board.html",
+      "bytes": 32045,
+      "sha256": "761b0b02aa24bfbae722470e5752ac6b3e0b42cf62be50ceee3665f37a648d77"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/15-range-free-time.html",
+      "bytes": 30767,
+      "sha256": "d58bb6ea8ca5455e708f30e7b839f29b54653d15c6eb73113a88c8f4d02d635f"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/15-range-free-time@2x.png",
+      "bytes": 163378,
+      "sha256": "a23a79065eb7104d85320ca225f5c7eac6097e6f56f99567ebf203ec97903196"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/16-range-zoom-snap.board.html",
+      "bytes": 34813,
+      "sha256": "0eb4fc019c0ea5e8bac789522a0c2f222162543d410585239524d43e9266bb91"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/16-range-zoom-snap.html",
+      "bytes": 33459,
+      "sha256": "5aebd1416690429a460b6d53a89b09eb9f312ad9bbbf68b5c50fc60a28dfd216"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/16-range-zoom-snap@2x.png",
+      "bytes": 181137,
+      "sha256": "56e6a29cf4b2b4b19f462a29e6f154150a6fb579558d7a67987f0a05a78ec7e3"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/desktop-07-edit-quantise.board.html",
+      "bytes": 53843,
+      "sha256": "64df07b14e48705606cc2285e87ce2d1e44926d3586f5b63793d36662b5346b1"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/desktop-07-edit-quantise.html",
+      "bytes": 52493,
+      "sha256": "295028c26a46de1c87d179d935b895e60f6b596be7db7a28dc25962fd94679af"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/desktop-07-edit-quantise@2x.png",
+      "bytes": 341635,
+      "sha256": "046e69232966834bdcf0b143680dc372e11c26f3198fb7d0c9ffa079cfe5d5ab"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/desktop-11-range-drag.board.html",
+      "bytes": 39923,
+      "sha256": "0dd7c39b25c310b1b89dd2ace216a3866a39e2bab5c0e06103b0929cc492040c"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/desktop-11-range-drag.html",
+      "bytes": 38505,
+      "sha256": "d60588834ccd9fdc611206ae8d89e00e3018bb53359d76e6bfe11e363fdaf091"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/desktop-11-range-drag@2x.png",
+      "bytes": 265716,
+      "sha256": "721f748cd4da85ff0f7039b853060bc807d843b0639c80027f2c073370aff66b"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/fold-05-bass-captured.board.html",
+      "bytes": 35475,
+      "sha256": "851c0dd5cb60167b829101e092dc43fd4db59375856fed822c78d3cebfab6b1e"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/fold-05-bass-captured.html",
+      "bytes": 34107,
+      "sha256": "ae9be6bfb33557ec4b5f938f16b6ce305e6f3f5b56d8822d5a45d3144dc9ed99"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/fold-05-bass-captured@2x.png",
+      "bytes": 276090,
+      "sha256": "a3ce996f31bb03abc293d7378f782e1f6f4afe6f7d35280e460de1801b0889cc"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/fold-11-range-drag.board.html",
+      "bytes": 40804,
+      "sha256": "ea28e202c4631af916de982f276a8dc91b5cbd3e892211ab62890923685b00d7"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/fold-11-range-drag.html",
+      "bytes": 39391,
+      "sha256": "516afa2cfd92f75693f81974e8e72a0cc0bd2f081485b33730b2449e872228b4"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/src/fold-11-range-drag@2x.png",
+      "bytes": 262647,
+      "sha256": "93a9c2050bfbd6e6a9b6d560b9050fff2860ed1199f76a0c034845a14b86b4cc"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/storyboard-overview.html",
+      "bytes": 231432,
+      "sha256": "78122b344bb97da4578bca0cfaeac81690ded67d3600927b52473ac01f34fcaa"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/dark/storyboard-overview.png",
+      "bytes": 1736852,
+      "sha256": "d6e8d0ac771dc283645d6b3bf54f3cd08180e08c7d0a76af687b2be7b9519dcc"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/hybrid-dark-vs-light.html",
+      "bytes": 99975,
+      "sha256": "025c834ad7e0941b802eea70c245ad81d43f5fcad85dfd520c9ec7394329f464"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/hybrid-dark-vs-light.png",
+      "bytes": 719163,
+      "sha256": "5036965540a0c23ddb24323dfd1e6c40bf3de05b11bb5c1c24d0db561ad47968"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/01-free-play.png",
+      "bytes": 358269,
+      "sha256": "b7f0740961b58475414c2c1b6e3d40cd66debbdc8d73d3918839d3f7a2a35300"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/02-capture-proposal.png",
+      "bytes": 432624,
+      "sha256": "c7aaf5f04b400e4241454d9af389881fd40aff7eb4940617f263ae07e81c9199"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/03-no-steady-pulse.png",
+      "bytes": 415009,
+      "sha256": "c218cc6ec8812f9a149e2b629a8fefd388ffaba95eb097c0c9c453f4a2036830"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/04-bass-over-loop.png",
+      "bytes": 391202,
+      "sha256": "518b32ffcf397afa4f8379a028c5a21e0f9d42242951d935d288984b81c12937"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/05-bass-captured-undo.png",
+      "bytes": 419667,
+      "sha256": "890ca8e71ee6db3d98edb5e6975afd9af8960946fdf55c2fd2765f9e80b8d4a0"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/06-drums.png",
+      "bytes": 401785,
+      "sha256": "d7605da4908ffa0a4c3385d95ea767bc8cd83cd50d85c9ca664c3722d445f692"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/07-edit-quantise.png",
+      "bytes": 346115,
+      "sha256": "426992b65677f6d9a837837605d9f05c46a5e8fbe8868e63c89cdffa62db32d8"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/08-settings-appearance.png",
+      "bytes": 387326,
+      "sha256": "c1483a70c880da16c225ad8aa2f2f753d51ea33558f17989ce431af5e84dbf7c"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/09-range-auto-success.png",
+      "bytes": 404033,
+      "sha256": "ecd54ba1a4020b4eb2b9f9d8195d6cb4fba18016ffbae5c40261b7328ec36681"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/10-range-auto-too-short.png",
+      "bytes": 396863,
+      "sha256": "503b88fbaa9ed049b1419691c077ddd677bea6184706f03eb2e49e773b843faf"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/11-range-drag-start.png",
+      "bytes": 411246,
+      "sha256": "747cbf59da7ae79a81f2725beb7735f0878940bcfc10f183911eedececbe6a5a"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/12-range-four-chords.png",
+      "bytes": 404476,
+      "sha256": "a500de11460896198528bcaf67aff21704213ecbb18f42e1e08e4bf08e727ee7"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/13a-range-boundaries.png",
+      "bytes": 412493,
+      "sha256": "7029a5a0b29ee902da1479b577a688799e7ab8a680115a197f69b6ff7f5ebc2a"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/13b-range-slide-phase.png",
+      "bytes": 417754,
+      "sha256": "5b0dbbb3be4d797be7afdc34db8cfc805e30257c986799ae775ece73540ac8c5"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/14-range-loop-edges.png",
+      "bytes": 394084,
+      "sha256": "29fed2bad67de9d58b7ab28aea1ef4176cf251ae671d36de650321fc66df294b"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/15-range-free-time.png",
+      "bytes": 387381,
+      "sha256": "ede378a65c05d52b1f534bd437d9f25bf43f903b4fa254e5869364b92dcfb3f0"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/16-range-zoom-snap.png",
+      "bytes": 420368,
+      "sha256": "38cd7a88f6617f7b1fe6672f8779297d2750828949efa847352a45ad64cd8e40"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/desktop-07-edit-quantise.png",
+      "bytes": 635212,
+      "sha256": "c695d352a8ceefdfd72e7667fc95103817c7b21381967116afaef70035c6e8e0"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/desktop-11-range-drag.png",
+      "bytes": 561543,
+      "sha256": "1727170bf99c37549bea4c845ab34a836dbb5fe875354bcea6d82b6e3f980242"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/fold-05-bass-captured.png",
+      "bytes": 549599,
+      "sha256": "de317798067ace601f943bffc05beca3e2c4e31ad43bff93af4a3bc12f8fb2eb"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/fold-11-range-drag.png",
+      "bytes": 533616,
+      "sha256": "03e891358734340b619c9dd08577659aaabca6831383d3866950367c62a864e9"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/range-overview.html",
+      "bytes": 297180,
+      "sha256": "bb8ec38d3ac7abc46b7b105c3792344b3e9f181527b08ea891e139eb94ed56af"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/range-overview.png",
+      "bytes": 1367467,
+      "sha256": "b3ef08ce4a01393f119a36fec5f80c2a0e919947e2d11b918327879e309b0be5"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/01-free-play.board.html",
+      "bytes": 18507,
+      "sha256": "ca22b5bed16b906c132593fc1ea1a84052a1acfe335e38b964da527fb534aba9"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/01-free-play.html",
+      "bytes": 17167,
+      "sha256": "3acb3efb30ec7d6b68b227eef3e43d3a48dac8e21a81e9536c3aaf2316d9b0b1"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/01-free-play@2x.png",
+      "bytes": 134493,
+      "sha256": "5f78474c83f6670294167ac90e9c39445db868233d0b1c7714c3af2a486b708a"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/02-capture-proposal.board.html",
+      "bytes": 30083,
+      "sha256": "39db7e41c73a6e5f3b6db468b03f7387342cc084f1beaa329d23cbf434299e60"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/02-capture-proposal.html",
+      "bytes": 28697,
+      "sha256": "6a77e8f8e9cb86f9765a33db102a50a98956ff0319f9101b0683e637e2731653"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/02-capture-proposal@2x.png",
+      "bytes": 187225,
+      "sha256": "f7201c3923ffe98418e27f0411cf498e1163aebfab013a3952dec9d0319c8876"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/03-no-steady-pulse.board.html",
+      "bytes": 20342,
+      "sha256": "a7028bab6c5dfae251885dc283590d927ac025fed8e9f6e04d7670546393513c"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/03-no-steady-pulse.html",
+      "bytes": 18990,
+      "sha256": "42a9011dc3b18cea08d4c5f5cbffda5a09a33aeec623dc9fd468688534e3fd4f"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/03-no-steady-pulse@2x.png",
+      "bytes": 179250,
+      "sha256": "1a1426d4f631bef53570aedba47e5adba2113a0df7f725fd242fd30e27e5da13"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/04-bass-over-loop.board.html",
+      "bytes": 29397,
+      "sha256": "6d97c9113fec69e46ea270daa6533770be218c0f940e7bd7d903d6d9694eebf8"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/04-bass-over-loop.html",
+      "bytes": 28029,
+      "sha256": "25cf1a788c3e02771fc00700ee3a3b39249e24401a5fc0233d851fe5cae85f2e"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/04-bass-over-loop@2x.png",
+      "bytes": 151979,
+      "sha256": "7a92b1712697bf664125e0d5aea65cc21eb68fd67df81fc870c81bd8d380fabd"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/05-bass-captured-undo.board.html",
+      "bytes": 34130,
+      "sha256": "921fb638c083cf4755610fb8809c23acd3e01d066279e6d343f26309a44bb60d"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/05-bass-captured-undo.html",
+      "bytes": 32773,
+      "sha256": "db9152bdbd9384538e2b544e70d33902b9cbc9c91ebdee96bdf7ccb5071ca391"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/05-bass-captured-undo@2x.png",
+      "bytes": 181624,
+      "sha256": "ed7324aa49bbd8a6ef5149126c78d736d855f90e775d673ede4d939ec6759c26"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/06-drums.board.html",
+      "bytes": 33957,
+      "sha256": "35bf4480e549585c650d8b1475feb031a524b5a6b6b8eaa7445dd1c49b7a6967"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/06-drums.html",
+      "bytes": 32613,
+      "sha256": "13d7c37c219f639a9aecd46b530768476aae79a2386c7f92a162ab139d346dcd"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/06-drums@2x.png",
+      "bytes": 169003,
+      "sha256": "14298b359c8b8de4b10523ff71f711b4defbf1be0c8f3bc14d5d801be7bd978e"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/07-edit-quantise.board.html",
+      "bytes": 22461,
+      "sha256": "0f4cd0abdad639ea9703702fc1f276145c27926366e9b7da2d580481f04ec95d"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/07-edit-quantise.html",
+      "bytes": 21127,
+      "sha256": "566fb6984e52eac50b39cc0b9b100e355ed9a6a69a1df4c498f0b2767e08e719"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/07-edit-quantise@2x.png",
+      "bytes": 115329,
+      "sha256": "3ff314f180bbe2c482a338a2d5970827346b8aef52cd6eb302783084e7457579"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/08-settings-appearance.board.html",
+      "bytes": 12592,
+      "sha256": "4f8702a496a4014d91eb95e1a52755efc1898b2e3a7efc92d88dbc069d69db5f"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/08-settings-appearance.html",
+      "bytes": 11251,
+      "sha256": "14bd8baabe9610767e4ff94768bc8ce25abb3342e119999dd93698f65b1e4741"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/08-settings-appearance@2x.png",
+      "bytes": 151293,
+      "sha256": "d50322c3e77bf7295495b28a4a2383ba8d0f52b29ac2225e206af04899c3c1df"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/09-range-auto-success.board.html",
+      "bytes": 38814,
+      "sha256": "8bc98580d94eac78b2729c74617dc1e51942839abdfe6989aa86ef92b40bc64e"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/09-range-auto-success.html",
+      "bytes": 37464,
+      "sha256": "d800fcf7a6e549c75991d8ad4a39572321fc4133d401acd0fa1abed50fc31a25"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/09-range-auto-success@2x.png",
+      "bytes": 164401,
+      "sha256": "c421a1901f04d31af8c698fd95883e80b8cbf4f4ea2597580ab36606af1687bf"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/10-range-auto-too-short.board.html",
+      "bytes": 38659,
+      "sha256": "9b2dacd3d920e79f30d4f5526f3b7889c39322db5595c9cfe9fd31d8ea5d5a80"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/10-range-auto-too-short.html",
+      "bytes": 37341,
+      "sha256": "f478333b4c8b1abc88435064e083e3efee23c226e3a9c23995f6dc26addc6642"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/10-range-auto-too-short@2x.png",
+      "bytes": 166714,
+      "sha256": "de3e11bb685becb358cb1d1295db50f0878605480c7fcf403028634a97c817f8"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/11-range-drag-start.board.html",
+      "bytes": 38719,
+      "sha256": "a116df8a68de9b4574f6d6ff9c69f70ae12df21e41bb12fedc3e8979d10f06cb"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/11-range-drag-start.html",
+      "bytes": 37317,
+      "sha256": "25561e42a57af8271189032c50b9b6fc71a217b234da516465cfee0a85865d5f"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/11-range-drag-start@2x.png",
+      "bytes": 165014,
+      "sha256": "b897674e74f594744dc8a592820a18cfddbd3a820289f43f5db48299bbd1e7b4"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/12-range-four-chords.board.html",
+      "bytes": 39220,
+      "sha256": "d689f9c5c91d76aabce9773a0ad55ba7fa8ce015aa812dca4f3ac80a22c11473"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/12-range-four-chords.html",
+      "bytes": 37927,
+      "sha256": "f8adc88096ef431a493b60274f595636cd69ea565717ff36f0bacd128803779a"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/12-range-four-chords@2x.png",
+      "bytes": 176228,
+      "sha256": "5eb119d29fbdc5bcb42df0afe71909962493cbdfcb5d7cec1c71bbe768a96788"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/13a-range-boundaries.board.html",
+      "bytes": 45663,
+      "sha256": "f12895b654eeca9d2898c6cf8f3710924a8a5b43f995e712e210c66d8c0ecbdb"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/13a-range-boundaries.html",
+      "bytes": 44329,
+      "sha256": "77083b5e4ba0c8a059eed02b29844a645a66d88bef27ebf839c64ba774c2808c"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/13a-range-boundaries@2x.png",
+      "bytes": 174464,
+      "sha256": "ae58ca6da0ea15ff969ac3f71ca717556fe2ba90173fa5381677f85520f17eb1"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/13b-range-slide-phase.board.html",
+      "bytes": 46021,
+      "sha256": "e438716cd7d2f876bf5e117012a3dd74317e4468c71a290bc84197bf3429baab"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/13b-range-slide-phase.html",
+      "bytes": 44655,
+      "sha256": "dce19c62c0308a4de2199d4bb7f5e16b2339c8e5884944700caa5001410d3bde"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/13b-range-slide-phase@2x.png",
+      "bytes": 177219,
+      "sha256": "501d6f3ba576246c4adaeae4d288064f948424829ef23ab1f1cf36aa36c9d15b"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/14-range-loop-edges.board.html",
+      "bytes": 23305,
+      "sha256": "f595e666d1e374450c463a99cb648817973e3ccf288aaac7c039c00ab65fc69e"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/14-range-loop-edges.html",
+      "bytes": 21964,
+      "sha256": "ff2171121a543b4cd5c941219d5d20f69080f5328444e46746f84cfeeb95c949"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/14-range-loop-edges@2x.png",
+      "bytes": 162951,
+      "sha256": "f5e8a42fa7fae97494073e1359c2146b42be95f9cfdf2eedc83561c59dac5d8a"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/15-range-free-time.board.html",
+      "bytes": 31955,
+      "sha256": "1aa3eb28fcdb5ae22ef9d9b64616258187188fedbfd59a19ead3794c39399a0d"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/15-range-free-time.html",
+      "bytes": 30676,
+      "sha256": "32926dd184a61d4f76e29667ef970fab98e17adda3784b8a82dba02c251dd470"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/15-range-free-time@2x.png",
+      "bytes": 162928,
+      "sha256": "71a1bfe90935a3c218822822f99bcc6fcdd8c6135437f0b1b27a36f9e58fa577"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/16-range-zoom-snap.board.html",
+      "bytes": 34719,
+      "sha256": "1c04954c189980b8ee5941235b80203a27b5f63aff772bac6474bdf479771ed6"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/16-range-zoom-snap.html",
+      "bytes": 33364,
+      "sha256": "63e0f990c64b14492b0bf919f7c0a6cb424d2d0c899318c1bdff645cca798d2a"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/16-range-zoom-snap@2x.png",
+      "bytes": 181394,
+      "sha256": "d8811cf5b46e9906294807539d7715091b807f4e75f1ec1ada20e97c293d381c"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/desktop-07-edit-quantise.board.html",
+      "bytes": 53787,
+      "sha256": "8565d0abfeb5ab30d37b28132872823154e6be7af1c6d423377c7f31f0aa2d00"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/desktop-07-edit-quantise.html",
+      "bytes": 52436,
+      "sha256": "1063454e84f6233436c924685d155b69b734bbd79d6701850efb55883c12313a"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/desktop-07-edit-quantise@2x.png",
+      "bytes": 349435,
+      "sha256": "bf8bda3d1da870b49808b0a5aff4951f3a983d1d5afa28af121be1b339a22a4e"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/desktop-11-range-drag.board.html",
+      "bytes": 39862,
+      "sha256": "6cfc5670b6d995ceff41e51136abd9a69dca080aef8cf49c2d32a7ba52164813"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/desktop-11-range-drag.html",
+      "bytes": 38443,
+      "sha256": "9a477dfe5846b4921a913b3e38b5276cf8415b3505fb217223765e3226c06034"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/desktop-11-range-drag@2x.png",
+      "bytes": 272391,
+      "sha256": "a70e3ccf3c09af8958445b4656e78c5558aab3ded3f4d235cd5b729d3eee1994"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/fold-05-bass-captured.board.html",
+      "bytes": 35358,
+      "sha256": "539217c8c6c36043285e8892350d6667edacf06be05df767f5446334af6452a5"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/fold-05-bass-captured.html",
+      "bytes": 33989,
+      "sha256": "5475add82dfcac32840f4646d1e98cf503a57d07ec008ed1f191457d5b9be6b2"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/fold-05-bass-captured@2x.png",
+      "bytes": 282970,
+      "sha256": "6a1f9d23dfdc00782f63a1fde2286e0f2305ed68602afce5080ad012a6f32826"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/fold-11-range-drag.board.html",
+      "bytes": 40709,
+      "sha256": "2dbff76792b42e2492276b98427bc069a5b5790a3316fe53b874b4a4c6ed7c09"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/fold-11-range-drag.html",
+      "bytes": 39295,
+      "sha256": "9a46f8d003a6fcd3fb0ae21998cf8d80fcac9b756aa1097273d480be530e0ba5"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/src/fold-11-range-drag@2x.png",
+      "bytes": 261198,
+      "sha256": "e7fd631c85582a9097bdd5d818a5a6df21778ec566c5267b193f0217656fa017"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/storyboard-overview.html",
+      "bytes": 230760,
+      "sha256": "e2ad43a9f04657138c92e19770ddb48b4505dc8778a3e5e70c6dc4f7905711d1"
+    },
+    {
+      "path": "blocks-design/hifi/hybrid/light/storyboard-overview.png",
+      "bytes": 1890839,
+      "sha256": "881970b3e6fb0eff1c1544981424ae0b4fc3165773bfec18462cf68525febf74"
+    },
+    {
+      "path": "blocks-design/hifi/prototype/index.html",
+      "bytes": 1605585,
+      "sha256": "3531775a3ba0a4881d31ec1ef0fcededa51f77bcaf9547422daede8c51175201"
+    },
+    {
+      "path": "blocks-design/hifi/prototype/prototype-preview.png",
+      "bytes": 1311017,
+      "sha256": "0b6df099e5d8b48537329fe37c03dd5ac759e0ce612a60284ee87392df22b516"
+    },
+    {
+      "path": "blocks-design/hifi/src/build.py",
+      "bytes": 27704,
+      "sha256": "03bb0babb34502db621b6c59ba08e6e5b1c004a2167b767f268f42dd8bedd0e5"
+    },
+    {
+      "path": "blocks-design/hifi/src/contrast.py",
+      "bytes": 860,
+      "sha256": "462d4950d9789634f6bf45330c6e56980eb9d3482cde4f55c6fb643b68509f6e"
+    },
+    {
+      "path": "blocks-design/hifi/src/frames.py",
+      "bytes": 17063,
+      "sha256": "9200d9bb003ea3de3d1d7bae3af8acae45b9fa6c90ab42e41015534b4aff6427"
+    },
+    {
+      "path": "blocks-design/hifi/src/hybrid.py",
+      "bytes": 9835,
+      "sha256": "78ef6ab700247c8a1becf9fed28af393f8d3f5c9e84867951d2d9e4b2d467b78"
+    },
+    {
+      "path": "blocks-design/hifi/src/kit.py",
+      "bytes": 6387,
+      "sha256": "d2d8b9e34b76f28800e36c182b6fa02354f7d0d5f201b24d59006939e0650413"
+    },
+    {
+      "path": "blocks-design/hifi/src/large.py",
+      "bytes": 10685,
+      "sha256": "7ea802e6cd33eeef294fe43e16c3c57ee9fa466ae5c6e2b3390ef4bd41737fd6"
+    },
+    {
+      "path": "blocks-design/hifi/src/music.py",
+      "bytes": 1491,
+      "sha256": "b3ff95b2ac215f691099b4d34cb862c690368df58eff652ba02451bb349d6b7c"
+    },
+    {
+      "path": "blocks-design/hifi/src/phoneA.py",
+      "bytes": 12193,
+      "sha256": "9295c922771e6ef478eccfff62b44ab6675da50dc9b72c001faa8eccaf94e161"
+    },
+    {
+      "path": "blocks-design/hifi/src/phoneB.py",
+      "bytes": 8231,
+      "sha256": "542da760120f159c460127a50610338880331cfc649b9ebdd99c4c3f7eb165c8"
+    },
+    {
+      "path": "blocks-design/hifi/src/rangeview.py",
+      "bytes": 34462,
+      "sha256": "95cbe4d54e7c2e4ed9b205f9ce4e2fd9e1b9f60ab26b4d03dbdc97dd1e8b06d5"
+    },
+    {
+      "path": "blocks-design/hifi/src/render.py",
+      "bytes": 393,
+      "sha256": "a02485e7c71cb24af67f70d1e4b9200e1867b98c389611218493174937e7eef9"
+    },
+    {
+      "path": "blocks-design/hifi/src/test.py",
+      "bytes": 279,
+      "sha256": "08ae2b39d9929cc5e6882063f335bc976c89be60ae001a37fa07595cbd530aca"
+    },
+    {
+      "path": "blocks-design/hifi/src/testB.py",
+      "bytes": 240,
+      "sha256": "f3bf572f4cb619f79718bb4fbc6667a80c26e47d2573de765bf8d192867a1236"
+    },
+    {
+      "path": "blocks-design/hifi/src/testR.py",
+      "bytes": 401,
+      "sha256": "c9eef4a37d51d49717ef6f5305bb4648ea8a59780e1f5728651c31f64832bdbd"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/01-free-play.png",
+      "bytes": 304603,
+      "sha256": "71df9eec28c73f54dc6b0c5a51899c9e0313ccc82ccad6c8ba53256189d79f3d"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/02-capture-proposal.png",
+      "bytes": 361255,
+      "sha256": "a11874e5f143389f5ba0ce1d1706516511be483276d0c6b8a95eb67be35a2a4d"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/03-no-steady-pulse.png",
+      "bytes": 346894,
+      "sha256": "dbb2b2a6517f9f9645be563e5f302eff346d16047ecd43110ffcfd1980e28a52"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/04-bass-over-loop.png",
+      "bytes": 328138,
+      "sha256": "4a5ce0059ae6b38c639fbc70b5584e5cfbfeda70253929c5077f332b9a438cde"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/05-bass-captured-undo.png",
+      "bytes": 348933,
+      "sha256": "305b59603a3663aab196929fe497b8496d26737b9967ee430f39cc182d3cd844"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/06-drums.png",
+      "bytes": 332189,
+      "sha256": "f5202fe7c2b3cccf621830315f843da8814414978691f0566f2eebc48166ca70"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/07-edit-quantise.png",
+      "bytes": 268531,
+      "sha256": "7ad2bfe075d670ed8fda110e344a0a67809e2e09992bf0b3ea3d3f17c0ce5ee2"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/desktop-07-edit-quantise.png",
+      "bytes": 549852,
+      "sha256": "8341bf2c29111d3be9d5f6c584186a02b6a58ab355d954b9e031d959eae00cf7"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/fold-05-bass-captured.png",
+      "bytes": 462856,
+      "sha256": "15074364d5964142a1585f63d6bfdbe993ba82244047b209d4c4e90c597ea493"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/01-free-play.board.html",
+      "bytes": 18421,
+      "sha256": "3b3afef0167e4199e49e01394abbcb72d17ad457dedf543e82696b82a7044c27"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/01-free-play.html",
+      "bytes": 17097,
+      "sha256": "3e5c4cbcfc69e0db28503d7f020c92964a4307f35e568c60eae9991cb9267538"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/01-free-play@2x.png",
+      "bytes": 141512,
+      "sha256": "312430fd2d91ee9665254eed811da3a4daa41e3db66d77e6d84abe29ee305e3f"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/02-capture-proposal.board.html",
+      "bytes": 29539,
+      "sha256": "dd2a1740a39fb7251d037f0350834f9d353e86f43e2c07b0578793636deabdda"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/02-capture-proposal.html",
+      "bytes": 28169,
+      "sha256": "bb3488b0d7d64ded1d11ab49f574587c136e735d0403709a37d2baac2d2ecee2"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/02-capture-proposal@2x.png",
+      "bytes": 184893,
+      "sha256": "d65715a521571bd55c29121b1114dfa6ac20a39e565faf5f91b556d9d4f76357"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/03-no-steady-pulse.board.html",
+      "bytes": 20242,
+      "sha256": "e6633ad7f4e9adb7679112a7086e9e97c46fdf64699f03ed6a9df26cab0ec7a8"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/03-no-steady-pulse.html",
+      "bytes": 18906,
+      "sha256": "d77f1f241bc987666d50653cf23c2588683da422d108a5b94a45eb779e0e2e70"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/03-no-steady-pulse@2x.png",
+      "bytes": 179871,
+      "sha256": "b55982355949c62b73886e6cbe45ebccd8c5c664c72e9d74d6e1860fe9eb8293"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/04-bass-over-loop.board.html",
+      "bytes": 28864,
+      "sha256": "6087a1983d84789dcb0fa0655c12f3f700ff5193e080748de57dbf055ab0f8be"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/04-bass-over-loop.html",
+      "bytes": 27512,
+      "sha256": "f992536fd93ef91aff4e6fba42b4ca5393e4f3cdc2a4c49e31d1134003834152"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/04-bass-over-loop@2x.png",
+      "bytes": 154170,
+      "sha256": "c62cfa08c54ce6e1ad315f6040b464008d53adbd76cab6255e1fbf1181f52a46"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/05-bass-captured-undo.board.html",
+      "bytes": 33060,
+      "sha256": "4bc8607361b8dac14d8036c9a4895c39215017b246649653a9b4fca57e05754d"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/05-bass-captured-undo.html",
+      "bytes": 31719,
+      "sha256": "1d2f173acc6baac6d9a667b07fde181ea8876b3923d62b699179f2c63fac4945"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/05-bass-captured-undo@2x.png",
+      "bytes": 181617,
+      "sha256": "6aa6d69a66e30ff782116f19f1fe8922b6f73432ea007d507fec27c423b67a82"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/06-drums.board.html",
+      "bytes": 32278,
+      "sha256": "20898cdaa7b6f05fc02beace3be2e90f9e2e9a785a78441598b6754b8de0b6d1"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/06-drums.html",
+      "bytes": 30950,
+      "sha256": "a15679332b4ae40bcc748dd5d0e424e635ed0015389b1e37290e175899894185"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/06-drums@2x.png",
+      "bytes": 167768,
+      "sha256": "a5c81fe4c95c7aeae6812e8312e37e15cb8ec97b05680dd22be142668ef6eec4"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/07-edit-quantise.board.html",
+      "bytes": 22493,
+      "sha256": "f6979bc075b724d99fe7732c71052406cedf8a0e34c9940e82929809ee3c8ef9"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/07-edit-quantise.html",
+      "bytes": 21175,
+      "sha256": "6ae83cfea377b9ca2f4de9d59f600352db212f20a96e7410d8357a1159dbd1ac"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/07-edit-quantise@2x.png",
+      "bytes": 106778,
+      "sha256": "d16f7e4340c3c7a2a825dd9256035b24ab1794625b4394bc57935923293f6dc7"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/desktop-07-edit-quantise.board.html",
+      "bytes": 52278,
+      "sha256": "186a47cbbe5e10fe472f64ad9d9ce02bcbce463c7c7623a12de6b244581e0629"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/desktop-07-edit-quantise.html",
+      "bytes": 50930,
+      "sha256": "fe8a10932fbae33907f7d99a2b1238094a0f904230477f297224b48b099801ec"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/desktop-07-edit-quantise@2x.png",
+      "bytes": 340626,
+      "sha256": "41e61d327234422817c6958cc3d410fa93a9a00e4fa2d391aee46ff9526a954b"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/fold-05-bass-captured.board.html",
+      "bytes": 34325,
+      "sha256": "86a5e15ba4e25739b46b47b5e90121b8f0acc1b25601fd0a077b786f3d4b67e7"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/fold-05-bass-captured.html",
+      "bytes": 32953,
+      "sha256": "be96ba3d08a7a593e37dabea25f1902e8909b898ce0786e7a3f559f5a558a8ff"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/src/fold-05-bass-captured@2x.png",
+      "bytes": 275550,
+      "sha256": "4107ee364210607dfb36ebe62930e4e305bf64f8f6df925f727f4f5927c391bc"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/storyboard-overview.html",
+      "bytes": 224890,
+      "sha256": "4a03ba612d601bffe0cfa1ffda5caa4914dfe1711a71ca7bafd23d703f2f8375"
+    },
+    {
+      "path": "blocks-design/hifi/storyboard/storyboard-overview.png",
+      "bytes": 1685839,
+      "sha256": "8b5a7774343f639ea391b735c97fa9677ba8769f58beae4b0c26270e4c09169b"
+    },
+    {
+      "path": "blocks-design/link-check.tsv",
+      "bytes": 287,
+      "sha256": "5610ca5a5df603aa62fbcb24cae8bb8ea014a6c0d8eb3e5fb6b0a009be368f42"
+    },
+    {
+      "path": "blocks-design/qa-review.md",
+      "bytes": 3264,
+      "sha256": "fd2dfd2bc6861f9377b9a2b1acef17b907515da9c724bb89fea97f511e60daf3"
+    },
+    {
+      "path": "blocks-design/research.md",
+      "bytes": 13572,
+      "sha256": "06b97277b2d4a1b4737f07e5c88529711bdec1dced72632c58d9833b003a00d8"
+    },
+    {
+      "path": "blocks-design/sources.md",
+      "bytes": 5591,
+      "sha256": "fe5a089faa53ddca4aca3e8108241de60e118725db56a83a8498ec399acbf634"
+    },
+    {
+      "path": "blocks-design/sources.tsv",
+      "bytes": 4508,
+      "sha256": "8a50c64e29f25935194eca1e84b4e770c7b200d3ce0bec64b918411f5042ad54"
+    },
+    {
+      "path": "blocks-design/spec.md",
+      "bytes": 47592,
+      "sha256": "59e7b8860624d228a3886d68901aedb4e54bc801d99e475b26ec8b3a3d05bc4e"
+    },
+    {
+      "path": "blocks-design/state-machines.md",
+      "bytes": 5916,
+      "sha256": "0ccef8a2b44ddde99531b2e0f4163651a813f553e0c00f1d331ae53e6f383aef"
+    },
+    {
+      "path": "blocks-design/tokens.json",
+      "bytes": 11830,
+      "sha256": "d24d0a4e99a5f0b19f2adc3bb98c6052e69578bc0dc7ce739d566848fb736880"
+    },
+    {
+      "path": "blocks-design/usability-test-script.md",
+      "bytes": 3239,
+      "sha256": "91195c53dded9699f63f9d9bc40243aace0fcc7bf26820d3b91c094ba6085e69"
+    },
+    {
+      "path": "blocks-design/wireframes/00-play-portrait.svg",
+      "bytes": 17389,
+      "sha256": "d4f3e911f407b15464663d2c2636963d8843fee5d30459a8d8624d2a16c40339"
+    },
+    {
+      "path": "blocks-design/wireframes/01-play-landscape.svg",
+      "bytes": 8154,
+      "sha256": "ca881f58e3e47e73b35824c7e09ce81a6cd114bdd9b2acf653b5bbe583103c44"
+    },
+    {
+      "path": "blocks-design/wireframes/02-fold-narrow.svg",
+      "bytes": 6278,
+      "sha256": "b0b4f06f9c281bb11436c57377fd977b761004affde6cfd2d39f89901a30eff9"
+    },
+    {
+      "path": "blocks-design/wireframes/03-fold-open.svg",
+      "bytes": 14131,
+      "sha256": "858560a13ece86dbc340e41910778e0872fafc7cf25117f1cb188e5664e3d99b"
+    },
+    {
+      "path": "blocks-design/wireframes/04-fold-tabletop.svg",
+      "bytes": 5956,
+      "sha256": "3df63cbf2a908d5ce810a13a3d932a1e6759f9f60c7ac44fd02c61bfd10a7e3d"
+    },
+    {
+      "path": "blocks-design/wireframes/05-desktop.svg",
+      "bytes": 9864,
+      "sha256": "6c6d8e01b8363195e2bf1fa1a7e5093666c7f4d795803adab98b3e7eb8a5d561"
+    },
+    {
+      "path": "blocks-design/wireframes/06-first-run.svg",
+      "bytes": 6335,
+      "sha256": "871be2a6d3cb59fd11978fc070f8a7b75113fa0db0c81e2802ac1ee1242fdf43"
+    },
+    {
+      "path": "blocks-design/wireframes/07-readiness-errors.svg",
+      "bytes": 10261,
+      "sha256": "486608a81088f4f6cb817b42cef6f7202cd3c8753eae1b3fe24f2d235eb37db7"
+    },
+    {
+      "path": "blocks-design/wireframes/08-capture-review.svg",
+      "bytes": 14696,
+      "sha256": "ed6d433e881f9a9f49e5949d5b0ade0c7cf1eb901bf4a1e649756b042a2d90e8"
+    },
+    {
+      "path": "blocks-design/wireframes/09-sound-browser.svg",
+      "bytes": 9512,
+      "sha256": "a13df25b614c7f3c19da88f5015ef69052cd887a731de884c5978d54a1e72500"
+    },
+    {
+      "path": "blocks-design/wireframes/10-layers.svg",
+      "bytes": 12018,
+      "sha256": "78a1014f96c9fa8b122444370b90169caa536a51eab9a719bc1776981f645ea9"
+    },
+    {
+      "path": "blocks-design/wireframes/11-piano-roll.svg",
+      "bytes": 20510,
+      "sha256": "cdf32f51548ca8572d60ce64ee9d0fa7681aea0275a8981e8ae4df7e99afab52"
+    },
+    {
+      "path": "blocks-design/wireframes/12-piano-roll-states.svg",
+      "bytes": 17763,
+      "sha256": "1a35762b7b8d05941b82b3aeb532ca18726c3a3aa59bbc5b7a34b36a5dd07840"
+    },
+    {
+      "path": "blocks-design/wireframes/13-controller-learn.svg",
+      "bytes": 7412,
+      "sha256": "f8bebe05e79d84946c6242fe6966cb86e8aad96ce00ef5660060bfe19dd40cc6"
+    },
+    {
+      "path": "blocks-design/wireframes/14-save-export.svg",
+      "bytes": 8149,
+      "sha256": "2c34b71d0565d197eaa9e1dae2de24a2548a8b2d4c886c6a3db50bc11e1940aa"
+    },
+    {
+      "path": "blocks-design/wireframes/15-nav-map.svg",
+      "bytes": 4771,
+      "sha256": "5276a21d8765f5da22d3903ff4c2f9ba5921bed32a5433374e0e00d4987ac18c"
+    },
+    {
+      "path": "blocks-design/wireframes/16-capture-edge-states.svg",
+      "bytes": 15838,
+      "sha256": "7c240fa244a45fe240ea8638b623c88cae4c1859ef921671aedb27cb0e65dc31"
+    },
+    {
+      "path": "blocks-capture-product/README.md",
+      "bytes": 1284,
+      "sha256": "fe64e7a4de7062688855cd3cbf9aa175f3a8b5d7990d80d8fa04ba3de7aa85e0"
+    },
+    {
+      "path": "blocks-capture-product/capture-spec.md",
+      "bytes": 48756,
+      "sha256": "99fb3877f42009411bac26074bf1ec87b8b402d6e59ebfbc3b6f304fcbcda33e"
+    },
+    {
+      "path": "blocks-capture-product/evaluation-harmony-results.json",
+      "bytes": 6025,
+      "sha256": "acbed07e23d9469659977cfa35becd36d20dd2c0fb4ad6eb4bc686a9602660e4"
+    },
+    {
+      "path": "blocks-capture-product/evaluation-harmony-results.txt",
+      "bytes": 7267,
+      "sha256": "cf7b84c2a4856117033eea26db33085618d6fda4eb2054e22215502135259484"
+    },
+    {
+      "path": "blocks-capture-product/evaluation-holdout-results.json",
+      "bytes": 20093,
+      "sha256": "dc6a2072d9f60d073555688ca0748b336ba15188ac960c4271772eb8d8bd3ae4"
+    },
+    {
+      "path": "blocks-capture-product/evaluation-holdout-results.txt",
+      "bytes": 7238,
+      "sha256": "f590cd4e70f365211eb60954c35f297314e885f044f2e854fd084f1b845c4f8b"
+    },
+    {
+      "path": "blocks-capture-product/evaluation-plan.md",
+      "bytes": 14218,
+      "sha256": "4d63a2733052e672f09c93fb903d50ea7ec3bee753964aff98e459ce36b3c951"
+    },
+    {
+      "path": "blocks-capture-product/evaluation-smoke-results.json",
+      "bytes": 31005,
+      "sha256": "d4cc4e53d3108c583f053ed1a84612c7db83e878f6aa7a07f3f48c151672f24a"
+    },
+    {
+      "path": "blocks-capture-product/evaluation-smoke-results.txt",
+      "bytes": 10856,
+      "sha256": "e8acb3f4de37548f9ac5073540ba184b89810f36799a04cc378b2acb5fde6234"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/README.md",
+      "bytes": 2271,
+      "sha256": "c6a89751a439d258e290c3affa844a2635329831a7c0ce650b3cdc3c5f86d979"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/check-arithmetic.mjs",
+      "bytes": 2316,
+      "sha256": "32440de2d3cf0e2e2b4ac0f4184eeefb43aaac755f17fae6292805fcc30ac54a"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J01-long-improv-then-idea.json",
+      "bytes": 106543,
+      "sha256": "39c8489ce33b5e903f712d8fb1b9ff19ad24ce2141c34cbd48e36e569ad1cbbf"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J02-pedal-held-no-silence.json",
+      "bytes": 66706,
+      "sha256": "52a3ceade84bbf2459fc514e529fd083c466d02761d02b2a3e466ba80b4be506"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J03-capture-while-held.json",
+      "bytes": 22030,
+      "sha256": "cdc85117e8261856786adee48f2ddf3d10f55e3fd2368719570dbe99e4eb9f3b"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J04-sounding-rest-vs-pause.json",
+      "bytes": 15021,
+      "sha256": "d7f8b11a46b3c393d629d51bb6e99a634f8d3979e499ddab982c032859747125"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J05-swing-pickup.json",
+      "bytes": 16969,
+      "sha256": "994fc69d04a2be6230d52b566f327fe2bc803bafc9621cdddb2e8deaa58e9584"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J06-rubato-ballad-free.json",
+      "bytes": 33985,
+      "sha256": "3f30630d84269060d0f4657129d9f87c649958380e61215411a0474fec6b7006"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J07-rolled-chords-charleston.json",
+      "bytes": 21651,
+      "sha256": "9c0073f9edc974ff2cb990fc18955741fcc26a68dc7d98742be0b8e1b2499a91"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J08-half-double-ambiguous.json",
+      "bytes": 9643,
+      "sha256": "221d779a01b986c1c21d360433d1bc09a759bfe941ee891584efa4b53b83a24b"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J09-jazz-waltz-3-4.json",
+      "bytes": 19482,
+      "sha256": "4c7c40d60f7373745f217e9120258b3641ef37c206016bd21a5696b9b9465b63"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J10-false-start.json",
+      "bytes": 25540,
+      "sha256": "749cc9192b4ce4a61dacd4f792df0a5356805d6d4abf382678ef87fa96288da1"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J11-sostenuto-latch.json",
+      "bytes": 9152,
+      "sha256": "98219e99d66783461226088d391a49b3399733d9e1b3ed74b41c161a97bd6be1"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J12-repeated-notes-two-sources.json",
+      "bytes": 7535,
+      "sha256": "d7b30c75a22eed6841340949c728e06442bc977938a70685d5e532c56652eed2"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J13-eviction-watermark.json",
+      "bytes": 32767,
+      "sha256": "d22fbb627ca8d98d2b549b1277a775b505ff43dcaa82a4c5d5edeca23c9ee1ad"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J14-expression-initial-state.json",
+      "bytes": 6263,
+      "sha256": "6a3499b0b9bebc6476cd74413c490574c900586ee272cb2900a6daeedc53b747"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/J15-delayed-capture.json",
+      "bytes": 35610,
+      "sha256": "afa3cdd212a9fb48986ff535726852fcc53814ca4dff89284f660061fb52eb03"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/L01-journey-piano-bass-drums.json",
+      "bytes": 98017,
+      "sha256": "9f69236dcd2c62a2749c61e42b49b2441c59d9869e2f3d899fca2536dad7874d"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/L02-journey-repeats-and-corrections.json",
+      "bytes": 24147,
+      "sha256": "5f89e2bf2ad4818bdd61399a6a32d529b1bcccc92e2ffc7d9f5c94956a16c4e7"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/L03-journey-free-loop-cycle-lock.json",
+      "bytes": 9529,
+      "sha256": "48575395371b249a1f5a28e981428e8565b5b6ab3557b776b936c8174fefdf1a"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data/index.json",
+      "bytes": 5152,
+      "sha256": "146d13a3f7f3f863850497f1ef0305163433b2dc151e0d0acaba013800ce2617"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/holdout/HH01-rootless-ii-V-I-F.json",
+      "bytes": 5847,
+      "sha256": "bca8bb1c978035f8b3fa4dd94dd5f81572b88d6ecf6c398bb6fa673b26606d2e"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/holdout/HH02-inversion-and-slash-Bb.json",
+      "bytes": 4171,
+      "sha256": "5e35c6699c40ccb735a4945d045d40a51537758a474d7cec8bc49e23449a4407"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/holdout/HH03-pedal-blur-Dm7-G7.json",
+      "bytes": 4452,
+      "sha256": "61899b53072b012223d637897fac17b9b1a9782f61fdaf03a49edc4d3f7ead7e"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/holdout/HH04-walking-bass-Bb.json",
+      "bytes": 5745,
+      "sha256": "759ae6d3f8c9af678f59bf14d58356bf1630595e0927770167bda47a11d135a9"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/holdout/HH05-melody-over-held-Ebmaj7-and-roll.json",
+      "bytes": 6877,
+      "sha256": "6d227e7f72698bb873edad583d1ff2176f8026b1ff4a9cec9d6d7c6d491a6038"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/index.json",
+      "bytes": 2913,
+      "sha256": "58318ec9ab4809b9b08c8ded2dfa6729c8abb2a20373e30a81a9f681a733b2b3"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/pairs-holdout.json",
+      "bytes": 1513,
+      "sha256": "23a1e61951386fd771750ccf97cd6e5960e678ce87aa78d904e585af9a72a9d7"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/pairs-tuning.json",
+      "bytes": 3792,
+      "sha256": "4932c117e172354d4394a534e954d6ac2bf4a93e47d6365181c1a795ab2b9097"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/tuning/HT01-rootless-AB-ii-V-I-C.json",
+      "bytes": 6032,
+      "sha256": "d9acf5575ecb9058f6db05b347dcba2496ce235fb53c53e116c08adb0c11619f"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/tuning/HT02-inversion-vs-slash.json",
+      "bytes": 4312,
+      "sha256": "c2c6462a14c971b8e86726ce127ca4d140dfbb82f78fef0d9b699afca54412d0"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/tuning/HT03-enharmonic-ger6-vs-Ab7.json",
+      "bytes": 4394,
+      "sha256": "23243cc878711c02ee6e82712bfba0dcd09f7f74a80310fd6ea65dce71b32873"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/tuning/HT04-rolled-vs-arpeggio.json",
+      "bytes": 5783,
+      "sha256": "01cb8a2285da5aef7f8a52f9f149063d0b4675812dd16bab71667c53ecd9a1e3"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/tuning/HT05-pedal-blur-Cmaj7-F7.json",
+      "bytes": 4600,
+      "sha256": "60aef456c31b56954209d6d6aa8cc8537b14598476fb7c280a162dc5d1a8af34"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/tuning/HT06-melody-over-held-Bbmaj7.json",
+      "bytes": 7581,
+      "sha256": "8e4e383282b8e1afb6980ee778c6fc66d17b0ecaadd915bf5c124d6236f51891"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/tuning/HT07-two-hands-bass-and-comp.json",
+      "bytes": 10129,
+      "sha256": "a822bb1930f6939c06a30b330f0144b56cacbce1fb61f4d956fbd5d02e414065"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/tuning/HT08-walking-bass-ii-V-I.json",
+      "bytes": 5804,
+      "sha256": "29ea8447ad4c780247d60f4c399b8ea2ff98ad240c9ad97698ba212dc292169e"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/tuning/HT09-layers-rootless-piano-plus-bass.json",
+      "bytes": 9088,
+      "sha256": "b17dee26746c377044c2e6293e59726a891e921aa38c0e22ba4e367cd84db65e"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-harmony/tuning/HT10-abstain-dyad-and-quartal.json",
+      "bytes": 3946,
+      "sha256": "957521d2d2112f3b1f66c8bbbbb644e3ba2640ba618f0d757b35fd2c9be272ac"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-holdout/H01-noodle-then-8bar-straight-104.json",
+      "bytes": 101342,
+      "sha256": "bab1290dd1db172e5dc7d1e9e34501770fb64bb239678d9cdd8e037145155b7e"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-holdout/H02-pedal-held-vamp-138.json",
+      "bytes": 119609,
+      "sha256": "c9a9c64790741bb6349d134b40183f4164d10309e40b12ec38bfa77113032be7"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-holdout/H03-ballad-66-delayed.json",
+      "bytes": 40444,
+      "sha256": "a851c669987563cb9bde529c0bf66e641ecbefcf4d7e1471d0609d6bd4e87ba8"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-holdout/H04-false-start-bebop-pickup-184.json",
+      "bytes": 15902,
+      "sha256": "374e91a4347b6e82e404149b65da3d4a00e11593930b0cde4cee15481e29673e"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-holdout/H05-rubato-two-phrases.json",
+      "bytes": 27970,
+      "sha256": "94664f9b50788d7f903ff4a9627f8f571cba418ce995c2d85b9d616260355eaa"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-holdout/H06-sounding-rest-inside-phrase-112.json",
+      "bytes": 21948,
+      "sha256": "e76c5021e6cbc753802320be8307ad5ff4ee4795b7a57478ae707b59d613473e"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-holdout/H07-two-keyboards-same-channel.json",
+      "bytes": 10403,
+      "sha256": "c0026e43996ca69ba1c6f6b30055463fc014472ac4b551280be051ee003d7d48"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-holdout/LH1-journey-92-vamp-walk-drums.json",
+      "bytes": 68672,
+      "sha256": "3d3771b79c5d2df2b51c8a784eda85acf29e40580803901cf20710b4cf037ae6"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-holdout/LH2-journey-150-bass-no-gap-riff.json",
+      "bytes": 27006,
+      "sha256": "14d414170342fe07057e3d47ea14d17406fd9f7d686233db65a61dbfe2b7d0fd"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-holdout/LH3-free-loop-bass-two-cycles.json",
+      "bytes": 15084,
+      "sha256": "4d4fcb868d28d9cb78f0eb5218009ff35dae0f09497a120b129dd48b81b788d2"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/data-holdout/index.json",
+      "bytes": 3379,
+      "sha256": "7aa36bed2d981964d4b09f5d7df5ba4f123265705ea9a23735236d3e3bc145c8"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/evaluate-harmony.mjs",
+      "bytes": 15616,
+      "sha256": "c0c218202ab0da623ed80740c7c2901704924a84c7c734da36147f950ec4900b"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/evaluate.mjs",
+      "bytes": 20963,
+      "sha256": "51f2ea4a39e786d6f8bd7a91dc0084004c3228ed99c40eb227578c169df361bd"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/generate-harmony.mjs",
+      "bytes": 15972,
+      "sha256": "2269e74761edb8afbd171a2f1c804d91832844b7d20e0efb72d61160ba9968b7"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/generate-holdout.mjs",
+      "bytes": 27046,
+      "sha256": "449be8f44168333ce19aacf0f75612c309738598c1abc773314929c9cf9d0b7d"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/generate.mjs",
+      "bytes": 42373,
+      "sha256": "d722284a491e9cfd1d262f03b1b58795280773944cc88b8f38f8f60c08e287c8"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/repro-four-chords.mjs",
+      "bytes": 3203,
+      "sha256": "ee8ade58bd3a6ab197a71f8d19c71d5f3cbfcb2becbd1921e75c4e527019304f"
+    },
+    {
+      "path": "blocks-capture-product/fixtures/score-harmony-mireval.py",
+      "bytes": 1112,
+      "sha256": "90e53149112c6c7caf406607d2e670b06ccf69383dc13442a757d6c1e13a2304"
+    },
+    {
+      "path": "blocks-capture-product/harmony-analysis-STAGED-DRAFT.md",
+      "bytes": 2964,
+      "sha256": "38196da7715c6b07cfbef2bfe287e8657616cf0379ff1821da1a3bf774ecd283"
+    },
+    {
+      "path": "blocks-capture-product/musician-review.md",
+      "bytes": 3399,
+      "sha256": "5fc811a093cefc8fb4de04f13b22c8fc8e9b8a4c9d43a367693e657422f7b7f9"
+    },
+    {
+      "path": "blocks-capture-product/prototype-findings.md",
+      "bytes": 15019,
+      "sha256": "664f0c9416f7af47528063f31da3fc347e865800a79b63eaf07abafcd06dbd83"
+    },
+    {
+      "path": "blocks-capture-product/repro-four-chords-results.txt",
+      "bytes": 2623,
+      "sha256": "b6b5a64c7c4ddd65941b1dd73beef149d85839525ff9212d8e5a50f7e037af82"
+    },
+    {
+      "path": "blocks-capture-product/source-ledger.md",
+      "bytes": 13503,
+      "sha256": "a26ac86d1fdf7293b56f23fbe087caaffc9bdd8e3a65ef33300e999c13b30765"
+    },
+    {
+      "path": "blocks-sound-library/LEDGER.md",
+      "bytes": 16092,
+      "sha256": "9378120b64a1c55814a66099d080d3a1b7475684b4798661c605b36b5c957b0f"
+    },
+    {
+      "path": "blocks-sound-library/asset-manifest.json",
+      "bytes": 93796,
+      "sha256": "cb772eb7aee64dfe5f5200734110693ffa207db0bbbfb69950576ee7441cc130"
+    },
+    {
+      "path": "blocks-sound-library/licences/piano-kw-small-flac-CC0-1.0.txt",
+      "bytes": 7048,
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    {
+      "path": "blocks-sound-library/licences/piano-kw-small-flac-readme.txt",
+      "bytes": 896,
+      "sha256": "176d252d3192c4cb1576c88512f94e981f6208aedec65b9ec5174280c02dc534"
+    },
+    {
+      "path": "blocks-sound-library/licences/synth-drums-CC0-1.0.txt",
+      "bytes": 7048,
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    {
+      "path": "blocks-sound-library/licences/synth-drums-readme.txt",
+      "bytes": 603,
+      "sha256": "9c0ad2a7d6cfe266e2194c5a0191cc2f783a524468488580d4d2b2795d3298ec"
+    },
+    {
+      "path": "blocks-sound-library/licences/verification-notes.md",
+      "bytes": 7412,
+      "sha256": "e9afb2b484a3d34c005ce2234bd8b4ecf7f17987b580e2a242720530fe091db7"
+    },
+    {
+      "path": "blocks-sound-library/research/DELIVERABLE-SHA256SUMS",
+      "bytes": 162,
+      "sha256": "37832d4e867d1dd7eb418d2730829f52bcbb38421e828fcdcaedf4dadcac28fd"
+    },
+    {
+      "path": "blocks-sound-library/research/SHA256SUMS",
+      "bytes": 12454,
+      "sha256": "d75ac776340c6ca4d6c7b146b0dbd31d2222c88fcf7a89ef407af8ce234dcc3e"
+    },
+    {
+      "path": "blocks-sound-library/research/assemble_ledger.py",
+      "bytes": 16545,
+      "sha256": "9de277c62c22a563888323c98a45b3e5ba5be75f1af1b14802b260904d540320"
+    },
+    {
+      "path": "blocks-sound-library/research/build_manifest.py",
+      "bytes": 4634,
+      "sha256": "52a70354caf0e2e74e5b6046805c3e97bee9f750ac70ff04179662ff7acb7b7d"
+    },
+    {
+      "path": "blocks-sound-library/research/downloads.json",
+      "bytes": 2203,
+      "sha256": "d7da8aede49fc2506c1f3057597b89a8c49307ce5e3be28342ef35cefdda3bfb"
+    },
+    {
+      "path": "blocks-sound-library/research/drum-map-proposal.json",
+      "bytes": 7038,
+      "sha256": "1c6d9c8e9cd99ed380f6397e48266af0df952591f37af46be3a97787f5509acc"
+    },
+    {
+      "path": "blocks-sound-library/research/inspected-audio.json",
+      "bytes": 42800,
+      "sha256": "4f5aeba076c9f3d8f4253da5b49f6039faca0140174f3edb68a99fcd10711b77"
+    },
+    {
+      "path": "blocks-sound-library/research/provenance.json",
+      "bytes": 5699,
+      "sha256": "805f462750497b6328c99be78c17f72151115548619ce366413475abdd471062"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "blocks-design/hifi/src/__pycache__/build.cpython-313.pyc",
+      "bytes": 37861,
+      "reason": "build cache"
+    },
+    {
+      "path": "blocks-design/hifi/src/__pycache__/contrast.cpython-313.pyc",
+      "bytes": 2290,
+      "reason": "build cache"
+    },
+    {
+      "path": "blocks-design/hifi/src/__pycache__/frames.cpython-313.pyc",
+      "bytes": 27963,
+      "reason": "build cache"
+    },
+    {
+      "path": "blocks-design/hifi/src/__pycache__/hybrid.cpython-313.pyc",
+      "bytes": 16013,
+      "reason": "build cache"
+    },
+    {
+      "path": "blocks-design/hifi/src/__pycache__/kit.cpython-313.pyc",
+      "bytes": 11657,
+      "reason": "build cache"
+    },
+    {
+      "path": "blocks-design/hifi/src/__pycache__/large.cpython-313.pyc",
+      "bytes": 18227,
+      "reason": "build cache"
+    },
+    {
+      "path": "blocks-design/hifi/src/__pycache__/music.cpython-313.pyc",
+      "bytes": 3143,
+      "reason": "build cache"
+    },
+    {
+      "path": "blocks-design/hifi/src/__pycache__/phoneA.cpython-313.pyc",
+      "bytes": 23059,
+      "reason": "build cache"
+    },
+    {
+      "path": "blocks-design/hifi/src/__pycache__/phoneB.cpython-313.pyc",
+      "bytes": 14713,
+      "reason": "build cache"
+    },
+    {
+      "path": "blocks-design/hifi/src/__pycache__/rangeview.cpython-313.pyc",
+      "bytes": 55217,
+      "reason": "build cache"
+    },
+    {
+      "path": "blocks-design/hifi/src/__pycache__/render.cpython-313.pyc",
+      "bytes": 993,
+      "reason": "build cache"
+    },
+    {
+      "path": "blocks-sound-library/assets/SynthesizerPercussion-SFZ-20220718.7z",
+      "bytes": 1853650,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/UprightPianoKW-small-SFZ+FLAC-20190703.7z",
+      "bytes": 3092715,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/UprightPianoKW-small-SFZ-20190703.7z",
+      "bytes": 4551289,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/LICENSE",
+      "bytes": 7048,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-20220718.sfz",
+      "bytes": 1844,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/readme.txt",
+      "bytes": 603,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Clap01.wav",
+      "bytes": 122924,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Claves01.wav",
+      "bytes": 7607,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/ClosedHiHat01-01.wav",
+      "bytes": 26162,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/ClosedHiHat02-01.wav",
+      "bytes": 47012,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Cymbal01-01.wav",
+      "bytes": 428870,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Cymbal01-02.wav",
+      "bytes": 430541,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Cymbal01-03.wav",
+      "bytes": 420512,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Cymbal02.wav",
+      "bytes": 267540,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/HighTom02-01.wav",
+      "bytes": 77261,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/HighTom02-02.wav",
+      "bytes": 77471,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Kick04.wav",
+      "bytes": 32618,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Kick06.wav",
+      "bytes": 55007,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/LowTom02-01.wav",
+      "bytes": 77054,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/LowTom02-02.wav",
+      "bytes": 51384,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/MidTom02-01.wav",
+      "bytes": 77420,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/MidTom02-02.wav",
+      "bytes": 77198,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/OpenHiHat02-01.wav",
+      "bytes": 58559,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Shaker04.wav",
+      "bytes": 8663,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/ShakerLong01.wav",
+      "bytes": 24089,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Snare09.wav",
+      "bytes": 32006,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/SynthesizerPercussion-SFZ-20220718/SynthesizerPercussion-SFZ-20220718/samples/Snare14.wav",
+      "bytes": 47456,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-20190703.sfz",
+      "bytes": 2667,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/cc0.txt",
+      "bytes": 7048,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/photo.jpg",
+      "bytes": 1045689,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/readme.txt",
+      "bytes": 896,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/A3vH.flac",
+      "bytes": 96303,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/A4vH.flac",
+      "bytes": 69461,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/A5vH.flac",
+      "bytes": 64079,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/A6vH.flac",
+      "bytes": 38162,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/A7vH.flac",
+      "bytes": 29550,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/B1vH.flac",
+      "bytes": 167714,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/B2vH.flac",
+      "bytes": 163381,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/B7vH.flac",
+      "bytes": 27419,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/C1vH.flac",
+      "bytes": 180957,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/C4vH.flac",
+      "bytes": 114366,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/C5vH.flac",
+      "bytes": 77895,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/C6vH.flac",
+      "bytes": 54077,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/C7vH.flac",
+      "bytes": 43919,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/D#2vH.flac",
+      "bytes": 178707,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/D#3vH.flac",
+      "bytes": 121253,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/D#4vH.flac",
+      "bytes": 106328,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/D#5vH.flac",
+      "bytes": 76021,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/D#6vH.flac",
+      "bytes": 45912,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/D#7vH.flac",
+      "bytes": 25499,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#1vH.flac",
+      "bytes": 152021,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#2vH.flac",
+      "bytes": 177899,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#3vH.flac",
+      "bytes": 123867,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#4vH.flac",
+      "bytes": 100031,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#5vH.flac",
+      "bytes": 48665,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#6vH.flac",
+      "bytes": 37346,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/inspected/UprightPianoKW-small-SFZ+FLAC-20190703/UprightPianoKW-small-SFZ+FLAC-20190703/samples/F#7vH.flac",
+      "bytes": 25265,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/partial-unusable/UprightPianoKW-small-SFZ-20190703/DO-NOT-USE.txt",
+      "bytes": 196,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/partial-unusable/UprightPianoKW-small-SFZ-20190703/UprightPianoKW-small-SFZ-20190703/UprightPianoKW-small-20190703.sfz",
+      "bytes": 2641,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/partial-unusable/UprightPianoKW-small-SFZ-20190703/UprightPianoKW-small-SFZ-20190703/cc0.txt",
+      "bytes": 7048,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/partial-unusable/UprightPianoKW-small-SFZ-20190703/UprightPianoKW-small-SFZ-20190703/photo.jpg",
+      "bytes": 1045689,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/partial-unusable/UprightPianoKW-small-SFZ-20190703/UprightPianoKW-small-SFZ-20190703/readme.txt",
+      "bytes": 896,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/assets/partial-unusable/UprightPianoKW-small-SFZ-20190703/UprightPianoKW-small-SFZ-20190703/samples/A3vH.wav",
+      "bytes": 0,
+      "reason": "sound binaries / mappings / source archives excluded; ledger and licence evidence only"
+    },
+    {
+      "path": "blocks-sound-library/research/freepats-acoustic-drums.html",
+      "bytes": 10654,
+      "reason": "third-party full webpage/image capture omitted; source URLs and evidence in ledger retained"
+    },
+    {
+      "path": "blocks-sound-library/research/freepats-electronic-drums.html",
+      "bytes": 9795,
+      "reason": "third-party full webpage/image capture omitted; source URLs and evidence in ledger retained"
+    },
+    {
+      "path": "blocks-sound-library/research/freepats-licences.html",
+      "bytes": 12029,
+      "reason": "third-party full webpage/image capture omitted; source URLs and evidence in ledger retained"
+    },
+    {
+      "path": "blocks-sound-library/research/freepats-piano.html",
+      "bytes": 15105,
+      "reason": "third-party full webpage/image capture omitted; source URLs and evidence in ledger retained"
+    },
+    {
+      "path": "blocks-sound-library/research/freepats-world-percussion.html",
+      "bytes": 11888,
+      "reason": "third-party full webpage/image capture omitted; source URLs and evidence in ledger retained"
+    },
+    {
+      "path": "blocks-sound-library/research/karoryfer-free-samples.html",
+      "bytes": 140232,
+      "reason": "third-party full webpage/image capture omitted; source URLs and evidence in ledger retained"
+    },
+    {
+      "path": "blocks-sound-library/research/karoryfer-meatbass.html",
+      "bytes": 130656,
+      "reason": "third-party full webpage/image capture omitted; source URLs and evidence in ledger retained"
+    },
+    {
+      "path": "blocks-sound-library/research/salamander-author-drums.html",
+      "bytes": 81120,
+      "reason": "third-party full webpage/image capture omitted; source URLs and evidence in ledger retained"
+    },
+    {
+      "path": "blocks-sound-library/research/salamander-author-piano.html",
+      "bytes": 118128,
+      "reason": "third-party full webpage/image capture omitted; source URLs and evidence in ledger retained"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/AES.py",
+      "bytes": 9057,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/AES.pyi",
+      "bytes": 4054,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/ARC2.py",
+      "bytes": 7026,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/ARC2.pyi",
+      "bytes": 1013,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/ARC4.py",
+      "bytes": 5128,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/ARC4.pyi",
+      "bytes": 422,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/Blowfish.py",
+      "bytes": 5976,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/Blowfish.pyi",
+      "bytes": 1049,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/CAST.py",
+      "bytes": 6087,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/CAST.pyi",
+      "bytes": 1014,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/ChaCha20.py",
+      "bytes": 10859,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/ChaCha20.pyi",
+      "bytes": 773,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/ChaCha20_Poly1305.py",
+      "bytes": 11553,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/ChaCha20_Poly1305.pyi",
+      "bytes": 1079,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/DES.py",
+      "bytes": 5963,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/DES.pyi",
+      "bytes": 994,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/DES3.py",
+      "bytes": 6941,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/DES3.pyi",
+      "bytes": 1064,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/PKCS1_OAEP.py",
+      "bytes": 8875,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/PKCS1_OAEP.pyi",
+      "bytes": 1183,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/PKCS1_v1_5.py",
+      "bytes": 7043,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/PKCS1_v1_5.pyi",
+      "bytes": 690,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/Salsa20.py",
+      "bytes": 6369,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/Salsa20.pyi",
+      "bytes": 744,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_ARC4.abi3.so",
+      "bytes": 21032,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_EKSBlowfish.py",
+      "bytes": 5217,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_EKSBlowfish.pyi",
+      "bytes": 270,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_Salsa20.abi3.so",
+      "bytes": 27016,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/__init__.py",
+      "bytes": 3642,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/__init__.pyi",
+      "bytes": 0,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_chacha20.abi3.so",
+      "bytes": 30624,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_cbc.py",
+      "bytes": 10908,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_cbc.pyi",
+      "bytes": 691,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_ccm.py",
+      "bytes": 25311,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_ccm.pyi",
+      "bytes": 1670,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_cfb.py",
+      "bytes": 10741,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_cfb.pyi",
+      "bytes": 731,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_ctr.py",
+      "bytes": 15854,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_ctr.pyi",
+      "bytes": 804,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_eax.py",
+      "bytes": 14485,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_eax.pyi",
+      "bytes": 1545,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_ecb.py",
+      "bytes": 8321,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_ecb.pyi",
+      "bytes": 596,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_gcm.py",
+      "bytes": 21384,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_gcm.pyi",
+      "bytes": 1541,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_kw.py",
+      "bytes": 4468,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_kwp.py",
+      "bytes": 3939,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_ocb.py",
+      "bytes": 19979,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_ocb.pyi",
+      "bytes": 1231,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_ofb.py",
+      "bytes": 10229,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_ofb.pyi",
+      "bytes": 695,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_openpgp.py",
+      "bytes": 7061,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_openpgp.pyi",
+      "bytes": 556,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_siv.py",
+      "bytes": 14009,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_mode_siv.pyi",
+      "bytes": 1261,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_pkcs1_decode.abi3.so",
+      "bytes": 56384,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_pkcs1_oaep_decode.py",
+      "bytes": 1832,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_aes.abi3.so",
+      "bytes": 106808,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_aesni.abi3.so",
+      "bytes": 106384,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_arc2.abi3.so",
+      "bytes": 46464,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_blowfish.abi3.so",
+      "bytes": 78640,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_cast.abi3.so",
+      "bytes": 57408,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_cbc.abi3.so",
+      "bytes": 23000,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_cfb.abi3.so",
+      "bytes": 26864,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_ctr.abi3.so",
+      "bytes": 31336,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_des.abi3.so",
+      "bytes": 71560,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_des3.abi3.so",
+      "bytes": 72520,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_ecb.abi3.so",
+      "bytes": 19016,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_eksblowfish.abi3.so",
+      "bytes": 181192,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_ocb.abi3.so",
+      "bytes": 45856,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Cipher/_raw_ofb.abi3.so",
+      "bytes": 22128,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/BLAKE2b.py",
+      "bytes": 9444,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/BLAKE2b.pyi",
+      "bytes": 906,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/BLAKE2s.py",
+      "bytes": 9450,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/BLAKE2s.pyi",
+      "bytes": 739,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/CMAC.py",
+      "bytes": 10532,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/CMAC.pyi",
+      "bytes": 822,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/HMAC.py",
+      "bytes": 8169,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/HMAC.pyi",
+      "bytes": 624,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/KMAC128.py",
+      "bytes": 5957,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/KMAC128.pyi",
+      "bytes": 903,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/KMAC256.py",
+      "bytes": 2910,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/KMAC256.pyi",
+      "bytes": 226,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/KangarooTwelve.py",
+      "bytes": 12279,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/KangarooTwelve.pyi",
+      "bytes": 918,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/MD2.py",
+      "bytes": 6123,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/MD2.pyi",
+      "bytes": 492,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/MD4.py",
+      "bytes": 6598,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/MD4.pyi",
+      "bytes": 532,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/MD5.py",
+      "bytes": 6630,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/MD5.pyi",
+      "bytes": 492,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/Poly1305.py",
+      "bytes": 8106,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/Poly1305.pyi",
+      "bytes": 665,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/RIPEMD.py",
+      "bytes": 1211,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/RIPEMD.pyi",
+      "bytes": 98,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/RIPEMD160.py",
+      "bytes": 6410,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/RIPEMD160.pyi",
+      "bytes": 516,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA.py",
+      "bytes": 1156,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA.pyi",
+      "bytes": 169,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA1.py",
+      "bytes": 6702,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA1.pyi",
+      "bytes": 536,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA224.py",
+      "bytes": 6913,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA224.pyi",
+      "bytes": 544,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA256.py",
+      "bytes": 6909,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA256.pyi",
+      "bytes": 612,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA384.py",
+      "bytes": 6911,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA384.pyi",
+      "bytes": 544,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA3_224.py",
+      "bytes": 6191,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA3_224.pyi",
+      "bytes": 605,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA3_256.py",
+      "bytes": 6191,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA3_256.pyi",
+      "bytes": 605,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA3_384.py",
+      "bytes": 6286,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA3_384.pyi",
+      "bytes": 605,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA3_512.py",
+      "bytes": 6143,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA3_512.pyi",
+      "bytes": 605,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA512.py",
+      "bytes": 7732,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHA512.pyi",
+      "bytes": 622,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHAKE128.py",
+      "bytes": 5269,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHAKE128.pyi",
+      "bytes": 477,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHAKE256.py",
+      "bytes": 5270,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/SHAKE256.pyi",
+      "bytes": 477,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/TupleHash128.py",
+      "bytes": 4756,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/TupleHash128.pyi",
+      "bytes": 666,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/TupleHash256.py",
+      "bytes": 2832,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/TupleHash256.pyi",
+      "bytes": 144,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/TurboSHAKE128.py",
+      "bytes": 3847,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/TurboSHAKE128.pyi",
+      "bytes": 574,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/TurboSHAKE256.py",
+      "bytes": 757,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/TurboSHAKE256.pyi",
+      "bytes": 306,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_BLAKE2b.abi3.so",
+      "bytes": 27424,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_BLAKE2s.abi3.so",
+      "bytes": 26952,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_MD2.abi3.so",
+      "bytes": 23192,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_MD4.abi3.so",
+      "bytes": 27192,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_MD5.abi3.so",
+      "bytes": 32008,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_RIPEMD160.abi3.so",
+      "bytes": 60728,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_SHA1.abi3.so",
+      "bytes": 72064,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_SHA224.abi3.so",
+      "bytes": 45768,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_SHA256.abi3.so",
+      "bytes": 45832,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_SHA384.abi3.so",
+      "bytes": 54160,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_SHA512.abi3.so",
+      "bytes": 54200,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/__init__.py",
+      "bytes": 2939,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/__init__.pyi",
+      "bytes": 2064,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_ghash_clmul.abi3.so",
+      "bytes": 58376,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_ghash_portable.abi3.so",
+      "bytes": 25024,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_keccak.abi3.so",
+      "bytes": 45280,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/_poly1305.abi3.so",
+      "bytes": 33424,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/cSHAKE128.py",
+      "bytes": 6379,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/cSHAKE128.pyi",
+      "bytes": 499,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/cSHAKE256.py",
+      "bytes": 2210,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/cSHAKE256.pyi",
+      "bytes": 235,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/keccak.py",
+      "bytes": 7723,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Hash/keccak.pyi",
+      "bytes": 741,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/IO/PEM.py",
+      "bytes": 7061,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/IO/PEM.pyi",
+      "bytes": 303,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/IO/PKCS8.py",
+      "bytes": 8433,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/IO/PKCS8.pyi",
+      "bytes": 608,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/IO/_PBES.py",
+      "bytes": 22372,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/IO/_PBES.pyi",
+      "bytes": 790,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/IO/__init__.py",
+      "bytes": 1540,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/Numbers.py",
+      "bytes": 2128,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/Numbers.pyi",
+      "bytes": 86,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/Primality.py",
+      "bytes": 11387,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/Primality.pyi",
+      "bytes": 823,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/_IntegerBase.py",
+      "bytes": 11277,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/_IntegerBase.pyi",
+      "bytes": 3743,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/_IntegerCustom.py",
+      "bytes": 5747,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/_IntegerCustom.pyi",
+      "bytes": 135,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/_IntegerGMP.py",
+      "bytes": 28796,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/_IntegerGMP.pyi",
+      "bytes": 78,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/_IntegerNative.py",
+      "bytes": 11334,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/_IntegerNative.pyi",
+      "bytes": 81,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/__init__.py",
+      "bytes": 0,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Math/_modexp.abi3.so",
+      "bytes": 220328,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Protocol/DH.py",
+      "bytes": 5644,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Protocol/DH.pyi",
+      "bytes": 709,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Protocol/HPKE.py",
+      "bytes": 16978,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Protocol/KDF.py",
+      "bytes": 22441,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Protocol/KDF.pyi",
+      "bytes": 2152,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Protocol/SecretSharing.py",
+      "bytes": 9138,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Protocol/SecretSharing.pyi",
+      "bytes": 798,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Protocol/__init__.py",
+      "bytes": 1554,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Protocol/__init__.pyi",
+      "bytes": 43,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Protocol/_scrypt.abi3.so",
+      "bytes": 26176,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/DSA.py",
+      "bytes": 23371,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/DSA.pyi",
+      "bytes": 1381,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/ECC.py",
+      "bytes": 47975,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/ECC.pyi",
+      "bytes": 2638,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/ElGamal.py",
+      "bytes": 8631,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/ElGamal.pyi",
+      "bytes": 674,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/RSA.py",
+      "bytes": 31163,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/RSA.pyi",
+      "bytes": 2529,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/__init__.py",
+      "bytes": 3146,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/__init__.pyi",
+      "bytes": 0,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/_curve.py",
+      "bytes": 1812,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/_curve25519.abi3.so",
+      "bytes": 130104,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/_curve448.abi3.so",
+      "bytes": 241728,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/_ec_ws.abi3.so",
+      "bytes": 968088,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/_ed25519.abi3.so",
+      "bytes": 223480,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/_ed448.abi3.so",
+      "bytes": 257616,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/_edwards.py",
+      "bytes": 4679,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/_montgomery.py",
+      "bytes": 5243,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/_nist_ecc.py",
+      "bytes": 10181,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/_openssh.py",
+      "bytes": 5146,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/_openssh.pyi",
+      "bytes": 324,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/_point.py",
+      "bytes": 16754,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/PublicKey/_point.pyi",
+      "bytes": 1725,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Random/__init__.py",
+      "bytes": 1813,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Random/__init__.pyi",
+      "bytes": 367,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Random/random.py",
+      "bytes": 5246,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Random/random.pyi",
+      "bytes": 832,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/__init__.py",
+      "bytes": 3802,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/common.py",
+      "bytes": 17290,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_AES.py",
+      "bytes": 71751,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_ARC2.py",
+      "bytes": 6474,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_ARC4.py",
+      "bytes": 24995,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_Blowfish.py",
+      "bytes": 7242,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_CAST.py",
+      "bytes": 3291,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_CBC.py",
+      "bytes": 20222,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_CCM.py",
+      "bytes": 38513,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_CFB.py",
+      "bytes": 16085,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_CTR.py",
+      "bytes": 21334,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_ChaCha20.py",
+      "bytes": 20340,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_ChaCha20_Poly1305.py",
+      "bytes": 30742,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_DES.py",
+      "bytes": 15951,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_DES3.py",
+      "bytes": 6585,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_EAX.py",
+      "bytes": 28853,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_GCM.py",
+      "bytes": 37308,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_KW.py",
+      "bytes": 5622,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_OCB.py",
+      "bytes": 32667,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_OFB.py",
+      "bytes": 9395,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_OpenPGP.py",
+      "bytes": 8497,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_SIV.py",
+      "bytes": 19967,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_Salsa20.py",
+      "bytes": 16607,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_pkcs1_15.py",
+      "bytes": 10972,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Cipher/test_pkcs1_oaep.py",
+      "bytes": 22322,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/__init__.py",
+      "bytes": 3913,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/common.py",
+      "bytes": 9883,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_BLAKE2.py",
+      "bytes": 16492,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_CMAC.py",
+      "bytes": 13392,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_HMAC.py",
+      "bytes": 19953,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_KMAC.py",
+      "bytes": 11720,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_KangarooTwelve.py",
+      "bytes": 17007,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_MD2.py",
+      "bytes": 2336,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_MD4.py",
+      "bytes": 2359,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_MD5.py",
+      "bytes": 3300,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_Poly1305.py",
+      "bytes": 18329,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_RIPEMD160.py",
+      "bytes": 2675,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_SHA1.py",
+      "bytes": 2938,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_SHA224.py",
+      "bytes": 2541,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_SHA256.py",
+      "bytes": 3637,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_SHA384.py",
+      "bytes": 2722,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_SHA3_224.py",
+      "bytes": 2850,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_SHA3_256.py",
+      "bytes": 2851,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_SHA3_384.py",
+      "bytes": 2850,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_SHA3_512.py",
+      "bytes": 2851,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_SHA512.py",
+      "bytes": 5210,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_SHAKE.py",
+      "bytes": 4934,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_TupleHash.py",
+      "bytes": 8710,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_TurboSHAKE.py",
+      "bytes": 15025,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_cSHAKE.py",
+      "bytes": 6820,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Hash/test_keccak.py",
+      "bytes": 8909,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/IO/__init__.py",
+      "bytes": 2002,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/IO/test_PBES.py",
+      "bytes": 10353,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/IO/test_PKCS8.py",
+      "bytes": 19126,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Math/__init__.py",
+      "bytes": 2218,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Math/test_Numbers.py",
+      "bytes": 32404,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Math/test_Primality.py",
+      "bytes": 4901,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Math/test_modexp.py",
+      "bytes": 8135,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Math/test_modmult.py",
+      "bytes": 4876,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Protocol/__init__.py",
+      "bytes": 1930,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Protocol/test_HPKE.py",
+      "bytes": 17666,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Protocol/test_KDF.py",
+      "bytes": 36840,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Protocol/test_SecretSharing.py",
+      "bytes": 10198,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Protocol/test_ecdh.py",
+      "bytes": 30572,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Protocol/test_rfc1751.py",
+      "bytes": 2220,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/__init__.py",
+      "bytes": 2684,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/test_DSA.py",
+      "bytes": 9636,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/test_ECC_Curve25519.py",
+      "bytes": 12007,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/test_ECC_Curve448.py",
+      "bytes": 10217,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/test_ECC_Ed25519.py",
+      "bytes": 13948,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/test_ECC_Ed448.py",
+      "bytes": 15016,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/test_ECC_NIST.py",
+      "bytes": 51842,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/test_ElGamal.py",
+      "bytes": 8672,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/test_RSA.py",
+      "bytes": 12660,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/test_import_Curve25519.py",
+      "bytes": 14384,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/test_import_Curve448.py",
+      "bytes": 12512,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/test_import_DSA.py",
+      "bytes": 25521,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/test_import_ECC.py",
+      "bytes": 109175,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/PublicKey/test_import_RSA.py",
+      "bytes": 27047,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Random/__init__.py",
+      "bytes": 1546,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Random/test_random.py",
+      "bytes": 7014,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Signature/__init__.py",
+      "bytes": 1558,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Signature/test_dss.py",
+      "bytes": 57684,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Signature/test_eddsa.py",
+      "bytes": 25066,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Signature/test_pkcs1_15.py",
+      "bytes": 13601,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Signature/test_pss.py",
+      "bytes": 15867,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Util/__init__.py",
+      "bytes": 2021,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Util/test_Counter.py",
+      "bytes": 2292,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Util/test_Padding.py",
+      "bytes": 5789,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Util/test_asn1.py",
+      "bytes": 31276,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Util/test_number.py",
+      "bytes": 8546,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Util/test_rfc1751.py",
+      "bytes": 1121,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/Util/test_strxor.py",
+      "bytes": 10223,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/__init__.py",
+      "bytes": 3225,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/__main__.py",
+      "bytes": 1573,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/loader.py",
+      "bytes": 8522,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/SelfTest/st_common.py",
+      "bytes": 1949,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Signature/DSS.py",
+      "bytes": 15356,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Signature/DSS.pyi",
+      "bytes": 1102,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Signature/PKCS1_PSS.py",
+      "bytes": 2103,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Signature/PKCS1_PSS.pyi",
+      "bytes": 871,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Signature/PKCS1_v1_5.py",
+      "bytes": 1993,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Signature/PKCS1_v1_5.pyi",
+      "bytes": 455,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Signature/__init__.py",
+      "bytes": 1695,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Signature/eddsa.py",
+      "bytes": 12496,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Signature/eddsa.pyi",
+      "bytes": 730,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Signature/pkcs1_15.py",
+      "bytes": 8901,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Signature/pkcs1_15.pyi",
+      "bytes": 568,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Signature/pss.py",
+      "bytes": 13643,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Signature/pss.pyi",
+      "bytes": 1045,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/Counter.py",
+      "bytes": 3213,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/Counter.pyi",
+      "bytes": 290,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/Padding.py",
+      "bytes": 4352,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/Padding.pyi",
+      "bytes": 238,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/RFC1751.py",
+      "bytes": 21204,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/RFC1751.pyi",
+      "bytes": 159,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/__init__.py",
+      "bytes": 1951,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/_cpu_features.py",
+      "bytes": 1997,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/_cpu_features.pyi",
+      "bytes": 59,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/_cpuid_c.abi3.so",
+      "bytes": 19304,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/_file_system.py",
+      "bytes": 2183,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/_file_system.pyi",
+      "bytes": 100,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/_raw_api.py",
+      "bytes": 10637,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/_raw_api.pyi",
+      "bytes": 906,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/_strxor.abi3.so",
+      "bytes": 20376,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/asn1.py",
+      "bytes": 36205,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/asn1.pyi",
+      "bytes": 3805,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/number.py",
+      "bytes": 96372,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/number.pyi",
+      "bytes": 975,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/py3compat.py",
+      "bytes": 5829,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/py3compat.pyi",
+      "bytes": 837,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/strxor.py",
+      "bytes": 5449,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/Util/strxor.pyi",
+      "bytes": 243,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/__init__.py",
+      "bytes": 185,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/__init__.pyi",
+      "bytes": 99,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/Cryptodome/py.typed",
+      "bytes": 0,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/_brotli.cpython-313-x86_64-linux-gnu.so",
+      "bytes": 5151208,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/__init__.py",
+      "bytes": 9338,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/__init__.pyi",
+      "bytes": 8268,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/_cffi/__init__.py",
+      "bytes": 8090,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/_cffi/_blocks_output_buffer.py",
+      "bytes": 3403,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/_cffi/_common.py",
+      "bytes": 4848,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/_cffi/buffer.py",
+      "bytes": 797,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/_cffi/compressor.py",
+      "bytes": 13362,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/_cffi/decompressor.py",
+      "bytes": 12955,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/_cffi/zstddict.py",
+      "bytes": 5989,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/_compat.py",
+      "bytes": 2682,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/_shutil.py",
+      "bytes": 4903,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/_streams.py",
+      "bytes": 5670,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/_zstd.cpython-313-x86_64-linux-gnu.so",
+      "bytes": 956456,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/_zstd.py",
+      "bytes": 1095,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/_zstdfile.py",
+      "bytes": 12335,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/py.typed",
+      "bytes": 0,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/tarfile.py",
+      "bytes": 120775,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/tarfile.pyi",
+      "bytes": 27907,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/zipfile/__init__.py",
+      "bytes": 94253,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/zipfile/__init__.pyi",
+      "bytes": 8791,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/zipfile/__main__.py",
+      "bytes": 58,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/zipfile/_path/__init__.py",
+      "bytes": 11973,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/zipfile/_path/__init__.pyi",
+      "bytes": 2719,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/zipfile/_path/glob.py",
+      "bytes": 3314,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports/zstd/zipfile/_path/glob.pyi",
+      "bytes": 671,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports_zstd-1.8.0.dist-info/INSTALLER",
+      "bytes": 4,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports_zstd-1.8.0.dist-info/METADATA",
+      "bytes": 6820,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports_zstd-1.8.0.dist-info/RECORD",
+      "bytes": 3988,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports_zstd-1.8.0.dist-info/WHEEL",
+      "bytes": 190,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports_zstd-1.8.0.dist-info/licenses/LICENSE.txt",
+      "bytes": 13804,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports_zstd-1.8.0.dist-info/licenses/LICENSE_zstd.txt",
+      "bytes": 1724,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/backports_zstd-1.8.0.dist-info/top_level.txt",
+      "bytes": 10,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/bcj/__init__.py",
+      "bytes": 1790,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/bcj/_bcj.cpython-313-x86_64-linux-gnu.so",
+      "bytes": 114104,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/bcj/_bcjfilter.py",
+      "bytes": 9435,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/bcj/py.typed",
+      "bytes": 0,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/bin/py7zr",
+      "bytes": 213,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/brotli-1.2.1.dist-info/INSTALLER",
+      "bytes": 4,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/brotli-1.2.1.dist-info/METADATA",
+      "bytes": 6116,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/brotli-1.2.1.dist-info/RECORD",
+      "bytes": 688,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/brotli-1.2.1.dist-info/WHEEL",
+      "bytes": 151,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/brotli-1.2.1.dist-info/licenses/LICENSE",
+      "bytes": 1084,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/brotli-1.2.1.dist-info/top_level.txt",
+      "bytes": 15,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/brotli.py",
+      "bytes": 1970,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/inflate64/__init__.py",
+      "bytes": 530,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/inflate64/_inflate64.cpython-313-x86_64-linux-gnu.so",
+      "bytes": 240472,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/inflate64/py.typed",
+      "bytes": 0,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/inflate64-1.0.4.dist-info/INSTALLER",
+      "bytes": 4,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/inflate64-1.0.4.dist-info/METADATA",
+      "bytes": 4384,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/inflate64-1.0.4.dist-info/RECORD",
+      "bytes": 815,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/inflate64-1.0.4.dist-info/WHEEL",
+      "bytes": 190,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/inflate64-1.0.4.dist-info/licenses/COPYING",
+      "bytes": 26530,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/inflate64-1.0.4.dist-info/top_level.txt",
+      "bytes": 10,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/multivolumefile/__init__.py",
+      "bytes": 10603,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/multivolumefile/__init__.pyi",
+      "bytes": 1784,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/multivolumefile/py.typed",
+      "bytes": 0,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/multivolumefile/stat.py",
+      "bytes": 1043,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/multivolumefile-0.2.3.dist-info/INSTALLER",
+      "bytes": 4,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/multivolumefile-0.2.3.dist-info/LICENSE",
+      "bytes": 26530,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/multivolumefile-0.2.3.dist-info/METADATA",
+      "bytes": 6339,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/multivolumefile-0.2.3.dist-info/RECORD",
+      "bytes": 968,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/multivolumefile-0.2.3.dist-info/WHEEL",
+      "bytes": 92,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/multivolumefile-0.2.3.dist-info/top_level.txt",
+      "bytes": 16,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil/__init__.py",
+      "bytes": 89878,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil/_common.py",
+      "bytes": 25254,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil/_ntuples.py",
+      "bytes": 10970,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil/_psaix.py",
+      "bytes": 17616,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil/_psbsd.py",
+      "bytes": 29263,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil/_pslinux.py",
+      "bytes": 84787,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil/_psosx.py",
+      "bytes": 15913,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil/_psposix.py",
+      "bytes": 11575,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil/_pssunos.py",
+      "bytes": 23934,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil/_psutil_linux.abi3.so",
+      "bytes": 150904,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil/_pswindows.py",
+      "bytes": 35370,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil-7.2.2.dist-info/INSTALLER",
+      "bytes": 4,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil-7.2.2.dist-info/LICENSE",
+      "bytes": 1548,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil-7.2.2.dist-info/METADATA",
+      "bytes": 22187,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil-7.2.2.dist-info/RECORD",
+      "bytes": 1792,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil-7.2.2.dist-info/WHEEL",
+      "bytes": 184,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/psutil-7.2.2.dist-info/top_level.txt",
+      "bytes": 7,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/__init__.py",
+      "bytes": 2495,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/__main__.py",
+      "bytes": 988,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/archiveinfo.py",
+      "bytes": 48772,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/callbacks.py",
+      "bytes": 2409,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/cli.py",
+      "bytes": 18024,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/compressor.py",
+      "bytes": 46070,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/exceptions.py",
+      "bytes": 2484,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/helpers.py",
+      "bytes": 16069,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/io.py",
+      "bytes": 8278,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/member.py",
+      "bytes": 3512,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/properties.py",
+      "bytes": 8244,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/py.typed",
+      "bytes": 0,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/py7zr.py",
+      "bytes": 65514,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/version.py",
+      "bytes": 22,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr/win32compat.py",
+      "bytes": 8286,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr-1.1.4.dist-info/INSTALLER",
+      "bytes": 4,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr-1.1.4.dist-info/METADATA",
+      "bytes": 17279,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr-1.1.4.dist-info/RECORD",
+      "bytes": 2484,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr-1.1.4.dist-info/REQUESTED",
+      "bytes": 0,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr-1.1.4.dist-info/WHEEL",
+      "bytes": 91,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr-1.1.4.dist-info/entry_points.txt",
+      "bytes": 46,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr-1.1.4.dist-info/licenses/LICENSE",
+      "bytes": 26530,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/py7zr-1.1.4.dist-info/top_level.txt",
+      "bytes": 6,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pybcj-1.0.8.dist-info/INSTALLER",
+      "bytes": 4,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pybcj-1.0.8.dist-info/METADATA",
+      "bytes": 3834,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pybcj-1.0.8.dist-info/RECORD",
+      "bytes": 1074,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pybcj-1.0.8.dist-info/WHEEL",
+      "bytes": 190,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pybcj-1.0.8.dist-info/licenses/LICENSE",
+      "bytes": 26530,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pybcj-1.0.8.dist-info/scm_file_list.json",
+      "bytes": 844,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pybcj-1.0.8.dist-info/scm_version.json",
+      "bytes": 160,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pybcj-1.0.8.dist-info/top_level.txt",
+      "bytes": 4,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pycryptodomex-3.24.2.dist-info/AUTHORS.rst",
+      "bytes": 764,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pycryptodomex-3.24.2.dist-info/INSTALLER",
+      "bytes": 4,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pycryptodomex-3.24.2.dist-info/LICENSE.rst",
+      "bytes": 2926,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pycryptodomex-3.24.2.dist-info/METADATA",
+      "bytes": 3396,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pycryptodomex-3.24.2.dist-info/RECORD",
+      "bytes": 44904,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pycryptodomex-3.24.2.dist-info/WHEEL",
+      "bytes": 147,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pycryptodomex-3.24.2.dist-info/top_level.txt",
+      "bytes": 11,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pyppmd/__init__.py",
+      "bytes": 7289,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pyppmd/c/_ppmd.cpython-313-x86_64-linux-gnu.so",
+      "bytes": 362944,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pyppmd/c/c_ppmd.py",
+      "bytes": 436,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pyppmd/cffi/cffi_ppmd.py",
+      "bytes": 19801,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pyppmd/py.typed",
+      "bytes": 0,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pyppmd-1.3.1.dist-info/INSTALLER",
+      "bytes": 4,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pyppmd-1.3.1.dist-info/METADATA",
+      "bytes": 5422,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pyppmd-1.3.1.dist-info/RECORD",
+      "bytes": 1040,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pyppmd-1.3.1.dist-info/WHEEL",
+      "bytes": 190,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pyppmd-1.3.1.dist-info/licenses/LICENSE",
+      "bytes": 26530,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/pyppmd-1.3.1.dist-info/top_level.txt",
+      "bytes": 7,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/texttable-1.7.2.dist-info/INSTALLER",
+      "bytes": 4,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/texttable-1.7.2.dist-info/METADATA",
+      "bytes": 10022,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/texttable-1.7.2.dist-info/RECORD",
+      "bytes": 614,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/texttable-1.7.2.dist-info/WHEEL",
+      "bytes": 109,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/texttable-1.7.2.dist-info/licenses/LICENSE",
+      "bytes": 1083,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/texttable-1.7.2.dist-info/top_level.txt",
+      "bytes": 10,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/tools/texttable.py",
+      "bytes": 22921,
+      "reason": "third-party installed dependencies; redistribution not assessed"
+    },
+    {
+      "path": "blocks-sound-library/research/vsco-community.html",
+      "bytes": 176550,
+      "reason": "third-party full webpage/image capture omitted; source URLs and evidence in ledger retained"
+    }
+  ],
+  "changed_during_copy": []
+}

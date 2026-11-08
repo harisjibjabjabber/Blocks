@@ -1,0 +1,100 @@
+{
+ "version": "harmony-0.1.0",
+ "note": "SYNTHETIC; provisional labels",
+ "index": {
+  "tuning": [
+   {
+    "id": "HT01-rootless-AB-ii-V-I-C",
+    "case": "rootless voicings",
+    "spans": 3,
+    "sha256": "4167b925a5e6e87688ebecf358c76e06e4e00c1b2c7df1584d5be1f0fa4a4b89"
+   },
+   {
+    "id": "HT02-inversion-vs-slash",
+    "case": "slash bass vs inversion",
+    "spans": 2,
+    "sha256": "6bada03d1f8422203bc528c8946ec6bab349084c6a190451eb07a82d887d766f"
+   },
+   {
+    "id": "HT03-enharmonic-ger6-vs-Ab7",
+    "case": "enharmonic and key ambiguity",
+    "spans": 2,
+    "sha256": "8e6862ac65fe447745a03e4a887c0ec3e214cef1f5c8147cee59996c1578267c"
+   },
+   {
+    "id": "HT04-rolled-vs-arpeggio",
+    "case": "rolled chord vs arpeggio",
+    "spans": 2,
+    "sha256": "00a2341f7a40ba1c971bddf6ce0d9338f98db7eee3f61d61ad0fac4c14404329"
+   },
+   {
+    "id": "HT05-pedal-blur-Cmaj7-F7",
+    "case": "sustain pedal blur",
+    "spans": 2,
+    "sha256": "610732bfdb042d721fe4269426fde52b7df6a70edad0d1265859e8c411c616eb"
+   },
+   {
+    "id": "HT06-melody-over-held-Bbmaj7",
+    "case": "melody over held harmony",
+    "spans": 1,
+    "sha256": "b642f77330423c8b17b302db078883a4f4f17ae16ddae95f606de6dceec85d63"
+   },
+   {
+    "id": "HT07-two-hands-bass-and-comp",
+    "case": "two hands with different roles",
+    "spans": 4,
+    "sha256": "459f64e8a5c06cef87aff009601d5648083727c6e76490f5d8f6130d1cb660a9"
+   },
+   {
+    "id": "HT08-walking-bass-ii-V-I",
+    "case": "walking bass",
+    "spans": 3,
+    "sha256": "09fdc1825fe7c4ee336bb8180a191ade3ef3f50c282c471e4f3c283136eeb04f"
+   },
+   {
+    "id": "HT09-layers-rootless-piano-plus-bass",
+    "case": "combined layers vs each part",
+    "spans": 9,
+    "sha256": "087282f4b41acbc77b65aafc4662160700b0fa393d8ee43b8c7e82c20791dabb"
+   },
+   {
+    "id": "HT10-abstain-dyad-and-quartal",
+    "case": "abstention",
+    "spans": 2,
+    "sha256": "b0995666d9b23b28fae683a684234928a0ddbca2feb1c2a0aff939509a622db1"
+   }
+  ],
+  "holdout": [
+   {
+    "id": "HH01-rootless-ii-V-I-F",
+    "case": "rootless voicings",
+    "spans": 3,
+    "sha256": "2fef70f2b6883afb29d89c1ba926674c925be42b6b35526ced0382f6301536e6"
+   },
+   {
+    "id": "HH02-inversion-and-slash-Bb",
+    "case": "slash bass vs inversion",
+    "spans": 2,
+    "sha256": "1e162dfbe3c8d23cffe2cff36d2cacbfde316c936af6d95039f2107a76953bb6"
+   },
+   {
+    "id": "HH03-pedal-blur-Dm7-G7",
+    "case": "sustain pedal blur",
+    "spans": 2,
+    "sha256": "3ae9076e4b276ba35dcc751ef14a3c6c95d1c6d4ef160255d3e8229b34f01772"
+   },
+   {
+    "id": "HH04-walking-bass-Bb",
+    "case": "walking bass",
+    "spans": 3,
+    "sha256": "b53f1f06f6cf4bcf5ed92e75b7209ed5a72b970f0383a809a18a5fa933cd2ddb"
+   },
+   {
+    "id": "HH05-melody-over-held-Ebmaj7-and-roll",
+    "case": "melody over held harmony + rolled chord",
+    "spans": 1,
+    "sha256": "87f057fdb239d0f4c255bee5aa47a38e2a08e90d55cf03b6db8bf8346a13442e"
+   }
+  ]
+ }
+}

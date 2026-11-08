@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 780" width="800" height="780" font-family="Inter, Roboto, Arial, sans-serif" role="img" aria-labelledby="t">
+<title id="t">Controller learn — map a pedal/button to Capture (PROPOSED)</title>
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<rect x="0" y="0" width="360" height="780" rx="8" fill="#FFFFFF" stroke="#1F2328" stroke-width="2"/>
+<text x="352" y="772" font-size="9" text-anchor="end" fill="#5B6470" font-weight="400">PROPOSED · not implemented · sizes are proposals pending measurement</text>
+<rect x="8" y="8" width="48" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="32.0" y="37.6" font-size="16" text-anchor="middle" fill="#1F2328" font-weight="400">←</text>
+<text x="64" y="40" font-size="15" text-anchor="start" fill="#1F2328" font-weight="600">Controller · Keystation 61</text>
+<text x="16" y="84" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">Hands stay on the keys: map the actions you use most.</text>
+<rect x="8" y="100" width="344" height="60" rx="8" fill="#FFFFFF" stroke="#1F2328" stroke-width="3"/>
+<text x="20" y="126" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Capture</text>
+<text x="20" y="146" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">CC 67 · spare button ✓</text>
+<rect x="264" y="106" width="80" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="304.0" y="134.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Learn</text>
+<rect x="8" y="168" width="344" height="60" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="20" y="194" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Keep / Discard last</text>
+<text x="20" y="214" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">not set</text>
+<rect x="264" y="174" width="80" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="304.0" y="202.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Learn</text>
+<rect x="8" y="236" width="344" height="60" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="20" y="262" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Play / Stop</text>
+<text x="20" y="282" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">Note 0 (pad 1)</text>
+<rect x="264" y="242" width="80" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="304.0" y="270.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Learn</text>
+<rect x="8" y="304" width="344" height="60" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="20" y="330" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Undo</text>
+<text x="20" y="350" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">not set</text>
+<rect x="264" y="310" width="80" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="304.0" y="338.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Learn</text>
+<rect x="8" y="372" width="344" height="60" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="20" y="398" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Next / previous sound</text>
+<text x="20" y="418" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">CC 20 / CC 21</text>
+<rect x="264" y="378" width="80" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="304.0" y="406.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Learn</text>
+<rect x="8" y="440" width="344" height="60" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="20" y="466" font-size="14" text-anchor="start" fill="#1F2328" font-weight="600">Target / new layer</text>
+<text x="20" y="486" font-size="11" text-anchor="start" fill="#5B6470" font-weight="400">not set</text>
+<rect x="264" y="446" width="80" height="48" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="304.0" y="474.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Learn</text>
+<rect x="8" y="516" width="344" height="256" rx="8" fill="#FFF4D6" stroke="#B7791F" stroke-width="1.5"/>
+<text x="20" y="546" font-size="16" text-anchor="start" fill="#1F2328" font-weight="600">Listening for Undo…</text>
+<text x="20" y="570" font-size="12" text-anchor="start" fill="#5B6470" font-weight="400">Press a button, pad or pedal. 10 s left.</text>
+<rect x="20" y="584" width="320" height="56" rx="8" fill="#F3F4F6" stroke="#E3E6EA" stroke-width="1"/>
+<text x="180.0" y="616.55" font-size="13" text-anchor="middle" fill="#1F2328" font-weight="400">Last message:  CC 64  ·  ch 1  ·  127 → 0</text>
+<text x="20" y="664" font-size="11" text-anchor="start" fill="#1F2328" font-weight="400">CC 64 is usually your sustain pedal; mapping it</text>
+<text x="20" y="682" font-size="11" text-anchor="start" fill="#1F2328" font-weight="400">to Undo stops it sustaining. Press another control?</text>
+<rect x="20" y="700" width="152" height="56" rx="8" fill="#FFFFFF" stroke="#9AA1AB" stroke-width="1"/>
+<text x="96.0" y="732.2" font-size="12" text-anchor="middle" fill="#1F2328" font-weight="400">Map CC 64 anyway</text>
+<rect x="180" y="700" width="160" height="56" rx="8" fill="#2F6FEB" stroke="#2F6FEB" stroke-width="1"/>
+<text x="260.0" y="732.2" font-size="12" text-anchor="middle" fill="#FFFFFF" font-weight="600">Press another control</text>
+<circle cx="14" cy="104" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="0"/><text x="14" y="108" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<circle cx="14" cy="520" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="0"/><text x="14" y="524" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<circle cx="14" cy="668" r="9" fill="#0E7C86" stroke="#FFFFFF" stroke-width="0"/><text x="14" y="672" font-size="11" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<circle cx="398" cy="24" r="8" fill="#0E7C86"/><text x="398" y="28" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">1</text>
+<text x="412" y="28" font-size="11" fill="#1F2328">Learnable actions are a short list (not every control).</text>
+<text x="412" y="44" font-size="11" fill="#1F2328">Each row says its current mapping in words.</text>
+<circle cx="398" cy="62" r="8" fill="#0E7C86"/><text x="398" y="66" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">2</text>
+<text x="412" y="66" font-size="11" fill="#1F2328">Learn shows live incoming messages so you can see the</text>
+<text x="412" y="82" font-size="11" fill="#1F2328">controller works; it times out after 10 s and cancels</text>
+<text x="412" y="98" font-size="11" fill="#1F2328">cleanly.</text>
+<circle cx="398" cy="116" r="8" fill="#0E7C86"/><text x="398" y="120" font-size="10" text-anchor="middle" fill="#FFFFFF" font-weight="700">3</text>
+<text x="412" y="120" font-size="11" fill="#1F2328">Defaults never take over sustain (CC 64) or playable keys.</text>
+<text x="412" y="136" font-size="11" fill="#1F2328">An optional command zone is off unless you enable it.</text>
+<text x="412" y="152" font-size="11" fill="#1F2328">Conflicts explained before overwriting.</text>
+</svg>

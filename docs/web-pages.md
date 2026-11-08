@@ -1,5 +1,9 @@
 # Static web build
 
+Later status is in [handover/README.md](handover/README.md). The workflow file on this history runs on push to `main` and on `workflow_dispatch`, and the public site is https://harisjibjabjabber.github.io/Blocks/ at base `/Blocks/`. Sentences below that say the workflow is dispatch-only, or that no hosted URL exists, describe an earlier pass. A commit that is not on `main` does not deploy that site.
+
+
+
 The static site base path is exactly `/Blocks/`. `npm run build:web` sets `BLOCKS_BASE=/Blocks/` and writes `dist/`. GitHub project pages for the repository named Blocks serve that directory at `/Blocks/`.
 
 The dev server does not set `BLOCKS_BASE`, so it stays at `/` on port 41713. That is local development, not the static site.

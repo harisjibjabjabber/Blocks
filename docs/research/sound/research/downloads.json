@@ -1,0 +1,56 @@
+[
+  {
+    "id": "piano-kw-small",
+    "url": "https://freepats.zenvoid.org/Piano/UprightPianoKW/UprightPianoKW-small-SFZ-20190703.7z",
+    "path": "/workspace/blocks-sound-library/assets/UprightPianoKW-small-SFZ-20190703.7z",
+    "bytes": 4551289,
+    "sha256": "ffb547fceb91eeb93d78cf8d220d1d5f726dcac891afc15e517805ac48abb39d",
+    "retrieved_at": "2026-11-08T15:15:46.612426+00:00",
+    "headers": {
+      "Server": "nginx",
+      "Date": "Sun, 08 Nov 2026 15:15:45 GMT",
+      "Content-Type": "application/x-7z-compressed",
+      "Content-Length": "4551289",
+      "Last-Modified": "Sat, 26 Feb 2022 13:02:55 GMT",
+      "Connection": "close",
+      "ETag": "\"621a24ff-457279\"",
+      "Accept-Ranges": "bytes"
+    }
+  },
+  {
+    "id": "synth-drums",
+    "url": "https://freepats.zenvoid.org/Percussion/SynthesizerPercussion/SynthesizerPercussion-SFZ-20220718.7z",
+    "path": "/workspace/blocks-sound-library/assets/SynthesizerPercussion-SFZ-20220718.7z",
+    "bytes": 1853650,
+    "sha256": "dbb2e5bb8268022fffa6dcc3d11a93368316038bf3ae81a965c58e9d490ed23b",
+    "retrieved_at": "2026-11-08T15:15:48.143117+00:00",
+    "headers": {
+      "Server": "nginx",
+      "Date": "Sun, 08 Nov 2026 15:15:47 GMT",
+      "Content-Type": "application/x-7z-compressed",
+      "Content-Length": "1853650",
+      "Last-Modified": "Mon, 18 Jul 2022 11:50:05 GMT",
+      "Connection": "close",
+      "ETag": "\"62d548ed-1c48d2\"",
+      "Accept-Ranges": "bytes"
+    }
+  },
+  {
+    "id": "piano-kw-small-flac",
+    "url": "https://freepats.zenvoid.org/Piano/UprightPianoKW/UprightPianoKW-small-SFZ+FLAC-20190703.7z",
+    "path": "/workspace/blocks-sound-library/assets/UprightPianoKW-small-SFZ+FLAC-20190703.7z",
+    "bytes": 3092715,
+    "sha256": "e346ef198fcda0694fc66ddb80c2db2a1c700e96e3a1801930e3cebfed37047f",
+    "retrieved_at": "2026-11-08T15:16:25.924425+00:00",
+    "headers": {
+      "Server": "nginx",
+      "Date": "Sun, 08 Nov 2026 15:16:25 GMT",
+      "Content-Type": "application/x-7z-compressed",
+      "Content-Length": "3092715",
+      "Last-Modified": "Sat, 26 Feb 2022 13:03:03 GMT",
+      "Connection": "close",
+      "ETag": "\"621a2507-2f30eb\"",
+      "Accept-Ranges": "bytes"
+    }
+  }
+]

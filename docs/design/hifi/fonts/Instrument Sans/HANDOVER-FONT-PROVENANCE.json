@@ -1,0 +1,39 @@
+{
+  "scope": "Local provenance verification only; no upstream release/hash pin or fresh download claimed.",
+  "source_directory": "/workspace/blocks-design/hifi/fonts/Instrument Sans",
+  "local_licence_file": "OFL.txt",
+  "licence_sha256": "9e27a72ed30eb49a08678f6a5d6ed98ec7ba5368f541637ee0683ec9134ef966",
+  "assessment": "Unmodified copied font binaries identify expected family and SIL OFL 1.1 in embedded name metadata, consistent with corresponding full OFL.txt. Redistribution bundled with documentation allowed with copyright/licence retained; do not sell fonts alone or imply endorsement. Respect Reserved Font Names for future modifications.",
+  "fonts": [
+    {
+      "file": "InstrumentSans-VariableFont_wdth,wght.ttf",
+      "sha256": "55748ab364d5408ceb15fc3de300e4f643617d060fa2132b704484f11cb507c5",
+      "embedded_name_table": {
+        "0": [
+          "Copyright 2022 The Instrument Sans Project Authors (https://github.com/Instrument/instrument-sans)"
+        ],
+        "1": [
+          "Instrument Sans"
+        ],
+        "5": [
+          "Version 1.000;gftools[0.9.28]"
+        ],
+        "8": [
+          "fragTYPE"
+        ],
+        "9": [
+          "Rodrigo Fuenzalida"
+        ],
+        "11": [
+          "www.fragtypefoundry.xyz"
+        ],
+        "13": [
+          "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL"
+        ],
+        "14": [
+          "https://scripts.sil.org/OFL"
+        ]
+      }
+    }
+  ]
+}

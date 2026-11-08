@@ -1,0 +1,53 @@
+validated 10 fixtures, 0 invalid
+set=HOLDOUT data=data-holdout m0Predict+deriveNotes+P hash=50c2c3c16c5d3077  [HOLDOUT: not used to tune m0Predict]
+
+== prototype-f62b2a5 (SYNTHETIC smoke test, designer-intent labels, not an accuracy claim)
+steps 14 | default selection ok 2 | acceptable-not-default 1 | unacceptable 6 | mode ok 0 | raw unchanged 14/14
+  H01-noodle-then-8bar-straight-104      first-capture        default=n acc=- bad=! mode=unknown/grid rank=- startErr=61467ms missingFlags=-
+  H02-pedal-held-vamp-138                first-capture        default=n acc=- bad=- mode=unknown/grid rank=- startErr=55852ms missingFlags=NO_SILENCE_FOUND,OPEN_NOTES_AT_CAPTURE,PEDAL_DOWN_AT_CAPTURE
+  H03-ballad-66-delayed                  first-capture        default=n acc=- bad=! mode=unknown/grid rank=- startErr=32228ms missingFlags=-
+  H04-false-start-bebop-pickup-184       first-capture        default=n acc=- bad=! mode=unknown/grid rank=- startErr=2300ms missingFlags=PICKUP
+  H05-rubato-two-phrases                 first-capture        default=n acc=Y bad=- mode=unknown/free rank=- startErr=16925ms missingFlags=TEMPO_UNSTABLE
+  H06-sounding-rest-inside-phrase-112    first-capture        default=n acc=- bad=! mode=unknown/grid rank=- startErr=13803ms missingFlags=-
+  H07-two-keyboards-same-channel         first-capture        default=n acc=- bad=! mode=unknown/free rank=- startErr=6821ms missingFlags=ORPHAN_NOTE_OFF,CROSS_STREAM_SAME_KEY
+  LH1-journey-92-vamp-walk-drums         first-capture:piano  default=n acc=- bad=! mode=unknown/grid rank=- startErr=26792ms missingFlags=-
+  LH1-journey-92-vamp-walk-drums         layer-capture:bass   default=n acc=- bad=- mode=unknown/bar-range rank=- startErr=14993ms missingFlags=DELAYED_CAPTURE tempoKept=true
+  LH1-journey-92-vamp-walk-drums         layer-capture:drums  default=n acc=- bad=- mode=unknown/bar-range rank=- startErr=2609ms missingFlags=INCOMPLETE_CURRENT_BAR_EXCLUDED tempoKept=true
+  LH2-journey-150-bass-no-gap-riff       first-capture:piano  default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=0ms missingFlags=-
+  LH2-journey-150-bass-no-gap-riff       layer-capture:bass   default=n acc=- bad=- mode=unknown/bar-range rank=- startErr=15794ms missingFlags=NO_SILENCE_FOUND tempoKept=true
+  LH3-free-loop-bass-two-cycles          first-capture:piano  default=Y acc=- bad=- mode=unknown/free rank=1 startErr=50ms missingFlags=TEMPO_UNSTABLE
+  LH3-free-loop-bass-two-cycles          layer-capture:bass   default=n acc=- bad=- mode=unknown/cycle-range rank=- startErr=300ms missingFlags=- tempoKept=true
+
+== m0-reference (SYNTHETIC smoke test, designer-intent labels, not an accuracy claim)
+steps 14 | default selection ok 11 | acceptable-not-default 0 | unacceptable 0 | mode ok 7 | raw unchanged 14/14
+  H01-noodle-then-8bar-straight-104      first-capture        default=Y acc=- bad=- mode=free/grid rank=1 startErr=0ms missingFlags=-
+  H02-pedal-held-vamp-138                first-capture        default=n acc=- bad=- mode=free/grid rank=- startErr=11443ms missingFlags=-
+  H03-ballad-66-delayed                  first-capture        default=Y acc=- bad=- mode=free/grid rank=1 startErr=4ms missingFlags=-
+  H04-false-start-bebop-pickup-184       first-capture        default=Y acc=- bad=- mode=free/grid rank=1 startErr=0ms missingFlags=PICKUP
+  H05-rubato-two-phrases                 first-capture        default=Y acc=- bad=- mode=free/free rank=1 startErr=0ms missingFlags=TEMPO_UNSTABLE
+  H06-sounding-rest-inside-phrase-112    first-capture        default=Y acc=- bad=- mode=free/grid rank=1 startErr=1ms missingFlags=-
+  H07-two-keyboards-same-channel         first-capture        default=Y acc=- bad=- mode=free/free rank=1 startErr=0ms missingFlags=-
+  LH1-journey-92-vamp-walk-drums         first-capture:piano  default=Y acc=- bad=- mode=free/grid rank=1 startErr=1ms missingFlags=-
+  LH1-journey-92-vamp-walk-drums         layer-capture:bass   default=Y acc=- bad=- mode=bar-range/bar-range rank=1 startErr=0ms missingFlags=DELAYED_CAPTURE tempoKept=true
+  LH1-journey-92-vamp-walk-drums         layer-capture:drums  default=n acc=- bad=- mode=bar-range/bar-range rank=2 startErr=10435ms missingFlags=- tempoKept=true
+  LH2-journey-150-bass-no-gap-riff       first-capture:piano  default=Y acc=- bad=- mode=free/grid rank=1 startErr=0ms missingFlags=-
+  LH2-journey-150-bass-no-gap-riff       layer-capture:bass   default=n acc=- bad=- mode=bar-range/bar-range rank=- startErr=22400ms missingFlags=NO_SILENCE_FOUND tempoKept=true
+  LH3-free-loop-bass-two-cycles          first-capture:piano  default=Y acc=- bad=- mode=free/free rank=1 startErr=0ms missingFlags=TEMPO_UNSTABLE
+  LH3-free-loop-bass-two-cycles          layer-capture:bass   default=Y acc=- bad=- mode=cycle-range/cycle-range rank=1 startErr=0ms missingFlags=- tempoKept=true
+
+== main-534279f (SYNTHETIC smoke test, designer-intent labels, not an accuracy claim)
+steps 14 | default selection ok 7 | acceptable-not-default 1 | unacceptable 0 | mode ok 0 | raw unchanged 14/14
+  H01-noodle-then-8bar-straight-104      first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=0ms missingFlags=-
+  H02-pedal-held-vamp-138                first-capture        default=n acc=- bad=- mode=unknown/grid rank=- startErr=55852ms missingFlags=NO_SILENCE_FOUND,OPEN_NOTES_AT_CAPTURE,PEDAL_DOWN_AT_CAPTURE
+  H03-ballad-66-delayed                  first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=4ms missingFlags=-
+  H04-false-start-bebop-pickup-184       first-capture        default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=0ms missingFlags=PICKUP
+  H05-rubato-two-phrases                 first-capture        default=Y acc=- bad=- mode=unknown/free rank=1 startErr=0ms missingFlags=TEMPO_UNSTABLE
+  H06-sounding-rest-inside-phrase-112    first-capture        default=n acc=Y bad=- mode=unknown/grid rank=- startErr=3606ms missingFlags=-
+  H07-two-keyboards-same-channel         first-capture        default=Y acc=- bad=- mode=unknown/free rank=1 startErr=0ms missingFlags=ORPHAN_NOTE_OFF,CROSS_STREAM_SAME_KEY
+  LH1-journey-92-vamp-walk-drums         first-capture:piano  default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=1ms missingFlags=-
+  LH1-journey-92-vamp-walk-drums         layer-capture:bass   default=n acc=- bad=- mode=unknown/bar-range rank=- startErr=11ms missingFlags=DELAYED_CAPTURE tempoKept=true
+  LH1-journey-92-vamp-walk-drums         layer-capture:drums  default=n acc=- bad=- mode=unknown/bar-range rank=- startErr=10435ms missingFlags=INCOMPLETE_CURRENT_BAR_EXCLUDED tempoKept=true
+  LH2-journey-150-bass-no-gap-riff       first-capture:piano  default=Y acc=- bad=- mode=unknown/grid rank=1 startErr=0ms missingFlags=-
+  LH2-journey-150-bass-no-gap-riff       layer-capture:bass   default=n acc=- bad=- mode=unknown/bar-range rank=- startErr=1600ms missingFlags=NO_SILENCE_FOUND tempoKept=true
+  LH3-free-loop-bass-two-cycles          first-capture:piano  default=n acc=- bad=- mode=unknown/free rank=- startErr=5700ms missingFlags=TEMPO_UNSTABLE
+  LH3-free-loop-bass-two-cycles          layer-capture:bass   default=n acc=- bad=- mode=unknown/cycle-range rank=- startErr=9600ms missingFlags=- tempoKept=true

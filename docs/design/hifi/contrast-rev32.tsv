@@ -1,0 +1,37 @@
+theme	fg	bg	ratio	AA_normal
+C	text	well	16.68	pass
+C	text	surf	15.73	pass
+C	text	surf2	14.48	pass
+C	text	bg	17.15	pass
+C	mute	well	7.93	pass
+C	mute	surf	7.48	pass
+C	mute	surf2	6.88	pass
+C	mute	bg	8.16	pass
+C	dim	well	5.6	pass
+C	dim	surf	5.29	pass
+C	dim	surf2	4.86	pass
+C	dim	bg	5.76	pass
+C	acc	well	7.1	pass
+C	acc	surf	6.7	pass
+C	acc	surf2	6.16	pass
+C	acc	bg	7.3	pass
+C	bg-on-text(BackToLive)	text	17.15	pass
+C	accT-on-acc(active handle)	acc	7.09	pass
+D	text	well	17.95	pass
+D	text	surf	17.22	pass
+D	text	surf2	14.69	pass
+D	text	bg	15.78	pass
+D	mute	well	6.44	pass
+D	mute	surf	6.18	pass
+D	mute	surf2	5.27	pass
+D	mute	bg	5.66	pass
+D	dim	well	5.78	pass
+D	dim	surf	5.54	pass
+D	dim	surf2	4.72	pass
+D	dim	bg	5.08	pass
+D	acc	well	5.88	pass
+D	acc	surf	5.64	pass
+D	acc	surf2	4.81	pass
+D	acc	bg	5.17	pass
+D	bg-on-text(BackToLive)	text	15.78	pass
+D	accT-on-acc(active handle)	acc	5.98	pass

@@ -1,0 +1,53 @@
+SYNTHETIC HARMONY RESULTS: PROVISIONAL. Labels are hand-written by the research agent and not reviewed by a musician (Haris is unavailable). Not an accuracy claim.
+Stage-1 reference predictor fixtures/evaluate-harmony.mjs, frozen at sha256 prefix c0c218202ab0da62 before the single holdout run.
+
+== Stage-1 harmony reference 0.1.0 on TUNING (SYNTHETIC, provisional labels, not an accuracy claim)  [IN-SAMPLE: written while looking at these fixtures]
+fixtures 10 | labelled spans 30 | truth in top-3 25/29 | an acceptable label in top-3 26/29 | abstention appropriate 30/30 | role tags 123/127 | boundary err median 0 ms (n=7, max 2000) | raw unchanged 10/10
+  HT01-rootless-AB-ii-V-I-C                piano    truth=D:min9     top=[F:maj7 | D:min9 | F:maj9] inTopK=true acc=true abstApp=true rootlessOffered=true
+  HT01-rootless-AB-ii-V-I-C                piano    truth=G:13       top=[F:maj7(#11) | G:13 | E:sus4] inTopK=true acc=true abstApp=true rootlessOffered=true
+  HT01-rootless-AB-ii-V-I-C                piano    truth=C:maj9     top=[E:min7 | G:maj6 | C:maj9] inTopK=true acc=true abstApp=true rootlessOffered=true
+  HT02-inversion-vs-slash                  piano    truth=C:maj/3    top=[C:maj/3 | C:7/3 | C:maj6/3] inTopK=true acc=true abstApp=true
+  HT02-inversion-vs-slash                  piano    truth=F:maj/9    top=[G:sus4(b7,9) | F:maj/9 | G:min11] inTopK=true acc=true abstApp=true
+  HT03-enharmonic-ger6-vs-Ab7              piano    truth=Ab:7       top=[Ab:7 | Ab:9 | Ab:7(b9)] inTopK=true acc=true abstApp=true
+  HT03-enharmonic-ger6-vs-Ab7              piano    truth=C:min/5    top=[C:min/5 | Eb:maj6/3 | C:min6/5] inTopK=true acc=true abstApp=true
+  HT04-rolled-vs-arpeggio                  piano    truth=C:maj7     top=[C:maj7 | C:maj9 | C:maj7(#11)] inTopK=true acc=true abstApp=true
+  HT04-rolled-vs-arpeggio                  piano    truth=C:maj7     top=[C:maj7 | C:maj9 | C:maj7(#11)] inTopK=true acc=true abstApp=true
+  HT05-pedal-blur-Cmaj7-F7                 piano    truth=C:maj7     top=[C:maj7 | A:min9 | C:maj9] inTopK=true acc=true abstApp=true
+  HT05-pedal-blur-Cmaj7-F7                 piano    truth=F:7        top=[F:9 | F:7(#11) | F:7] inTopK=true acc=true abstApp=true
+  HT06-melody-over-held-Bbmaj7             piano    truth=Bb:maj7    top=[Bb:maj7 | Bb:maj9 | G:min9/b3] inTopK=true acc=true abstApp=true
+  HT07-two-hands-bass-and-comp             piano    truth=D:min7     top=[D:min7 | F:maj6/6 | D:min9] inTopK=true acc=true abstApp=true
+  HT07-two-hands-bass-and-comp             piano    truth=G:7        top=[G:7 | G:9 | G:7(b9)] inTopK=true acc=true abstApp=true
+  HT07-two-hands-bass-and-comp             piano    truth=C:maj7     top=[C:maj7 | C:maj9 | C:maj7(#11)] inTopK=true acc=true abstApp=true
+  HT07-two-hands-bass-and-comp             piano    truth=A:7        top=[A:7 | A:9 | A:7(b9)] inTopK=true acc=true abstApp=true
+  HT08-walking-bass-ii-V-I                 bass     truth=D:min7     top=[D:min | F:maj6 | D:min6] inTopK=false acc=true abstApp=true
+  HT08-walking-bass-ii-V-I                 bass     truth=G:7        top=[G:maj | G:7 | G:maj6] inTopK=true acc=true abstApp=true
+  HT08-walking-bass-ii-V-I                 bass     truth=C:maj7     top=[C:maj7 | C:maj9 | C:maj7(#11)] inTopK=true acc=true abstApp=true
+  HT09-layers-rootless-piano-plus-bass     piano    truth=D:min9     top=[F:maj7 | D:min9 | F:maj9] inTopK=true acc=true abstApp=true rootlessOffered=true
+  HT09-layers-rootless-piano-plus-bass     piano    truth=G:13       top=[F:maj7(#11) | G:13 | E:sus4] inTopK=true acc=true abstApp=true rootlessOffered=true
+  HT09-layers-rootless-piano-plus-bass     piano    truth=C:maj9     top=[E:min7 | G:maj6 | C:maj9] inTopK=true acc=true abstApp=true rootlessOffered=true
+  HT09-layers-rootless-piano-plus-bass     bass     truth=D:min7     top=[ABSTAIN:TOO_FEW_PITCH_CLASSES] inTopK=false acc=false abstApp=true
+  HT09-layers-rootless-piano-plus-bass     bass     truth=G:maj      top=[ABSTAIN:TOO_FEW_PITCH_CLASSES] inTopK=false acc=false abstApp=true
+  HT09-layers-rootless-piano-plus-bass     bass     truth=C:maj      top=[ABSTAIN:TOO_FEW_PITCH_CLASSES] inTopK=false acc=false abstApp=true
+  HT09-layers-rootless-piano-plus-bass     combined truth=D:min9     top=[D:min9 | D:min11 | F:maj7/6] inTopK=true acc=true abstApp=true
+  HT09-layers-rootless-piano-plus-bass     combined truth=G:13       top=[G:13 | F:maj7(#11)/9 | G:9] inTopK=true acc=true abstApp=true
+  HT09-layers-rootless-piano-plus-bass     combined truth=C:maj9     top=[C:maj9 | G:maj6/4 | E:min7/b6] inTopK=true acc=true abstApp=true
+  HT10-abstain-dyad-and-quartal            piano    truth=null       top=[ABSTAIN:TOO_FEW_PITCH_CLASSES] inTopK=- acc=- abstApp=true
+  HT10-abstain-dyad-and-quartal            piano    truth=E:min11    top=[G:maj6(9)/6 | A:sus4(b7,9)/5 | E:min11] inTopK=true acc=true abstApp=true
+
+== Stage-1 harmony reference 0.1.0 on HOLDOUT (SYNTHETIC, provisional labels, not an accuracy claim)  [HOLDOUT: not used to tune]
+fixtures 5 | labelled spans 11 | truth in top-3 10/11 | an acceptable label in top-3 11/11 | abstention appropriate 11/11 | role tags 54/56 | boundary err median 0 ms (n=3, max 0) | raw unchanged 5/5
+  HH01-rootless-ii-V-I-F                   piano    truth=G:min9     top=[Bb:maj7 | G:min9 | Bb:maj9] inTopK=true acc=true abstApp=true rootlessOffered=true
+  HH01-rootless-ii-V-I-F                   piano    truth=C:13       top=[Bb:maj7(#11) | C:13 | A:sus4] inTopK=true acc=true abstApp=true rootlessOffered=true
+  HH01-rootless-ii-V-I-F                   piano    truth=F:maj9     top=[C:maj6 | A:min7 | F:maj9] inTopK=true acc=true abstApp=true rootlessOffered=true
+  HH02-inversion-and-slash-Bb              piano    truth=Bb:maj/3   top=[Bb:maj/3 | Bb:7/3 | Bb:maj6/3] inTopK=true acc=true abstApp=true
+  HH02-inversion-and-slash-Bb              piano    truth=Eb:maj/9   top=[F:sus4(b7,9) | Eb:maj/9 | F:min11] inTopK=true acc=true abstApp=true
+  HH03-pedal-blur-Dm7-G7                   piano    truth=D:min7     top=[D:min7 | F:maj6 | Bb:maj9] inTopK=true acc=true abstApp=true
+  HH03-pedal-blur-Dm7-G7                   piano    truth=G:7        top=[G:9 | G:7 | G:13] inTopK=true acc=true abstApp=true
+  HH04-walking-bass-Bb                     bass     truth=C:min7     top=[C:min | Eb:maj6 | C:min6] inTopK=false acc=true abstApp=true
+  HH04-walking-bass-Bb                     bass     truth=F:7        top=[F:maj | F:7 | F:maj6] inTopK=true acc=true abstApp=true
+  HH04-walking-bass-Bb                     bass     truth=Bb:maj7    top=[Bb:maj7 | Bb:maj9 | Bb:maj7(#11)] inTopK=true acc=true abstApp=true
+  HH05-melody-over-held-Ebmaj7-and-roll    piano    truth=Eb:maj7    top=[Eb:maj9 | Eb:maj7 | C:min11/b3] inTopK=true acc=true abstApp=true
+
+mir_eval 0.8.2 chord comparisons, top-1, duration-weighted (abstentions scored as N):
+tuning {"root": 0.629, "root_n": 29, "thirds": 0.629, "thirds_n": 29, "sevenths": 0.6, "sevenths_n": 28, "mirex": 0.837, "mirex_n": 29, "majmin": 0.654, "majmin_n": 28, "tetrads": 0.577, "tetrads_n": 29}
+holdout {"root": 0.644, "root_n": 11, "thirds": 0.644, "thirds_n": 11, "sevenths": 0.584, "sevenths_n": 10, "mirex": 0.914, "mirex_n": 11, "majmin": 0.713, "majmin_n": 10, "tetrads": 0.528, "tetrads_n": 11}
