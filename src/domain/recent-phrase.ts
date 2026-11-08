@@ -154,6 +154,58 @@ function repeatedSpacing(gaps: bigint[]): boolean {
   return gaps.every((gap) => gap * 2n <= median * 3n && median * 2n <= gap * 3n);
 }
 
+/** Attacks that sound together. A later note joins the stack while an earlier one is still held, or while CC64 is holding it. This is not a wider attack window. */
+function overlapStacks(events: readonly CapturedEvent[]): { time: bigint; count: number; soundEnd: bigint }[] {
+  const ordered = events.slice().sort((a, b) => (a.scheduleElapsed < b.scheduleElapsed ? -1 : a.scheduleElapsed > b.scheduleElapsed ? 1 : a.sequence < b.sequence ? -1 : a.sequence > b.sequence ? 1 : 0));
+  let pedal = false;
+  const notes: { key: string; released: boolean; alive: boolean }[] = [];
+  const stacks: { time: bigint; count: number; soundEnd: bigint }[] = [];
+  const anyAlive = () => notes.some((note) => note.alive);
+  const silenceStack = (time: bigint) => {
+    const stack = stacks[stacks.length - 1];
+    if (stack && !anyAlive()) {
+      stack.soundEnd = time;
+    }
+  };
+  for (const event of ordered) {
+    if (event.kind === "cc" && event.controller === 64) {
+      const wasDown = pedal;
+      pedal = event.value >= 64;
+      if (wasDown && !pedal) {
+        for (const note of notes) {
+          if (note.released) {
+            note.alive = false;
+          }
+        }
+        silenceStack(event.scheduleElapsed);
+      }
+      continue;
+    }
+    const key = event.channel + ":" + event.note;
+    if (event.kind === "note-off" || (event.kind === "note-on" && event.velocity === 0)) {
+      const note = notes.find((item) => item.alive && item.key === key && !item.released);
+      if (note) {
+        note.released = true;
+        if (!pedal) {
+          note.alive = false;
+          silenceStack(event.scheduleElapsed);
+        }
+      }
+      continue;
+    }
+    if (event.kind === "note-on" && event.velocity > 0) {
+      if (!anyAlive()) {
+        notes.length = 0;
+        stacks.push({ time: event.scheduleElapsed, count: 1, soundEnd: event.scheduleElapsed });
+      } else {
+        stacks[stacks.length - 1].count += 1;
+      }
+      notes.push({ key, released: false, alive: true });
+    }
+  }
+  return stacks;
+}
+
 function sizedClusters(events: readonly CapturedEvent[], chord: bigint): { time: bigint; count: number }[] {
   const attacks = events
     .filter((event) => event.kind === "note-on" && event.velocity > 0)
@@ -350,13 +402,32 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
   let priorBar: CutBounds | null = null;
   let how = "No silence cleared the gap hypothesis, so this window is the whole ribbon and may be the whole session.";
 
+  const stacks = overlapStacks(events);
+  let stackStart = stacks.length;
+  while (stackStart > 0 && stacks[stackStart - 1].count >= 2) {
+    stackStart -= 1;
+  }
+  const soundingGaps: bigint[] = [];
+  if (stacks.length - stackStart >= 3) {
+    for (let i = stackStart + 1; i < stacks.length; i += 1) {
+      const silence = stacks[i].time - stacks[i - 1].soundEnd;
+      soundingGaps.push(silence > 0n ? silence : 0n);
+    }
+  }
+  let stackCut = stackStart;
+  for (let i = 0; i < soundingGaps.length; i += 1) {
+    if (isPhraseBreak(i, soundingGaps, gap)) {
+      stackCut = stackStart + i + 1;
+    }
+  }
+
   let runStart = sized.length;
   while (runStart > 0 && sized[runStart - 1].count >= 2) {
     runStart -= 1;
   }
   const runGaps = gaps.slice(runStart, Math.max(runStart, sized.length - 1));
   let chordCut = runStart;
-  if (sized.length - runStart >= 3) {
+  if (stacks.length - stackStart < 3 && sized.length - runStart >= 3) {
     for (let i = 0; i < runGaps.length; i += 1) {
       if (isPhraseBreak(i, runGaps, gap)) {
         chordCut = runStart + i + 1;
@@ -364,7 +435,15 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     }
   }
 
-  if (sized.length - runStart >= 3) {
+  if (stacks.length - stackStart >= 3) {
+    const phraseStart = stacks[stackCut].time;
+    selection = { start: phraseStart, end: last };
+    status = "recent";
+    how = "Notes that are still sounding, including under the pedal, stay one chord. Those chords stay one progression. Basic cut, not finished Capture.";
+    if (stackCut > 0) {
+      priorPhrase = boundsFrom(events, stacks[0].time, phraseStart - 1n);
+    }
+  } else if (sized.length - runStart >= 3) {
     const phraseStart = clusters[chordCut];
     selection = { start: phraseStart, end: last };
     status = "recent";
