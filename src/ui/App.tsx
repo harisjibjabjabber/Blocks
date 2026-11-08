@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { createEngine } from "../adapters/engine";
 import { RollingHistory, type CapturedEvent, type RibbonNotice } from "../domain/capture";
 import { inferPulse, type InferenceReport } from "../domain/inference";
@@ -7,11 +7,12 @@ import { capturePerformance, defaultOverlay, loopWindow, type Performance, type 
 import { beatForCut, createProject, projectFromJson, projectToJson, proposeTempo, type Project } from "../domain/project";
 import { eventsInSelection, recentPhraseCut, type RecentPhraseCut } from "../domain/recent-phrase";
 import { routeLearnedControl, type ControlMap, type LearnTarget } from "../domain/learn";
-import { RangeRibbon } from "./RangeRibbon";
-import { ribbonMarks } from "./ribbon-scale";
-import { notesInRecentWindow, ribbonGrid } from "./ribbon-view";
+import { Roll, type RollTool } from "./Roll";
+import { notesInRecentWindow } from "./ribbon-view";
 import { ReadinessStrip } from "./Readiness";
 import { moveBound, undoRange, type RangeBounds } from "./range";
+import { applyPreview, notesFromEvents, quantisePreview, workingPlayback, type RollNote } from "./roll-notes";
+import type { KnownGrid, TimeWindow } from "./roll-time";
 import { playChrome, resolveTheme, type ThemeChoice } from "./theme";
 import { touchFromPress, type PressPhase } from "./keys";
 
@@ -29,6 +30,11 @@ interface Take {
   cut: RecentPhraseCut;
   /** Inferred period end. The end handle can move through the silence up to here. */
   rangeCeiling: bigint;
+  rollNotes: RollNote[];
+  rollPast: RollNote[][];
+  rollFuture: RollNote[][];
+  rollGrid: KnownGrid | null;
+  rollEdited: boolean;
 }
 
 interface UndoCapture {
@@ -72,6 +78,13 @@ export default function App() {
   const [undo, setUndo] = useState<UndoCapture | null>(null);
   const [boundsUndo, setBoundsUndo] = useState<{ id: string; bounds: RangeBounds } | null>(null);
   const [learning, setLearning] = useState<LearnTarget | null>(null);
+  const [room, setRoom] = useState(false);
+  const [rollTool, setRollTool] = useState<RollTool>("select");
+  const [selectedNote, setSelectedNote] = useState<string | null>(null);
+  const [ghosts, setGhosts] = useState<{ id: string; start: bigint; end: bigint }[]>([]);
+  const [rollWindow, setRollWindow] = useState<TimeWindow | null>(null);
+  const [bpmText, setBpmText] = useState("120");
+  const [meterText, setMeterText] = useState("4");
   const [audioState, setAudioState] = useState(engine.readAudioState());
   const [scheduled, setScheduled] = useState(0);
   const loopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -192,6 +205,23 @@ export default function App() {
 
   function playTake(item: Take) {
     const bounds = loopWindow(item.overlay);
+    if (item.rollEdited) {
+      const played = workingPlayback(item.performance.events, item.rollNotes, bounds);
+      const preface = item.cut.controllerSeed.map((seed) => {
+        const source = item.performance.events.find((event) => event.id === seed.sourceId) ?? item.performance.events[0];
+        return { ...source, id: seed.sourceId + ":seed", kind: "cc" as const, channel: seed.channel, controller: seed.controller, value: seed.value, note: 0, velocity: 0, scheduleElapsed: bounds.start };
+      });
+      const selectedEvents = [...preface, ...played].sort((a, b) => (a.scheduleElapsed < b.scheduleElapsed ? -1 : a.scheduleElapsed > b.scheduleElapsed ? 1 : 0));
+      if (!selectedEvents.some((event) => event.kind === "note-on" && event.velocity > 0)) {
+        setMessage("That loop contains no recorded notes.");
+        return;
+      }
+      engine.stopLayer(item.id);
+      const span = bounds.end - bounds.start;
+      engine.loopLayer(item.id, selectedEvents, 1, Math.max(0.4, Number(span) / unitFor(domain)));
+      setLoopingIds((current) => (current.includes(item.id) ? current : [...current, item.id]));
+      return;
+    }
     const preface = item.cut.controllerSeed.map((seed) => {
       const source = item.performance.events.find((event) => event.id === seed.sourceId) ?? item.performance.events[0];
       return { ...source, id: seed.sourceId + ":seed", kind: "cc" as const, channel: seed.channel, controller: seed.controller, value: seed.value, note: 0, velocity: 0, scheduleElapsed: bounds.start };
@@ -249,7 +279,7 @@ export default function App() {
     const selected = eventsInSelection(events, cut.selection);
     const report = inferPulse(selected.length > 0 ? selected : events, ticksPerSecond);
     const id = "layer-" + (takes.length + 1);
-    const created: Take = { id, performance, overlay, report, cut, rangeCeiling: cut.loop.end };
+    const created: Take = { id, performance, overlay, report, cut, rangeCeiling: cut.loop.end, rollNotes: notesFromEvents(events), rollPast: [], rollFuture: [], rollGrid: null, rollEdited: false };
     setUndo({ takes, ribbon: events, project });
     setTakes((current) => [...current, created]);
     setSelected(id);
@@ -312,6 +342,45 @@ export default function App() {
     setBoundsUndo(null);
     setMessage("Range undone. The ribbon was left as it is.");
     playTake(updated);
+  }
+
+  function commitRoll(item: Take, notes: RollNote[]) {
+    setTakes((current) => current.map((entry) => (entry.id === item.id ? { ...entry, rollEdited: true, rollPast: [...entry.rollPast, entry.rollNotes], rollFuture: [], rollNotes: notes } : entry)));
+    setGhosts([]);
+    setMessage("Edited a working copy. The captured notes and the pedal were not moved.");
+  }
+
+  function undoRoll() {
+    if (!take || take.rollPast.length === 0) {
+      return;
+    }
+    const previous = take.rollPast[take.rollPast.length - 1];
+    setTakes((current) => current.map((entry) => (entry.id === take.id ? { ...entry, rollNotes: previous, rollPast: entry.rollPast.slice(0, -1), rollFuture: [entry.rollNotes, ...entry.rollFuture], rollEdited: true } : entry)));
+    setGhosts([]);
+  }
+
+  function redoRoll() {
+    if (!take || take.rollFuture.length === 0) {
+      return;
+    }
+    const next = take.rollFuture[0];
+    setTakes((current) => current.map((entry) => (entry.id === take.id ? { ...entry, rollNotes: next, rollFuture: entry.rollFuture.slice(1), rollPast: [...entry.rollPast, entry.rollNotes], rollEdited: true } : entry)));
+    setGhosts([]);
+  }
+
+  function confirmGrid() {
+    if (!take) {
+      return;
+    }
+    const bpm = Number(bpmText);
+    const beats = Number(meterText);
+    if (!Number.isFinite(bpm) || bpm < 40 || bpm > 240 || !Number.isFinite(beats) || beats < 2 || beats > 12) {
+      setMessage("Tempo and meter were not set.");
+      return;
+    }
+    const phase = loopWindow(take.overlay).start;
+    setTakes((current) => current.map((entry) => (entry.id === take.id ? { ...entry, rollGrid: { bpm: Math.round(bpm), beatsPerBar: Math.round(beats), phase } } : entry)));
+    setMessage("Grid set. The notes were not moved.");
   }
 
   function setAfterCapture(mode: "loop" | "silent") {
@@ -386,25 +455,45 @@ export default function App() {
 
         <View style={[styles.card, { backgroundColor: palette.card, borderWidth: 1, borderColor: palette.line }]}>
           <Text style={[styles.cardTitle, { color: palette.ink }]}>Take ribbon</Text>
+          {take && room ? (
+            <View style={styles.row}>
+              <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={undoRoll}><Text style={[styles.secondaryText, { color: palette.ink }]}>Undo</Text></Pressable>
+              <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={redoRoll}><Text style={[styles.secondaryText, { color: palette.ink }]}>Redo</Text></Pressable>
+              <TextInput value={bpmText} onChangeText={setBpmText} accessibilityLabel="Tempo" style={[styles.field, { color: palette.ink, borderColor: palette.line }]} />
+              <TextInput value={meterText} onChangeText={setMeterText} accessibilityLabel="Meter" style={[styles.field, { color: palette.ink, borderColor: palette.line }]} />
+              <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={confirmGrid}><Text style={[styles.secondaryText, { color: palette.ink }]}>Set grid</Text></Pressable>
+              {take.rollGrid ? (
+                <>
+                  <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={() => setGhosts(ghosts.length ? [] : quantisePreview(take.rollNotes, selectedNote ? [selectedNote] : [], take.rollGrid))}><Text style={[styles.secondaryText, { color: palette.ink }]}>{ghosts.length ? "Hide quantise" : "Preview quantise"}</Text></Pressable>
+                  {ghosts.length ? <Pressable style={[styles.secondary, { backgroundColor: palette.card, minHeight: chrome.handlePx }]} onPress={() => commitRoll(take, applyPreview(take.rollNotes, ghosts))}><Text style={[styles.secondaryText, { color: palette.ink }]}>Apply quantise</Text></Pressable> : null}
+                </>
+              ) : null}
+            </View>
+          ) : null}
           {take ? (
-            <RangeRibbon
-              events={take.performance.events}
+            <Roll
+              notes={take.rollNotes}
+              window={rollWindow}
               bounds={{ start: take.overlay.loopStart ?? take.overlay.selectionStart, end: take.overlay.loopEnd ?? take.overlay.selectionEnd }}
               ceiling={take.rangeCeiling}
+              historyStart={take.performance.events.reduce((min, event) => (event.scheduleElapsed < min ? event.scheduleElapsed : min), take.performance.events[0].scheduleElapsed)}
+              grid={take.rollGrid}
               palette={palette}
+              mode={room ? "room" : "compact"}
+              tool={rollTool}
+              selectedId={selectedNote}
+              ghosts={ghosts}
               hitPx={chrome.handlePx}
-              grid={ribbonGrid({
-                tempoBpm: project.tempoBpm,
-                proposedTempoBpm: project.proposedTempoBpm,
-                gridLocked: project.gridLocked,
-                beatPhase: gridPhase(project.gridLocked ? takes[0] ?? take : take),
-                barPhase: null,
-              })}
-              ticksPerSecond={unitFor(domain)}
-              onCommit={(next) => commitBounds(take, next)}
+              onWindow={setRollWindow}
+              onBoundsCommit={(next) => commitBounds(take, next)}
+              onSelect={setSelectedNote}
+              onCommitNotes={(notes) => commitRoll(take, notes)}
+              onEdit={() => setRoom(true)}
+              onClose={() => setRoom(false)}
+              onTool={setRollTool}
             />
           ) : (
-            <TakeRibbon events={ribbon} palette={palette} ticksPerSecond={unitFor(domain)} />
+            <LiveRoll events={ribbon} palette={palette} hitPx={chrome.handlePx} />
           )}
           {notice.kind === "none" ? null : <Text style={[styles.meta, { color: palette.muted }]}>{evictionCopy(notice)}</Text>}
         </View>
@@ -541,29 +630,33 @@ function evictionCopy(notice: RibbonNotice): string {
   return "No eviction.";
 }
 
-function gridPhase(take: Take): bigint {
-  if (take.cut.phaseOriginTicks !== null) {
-    return take.cut.phaseOriginTicks;
-  }
-  const onset = take.performance.events.find((event) => event.kind === "note-on" && event.velocity > 0 && event.scheduleElapsed >= take.overlay.selectionStart);
-  return onset?.scheduleElapsed ?? take.overlay.selectionStart;
-}
-
-function TakeRibbon({ events, palette, ticksPerSecond }: { events: CapturedEvent[]; palette: { muted: string; plot: string; line: string; note: string }; ticksPerSecond: number }) {
-  const notes = notesInRecentWindow(
-    events.filter((event) => event.kind === "note-on" && event.velocity > 0),
-    BigInt(ticksPerSecond) * 12n,
-  ).slice(-64);
+function LiveRoll({ events, palette, hitPx }: { events: CapturedEvent[]; palette: ReturnType<typeof resolveTheme>; hitPx: number }) {
+  const recent = notesInRecentWindow(events, 12_000_000n);
+  const notes = notesFromEvents(recent);
+  const historyStart = recent.length ? recent.reduce((min, event) => (event.scheduleElapsed < min ? event.scheduleElapsed : min), recent[0].scheduleElapsed) : 0n;
   if (notes.length === 0) {
     return <Text style={{ color: palette.muted, marginTop: 8 }}>Nothing played yet</Text>;
   }
-  const marks = ribbonMarks(notes);
   return (
-    <View style={[styles.ribbonPlot, { backgroundColor: palette.plot, borderWidth: 1, borderColor: palette.line }]} accessibilityLabel="Take ribbon">
-      {marks.map((mark) => (
-        <View key={mark.id} style={[styles.ribbonMark, { backgroundColor: palette.note, left: `${Math.min(97, Math.max(0, mark.xPercent))}%`, top: mark.y }]} />
-      ))}
-    </View>
+    <Roll
+      notes={notes}
+      window={null}
+      bounds={null}
+      ceiling={notes.reduce((max, note) => (note.end > max ? note.end : max), notes[0].end)}
+      historyStart={historyStart}
+      grid={null}
+      palette={palette}
+      mode="compact"
+      tool="select"
+      selectedId={null}
+      ghosts={[]}
+      hitPx={hitPx}
+      onWindow={() => undefined}
+      onBoundsCommit={() => undefined}
+      onSelect={() => undefined}
+      onCommitNotes={() => undefined}
+      showPan={false}
+    />
   );
 }
 
@@ -597,6 +690,7 @@ const styles = StyleSheet.create({
   captureText: { color: "#120C0A", fontSize: 32, fontWeight: "700" },
   secondary: { backgroundColor: "#20252C", borderRadius: 12, minHeight: 48, minWidth: 48, paddingVertical: 12, paddingHorizontal: 12, justifyContent: "center" },
   secondaryText: { color: "#ECEEF2", fontSize: 14 },
+  field: { borderWidth: 1, borderRadius: 10, minHeight: 44, minWidth: 64, paddingHorizontal: 8, fontSize: 16 },
   pad: { backgroundColor: "#20252C", borderRadius: 12, minWidth: 48, minHeight: 48, paddingVertical: 14, paddingHorizontal: 8, alignItems: "center", justifyContent: "center" },
   padText: { color: "#ECEEF2", fontWeight: "700", fontSize: 16 },
 });
