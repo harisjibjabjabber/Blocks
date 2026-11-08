@@ -6,11 +6,11 @@ Verified with git on 8 Nov 2026, after `git fetch origin main`:
 
 | Fact | SHA |
 |---|---|
-| `origin/main` | `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e` |
+| `origin/main` | `957480eda2de13005613d27cc875d2853c9fbde4` |
 | Merge-base of `handover/status` and `origin/main` | `497894e170ac150f06e5a8bea34d0d4e7f34e2fd` |
 | `handover/status` tip before this document | `c61829fa8e330d3dadb5989e7cb5416f4644a7cf` |
 
-`3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e` is on `main` and is not an ancestor of `handover/status`. `handover/status` is not an ancestor of `main`. The app-source diff from the merge-base to this branch is empty. Take application code from the latest `main`. Take these documents from `handover/status`. This branch is not a substitute for `main`.
+`957480eda2de13005613d27cc875d2853c9fbde4` is the `main` tip verified by `git fetch` on 8 Nov 2026. It is not an ancestor of `handover/status`. `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e` is the previous tip and is not an ancestor of this branch either. `handover/status` is not an ancestor of `main`. The app-source diff from the merge-base to this branch is empty. Take application code from the latest `main`. Take these documents from `handover/status`. This branch is not a substitute for `main`.
 
 ## Roles
 
@@ -50,7 +50,7 @@ The names above are optional role labels for a new human team. They are not requ
 - Frozen validation is distinct from tuning and regression, and it was labelled by the same designer. Keep known fixture defects, including the V10 pedal wording and unscored D01.
 - Do not ask Haris to refresh or retest again without a stronger end-to-end trace. Do not expand into unrelated scope.
 
-The current design proposal is rev 3.3. The current Capture research baseline is `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`. Last-chord Capture is still unresolved. Neither is shipped. The live script last recorded for that baseline is `/Blocks/assets/index-CsEdtvjV.js`. A later behavior commit can change that script. This document does not.
+The current design proposal is rev 3.3. The archived Capture research baseline is `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`. Last-chord Capture is still unresolved. Neither is shipped. The live script named for that baseline, `/Blocks/assets/index-CsEdtvjV.js`, can be overtaken by a later `main` commit. `git fetch` on 8 Nov 2026 verified the `main` tip as `957480eda2de13005613d27cc875d2853c9fbde4`, whose live script is `/Blocks/assets/index-DGlo7_W4.js`. A still later behavior commit can change that script. This document does not.
 
 ## How a piece of work moves
 

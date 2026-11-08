@@ -1,6 +1,6 @@
 # Blocks handover
 
-This page is the place to continue from the public repository alone. The documents on `handover/status` were branched from `497894e170ac150f06e5a8bea34d0d4e7f34e2fd` and do not include later Capture code. `main` has since moved to `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`. That commit is not merged here. This branch does not deploy a UI. The Pages workflow runs on push to `main` and on `workflow_dispatch`. Take application code from the latest `main`. Take these documents from `handover/status`. This branch is not a substitute for `main`.
+This page is the place to continue from the public repository alone. The documents on `handover/status` were branched from `497894e170ac150f06e5a8bea34d0d4e7f34e2fd` and do not include later Capture code. `git fetch origin main` on 8 Nov 2026 shows `origin/main` is `957480eda2de13005613d27cc875d2853c9fbde4`. That commit is not merged here. `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e` was the previous tip and is not merged here either. This branch does not deploy a UI. The Pages workflow runs on push to `main` and on `workflow_dispatch`. Take application code from the latest `main`. Take these documents from `handover/status`. This branch is not a substitute for `main`.
 
 Roles and the portable path: [ways-of-working.md](ways-of-working.md). Milestone form: [checkpoint-template.md](checkpoint-template.md).
 
@@ -8,7 +8,7 @@ Live site: https://harisjibjabjabber.github.io/Blocks/
 
 Base path: `/Blocks/`
 
-Live script: `/Blocks/assets/index-CsEdtvjV.js`
+Live script: `/Blocks/assets/index-DGlo7_W4.js`, for verified `main` tip `957480eda2de13005613d27cc875d2853c9fbde4`. Pages run: https://github.com/harisjibjabjabber/Blocks/actions/runs/42519227139. The earlier script `/Blocks/assets/index-CsEdtvjV.js` belonged to `3412f61` and has been overtaken.
 
 The design proposal on this branch is rev 3.3. It is proposed example data. It is not implemented UI, not the live site, and not approval to build the production screen. A thumbs-up on the delivery acknowledges the prototype caveats. Capture research is separate: its current baseline remains `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`, and last-chord Capture is still unresolved. Neither is shipped.
 
@@ -16,7 +16,9 @@ The design proposal on this branch is rev 3.3. It is proposed example data. It i
 
 Haris refreshed onto `/Blocks/assets/index-DGbe1J8t.js`, the Pages build of `fdba348124d4cefe6fbeba2a7c187e47de705528`, and still heard only the last chord. That failure is open. It is his playing. Every result below is synthetic. None of them is his take.
 
-`3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e` is on `main` and is not in this branch. It groups notes that are still sounding, or still held by the pedal, as one chord. The 40 ms cluster and the 1.5 s rest were not widened. On synthetic traces the tight chords and the 60–120 ms roll now store all 12 chord notes. The live script is `/Blocks/assets/index-CsEdtvjV.js`. A parent check of the live page at 19:52 GMT found that same script and that same commit. A real pause still splits, and a long run without a rest stays a short window, according to that commit's message. This is progress. It does not fix last-chord Capture. Haris's failure is still unresolved. Specialist evidence for that commit, designer-labelled and synthetic, is in `docs/research/capture/checkpoints/2026-11-08-3412f61-note.md`. On 13 cases the score is 6 good, 3 partial, 1 last-part, and 3 whole-session. Bass, pickup melody, and postlude fail. `overlapStacks` collapses a pedal scalar run. The fixture event files are in the repository. Frozen validation is `docs/research/capture/fixtures/phrase/data-validation/validation/`, including `V01-single-note-take.json`, which is already in commit `f3c1435e474171a433dba3950e526db2d37fc5dd`. The unscored diagnostic is `docs/research/capture/fixtures/phrase/data-validation/diagnostic-post-freeze/`. The live script stays `/Blocks/assets/index-CsEdtvjV.js` until a later behavior commit says otherwise.
+`3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e` is not in this branch. When it was the main tip, the live script was `/Blocks/assets/index-CsEdtvjV.js` (checked at 19:52 GMT). It groups notes that are still sounding, or still held by the pedal, as one chord. The 40 ms cluster and the 1.5 s rest were not widened. On synthetic traces the tight chords and the 60–120 ms roll stored all 12 chord notes. A real pause still splits, and a long run without a rest stays a short window, according to that commit's message. It failed the frozen fixtures in the recorded ways: the pedalled scalar run stored 8 of 32, and the bass, pickup, and postlude kept the noodle. Specialist evidence, designer-labelled and synthetic, is in `docs/research/capture/checkpoints/2026-11-08-3412f61-note.md`. On 13 cases the score there is 6 good, 3 partial, 1 last-part, and 3 whole-session. Bass, pickup melody, and postlude fail. `overlapStacks` collapses a pedal scalar run. The fixture event files are in the repository. Frozen validation is `docs/research/capture/fixtures/phrase/data-validation/validation/`, including `V01-single-note-take.json`, which is already in commit `f3c1435e474171a433dba3950e526db2d37fc5dd`. The unscored diagnostic is `docs/research/capture/fixtures/phrase/data-validation/diagnostic-post-freeze/`.
+
+`957480eda2de13005613d27cc875d2853c9fbde4` is a later behavior commit and the `main` tip verified by `git fetch`. The live script is `/Blocks/assets/index-DGlo7_W4.js`. Pages run: https://github.com/harisjibjabjabber/Blocks/actions/runs/42519227139. On the designer's labels, V01–V13 are 11 good and 2 partial. The pickup still drops its first note. The rubato chords still include two noodle attacks. Two good cases still include one earlier noodle note. D01 stays unscored. This is synthetic. It does not close Haris's last-chord report, and it is not bar-aligned inference. No 130 ms rule was added. This commit is not merged into `handover/status`.
 
 The phrase-capture research comparison baseline is now `3412f612fe5f5f8d818ec50ad62ab9cd2a3cab3e`. `fdba348124d4cefe6fbeba2a7c187e47de705528` and `497894e170ac150f06e5a8bea34d0d4e7f34e2fd` stay historical. On the earlier research predictor's synthetic labels the right default loop length was 3 of 15, with 2 further acceptable alternatives. That predictor, and any 130 ms grouping proposal, is not the app and was not evaluated as a ship. Keep baseline metrics distinct from candidate metrics. Proposed adaptive thresholds and the fallback have not been evaluated. The saved results were not rerun for this import. `phrase-results-holdout.json` is a supersession note. The old bytes are `phrase-results-holdout-SUPERSEDED.json`. PH01–15 are regression cases, not fresh holdout evidence.
 
@@ -122,7 +124,7 @@ node --experimental-strip-types repro-four-chords.mjs
 
 ## Broken
 
-- Last-chord Capture, as above. Open on the live script `/Blocks/assets/index-CqMoO9xx.js`.
+- Last-chord Capture, as above. Open on the verified live script `/Blocks/assets/index-DGlo7_W4.js`.
 - Hardware MIDI, a Samsung Fold, a sustain pedal on hardware, listening, and keyboard-to-speaker latency. Unverified. No latency number is claimed.
 - Bass, pad, drums, and the KW piano. Not in the build.
 - The proposed UI. Not implemented. `docs/web-pages.md` and `docs/verification-report.md` still contain earlier sentences ("dispatch only", "no hosted URL"). The banners on those files point here.
@@ -212,7 +214,7 @@ One meter, 4/4, in the current screen. One undo. Stay silent persists in the pro
 
 ## Next steps
 
-1. Keep last-chord Capture open. Do not describe `fdba348`, `497894e`, or `3412f61` as the fix. The live script is `/Blocks/assets/index-CsEdtvjV.js`. The 12-note synthetic traces are not his playing.
+1. Keep last-chord Capture open. Do not describe `fdba348`, `497894e`, `3412f61`, or `957480e` as the fix. The verified live script is `/Blocks/assets/index-DGlo7_W4.js`. The synthetic traces are not his playing.
 2. `3412f61` is Capture work on `main` and is not in this branch. Read it there. It groups notes that are still sounding, or still held by the pedal, as one chord, without widening the 40 ms cluster or the 1.5 s rest. On the synthetic tight-chord trace and the synthetic 60–120 ms roll, the stored range now has all 12 chord notes. A real pause still splits.
 3. Do not ask Haris to retest until that kind of trace fails the way he heard it. The 58 synthetic checks are not that test.
 4. Leave production UI until he reviews `docs/design/hifi/hybrid/` rev 3.3, including editor frames 17–27. The roll corrects a miss. It does not replace one-action capture. A thumbs-up on the prototype is not permission to build the screen. Whether Quantise stays on the main screen is still open.
