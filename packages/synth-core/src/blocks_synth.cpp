@@ -56,6 +56,7 @@ struct Voice {
  double attack=.01,decay=.3,sustain=.6,release=.3,attackBend=0,decayBend=0,releaseBend=0;
  double drop=0,dropTime=.1,dropBend=0,drift=0,driftTarget=0,driftAge=0;
  blocks_detail::FullnessPath fullness;
+ blocks_detail::FullnessPath fullnessQuadrature;
 };
 void release(Voice &voice) {
  if(voice.stage==Stage::release) return;
@@ -84,8 +85,9 @@ struct bs_synth {
  std::array<Voice,BS_MAX_VOICES> voices{};
  std::array<bool,16> pedals{};
  uint64_t sequence=0;
+ double bodyAngle=0;
  bs_synth() { for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) parameters[i]=float(smooth[i]=descriptors[i].default_value); }
- void reset() { voices={}; pedals={}; sequence=0; for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; }
+ void reset() { voices={}; pedals={}; sequence=0; for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; bodyAngle=blocks_detail::fundamentalOrientation(parameters[BS_OSC_MIX],parameters[BS_PULSE_WIDTH],-pi/2); }
  void on(uint32_t channel,uint32_t key,float velocity) {
   if(channel>=16 || key>127 || !std::isfinite(velocity)) return;
   if(velocity<=0) { off(channel,key); return; }
@@ -138,6 +140,8 @@ struct bs_synth {
   const double fatRms=std::sqrt(std::max(1e-6,a*a/3+pulseVariance*(mix*mix+a*mix)));
   const double shapedRms=std::min(1.0,fatRms*preGain);
   const double bodyGain=fullness>0 ? std::tanh(dryRms*smooth[BS_DRIVE])/(shapedRms-shapedRms*shapedRms*shapedRms/3) : 0;
+  if(fullness>0) { const double target=blocks_detail::fundamentalOrientation(mix,w,bodyAngle); bodyAngle=std::remainder(bodyAngle+smoothing*std::remainder(target-bodyAngle,2*pi),2*pi); }
+  const double bodyCos=std::cos(bodyAngle),bodySin=std::sin(bodyAngle);
   double l=0,r=0;
   for(auto &v:voices) if(v.active) {
    v.driftAge+=dt; if(v.driftAge>=1/driftSpeed) { v.driftAge-=1/driftSpeed; v.driftTarget=random_signed(v.rng); }
@@ -155,7 +159,15 @@ struct bs_synth {
    const double amplitude=envelope(v,dt)*v.velocity;
    const double dry=std::tanh(v.filter*smooth[BS_DRIVE]);
    // The zero branch retains the v1 signal path and operation order exactly.
-   const double body=fullness>0 ? bodyGain*v.bodyLevel*v.fullness.process(fatRaw,preGain,fatAlpha,dcPole) : 0;
+   double body=0;
+   if(fullness>0) {
+    // Fixed quadrature oscillators rotate the fat fundamental without changing
+    // oscillator frequency or fading a polarity coefficient through zero.
+    double q1=v.phase1-step1+.25,q2=v.phase2-step2+.25;
+    q1-=std::floor(q1); q2-=std::floor(q2);
+    const double quadrature=(1-mix)*saw(q1,step1)-mix*pulse(q2,step2,smooth[BS_PULSE_WIDTH]);
+    body=bodyGain*v.bodyLevel*(bodyCos*v.fullness.process(fatRaw,preGain,fatAlpha,dcPole)+bodySin*v.fullnessQuadrature.process(quadrature,preGain,fatAlpha,dcPole));
+   }
    const double value=(fullness>0 ? dry+(body-dry)*fullness : dry)*amplitude*.25;
    l+=value*v.panLeft; r+=value*v.panRight; v.age+=dt;
   }

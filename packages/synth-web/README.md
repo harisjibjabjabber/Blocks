@@ -25,4 +25,4 @@ node --test packages/synth-web/recipes.test.mjs
 node scripts/synth-standalone-proof.mjs
 ```
 
-The second command needs the server above and Chrome (`CHROME` can select its executable). It runs in a separate temporary profile, measures actual analyser output, checks held-note filter changes and stopping/resume, and captures 320/390 px layouts. Automated signal checks do not establish musical sound quality or physical phone usability.
+The browser proof needs the server above and Chrome (`CHROME` can select its executable). It runs in a separate temporary profile, measures actual analyser output, checks held-note filter/Fullness changes and stopping/resume, and captures 320/390/1440 px layouts. It also exercises gestures, Undo, pointer cancellation/ownership and versioned file import/export. Automated signal checks do not establish musical sound quality or physical phone usability.

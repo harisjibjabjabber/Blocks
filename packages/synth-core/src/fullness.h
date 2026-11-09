@@ -5,6 +5,17 @@
 #include <cmath>
 
 namespace blocks_detail {
+// Relative phase of the analytic first Fourier components of the legacy
+// saw+pulse mix and aligned saw-pulse mix. Duty cycle changes pulse phase.
+// Near the legacy fundamental's zero its phase is undefined: keep the prior
+// orientation, rather than amplify noise or switch polarity abruptly.
+inline double fundamentalOrientation(double mix,double width,double previous) {
+ const double phase=6.283185307179586*width;
+ const double real=mix*std::sin(phase),pulseImag=mix*(1-std::cos(phase));
+ const double dryImag=1-mix-pulseImag,fatImag=1-mix+pulseImag;
+ if(real*real+dryImag*dryImag<.000225) return previous;
+ return std::atan2(-real*(dryImag+fatImag),-real*real+dryImag*fatImag);
+}
 // Original monotonic asymmetric polynomial saturator. The derivative inside
 // [-1,1] is (1-x*x)*(1+2*a*x), nonnegative for a=.22. Outside it is constant.
 // Its analytic primitive enables first-order ADAA (Parker/Zavalishin/Le Bivic,

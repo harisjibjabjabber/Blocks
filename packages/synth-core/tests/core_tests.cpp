@@ -1,6 +1,7 @@
 #include "blocks_synth.h"
 #include "../src/fullness.h"
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <complex>
@@ -34,6 +35,14 @@ static void same(const Audio&a,const Audio&b) { CHECK(a.l==b.l); CHECK(a.r==b.r)
 static void clean(const Audio&a) { for(float x:a.l) CHECK(std::isfinite(x)&&std::abs(x)<=1); for(float x:a.r) CHECK(std::isfinite(x)&&std::abs(x)<=1); }
 static unsigned crossings(const Audio&a,unsigned start,unsigned end) { unsigned n=0; for(unsigned i=start+1;i<end;++i) if(a.l[i-1]<=0&&a.l[i]>0) ++n; return n; }
 static double magnitude(const Audio&a,double frequency) { double real=0,imaginary=0; for(unsigned i=4800;i<a.l.size();++i) { const double angle=6.283185307179586*frequency*i/48000; real+=a.l[i]*std::cos(angle); imaginary-=a.l[i]*std::sin(angle); } return 2*std::hypot(real,imaginary)/(a.l.size()-4800); }
+struct BlendMeasurement { double rms,fundamental; };
+static BlendMeasurement measureBlend(float mix,float width,unsigned pitch,float amount,bool lowTide=false) {
+ Synth s; bs_set_parameter(s.p,BS_OSC_MIX,mix); bs_set_parameter(s.p,BS_PULSE_WIDTH,width); bs_set_parameter(s.p,BS_FULLNESS,amount);
+ bs_set_parameter(s.p,BS_OSC2_DETUNE,lowTide?-3:0); bs_set_parameter(s.p,BS_ATTACK,lowTide?.008f:.001f); bs_set_parameter(s.p,BS_SUSTAIN_LEVEL,lowTide?.68f:1.f);
+ if(lowTide) {bs_set_parameter(s.p,BS_CUTOFF,680);bs_set_parameter(s.p,BS_DRIVE,1.72f);bs_set_parameter(s.p,BS_DRIFT_CENTS,6);bs_set_parameter(s.p,BS_DRIFT_HZ,.4f);bs_set_parameter(s.p,BS_RELEASE,.18f);}
+ bs_reset(s.p); const auto a=render(s.p,24000,128,{note(0,pitch)});clean(a);double sum=0;for(unsigned i=4800;i<a.l.size();++i)sum+=double(a.l[i])*a.l[i];
+ return {std::sqrt(sum/(a.l.size()-4800)),magnitude(a,440*std::exp2((double(pitch)-69)/12))};
+}
 static double aliasRatio(std::vector<std::complex<double>> data,unsigned fundamental) {
  const unsigned n=unsigned(data.size());
  for(unsigned i=1,j=0;i<n;++i) { unsigned bit=n>>1; for(;j&bit;bit>>=1) j^=bit; j^=bit; if(i<j) std::swap(data[i],data[j]); }
@@ -113,6 +122,23 @@ int main() {
    bs_set_parameter(fat.p,BS_FULLNESS,1); bs_reset(dry.p); bs_reset(fat.p);
    const auto a=render(dry.p,24000,128,{note(0,pitch)}),b=render(fat.p,24000,128,{note(0,pitch)}); clean(b);
    const double db=10*std::log10(energy(b)/energy(a)); std::printf("METRIC Fullness mix=%.2f pitch=%u level_delta_dB=%.4f\n",mix,pitch,db); CHECK(std::abs(db)<2);
+  }
+  for(float width:{.25f,.5f,.75f}) for(float mix:{.15f,.35f,.7f}) for(unsigned pitch:{36u,60u,84u}) {
+   std::array<BlendMeasurement,5> levels{};for(unsigned i=0;i<5;++i)levels[i]=measureBlend(mix,width,pitch,float(i)*.25f);
+   const double floorRms=std::min(levels.front().rms,levels.back().rms),floorFund=std::min(levels.front().fundamental,levels.back().fundamental);
+   double worstRms=0,worstFund=0;
+   for(const auto &level:levels) {worstRms=std::min(worstRms,20*std::log10(level.rms/floorRms));worstFund=std::min(worstFund,20*std::log10(level.fundamental/floorFund));}
+   std::printf("METRIC Fullness blend mix=%.2f width=%.2f pitch=%u worst_RMS_dip_dB=%.4f worst_H1_dip_dB=%.4f\n",mix,width,pitch,worstRms,worstFund); CHECK(worstRms> -3);CHECK(worstFund> -3);
+  }
+  for(unsigned pitch:{36u,60u,84u}) {
+   std::array<BlendMeasurement,5> levels{};for(unsigned i=0;i<5;++i)levels[i]=measureBlend(.7f,.5f,pitch,float(i)*.25f,true);
+   const double floorRms=std::min(levels.front().rms,levels.back().rms),floorFund=std::min(levels.front().fundamental,levels.back().fundamental);
+   for(unsigned i=0;i<5;++i) {const auto &level=levels[i];const double db=20*std::log10(level.rms/floorRms),hdb=20*std::log10(level.fundamental/floorFund);std::printf("METRIC LowTide pitch=%u Fullness=%.2f RMS_dB=%.4f H1_dB=%.4f\n",pitch,float(i)*.25f,db,hdb);CHECK(db> -3);CHECK(hdb> -3);}
+  }
+  {
+   Synth a,b;for(auto*s:{a.p,b.p}){bs_set_parameter(s,BS_FULLNESS,.7f);bs_set_parameter(s,BS_OSC_MIX,.15f);bs_set_parameter(s,BS_OSC2_DETUNE,0);bs_reset(s);}
+   const std::vector<bs_event> sweep={note(0,60),{6000,BS_PARAMETER,0,0,BS_OSC_MIX,.7f},{12000,BS_PARAMETER,0,0,BS_OSC_MIX,.15f},{18000,BS_PARAMETER,0,0,BS_PULSE_WIDTH,.25f},{22000,BS_PARAMETER,0,0,BS_OSC_MIX,.7f},{26000,BS_PARAMETER,0,0,BS_PULSE_WIDTH,.75f},{32000,BS_PARAMETER,0,0,BS_PULSE_WIDTH,.5f},{38000,BS_PARAMETER,0,0,BS_FULLNESS,0}};
+   const auto first=render(a.p,48000,127,sweep);same(first,render(b.p,48000,256,sweep));clean(first);double jump=0;for(unsigned i=1;i<first.l.size();++i)jump=std::max(jump,std::abs(double(first.l[i])-first.l[i-1]));std::printf("METRIC Fullness mix/width sweep maximum_sample_delta=%.8f\n",jump);CHECK(jump<.02);
   }
   // Coherent 5.895kHz sine at48kHz: bins above the fourth harmonic fold into
   // non-harmonic bins. Compare the same original shape with/without ADAA.
