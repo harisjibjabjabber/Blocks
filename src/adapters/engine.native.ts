@@ -98,6 +98,7 @@ export function createNativeEngine() {
     soundingPitches(_layerId: string): readonly number[] { return []; },
     getGate: () => gate,
     readAudioState: () => (gate.audioRunning ? "running" : "stopped"),
+    async resumeAudio() { const state = JSON.parse(await native.start()) as { audio: boolean }; gate = { ...gate, audioRunning: state.audio, ready: state.audio && gate.midiAccess }; },
     ports: () => ports,
     async enable() {
       const raw = await native.start();

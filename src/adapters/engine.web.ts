@@ -22,6 +22,7 @@ export interface SketchEngine {
   presetName: string;
   capabilities: { audition: boolean; soundingPitches: boolean };
   enable(): Promise<ReturnType<typeof idleGate>>;
+  resumeAudio(): Promise<void>;
   getGate(): ReturnType<typeof idleGate>;
   readAudioState(): string;
   ports(): PortInfo[];
@@ -333,6 +334,7 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
       return gate;
     },
     readAudioState: () => context.state,
+    async resumeAudio() { if (context.state !== "running") await context.resume(); },
     ports: () => bound.map((port) => ({ id: port.id, name: port.name || "MIDI input", state: port.state })),
     async enable() {
       const permission = await readMidiPermission();

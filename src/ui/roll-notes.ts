@@ -141,11 +141,8 @@ export function applyPreview(notes: readonly RollNote[], preview: readonly { id:
   });
 }
 
-export function workingPlayback(source: readonly CapturedEvent[], notes: readonly RollNote[], bounds: { start: bigint; end: bigint }): CapturedEvent[] {
-  if (source.length === 0) {
-    return [];
-  }
-  const template = source[0];
+export function workingPlayback(source: readonly CapturedEvent[], notes: readonly RollNote[], bounds: { start: bigint; end: bigint }, domain: CapturedEvent["domain"] = "web-performance-us"): CapturedEvent[] {
+  const template: CapturedEvent = source[0] ?? { id: "editor", domain, sequence: 0n, portId: "editor", sessionId: "editor", channel: 0, kind: "note-on", note: 0, velocity: 0, controller: 0, value: 0, sourceTimestamp: 0n, receiptTimestamp: 0n, missingSourceTimestamp: false, raw: null, origin: "touch", elapsedSource: 0n, elapsedReceipt: 0n, scheduleElapsed: 0n };
   // Keep expression payloads and timestamps intact, including pitch/pressure
   // represented as `other`. Note edits replace only note messages.
   const controllers = source.filter((event) => event.kind !== "note-on" && event.kind !== "note-off");

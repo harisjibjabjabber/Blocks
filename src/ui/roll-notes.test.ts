@@ -28,6 +28,14 @@ function event(id: string, kind: CapturedEvent["kind"], note: number, velocity: 
 }
 
 describe("working notes", () => {
+  it("plays drawn notes with no captured source and leaves the source empty", () => {
+    const source: CapturedEvent[] = [];
+    const note: RollNote = { id: "drawn", pitch: 64, channel: 0, start: 125_000n, end: 375_000n, velocity: 96, sourceOnId: null, sourceOffId: null };
+    const played = workingPlayback(source, [note], { start: 0n, end: 1_000_000n });
+    expect(played.map(event => [event.kind, event.note, event.scheduleElapsed])).toEqual([["note-on", 64, 125_000n], ["note-off", 64, 375_000n]]);
+    expect(played.every(event => event.raw === null)).toBe(true);
+    expect(source).toEqual([]);
+  });
   const source = [
     event("c-on", "note-on", 60, 90, 0n),
     event("e-on", "note-on", 64, 80, 20_000n),

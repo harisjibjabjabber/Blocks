@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { boundedSnap, chordSelection, doubleTapDeletes, isBlackKey, keyShape, moveSelection, nextDrawId, notesInMarquee, resizeSelection, scaleSelectionVelocity, RollTapTracker, RollTransaction, type RollTap } from "./roll-interaction";
+import { boundedSnap, chordSelection, doubleTapDeletes, isBlackKey, keyShape, moveSelection, nearestBoundary, nextDrawId, notesInMarquee, rangeFromDrag, resizeSelection, scaleSelectionVelocity, RollTapTracker, RollTransaction, type RollTap } from "./roll-interaction";
 import { snapIndexAt, snapPointAt } from "./snap";
 import { pitchLabel, pitchToY } from "./roll-time";
 import type { RollNote } from "./roll-notes";
@@ -53,6 +53,30 @@ describe("snapped boundary constraints", () => {
   it("free-time clamps only to bounds, without adding quantisation", () => {
     expect(boundedSnap(111_111n, 0n, 200_000n, null, division)).toBe(111_111n);
     expect(boundedSnap(-1n, 0n, null, grid, { kind: "off" })).toBe(0n);
+  });
+});
+
+describe("ruler range gestures", () => {
+  const grid = { bpm: 120, beatsPerBar: 4, phase: 100_000n };
+  const division = { kind: "note", numerator: 1, denominator: 4 } as const;
+  it("resolves overlapping48px endpoint targets by nearest endpoint", () => {
+    expect(nearestBoundary(105, 100, 120)).toBe("start");
+    expect(nearestBoundary(115, 100, 120)).toBe("end");
+    expect(nearestBoundary(110, 100, 120)).toBe("start");
+    expect(nearestBoundary(150, 100, 120)).toBeNull();
+  });
+  it("creates the same snapped range in either drag direction", () => {
+    expect(rangeFromDrag(130_000n, 1_080_000n, 0n, 2_000_000n, grid, division)).toEqual({ start: 100_000n, end: 1_100_000n });
+    expect(rangeFromDrag(1_080_000n, 130_000n, 0n, 2_000_000n, grid, division)).toEqual({ start: 100_000n, end: 1_100_000n });
+  });
+  it("never creates a zero range or clamps a snapped endpoint between gridlines", () => {
+    expect(rangeFromDrag(120_000n, 200_000n, 0n, 2_000_000n, grid, division)).toBeNull();
+    expect(rangeFromDrag(0n, 2_000_000n, 110_000n, 1_700_000n, grid, division)).toEqual({ start: 600_000n, end: 1_600_000n });
+  });
+  it("Alt and free-time retain the exact drag positions within history and visible end", () => {
+    const expected = { start: 123_456n, end: 987_654n };
+    expect(rangeFromDrag(expected.start, expected.end, 0n, 2_000_000n, grid, division, true)).toEqual(expected);
+    expect(rangeFromDrag(expected.start, expected.end, 0n, 2_000_000n, null, division)).toEqual(expected);
   });
 });
 

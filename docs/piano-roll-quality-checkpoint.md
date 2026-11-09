@@ -1,30 +1,28 @@
-# Blocks UI v1 review
+# Blocks workflow review
 
 9 November 2026. Branch: codex/piano-roll-quality. [Draft PR](https://github.com/harisjibjabjabber/Blocks/pull/1).
 
-## Delivered
+## Current behavior
 
-The handover storyboard remains the reference: Play/history and capture range in sections 0b/0c, and frame 18 for the editor. The original palette, typography and hierarchy remain; no invented headlines or harmony data were added.
+The handover remains the visual reference. This revision addresses the user's subsequent rejection of editor discoverability, range controls and main-screen clutter.
 
-- Front-page Start/End markers select the next capture. Full-height grab zones and 48px tabs use the visible snap grid. Preview and commit agree, arrow keys move by the selected division, and cancellation restores the range. Manual selection persists while playing; Auto range and Undo range are available.
-- BPM, meter and bars/beats are visible. Snap supports Off, Bar, straight divisions, triplets and custom fractions. Capture inherits exact manual bounds, including silence. Recording data stays intact. Grid phase remains stable when history expires.
-- Captures have real layer cards and minirolls, deletion and Undo. Layer IDs stay unique after deletion and recapture.
-- The editor opens with whole bars, piano keys and a visible velocity lane. Select supports double-click create/delete, drag move/resize, marquee and Shift selection. Draw also moves existing notes. B toggles Draw/Select. Touch double-tap selects a chord rather than deleting.
-- Group move/resize, clipboard, duplicate, selection actions and session Undo are implemented. Velocity supports Set all or proportional scaling; other layers appear as optional ghosts. Quantise has explicit strength/swing and preview/apply/cancel.
-- The playable bottom piano has black keys, octave controls, Major and Minor pentatonic modes and root selection. First touch starts audio without MIDI permission. Polyphony, slides, shared-key ownership and cancellation are handled.
-- Keyboard-open layouts fit the roll and range tabs above the keys. Phones use a compact header; routine connection details live in Settings while sound recovery remains available.
-- Short loops preserve their actual duration instead of a 400ms floor. Raw and edited playback preserve held-note/pedal context without changing recorded events. Moving the range start refreshes controller state.
+- Draw MIDI is visible above the empty/live roll and creates a blank two-bar layer in Draw mode. Playback works with no captured source and requests no MIDI permission. A selected layer has visible Edit MIDI above its roll and in the fixed transport row.
+- The main screen uses one time-zoom slider, Full take, drag-to-pan and pinch zoom. Full take reveals retained earlier notes and recorded silence. Wheel over the ruler zooms time; wheel over the piano axis adjusts note height. The editor also exposes time/pitch zoom controls.
+- Compact bottom grips mark range endpoints. Drag across the editor ruler to set a range; drag either grip to adjust it. Grid previews and commits match. Range and note changes share ordered Undo/Redo.
+- Cut range replaces the working notes in the same layer, trims crossing notes, removes notes outside the range and makes the chosen start Bar 1. Undo restores the original working notes and grid. Cutting a playing secondary layer stops it and schedules it at the shared first-loop boundary; it waits in silence until that boundary.
+- Live Capture and existing-layer editing are explicit separate contexts. New performance input clears a stale pending Live range, so later Capture follows the new performance. Zoom never changes capture bounds. The automatic phrase-selection algorithm is unchanged.
+- Record/Stop is an alternative to Capture. It retains the explicit recording interval, including leading silence, long rests and trailing silence. Capture is disabled during that explicit recording.
+- BPM uses immediate minus/plus controls. Rulers show Bar labels with separate beat numbers. Vertical subdivisions follow the selected snap lattice, including triplets; finer detail appears when zooming in. Quantise directly applies the selected division at100% with Undo; advanced strength/swing preview remains available.
+- Prior keyboard, multi-note editing, background layers, clipboard, capture deletion/Undo and storyboard typography remain.
 
-## Department review and validation
+## Verification
 
-Product decisions preceded engineering. UI/UX exercised the running build independently and had authority to block. QA maintained independent browser checks; the coordinator integrated fixes.
+Web types,172 JavaScript tests across21 files and production build pass locally. The browser suite covers direct drawing from an empty project and playback, visible editor access, range/note history, exact snap positions, quantise, stale-range recovery, Record/Stop silence, same-layer cutting, full-take recovery, keyboard lifecycle and responsive layouts. It uses isolated synthetic mouse/touch input, not physical hardware or listening certification.
 
-UX rejected both phone and desktop keyboard-open layouts when the dock obscured range controls. The header and plot sizing were corrected. Independent functional review verified proportional velocity, quantise apply/undo, other-layer visibility and capture deletion/restoration.
+Department agents contributed design, implementation and QA. UX explicitly withdrew the earlier approval after the user's feedback and blocked overlapping controls. The final slider, bottom-grip and empty-editor revisions were visually checked by the coordinator at320,390 and1440 widths after the department agents reached their session usage limit. Independent UX sign-off for this latest revision remains pending; earlier UI approval must not be presented as current acceptance.
 
-Web types, 160 JavaScript tests across 20 files, and production build passed locally. Browser checks cover exact marker snapping and Capture inheritance, short-loop wrapping, cancellation, group editing, clipboard, keyboard lifecycle, responsive layout and loaded fonts. Final source revision and CI results are recorded below after verification.
-
-CI also runs native host tests; Windows has no local g++. Browser tests use synthetic mouse/touch input, not physical-device or listening certification.
+The exported build review records the final source revision and CI outcome. CI also runs native host tests; Windows has no local g++.
 
 ## Remaining scope
 
-Grouping remains the next separate step: layers stay separate and play/stop together. Physical phone/Fold, USB MIDI/pedal hardware, listening/latency and deployed audiovisual acceptance are unverified. The separate capture-prefix report needs the original missing-take reproduction; synthetic fixtures are not that reproduction. This is a draft review build; main and deployment remain unchanged.
+Takes currently remain in memory, so refreshing clears the session. Group transport, physical phone/Fold and MIDI/pedal testing, listening/latency and deployed audiovisual acceptance remain separate. Capture-prefix inference still needs its own algorithm work; this revision provides explicit recording and recovery controls without claiming that algorithm is fixed. Main and deployment remain unchanged.

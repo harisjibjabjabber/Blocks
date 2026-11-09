@@ -85,6 +85,38 @@ function note(): PlaybackEvent {
 }
 
 describe("web engine adapter", () => {
+  it("pauses a cut second layer until it rejoins the first layer at the next boundary", () => {
+    const context = new FakeContext(); context.setState("running"); context.currentTime = 10;
+    const engine = createWebEngine({ createContext: () => context as unknown as AudioContext });
+    try {
+      engine.loopLayer("first", [note()], 1, 2, 0n);
+      engine.loopLayer("second", [note()], 1, 3, 0n);
+      context.currentTime = 11;
+      const firstPosition = engine.transport("first").positionSeconds;
+      engine.loopLayer("second", [{ ...note(), scheduleElapsed: 500_000n }], 1, 1, 500_000n);
+      expect(engine.transport("second").positionSeconds).toBeNull();
+      expect(engine.transport("first").positionSeconds).toBe(firstPosition);
+      context.currentTime = 12.04;
+      expect(engine.transport("second").positionSeconds).toBeNull();
+      context.currentTime = 12.05;
+      expect(engine.transport("first").positionSeconds).toBeCloseTo(0);
+      expect(engine.transport("second").positionSeconds).toBeCloseTo(.5);
+      context.currentTime = 12.30;
+      expect(engine.transport("second").positionSeconds! - .5).toBeCloseTo(engine.transport("first").positionSeconds!);
+    } finally { engine.stopReplay(); }
+  });
+  it("starts editor audio without requesting MIDI or emitting captured events", async () => {
+    const context = new FakeContext();
+    const requestMidi = vi.fn();
+    const received = vi.fn();
+    const engine = createWebEngine({ createContext: () => context as unknown as AudioContext, requestMIDIAccess: requestMidi });
+    const stop = engine.subscribe(received);
+    await engine.resumeAudio();
+    expect(context.state).toBe("running");
+    expect(requestMidi).not.toHaveBeenCalled();
+    expect(received).not.toHaveBeenCalled();
+    stop(); engine.stopReplay();
+  });
   it("preserves a125ms loop and applies a shorter duration only at its seam", async () => {
     vi.useFakeTimers();
     try {

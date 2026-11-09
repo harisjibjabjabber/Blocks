@@ -2,6 +2,19 @@ import type { RollNote } from "./roll-notes";
 import { noteBox, type KnownGrid, type TimeWindow } from "./roll-time";
 import { snapIndexAt, snapPointAt, snapStep, snapTime, type SnapDivision } from "./snap";
 
+export function nearestBoundary(x: number, startX: number, endX: number, hitWidth = 48): "start" | "end" | null {
+  const start = Math.abs(x - startX), end = Math.abs(x - endX);
+  return Math.min(start, end) <= hitWidth / 2 ? start <= end ? "start" : "end" : null;
+}
+
+export function rangeFromDrag(anchor: bigint, current: bigint, floor: bigint, ceiling: bigint, grid: KnownGrid | null, division: SnapDivision, bypass = false): { start: bigint; end: bigint } | null {
+  const clamp = (time: bigint) => time < floor ? floor : time > ceiling ? ceiling : time;
+  const a = bypass ? clamp(anchor) : boundedSnap(anchor, floor, ceiling, grid, division);
+  const b = bypass ? clamp(current) : boundedSnap(current, floor, ceiling, grid, division);
+  if (a === null || b === null || a === b) return null;
+  return a < b ? { start: a, end: b } : { start: b, end: a };
+}
+
 /** Clamp to an available grid point, never to an off-grid boundary tick. */
 export function boundedSnap(time: bigint, minimum: bigint, maximum: bigint | null, grid: KnownGrid | null, division: SnapDivision): bigint | null {
   if (maximum !== null && maximum < minimum) return null;
