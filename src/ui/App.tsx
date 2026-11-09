@@ -36,13 +36,13 @@ const EVENT_CAP = 4096;
 const BYTE_CAP = 262144;
 
 interface TempoSnapshot { project: Pick<Project, "tempoBpm" | "proposedTempoBpm" | "gridLocked">; settings: { bpm: number; beatsPerBar: number }; grids: Record<string, KnownGrid | null> }
-interface EditSnapshot { mainTrimmed?: boolean; notes: RollNote[]; bounds: RangeBounds; edited: boolean; grid: KnownGrid | null; tempo?: TempoSnapshot }
+interface EditSnapshot { mainExtent?: RangeBounds; notes: RollNote[]; bounds: RangeBounds; edited: boolean; grid: KnownGrid | null; tempo?: TempoSnapshot }
 interface SoundSettings { instrumentId: InstrumentId; envelope: SynthEnvelope }
 interface Take {
   id: string;
   sound: SoundSettings;
   volume?: number;
-  mainTrimmed?: boolean;
+  mainExtent?: RangeBounds;
   performance: Performance;
   overlay: PhraseOverlay;
   report: InferenceReport;
@@ -637,7 +637,7 @@ export default function App() {
     const grid = { ...currentGrid, ...(bpm ? { bpm, provisional: false } : {}), phase: bounds.start };
     const notes = item.rollNotes.filter(note => note.end > bounds.start && note.start < bounds.end).map(note => ({ ...note, start: note.start < bounds.start ? bounds.start : note.start, end: note.end > bounds.end ? bounds.end : note.end }));
     const before = { ...editSnapshot(item), ...(bpm ? { tempo: tempoSnapshot() } : {}) };
-    const updated: Take = { ...item, mainTrimmed: true, overlay: { ...item.overlay, loopStart: bounds.start, loopEnd: bounds.end, selectionStart: bounds.start, selectionEnd: bounds.end }, rangeCeiling: bounds.end > item.rangeCeiling ? bounds.end : item.rangeCeiling, rollNotes: notes, rollEdited: true, rollGrid: grid, rollPast: [...item.rollPast, before], rollFuture: [] };
+    const updated: Take = { ...item, mainExtent: bounds, overlay: { ...item.overlay, loopStart: bounds.start, loopEnd: bounds.end, selectionStart: bounds.start, selectionEnd: bounds.end }, rangeCeiling: bounds.end > item.rangeCeiling ? bounds.end : item.rangeCeiling, rollNotes: notes, rollEdited: true, rollGrid: grid, rollPast: [...item.rollPast, before], rollFuture: [] };
     if (bpm) changeCaptureTempo(bpm);
     setTakes(items => items.map(entry => entry.id === item.id ? updated : entry));
     setRollWindow(editorFrame(bounds.start, bounds.start, bounds.end, updated.rollGrid!, width >= 1100 ? 4 : 2));
@@ -830,11 +830,11 @@ export default function App() {
 
   const historyItem = rangeMode ? take : null;
   const historyGrid = historyItem?.rollGrid ?? liveGrid;
-  const historyFloor = historyItem ? (historyItem.mainTrimmed ? loopWindow(historyItem.overlay).start : takeStart(historyItem)) : ribbon[0]?.scheduleElapsed ?? 0n;
+  const historyFloor = historyItem ? (historyItem.mainExtent ? historyItem.mainExtent.start : takeStart(historyItem)) : ribbon[0]?.scheduleElapsed ?? 0n;
   const historyBounds = historyItem ? loopWindow(historyItem.overlay) : liveBounds;
   const requestedHistoryFrame = historyItem ? rollWindow ?? editorFrame(historyFloor, historyBounds.start, historyBounds.end, historyGrid, 2) : liveFrame;
   const allHistoryEnd = historyItem ? historyItem.rollNotes.reduce((end, note) => note.end > end ? note.end : end, historyItem.cut.loop.end > historyBounds.end ? historyItem.cut.loop.end : historyBounds.end) : newest > historyBounds.end ? newest : historyBounds.end;
-  const historyEnd = historyItem?.mainTrimmed ? historyBounds.end : allHistoryEnd;
+  const historyEnd = historyItem?.mainExtent ? historyItem.mainExtent.end : allHistoryEnd;
   const clampHistory = (next: TimeWindow): TimeWindow => {
     if (!historyItem) return next;
     const available = historyEnd > historyFloor ? historyEnd - historyFloor : 1n;
@@ -881,7 +881,7 @@ export default function App() {
           </View>
           {captureCustomSnap && <View style={styles.row}><TextInput accessibilityLabel="Capture custom snap fraction" value={captureFraction} onChangeText={setCaptureFraction} style={{ color: palette.ink, borderColor: palette.line, borderWidth: 1, minHeight: 48, padding: 10, minWidth: 90 }} />{button("Apply snap", () => { const match = captureFraction.trim().match(/^(\d+)\s*\/\s*(\d+)$/); const numerator = Number(match?.[1]), denominator = Number(match?.[2]); if (!match || numerator < 1 || numerator > 128 || denominator < 1 || denominator > 1024) { setMessage("Enter a fraction, such as 3/8 or 1/12."); return; } setSnapDivision({ kind: "note", numerator, denominator }); setCaptureCustomSnap(false); })}</View>}
           {panel === "grid" && <View style={{ gap: 8, marginBottom: 8 }}><SelectControl label="Capture beats per bar" value={meterText} options={[2,3,4,5,6,7,8].map(value => ({ value: String(value), label: `${value}/4` }))} onChange={value => { setMeterText(value); const beatsPerBar=Number(value); setEditorGridSettings(settings => ({ ...settings, beatsPerBar })); if (rangeMode && take) setTakes(items => items.map(item => item.id === take.id ? { ...item, rollGrid: { ...(item.rollGrid ?? liveGrid), beatsPerBar } } : item)); }} palette={palette} />{button("Done", () => setPanel(null))}</View>}
-          {rangeMode && take ? <Roll notes={take.rollNotes} timeWindow={historyFrame} bounds={loopWindow(take.overlay)} ceiling={historyEnd} historyStart={historyFloor} grid={take.rollGrid} palette={palette} mode="compact" tool="select" selectedId={null} ghosts={[]} hitPx={48} gridHeight={historyHeight} viewAction={historyViewAction} showChrome={false} onWindow={setHistoryWindow} onBoundsCommit={next => commitBounds(take,next)} onSelect={() => undefined} onCommitNotes={() => undefined} snapDivision={snapDivision} snapMode="grid" readTransport={() => engine.transport(take.id)} /> : <Roll notes={liveNotes} timeWindow={liveFrame} bounds={ribbon.length ? liveBounds : null} ceiling={liveFrame.end} historyStart={ribbon[0]?.scheduleElapsed ?? 0n} grid={liveGrid} palette={palette} mode="compact" tool="select" selectedId={null} ghosts={[]} hitPx={48} gridHeight={historyHeight} viewAction={historyViewAction} showChrome={false} onWindow={setCaptureView} onBoundsCommit={next => { setCaptureRangeUndo({ bounds: captureRange }); setCaptureRange(next); setCaptureView(liveFrame); }} onSelect={() => undefined} onCommitNotes={() => undefined} snapDivision={snapDivision} snapMode="grid" />}
+          {rangeMode && take ? <Roll notes={take.rollNotes} timeWindow={historyFrame} bounds={loopWindow(take.overlay)} viewExtent={{ start: historyFloor, end: historyEnd }} ceiling={historyEnd} historyStart={historyFloor} grid={take.rollGrid} palette={palette} mode="compact" tool="select" selectedId={null} ghosts={[]} hitPx={48} gridHeight={historyHeight} viewAction={historyViewAction} showChrome={false} onWindow={setHistoryWindow} onBoundsCommit={next => commitBounds(take,next)} onSelect={() => undefined} onCommitNotes={() => undefined} snapDivision={snapDivision} snapMode="grid" readTransport={() => engine.transport(take.id)} /> : <Roll notes={liveNotes} timeWindow={liveFrame} bounds={ribbon.length ? liveBounds : null} ceiling={liveFrame.end} historyStart={ribbon[0]?.scheduleElapsed ?? 0n} grid={liveGrid} palette={palette} mode="compact" tool="select" selectedId={null} ghosts={[]} hitPx={48} gridHeight={historyHeight} viewAction={historyViewAction} showChrome={false} onWindow={setCaptureView} onBoundsCommit={next => { setCaptureRangeUndo({ bounds: captureRange }); setCaptureRange(next); setCaptureView(liveFrame); }} onSelect={() => undefined} onCommitNotes={() => undefined} snapDivision={snapDivision} snapMode="grid" />}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6, height: 48 }}>
             {rangeMode && take && button("Cut range", () => cutRange(take))}
             <View style={{ flex: 1 }} />
@@ -920,8 +920,8 @@ export default function App() {
 }
 
 function takeStart(item: Take): bigint { const first = item.performance.events[0]?.scheduleElapsed ?? 0n; const start = loopWindow(item.overlay).start; return first < start ? first : start; }
-function editSnapshot(item: Take): EditSnapshot { return { mainTrimmed: item.mainTrimmed, notes: item.rollNotes, bounds: loopWindow(item.overlay), edited: item.rollEdited, grid: item.rollGrid }; }
-function restoreSnapshot(item: Take, snapshot: EditSnapshot): Take { return { ...item, mainTrimmed: snapshot.mainTrimmed, rollNotes: snapshot.notes, rollEdited: snapshot.edited, rollGrid: snapshot.grid, overlay: { ...item.overlay, selectionStart: snapshot.bounds.start, selectionEnd: snapshot.bounds.end, loopStart: snapshot.bounds.start, loopEnd: snapshot.bounds.end } }; }
+function editSnapshot(item: Take): EditSnapshot { return { mainExtent: item.mainExtent, notes: item.rollNotes, bounds: loopWindow(item.overlay), edited: item.rollEdited, grid: item.rollGrid }; }
+function restoreSnapshot(item: Take, snapshot: EditSnapshot): Take { return { ...item, mainExtent: snapshot.mainExtent, rollNotes: snapshot.notes, rollEdited: snapshot.edited, rollGrid: snapshot.grid, overlay: { ...item.overlay, selectionStart: snapshot.bounds.start, selectionEnd: snapshot.bounds.end, loopStart: snapshot.bounds.start, loopEnd: snapshot.bounds.end } }; }
 
 function sameNotes(a: readonly RollNote[], b: readonly RollNote[]) {
   return a.length === b.length && a.every((note, index) => {

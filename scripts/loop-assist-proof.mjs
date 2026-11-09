@@ -51,7 +51,7 @@ try {
     await click('[data-loop-settings]'); assert.equal(await b.evaluate(`document.querySelector('[aria-label="Use 4 bars"]').getAttribute('aria-pressed')`), 'true'); await panelButton('Close settings');
   });
   await check('drawing and adjusting loop bounds preserve the original note data', async () => {
-    await select('Snap division', '1/16'); await button('Fit editor loop'); await draw(64, 1000000n, 1500000n); await draw(67, 6500000n, 7000000n); original = await state(); assert.equal(original.notes.length, 2);
+    await select('Snap division', '1/16'); await button('Editor zoom'); await button('Fit editor loop'); await button('Editor zoom'); await draw(64, 1000000n, 1500000n); await draw(67, 6500000n, 7000000n); original = await state(); assert.equal(original.notes.length, 2);
     await boundary('end', 4250000n); dragged = await state(); assert.deepEqual(dragged.bounds, { start: '0', end: '4250000' }); assert.equal(dragged.bpm, 120); assert.deepEqual(dragged.notes, original.notes); await screenshot('selected-range-before-cut');
   });
   await check('Cut as four bars derives exact tempo from the selected duration', async () => {

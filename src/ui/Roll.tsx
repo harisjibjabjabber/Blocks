@@ -19,6 +19,7 @@ const VELOCITY_HEADER = 24;
 export type RollViewAction = { id: number; kind: "zoom-in" | "zoom-out" | "refocus" | "fit-pitches" | "earlier" | "later" | "higher" | "lower" | "taller" | "shorter" };
 type Range = { start: bigint; end: bigint };
 type RollProps = {
+  viewExtent?: TimeWindow;
   notes: readonly RollNote[]; timeWindow: TimeWindow | null; bounds: Range | null;
   ceiling: bigint; historyStart: bigint; grid: KnownGrid | null; palette: Palette;
   mode: "compact" | "room"; tool: RollTool; selectedId: string | null;
@@ -42,7 +43,7 @@ type Drag = {
 };
 type Pinch = { distance: number; x: number; y: number; view: TimeWindow; top: number; row: number; width: number };
 
-export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, palette, mode, tool, selectedId, ghosts, hitPx, onWindow, onBoundsCommit, onSelect, onCommitNotes, onEdit, onClose, onTool, showPan = true, readTransport, onAudition, onStopAudition, readSoundingPitches, snapDivision = DEFAULT_SNAP, snapMode = "grid", showChrome = true, gridHeight, showVelocityLane = mode === "room", viewAction, selectedIds, onSelectMany, backgroundLayers = [] }: RollProps) {
+export function Roll({ viewExtent, notes, timeWindow, bounds, ceiling, historyStart, grid, palette, mode, tool, selectedId, ghosts, hitPx, onWindow: onWindowChange, onBoundsCommit, onSelect, onCommitNotes, onEdit, onClose, onTool, showPan = true, readTransport, onAudition, onStopAudition, readSoundingPitches, snapDivision = DEFAULT_SNAP, snapMode = "grid", showChrome = true, gridHeight, showVelocityLane = mode === "room", viewAction, selectedIds, onSelectMany, backgroundLayers = [] }: RollProps) {
   const viewport = useWindowDimensions();
   const host = useRef<HTMLElement | null>(null);
   const keyboard = useRef<HTMLElement | null>(null);
@@ -54,6 +55,8 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
   const [compactTop, setCompactTop] = useState<number | null>(null);
   const [roomRow, setRoomRow] = useState(24);
   const [compactRow, setCompactRow] = useState<number | null>(null);
+  const [zoomTools, setZoomTools] = useState(false);
+  const zoomPanel = useRef<HTMLElement | null>(null);
   const [viewTools, setViewTools] = useState(false);
   const [playhead, setPlayhead] = useState<number | null>(null);
   const [sounding, setSounding] = useState<readonly number[]>([]);
@@ -75,6 +78,16 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
   const shownNotes = preview ?? notes;
   const shownBounds = previewBounds ?? bounds;
   const view = timeWindow ?? (bounds ? framePhrase(historyStart, bounds.start, bounds.end) : frameOf(notes, historyStart));
+  function onWindow(next: TimeWindow): TimeWindow {
+    if (viewExtent) {
+      const available = viewExtent.end - viewExtent.start;
+      const span = next.end - next.start < available ? next.end - next.start : available;
+      const start = maxBig(viewExtent.start, minBig(next.start, viewExtent.end - span));
+      next = { start, end: start + span };
+    }
+    onWindowChange(next);
+    return next;
+  }
   const gripPositions = shownBounds ? rangeGripPositions(timeToX(shownBounds.start, view, plotWidth), timeToX(shownBounds.end, view, plotWidth), plotWidth) : { start: 0, end: 48 };
   const noteHeight = Math.max(mode === "compact" ? 56 : 48, (gridHeight ?? (mode === "room" ? Math.max(240, Math.min(432, viewport.height - (viewport.width < 720 ? 520 : 360))) : 112)) - (bounds ? RANGE_STRIP : 0));
   const rowHeight = mode === "room" ? roomRow : compactRow ?? fitRow(notes, noteHeight);
@@ -159,7 +172,7 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
     if ((source === "bound-start" || source === "bound-end") && bounds) {
       taps.current.clear(); pendingTap.current = null;
       const edge = source === "bound-start" ? "start" : "end";
-      drag.current = { ...base, kind: "bound", edge, originalView: view, grabOffset: bounds[edge] - xToTime(x, view, plotWidth) };
+      drag.current = { ...base, kind: "bound", edge, originalView: view, grabOffset: maxBig(view.start, minBig(bounds[edge], view.end)) - xToTime(x, view, plotWidth) };
       setFocusedBoundary(edge);
       setGestureText(`${edge === "start" ? "Start" : "End"} ${grid ? musicalPosition(bounds[edge], grid) : `${seconds(bounds[edge])}s`}`);
       return;
@@ -282,8 +295,7 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
       if (direction && (direction > 0 || current.view.start > historyStart)) {
         if (performance.now() - (current.edgeSince ?? 0) >= 300) {
           const shift = BigInt(Math.max(1, Math.round(Number(current.view.end - current.view.start) * .008))) * BigInt(direction);
-          current.view = panWindow(current.view, shift, historyStart);
-          onWindow(current.view);
+          current.view = onWindow(panWindow(current.view, shift, historyStart));
         }
         edgeFrame.current = requestAnimationFrame(() => { edgeFrame.current = null; handlers.current.move(event); });
       }
@@ -509,6 +521,14 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
     if (span !== null) onWindow(zoomWindow(view, Number(span) / Number(view.end - view.start), selected?.start ?? bounds?.start ?? view.start, 50_000n, 120_000_000n));
   }, [snapIdentity, mode, plotWidth, grid?.bpm]);
 
+  useEffect(() => {
+    if (!zoomTools || typeof window === "undefined") return;
+    const outside = (event: PointerEvent) => { if (!zoomPanel.current?.contains(event.target as Node)) setZoomTools(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setZoomTools(false); };
+    window.addEventListener("pointerdown", outside); window.addEventListener("keydown", escape);
+    return () => { window.removeEventListener("pointerdown", outside); window.removeEventListener("keydown", escape); };
+  }, [zoomTools]);
+
   function refocus() { cancelAll(); setTopPitch(topOf(notes)); setCompactTop(null); setCompactRow(null); if (mode === "room") setRoomRow(fitRoomRow(notes, noteHeight)); onWindow(bounds ? framePhrase(historyStart, bounds.start, bounds.end) : frameOf(notes, historyStart)); }
   function zoom(factor: number) { cancelAll(); onWindow(zoomWindow(view, factor, view.start + (view.end - view.start) / 2n, 50_000n, 120_000_000n)); }
   function editSelected(change: (note: RollNote) => RollNote) {
@@ -555,9 +575,12 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
   });
   return (
     <WebView accessibilityLabel={mode === "room" ? "Piano roll" : "Take ribbon"} style={{ marginTop: showChrome ? 8 : 0 }}>
-      {mode === "room" ? <WebView style={{ flexDirection: "row", gap: 12, height: 48 }}>
+      {mode === "room" ? <WebView ref={node => { zoomPanel.current = node as unknown as HTMLElement; }} style={{ height: 48, zIndex: 30, alignItems: "flex-end", justifyContent: "center" }}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Editor zoom" accessibilityState={{ expanded: zoomTools }} onPress={() => setZoomTools(open => !open)} style={{ height: 48, paddingHorizontal: 12, justifyContent: "center" }}><Text style={{ color: zoomTools ? palette.accent : palette.muted, fontSize: 12 }}>Zoom</Text></Pressable>
+        {zoomTools ? <WebView style={{ position: "absolute", top: 48, left: 0, right: 0, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: palette.line, backgroundColor: palette.card, gap: 4 }}>
         <WebView style={{ flex: 1, minWidth: 0 }}><TimelineZoom id="editor-time-zoom" label="Time" fitLabel="Fit" fitAria="Fit editor loop" value={Math.max(0, Math.min(100, 100 * Math.log(120_000_000 / Number(view.end - view.start)) / Math.log(2400)))} onChange={value => zoom(120_000_000 * Math.pow(1 / 2400, value / 100) / Number(view.end - view.start))} onFit={refocus} palette={palette} /></WebView>
-        <WebView style={{ flex: 1, minWidth: 0 }}><TimelineZoom id="editor-pitch-zoom" label="Keys" fitLabel="Fit" fitAria="Fit editor pitches" value={(roomRow - 2) / 46 * 100} onChange={value => { cancelAll(); const next = 2 + value / 100 * 46; const middle = pitchTop - noteHeight / rowHeight / 2; setTopPitch(Math.max(12, Math.min(127, Math.round(middle + noteHeight / next / 2)))); setRoomRow(next); }} onFit={() => { setTopPitch(topOf(notes)); setRoomRow(fitRoomRow(notes, noteHeight)); }} palette={palette} /></WebView>
+        <WebView style={{ flex: 1, minWidth: 0 }}><TimelineZoom id="editor-pitch-zoom" label="Note height" fitLabel="Fit" fitAria="Fit editor pitches" value={(roomRow - 2) / 46 * 100} onChange={value => { cancelAll(); const next = 2 + value / 100 * 46; const middle = pitchTop - noteHeight / rowHeight / 2; setTopPitch(Math.max(12, Math.min(127, Math.round(middle + noteHeight / next / 2)))); setRoomRow(next); }} onFit={() => { setTopPitch(topOf(notes)); setRoomRow(fitRoomRow(notes, noteHeight)); }} palette={palette} /></WebView>
+        </WebView> : null}
       </WebView> : null}
       {showChrome ? <>
       <WebView style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 6 }}>
@@ -628,9 +651,9 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
           })}
           {shownBounds ? <>
             <WebView pointerEvents="none" dataSet={{ rangeStrip: "true" }} style={{ position: "absolute", top: RULER + noteHeight, height: RANGE_STRIP, left: 0, right: 0, backgroundColor: palette.card, borderTopWidth: 1, borderTopColor: palette.line }} />
-            <Boundary gripX={gripPositions.start + 24} x={timeToX(shownBounds.start, view, plotWidth)} palette={palette} active={focusedBoundary === "start" || drag.current?.kind === "range" || (drag.current?.kind === "bound" && drag.current.edge === "start")} edge="start" time={shownBounds.start} />
-            <Boundary gripX={gripPositions.end + 24} x={timeToX(shownBounds.end, view, plotWidth)} palette={palette} active={focusedBoundary === "end" || drag.current?.kind === "range" || (drag.current?.kind === "bound" && drag.current.edge === "end")} edge="end" time={shownBounds.end} />
-            {(["start", "end"] as const).map(edge => <Pressable key={edge} ref={node => { if (edge === "start") startHandle.current = node as unknown as HTMLElement; else endHandle.current = node as unknown as HTMLElement; }} accessibilityRole="button" accessibilityLabel={`Drag ${edge} marker; left and right arrows adjust`} dataSet={{ boundaryHandle: edge }} onFocus={() => setFocusedBoundary(edge)} onBlur={() => setFocusedBoundary(null)} style={{ display: (shownBounds[edge] < view.start || shownBounds[edge] > view.end) && !(drag.current?.kind === "bound" && drag.current.edge === edge) ? "none" : "flex", position: "absolute", left: gripPositions[edge], top: RULER + noteHeight, width: 48, height: RANGE_STRIP, touchAction: "none", cursor: "ew-resize", backgroundColor: "transparent", outlineStyle: "none" } as never} />)}
+            <Boundary gripX={gripPositions.start + 24} x={Math.max(0, Math.min(plotWidth, timeToX(shownBounds.start, view, plotWidth)))} palette={palette} active={focusedBoundary === "start" || drag.current?.kind === "range" || (drag.current?.kind === "bound" && drag.current.edge === "start")} edge="start" time={shownBounds.start} />
+            <Boundary gripX={gripPositions.end + 24} x={Math.max(0, Math.min(plotWidth, timeToX(shownBounds.end, view, plotWidth)))} palette={palette} active={focusedBoundary === "end" || drag.current?.kind === "range" || (drag.current?.kind === "bound" && drag.current.edge === "end")} edge="end" time={shownBounds.end} />
+            {(["start", "end"] as const).map(edge => <Pressable key={edge} ref={node => { if (edge === "start") startHandle.current = node as unknown as HTMLElement; else endHandle.current = node as unknown as HTMLElement; }} accessibilityRole="button" accessibilityLabel={`Drag ${edge} marker; left and right arrows adjust`} dataSet={{ boundaryHandle: edge }} onFocus={() => setFocusedBoundary(edge)} onBlur={() => setFocusedBoundary(null)} style={{ display: "flex", position: "absolute", left: gripPositions[edge], top: RULER + noteHeight, width: 48, height: RANGE_STRIP, touchAction: "none", cursor: "ew-resize", backgroundColor: "transparent", outlineStyle: "none" } as never} />)}
           </> : null}
           {marquee ? <WebView pointerEvents="none" dataSet={{ marquee: "true" }} style={{ position: "absolute", left: marquee.x, top: RULER + marquee.y, width: marquee.width, height: marquee.height, borderWidth: 1, borderStyle: "dashed", borderColor: palette.ink, backgroundColor: dark ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.06)" }} /> : null}
           {snapTarget !== null ? <WebView pointerEvents="none" dataSet={{ snapTarget: snapTarget.toString() }} style={{ position: "absolute", left: timeToX(snapTarget, view, plotWidth), top: 0, bottom: 0, width: 2, backgroundColor: palette.accent }} /> : null}
