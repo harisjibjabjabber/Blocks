@@ -37,6 +37,8 @@ export class WebInstrumentRack {
     const config = this.sources.get(source);
     this.banks[config?.id ?? EP_PRESET.id].play(time, message, config?.envelope);
   }
+  setSourceVolume(source: VoiceSource, volume: number): void { for (const bank of Object.values(this.banks)) bank.setSourceVolume(source, volume); }
+  releasePitch(source: VoiceSource, channel: number, note: number, time: number): void { for (const bank of Object.values(this.banks)) bank.releasePitch(source, channel, note, time); }
   releaseSource(source: VoiceSource, time: number, seconds?: number): void {
     for (const bank of Object.values(this.banks)) bank.releaseSource(source, time, seconds);
     this.controllers.delete(source);

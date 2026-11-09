@@ -31,3 +31,14 @@ Independent UX passed the Synth panel at 320, 390 and 1440px, including pointer/
 Takes currently remain in memory, so refreshing clears the session. Group transport, physical phone/Fold and MIDI/pedal testing, listening/latency and deployed audiovisual acceptance remain separate. Capture-prefix inference is still heuristic: an isolated long internal rest can still look like a new phrase, and very long uniform streams without releases retain a bounded-window fallback. These fixes remove known truncation/tape bugs without claiming to recognise user intent reliably. Native remains fixed EP; the new synth and ADSR are web-only. Sampler instruments are future work. Main and deployment remain unchanged.
 
 Current follow-up fixes: start/end grips have separate 48px targets even for a narrow edge range; active grips stay visible when dragged beyond the plot and can be re-grabbed afterward. Capture applies the selected 4/8-bar length as a soft start preference near a played attack, while retaining full source tape.
+
+
+## Editor zoom and immediate layer editing follow-up
+
+The user-facing snap default is 1/4. The editor exposes Time and Keys sliders directly above the roll; the time ruler and keyboard axis retain wheel/pinch gestures. Selecting a snap division reveals its lattice at readable spacing, including triplets; selecting a coarser division restores enough context to show its lines. Manual zoom remains free. White-key rows are lighter than black-key rows in both themes.
+
+Note edits with unchanged timing replace future events in the current audio cycle while preserving its epoch and other layers. Deleted/changed pitches release promptly. Events already passed by the playhead play on its next pass; the scheduler keeps its existing 25ms audio lookahead. Duration/origin/stretch changes still use the seam path. Per-block Volume is available in layer actions, with a dedicated source gain and a short ramp; it does not rewrite velocities or change another layer. Web only.
+
+The main view exposes Cut range directly and uses compact minus/plus/Fit controls. Captured clips cannot pan or zoom beyond their available extent; after Cut, that extent is the trimmed loop and the Before loop prefix disappears. The editor retains free navigation and source recovery. Undo restores the previous trimmed-view state with notes and bounds. Takes remain in memory.
+
+Validation: 213 JavaScript tests, types and build passed; focused headless checks cover quarter default, fine triplet autozoom, pitch slider, 320/390/1440 controls, layer volume access and main cut/fit limits. The editor regression suite is rerun after updating its main zoom gesture to the new controls. Physical-device listening remains unverified.

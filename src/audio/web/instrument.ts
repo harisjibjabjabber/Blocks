@@ -27,6 +27,7 @@ interface Voice {
 export class WebElectricPiano {
   get presetId(): string { return this.preset.id; }
   private readonly master: GainNode;
+  private readonly sourceOutputs = new Map<VoiceSource, GainNode>();
   private readonly voices: Voice[] = [];
   private readonly pedal = new Map<string, boolean>();
   private readonly expression = new Map<string, number>();
@@ -77,6 +78,20 @@ export class WebElectricPiano {
     }
   }
 
+  setSourceVolume(source: VoiceSource, volume: number): void {
+    let output = this.sourceOutputs.get(source);
+    if (!output) { output = this.context.createGain(); output.gain.value = 1; output.connect(this.master); this.sourceOutputs.set(source, output); }
+    output.gain.cancelScheduledValues(this.context.currentTime);
+    output.gain.setValueAtTime(output.gain.value, this.context.currentTime);
+    output.gain.linearRampToValueAtTime(Math.max(0, Math.min(1, volume)), this.context.currentTime + 0.015);
+  }
+  releasePitch(source: VoiceSource, channel: number, note: number, time: number): void {
+    for (const voice of this.voices.filter(v => v.source === source && v.channel === channel && v.note === note)) this.release(voice, time, 0.015);
+  }
+  private outputFor(source: VoiceSource): GainNode {
+    if (!this.sourceOutputs.has(source)) this.setSourceVolume(source, 1);
+    return this.sourceOutputs.get(source)!;
+  }
   releaseSource(source: VoiceSource, time: number, releaseSeconds?: number): void {
     for (const voice of this.voices.filter((item) => item.source === source)) {
       this.release(voice, Math.max(time, this.context.currentTime), releaseSeconds ?? (voice.pedal ? voice.pedalReleaseSeconds : voice.releaseSeconds));
@@ -155,7 +170,7 @@ export class WebElectricPiano {
     tremoloGain.connect(tremoloOffset.gain);
     tremoloOffset.gain.setValueAtTime(1 - this.preset.tremoloDepth, time);
     amp.connect(tremoloOffset);
-    tremoloOffset.connect(this.master);
+    tremoloOffset.connect(this.outputFor(source));
     const peak = 0.2 * velocityGain * ((this.expression.get(source + ":" + channel) ?? 127) / 127);
     amp.gain.setValueAtTime(0.0001, time);
     amp.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), time + shape.attackMs / 1000);

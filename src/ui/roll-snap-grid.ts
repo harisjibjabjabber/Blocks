@@ -18,3 +18,12 @@ export function visibleSnapGrid(view: TimeWindow, grid: KnownGrid | null, divisi
   }
   return points;
 }
+
+/** Reveal the selected lattice at usable spacing without changing musical bounds. */
+export function snapDetailSpan(view: TimeWindow, grid: KnownGrid | null, division: SnapDivision, width: number): bigint | null {
+  const step = snapStep(grid, division);
+  if (step === null || step <= 0n || width <= 0) return null;
+  const span = view.end - view.start;
+  const readable = BigInt(Math.max(50_000, Math.floor(Number(step) * width / 18)));
+  return span > readable ? readable : span < step * 2n ? step * 2n : null;
+}

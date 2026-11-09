@@ -95,6 +95,7 @@ export function createNativeEngine() {
     // The native bridge currently implements only the fixed Warm EP voice.
     instruments: INSTRUMENTS.filter(item => item.id === EP_PRESET.id),
     setLiveInstrument(_id: string, _envelope?: SynthEnvelope): InstrumentId { return EP_PRESET.id; },
+    setLayerVolume(_layerId: string, _volume: number): void {},
     setLayerInstrument(_layerId: string, _id: string, _envelope?: SynthEnvelope): InstrumentId { return EP_PRESET.id; },
     setAuditionInstrument(_id: string, _envelope?: SynthEnvelope): InstrumentId { return EP_PRESET.id; },
     capabilities: { audition: false, soundingPitches: false, synthEnvelope: false },

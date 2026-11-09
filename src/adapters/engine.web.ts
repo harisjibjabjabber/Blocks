@@ -23,6 +23,7 @@ export interface SketchEngine {
   presetName: string;
   instruments: readonly InstrumentDescriptor[];
   setLiveInstrument(id: string, envelope?: SynthEnvelope): InstrumentId;
+  setLayerVolume(layerId: string, volume: number): void;
   setLayerInstrument(layerId: string, id: string, envelope?: SynthEnvelope): InstrumentId;
   setAuditionInstrument(id: string, envelope?: SynthEnvelope): InstrumentId;
   capabilities: { audition: boolean; soundingPitches: boolean; synthEnvelope: boolean };
@@ -309,7 +310,24 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
       loopLayer(id, events, stretch, durationSec, originUs);
       return;
     }
-    // Repeated edits replace this pending copy. Preview never reaches the engine.
+    const nextStretch = stretch > 0 ? stretch : 1;
+    const nextOrigin = originUs ?? slot.originUs;
+    if (durationSec === slot.duration && nextStretch === slot.stretch && nextOrigin === slot.originUs) {
+      // Preserve the shared audio epoch; only replace events ahead of the cursor.
+      const now = context.currentTime;
+      const signature = (items: PlaybackEvent[], channel: number, pitch: number) => items.filter(e => e.channel === channel && e.note === pitch && (e.kind === "note-on" || e.kind === "note-off")).map(e => `${e.kind}:${e.scheduleElapsed}:${e.velocity}`).join("|");
+      for (const event of slot.events.filter(e => e.kind === "note-on")) {
+        if (signature(slot.events, event.channel, event.note) !== signature(events, event.channel, event.note)) piano.releasePitch(layerSource(id), event.channel, event.note, now);
+      }
+      slot.events = events.slice(); slot.pending = undefined;
+      // The scheduler has already submitted up to 25ms to Web Audio. Preserve
+      // unchanged queued events and avoid duplicate attacks inside that horizon.
+      slot.planned = planSlot(slot, slot.cycleStart).filter(event => event.audioTimeSec > now + 0.025);
+      slot.index = 0;
+      pumpLayers();
+      return;
+    }
+    // Timing changes still commit at a seam; note edits use the running cycle.
     slot.pending = { events: events.slice(), stretch: stretch > 0 ? stretch : 1, duration: durationSec, originUs: originUs ?? slot.originUs };
   }
 
@@ -338,6 +356,7 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
       piano.configure("touch", id, envelope);
       return piano.configure("midi", id, envelope);
     },
+    setLayerVolume(id, volume) { piano.setSourceVolume(layerSource(id), volume); },
     setLayerInstrument(id, preset, envelope) { return piano.configure(layerSource(id), preset, envelope); },
     setAuditionInstrument(id, envelope) { return auditionPiano.configure("audition", id, envelope); },
     capabilities: { audition: true, soundingPitches: true, synthEnvelope: true },

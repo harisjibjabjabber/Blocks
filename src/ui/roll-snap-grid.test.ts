@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { visibleSnapGrid } from "./roll-snap-grid";
+import { snapDetailSpan, visibleSnapGrid } from "./roll-snap-grid";
 import { snapTime } from "./snap";
 import type { KnownGrid } from "./roll-time";
 
@@ -32,5 +32,18 @@ describe("visible snap divisions", () => {
     expect(visibleSnapGrid({ start: 0n, end: 1_000_000n }, null, division, 500)).toEqual([]);
     expect(visibleSnapGrid({ start: 0n, end: 1_000_000n }, grid, { kind: "off" }, 500)).toEqual([]);
     expect(visibleSnapGrid({ start: 0n, end: 0n }, grid, division, 500)).toEqual([]);
+  });
+});
+
+describe("automatic editor detail", () => {
+  it("reveals fine and triplet grids without changing their musical lattice", () => {
+    for (const division of [{ kind: "note", numerator: 1, denominator: 64 }, { kind: "note", numerator: 1, denominator: 16, triplet: true }] as const) {
+      const view = { start: 0n, end: 8_000_000n };
+      const span = snapDetailSpan(view, grid, division, 280)!;
+      expect(span).toBeLessThan(view.end);
+      expect(visibleSnapGrid({ start: 0n, end: span }, grid, division, 280).length).toBeGreaterThan(10);
+    }
+    expect(snapDetailSpan({ start: 0n, end: 100_000n }, grid, { kind: "note", numerator: 1, denominator: 4 }, 280)).toBe(1_000_000n);
+    expect(snapDetailSpan({ start: 0n, end: 8_000_000n }, grid, { kind: "off" }, 280)).toBeNull();
   });
 });

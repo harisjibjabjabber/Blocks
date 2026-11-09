@@ -96,7 +96,7 @@ export function Editor(p: EditorProps) {
     <View style={s.row}>{button("← Earlier", () => changeView("earlier"), { flex: true })}{button("Later →", () => changeView("later"), { flex: true })}</View>
     <View style={s.row}>{button("↓ Pitches", () => changeView("lower"), { flex: true })}{button("↑ Pitches", () => changeView("higher"), { flex: true })}</View>
   </View>;
-  const gridHeight = Math.max(80, rollViewportHeight > 0 ? rollViewportHeight - (ROLL_RULER_HEIGHT + 104) : height - (desktop ? 390 : 484));
+  const gridHeight = Math.max(80, rollViewportHeight > 0 ? rollViewportHeight - (ROLL_RULER_HEIGHT + 152) : height - (desktop ? 390 : 484));
   return <View dataSet={{ editor: "storyboard-18", captureBpm: p.captureBpm === null ? "" : String(p.captureBpm) }} style={[s.page, { backgroundColor: c.bg }]}>
     <View style={[s.header, { borderColor: c.line }]}>
       {button("‹ Play", p.onBack, { aria: "Back to Play" })}

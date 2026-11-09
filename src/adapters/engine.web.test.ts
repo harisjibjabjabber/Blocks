@@ -297,6 +297,37 @@ describe("web engine adapter", () => {
     } finally { vi.useRealTimers(); }
   });
 
+  it("routes volume to its own layer without changing note velocity", () => {
+    const volume = vi.spyOn(WebInstrumentRack.prototype, "setSourceVolume");
+    const context = new FakeContext(); const engine = createWebEngine({ createContext: () => context as unknown as AudioContext });
+    engine.setLayerVolume("quiet", 0.25); engine.setLayerVolume("muted", 0);
+    expect(volume).toHaveBeenCalledWith("replay:quiet", 0.25);
+    expect(volume).toHaveBeenCalledWith("replay:muted", 0);
+    volume.mockRestore();
+  });
+
+  it("plays edits in the current cycle without shifting either layer", async () => {
+    vi.useFakeTimers();
+    try {
+      const context = new FakeContext(); context.setState("running"); context.currentTime = 10;
+      const engine = createWebEngine({ createContext: () => context as unknown as AudioContext });
+      const on = { ...note(), scheduleElapsed: 1_200_000n };
+      const off = { ...on, kind: "note-off" as const, velocity: 0, scheduleElapsed: 1_700_000n };
+      engine.loopLayer("edit", [], 1, 2, 0n); engine.loopLayer("other", [], 1, 2, 0n);
+      context.currentTime = 11;
+      const phase = engine.transport("edit").positionSeconds;
+      engine.updateLayer("edit", [on, off], 1, 2, 0n);
+      expect(engine.transport("edit").positionSeconds).toBe(phase);
+      context.currentTime = 11.25; await vi.advanceTimersByTimeAsync(10);
+      expect(engine.soundingPitches("edit")).toEqual([60]);
+      expect(engine.transport("other").positionSeconds).toBeCloseTo(engine.transport("edit").positionSeconds!);
+      engine.updateLayer("edit", [], 1, 2, 0n);
+      context.currentTime = 11.31;
+      expect(engine.soundingPitches("edit")).toEqual([]);
+      engine.stopReplay();
+    } finally { vi.useRealTimers(); }
+  });
+
   it("applies edited notes at the next seam without resetting phase, including erase-all", async () => {
     vi.useFakeTimers();
     try {

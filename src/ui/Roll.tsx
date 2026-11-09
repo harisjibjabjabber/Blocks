@@ -4,7 +4,8 @@ import { beatTicks, framePhrase, musicalPosition, noteBox, panWindow, pitchLabel
 import type { TransportSnapshot } from "../audio/web/transport";
 import { type RollNote } from "./roll-notes";
 import { DEFAULT_SNAP, snapStep, snapTime, snapMoveStart, snapIndexAt, snapPointAt, type SnapDivision } from "./snap";
-import { visibleSnapGrid } from "./roll-snap-grid";
+import { TimelineZoom } from "./TimelineZoom";
+import { snapDetailSpan, visibleSnapGrid } from "./roll-snap-grid";
 import { boundedSnap, chordSelection, doubleTapDeletes, isBlackKey, keyShape, moveSelection, rangeGripPositions, nextDrawId, notesInMarquee, rangeFromDrag, resizeSelection, scaleSelectionVelocity, snapRangeStart, RollTapTracker, RollTransaction, type RollTap, type SelectionBox } from "./roll-interaction";
 import type { Palette } from "./theme";
 
@@ -501,6 +502,13 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
   useEffect(() => { if (drag.current) handlers.current.cancel(); }, [notes]);
   useEffect(() => { if (!canAudition) stopAuditions(); }, [canAudition]);
 
+  // Only refocus for a division choice or editor entry; manual zoom stays free.
+  useEffect(() => {
+    if (mode !== "room") return;
+    const span = snapDetailSpan(view, grid, snapDivision, plotWidth);
+    if (span !== null) onWindow(zoomWindow(view, Number(span) / Number(view.end - view.start), selected?.start ?? bounds?.start ?? view.start, 50_000n, 120_000_000n));
+  }, [snapIdentity, mode, plotWidth, grid?.bpm]);
+
   function refocus() { cancelAll(); setTopPitch(topOf(notes)); setCompactTop(null); setCompactRow(null); if (mode === "room") setRoomRow(fitRoomRow(notes, noteHeight)); onWindow(bounds ? framePhrase(historyStart, bounds.start, bounds.end) : frameOf(notes, historyStart)); }
   function zoom(factor: number) { cancelAll(); onWindow(zoomWindow(view, factor, view.start + (view.end - view.start) / 2n, 50_000n, 120_000_000n)); }
   function editSelected(change: (note: RollNote) => RollNote) {
@@ -547,6 +555,10 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
   });
   return (
     <WebView accessibilityLabel={mode === "room" ? "Piano roll" : "Take ribbon"} style={{ marginTop: showChrome ? 8 : 0 }}>
+      {mode === "room" ? <WebView style={{ flexDirection: "row", gap: 12, height: 48 }}>
+        <WebView style={{ flex: 1, minWidth: 0 }}><TimelineZoom id="editor-time-zoom" label="Time" fitLabel="Fit" fitAria="Fit editor loop" value={Math.max(0, Math.min(100, 100 * Math.log(120_000_000 / Number(view.end - view.start)) / Math.log(2400)))} onChange={value => zoom(120_000_000 * Math.pow(1 / 2400, value / 100) / Number(view.end - view.start))} onFit={refocus} palette={palette} /></WebView>
+        <WebView style={{ flex: 1, minWidth: 0 }}><TimelineZoom id="editor-pitch-zoom" label="Keys" fitLabel="Fit" fitAria="Fit editor pitches" value={(roomRow - 2) / 46 * 100} onChange={value => { cancelAll(); const next = 2 + value / 100 * 46; const middle = pitchTop - noteHeight / rowHeight / 2; setTopPitch(Math.max(12, Math.min(127, Math.round(middle + noteHeight / next / 2)))); setRoomRow(next); }} onFit={() => { setTopPitch(topOf(notes)); setRoomRow(fitRoomRow(notes, noteHeight)); }} palette={palette} /></WebView>
+      </WebView> : null}
       {showChrome ? <>
       <WebView style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <Text style={{ color: palette.muted, fontSize: 12, width: mode === "room" ? "100%" : undefined }}>{grid ? `${grid.bpm} BPM · ${grid.beatsPerBar}/4${grid.provisional ? " · proposed" : ""}` : "Seconds"}</Text>
@@ -583,7 +595,7 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
           </WebView>)}
         </WebView>
         <WebView ref={node => { host.current = node as unknown as HTMLElement; }} dataSet={{ roll: "true", rulerHeight: String(RULER), gridHeight: String(noteHeight), gridBpm: String(grid?.bpm ?? ""), activeRange: drag.current?.kind === "bound" ? drag.current.edge ?? "" : "", viewStart: view.start.toString(), viewEnd: view.end.toString() }} onLayout={event => { const next = host.current?.clientWidth || event.nativeEvent.layout.width; if (next > 0 && Math.abs(next - plotWidth) > 1) setPlotWidth(next); }} style={{ position: "relative", flex: 1, height: RULER + noteHeight + (bounds ? RANGE_STRIP : 0) + 2, backgroundColor: palette.plot, borderRadius: showChrome ? 8 : 0, borderWidth: 1, borderColor: palette.line, overflow: "hidden", touchAction: "none", userSelect: "none" } as never}>
-          {pitches.map(pitch => <WebView key={`row-${pitch}`} pointerEvents="none" style={{ position: "absolute", left: 0, right: 0, top: RULER + pitchToY(pitch, pitchTop, rowHeight), height: rowHeight, backgroundColor: isBlackKey(pitch) ? (dark ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.03)") : "transparent", borderBottomWidth: 1, borderBottomColor: dark ? "rgba(255,255,255,0.035)" : "rgba(0,0,0,0.04)" }} />)}
+          {pitches.map(pitch => <WebView key={`row-${pitch}`} dataSet={{ gridPitch: String(pitch) }} pointerEvents="none" style={{ position: "absolute", left: 0, right: 0, top: RULER + pitchToY(pitch, pitchTop, rowHeight), height: rowHeight, backgroundColor: isBlackKey(pitch) ? (dark ? "rgba(0,0,0,0.18)" : "rgba(0,0,0,0.06)") : (dark ? "rgba(255,255,255,0.045)" : "transparent"), borderBottomWidth: 1, borderBottomColor: dark ? "rgba(255,255,255,0.035)" : "rgba(0,0,0,0.04)" }} />)}
           {snapLines.map(time => <WebView key={`snap-${time}`} pointerEvents="none" dataSet={{ snapGrid: time.toString() }} style={{ position: "absolute", left: timeToX(time, view, plotWidth), top: RULER, bottom: 0, width: 1, backgroundColor: palette.muted, opacity: 0.30 }} />)}
           {marks.map(mark => <React.Fragment key={mark.kind + mark.time.toString()}>
             {mark.kind !== "beat" ? <WebView pointerEvents="none" dataSet={{ gridKind: mark.kind }} style={{ position: "absolute", left: timeToX(mark.time, view, plotWidth), top: RULER, bottom: 0, width: mark.kind === "bar" ? 2 : 1, backgroundColor: mark.kind === "bar" ? palette.ink : palette.muted, opacity: mark.tentative ? 0.4 : mark.kind === "bar" ? 0.85 : 0.55 }} /> : null}
