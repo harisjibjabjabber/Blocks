@@ -8,6 +8,12 @@ try {
  await b.send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:false});
  await b.navigate(process.env.BLOCKS_PROOF_URL || 'http://127.0.0.1:41713/'); await delay(250);
  assert.equal(await b.evaluate(`document.querySelector('[aria-label="Capture snap division"]').value`),'1/4');
+ await b.evaluate(`document.querySelector('[aria-label="Fit clip"]').click()`);await delay(100);
+ assert.equal(await b.evaluate(`Number(document.querySelector('[data-roll]').dataset.viewEnd)-Number(document.querySelector('[data-roll]').dataset.viewStart)`),8000000);
+ assert.equal(await b.evaluate(`document.querySelector('[data-boundary-handle="start"]').getBoundingClientRect().width`),48);
+ await b.evaluate(`document.querySelector('[aria-label="Zoom in time"]').click()`);await delay(100);
+ await b.evaluate(`document.querySelector('[aria-label="Fit clip"]').click()`);await delay(100);
+ assert.equal(await b.evaluate(`Number(document.querySelector('[data-roll]').dataset.viewEnd)-Number(document.querySelector('[data-roll]').dataset.viewStart)`),8000000);
  await b.evaluate(`document.querySelector('[aria-label="Draw MIDI"]').click()`);await delay(250);
  await b.evaluate(`document.querySelector('[aria-label="Editor zoom"]').click()`);await delay(100);
  const before=await b.evaluate(`(()=>{const r=document.querySelector('[data-roll]');return +r.dataset.viewEnd-+r.dataset.viewStart})()`);

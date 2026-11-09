@@ -828,22 +828,22 @@ export default function App() {
     />}
   />{soundModal}</>;
 
+  const emptyTapeFrame = rangeForBars(0n, liveGrid, loopBars ?? 4) ?? { start: 0n, end: 8_000_000n };
   const historyItem = rangeMode ? take : null;
   const historyGrid = historyItem?.rollGrid ?? liveGrid;
   const historyFloor = historyItem ? (historyItem.mainExtent ? historyItem.mainExtent.start : takeStart(historyItem)) : ribbon[0]?.scheduleElapsed ?? 0n;
   const historyBounds = historyItem ? loopWindow(historyItem.overlay) : liveBounds;
-  const requestedHistoryFrame = historyItem ? rollWindow ?? editorFrame(historyFloor, historyBounds.start, historyBounds.end, historyGrid, 2) : liveFrame;
+  const requestedHistoryFrame = historyItem ? rollWindow ?? editorFrame(historyFloor, historyBounds.start, historyBounds.end, historyGrid, 2) : ribbon.length ? liveFrame : captureView && captureView.end > captureView.start ? captureView : emptyTapeFrame;
   const allHistoryEnd = historyItem ? historyItem.rollNotes.reduce((end, note) => note.end > end ? note.end : end, historyItem.cut.loop.end > historyBounds.end ? historyItem.cut.loop.end : historyBounds.end) : newest > historyBounds.end ? newest : historyBounds.end;
-  const historyEnd = historyItem?.mainExtent ? historyItem.mainExtent.end : allHistoryEnd;
+  const historyEnd = historyItem?.mainExtent ? historyItem.mainExtent.end : !historyItem && !ribbon.length ? emptyTapeFrame.end : allHistoryEnd;
   const clampHistory = (next: TimeWindow): TimeWindow => {
-    if (!historyItem) return next;
     const available = historyEnd > historyFloor ? historyEnd - historyFloor : 1n;
     const span = next.end - next.start < available ? next.end - next.start : available;
     const start = next.start < historyFloor ? historyFloor : next.start + span > historyEnd ? historyEnd - span : next.start;
     return { start, end: start + span };
   };
   const historyFrame = clampHistory(requestedHistoryFrame);
-  const setHistoryWindow = (next: TimeWindow) => historyItem ? setRollWindow(clampHistory(next)) : setCaptureView(next);
+  const setHistoryWindow = (next: TimeWindow) => historyItem ? setRollWindow(clampHistory(next)) : setCaptureView(clampHistory(next));
   const zoomMax = Math.max(1, Number(historyEnd - historyFloor));
   const zoomMin = Math.min(125_000, zoomMax);
   const zoomDetail = Math.max(0, Math.min(100, 100 * Math.log(zoomMax / Math.max(1, Number(historyFrame.end - historyFrame.start))) / (Math.log(zoomMax / zoomMin) || 1)));
@@ -881,7 +881,7 @@ export default function App() {
           </View>
           {captureCustomSnap && <View style={styles.row}><TextInput accessibilityLabel="Capture custom snap fraction" value={captureFraction} onChangeText={setCaptureFraction} style={{ color: palette.ink, borderColor: palette.line, borderWidth: 1, minHeight: 48, padding: 10, minWidth: 90 }} />{button("Apply snap", () => { const match = captureFraction.trim().match(/^(\d+)\s*\/\s*(\d+)$/); const numerator = Number(match?.[1]), denominator = Number(match?.[2]); if (!match || numerator < 1 || numerator > 128 || denominator < 1 || denominator > 1024) { setMessage("Enter a fraction, such as 3/8 or 1/12."); return; } setSnapDivision({ kind: "note", numerator, denominator }); setCaptureCustomSnap(false); })}</View>}
           {panel === "grid" && <View style={{ gap: 8, marginBottom: 8 }}><SelectControl label="Capture beats per bar" value={meterText} options={[2,3,4,5,6,7,8].map(value => ({ value: String(value), label: `${value}/4` }))} onChange={value => { setMeterText(value); const beatsPerBar=Number(value); setEditorGridSettings(settings => ({ ...settings, beatsPerBar })); if (rangeMode && take) setTakes(items => items.map(item => item.id === take.id ? { ...item, rollGrid: { ...(item.rollGrid ?? liveGrid), beatsPerBar } } : item)); }} palette={palette} />{button("Done", () => setPanel(null))}</View>}
-          {rangeMode && take ? <Roll notes={take.rollNotes} timeWindow={historyFrame} bounds={loopWindow(take.overlay)} viewExtent={{ start: historyFloor, end: historyEnd }} ceiling={historyEnd} historyStart={historyFloor} grid={take.rollGrid} palette={palette} mode="compact" tool="select" selectedId={null} ghosts={[]} hitPx={48} gridHeight={historyHeight} viewAction={historyViewAction} showChrome={false} onWindow={setHistoryWindow} onBoundsCommit={next => commitBounds(take,next)} onSelect={() => undefined} onCommitNotes={() => undefined} snapDivision={snapDivision} snapMode="grid" readTransport={() => engine.transport(take.id)} /> : <Roll notes={liveNotes} timeWindow={liveFrame} bounds={ribbon.length ? liveBounds : null} ceiling={liveFrame.end} historyStart={ribbon[0]?.scheduleElapsed ?? 0n} grid={liveGrid} palette={palette} mode="compact" tool="select" selectedId={null} ghosts={[]} hitPx={48} gridHeight={historyHeight} viewAction={historyViewAction} showChrome={false} onWindow={setCaptureView} onBoundsCommit={next => { setCaptureRangeUndo({ bounds: captureRange }); setCaptureRange(next); setCaptureView(liveFrame); }} onSelect={() => undefined} onCommitNotes={() => undefined} snapDivision={snapDivision} snapMode="grid" />}
+          {rangeMode && take ? <Roll notes={take.rollNotes} timeWindow={historyFrame} bounds={loopWindow(take.overlay)} viewExtent={{ start: historyFloor, end: historyEnd }} ceiling={historyEnd} historyStart={historyFloor} grid={take.rollGrid} palette={palette} mode="compact" tool="select" selectedId={null} ghosts={[]} hitPx={48} gridHeight={historyHeight} viewAction={historyViewAction} showChrome={false} onWindow={setHistoryWindow} onBoundsCommit={next => commitBounds(take,next)} onSelect={() => undefined} onCommitNotes={() => undefined} snapDivision={snapDivision} snapMode="grid" readTransport={() => engine.transport(take.id)} /> : <Roll notes={liveNotes} viewExtent={{ start: historyFloor, end: historyEnd }} timeWindow={historyFrame} bounds={ribbon.length ? liveBounds : emptyTapeFrame} ceiling={historyEnd} historyStart={ribbon[0]?.scheduleElapsed ?? 0n} grid={liveGrid} palette={palette} mode="compact" tool="select" selectedId={null} ghosts={[]} hitPx={48} gridHeight={historyHeight} viewAction={historyViewAction} showChrome={false} onWindow={setHistoryWindow} onBoundsCommit={next => { setCaptureRangeUndo({ bounds: captureRange }); setCaptureRange(next); setCaptureView(liveFrame); }} onSelect={() => undefined} onCommitNotes={() => undefined} snapDivision={snapDivision} snapMode="grid" />}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6, height: 48 }}>
             {rangeMode && take && button("Cut range", () => cutRange(take))}
             <View style={{ flex: 1 }} />
