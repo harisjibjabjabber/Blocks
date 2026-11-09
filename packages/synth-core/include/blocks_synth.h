@@ -4,8 +4,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* Original Blocks DSP spike. ABI 1. Physical-unit parameters, not MIDI CCs. */
-#define BS_ABI_VERSION 1u
+/* Original Blocks DSP spike. ABI 2. Physical-unit parameters, not MIDI CCs. */
+#define BS_ABI_VERSION 2u
 #define BS_MAX_VOICES 16u
 typedef struct bs_synth bs_synth;
 typedef enum bs_parameter_id {
@@ -14,7 +14,7 @@ typedef enum bs_parameter_id {
   BS_ATTACK_BEND=8, BS_DECAY_BEND=9, BS_RELEASE_BEND=10,
   BS_CUTOFF=11, BS_DRIVE=12, BS_DRIFT_CENTS=13, BS_DRIFT_HZ=14,
   BS_PITCH_DROP_CENTS=15, BS_PITCH_DROP_TIME=16, BS_PITCH_DROP_BEND=17,
-  BS_PARAMETER_COUNT=18
+  BS_FULLNESS=18, BS_PARAMETER_COUNT=19
 } bs_parameter_id;
 typedef enum bs_mapping { BS_LINEAR=0, BS_LOGARITHMIC=1 } bs_mapping;
 typedef struct bs_parameter_descriptor {
@@ -45,7 +45,10 @@ void bs_reset(bs_synth *synth); /* reset voices, pedal and deterministic RNG seq
 int bs_set_parameter(bs_synth *synth, uint32_t id, float physical);
 float bs_get_parameter(const bs_synth *synth, uint32_t id);
 int bs_get_patch(const bs_synth *synth, bs_patch *patch);
-int bs_set_patch(bs_synth *synth, const bs_patch *patch); /* bad version/nonfinite: atomic reject */
+/* v2 writes/reads 19 values. Setter also accepts a v1 prefix (18 values),
+ * supplying Fullness=0 without reading a nineteenth value. Getter always v2.
+ * Unknown versions/nonfinite input: atomic reject. */
+int bs_set_patch(bs_synth *synth, const bs_patch *patch);
 void bs_note_on(bs_synth *synth, uint32_t channel, uint32_t key, float velocity);
 void bs_note_off(bs_synth *synth, uint32_t channel, uint32_t key);
 void bs_sustain(bs_synth *synth, uint32_t channel, float down);

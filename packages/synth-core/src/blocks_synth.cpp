@@ -1,4 +1,5 @@
 #include "blocks_synth.h"
+#include "fullness.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -25,10 +26,11 @@ constexpr bs_parameter_descriptor descriptors[] = {
  {BS_DRIFT_HZ,"Pitch drift speed","Hz",.05f,10,.5f,BS_LOGARITHMIC},
  {BS_PITCH_DROP_CENTS,"Pitch drop amount","cents",0,2400,0,BS_LINEAR},
  {BS_PITCH_DROP_TIME,"Pitch drop time","seconds",.001f,4,.12f,BS_LOGARITHMIC},
- {BS_PITCH_DROP_BEND,"Pitch drop bend","octaves",-2,2,0,BS_LINEAR}
+ {BS_PITCH_DROP_BEND,"Pitch drop bend","octaves",-2,2,0,BS_LINEAR},
+ {BS_FULLNESS,"Fullness","ratio",0,1,0,BS_LINEAR}
 };
 static_assert(sizeof(bs_event)==24 && offsetof(bs_event,value)==20,"ABI event layout");
-static_assert(sizeof(bs_patch)==76,"ABI patch layout");
+static_assert(sizeof(bs_patch)==80,"ABI patch layout");
 double clamp(double x,double lo,double hi) { return std::max(lo,std::min(hi,x)); }
 double bend(double progress,double curve) { return std::pow(clamp(progress,0,1),std::exp2(curve)); }
 // Original implementation of the standard polynomial band-limited step correction.
@@ -50,9 +52,10 @@ enum class Stage { attack,decay,sustain,release };
 struct Voice {
  bool active=false,held=false,pedal=false; uint32_t channel=0,key=0,rng=1; uint64_t order=0;
  Stage stage=Stage::attack; double phase1=0,phase2=0,age=0,stageAge=0,level=0,releaseLevel=0;
- double frequency=440,velocity=1,filter=0,panLeft=.7071,panRight=.7071;
+ double frequency=440,velocity=1,filter=0,panLeft=.7071,panRight=.7071,bodyLevel=1;
  double attack=.01,decay=.3,sustain=.6,release=.3,attackBend=0,decayBend=0,releaseBend=0;
  double drop=0,dropTime=.1,dropBend=0,drift=0,driftTarget=0,driftAge=0;
+ blocks_detail::FullnessPath fullness;
 };
 void release(Voice &voice) {
  if(voice.stage==Stage::release) return;
@@ -75,7 +78,7 @@ double envelope(Voice &v,double dt) {
 }
 
 struct bs_synth {
- double rate=48000,dt=1.0/48000,smoothing=1-std::exp(-1.0/(.005*48000));
+ double rate=48000,dt=1.0/48000,smoothing=1-std::exp(-1.0/(.005*48000)),dcPole=std::exp(-2*pi*10/48000);
  std::array<float,BS_PARAMETER_COUNT> parameters{};
  std::array<double,BS_PARAMETER_COUNT> smooth{};
  std::array<Voice,BS_MAX_VOICES> voices{};
@@ -91,6 +94,7 @@ struct bs_synth {
   if(!v) v=&*std::min_element(voices.begin(),voices.end(),[](const Voice&a,const Voice&b){return a.order<b.order;});
   *v=Voice{}; v->active=v->held=true; v->channel=channel; v->key=key; v->order=++sequence;
   v->frequency=440*std::exp2((double(key)-69)/12); v->velocity=clamp(velocity,0,1);
+  v->bodyLevel=1/std::sqrt(1+(v->frequency/3000)*(v->frequency/3000));
   const double pan=.5+.15*(double(key%7)/3-1); v->panLeft=std::sqrt(1-pan); v->panRight=std::sqrt(pan);
   v->rng=0x9e3779b9u^uint32_t(sequence*747796405u)^uint32_t((key+channel*128)*2891336453u); if(!v->rng) v->rng=1;
   v->driftTarget=random_signed(v->rng);
@@ -119,8 +123,21 @@ struct bs_synth {
  }
  void sample(float &left,float &right) {
   for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]+=smoothing*(parameters[i]-smooth[i]);
+  if(parameters[BS_FULLNESS]==0 && smooth[BS_FULLNESS]<1e-12) smooth[BS_FULLNESS]=0;
   const double cutoff=std::min(smooth[BS_CUTOFF],rate*.45), filterAlpha=1-std::exp(-2*pi*cutoff*dt);
   const double driftSpeed=smooth[BS_DRIFT_HZ], driftAlpha=1-std::exp(-2*pi*driftSpeed*dt);
+  const double fullness=smooth[BS_FULLNESS];
+  // Four equal one-poles need ~2.299x per-pole cutoff for a combined -3dB
+  // corner near the requested cutoff at low frequencies. Clamp below Nyquist.
+  const double fatAlpha=fullness>0 ? 1-std::exp(-2*pi*std::min(cutoff*2.298959223,rate*.45)*dt) : 0;
+  const double preGain=fullness>0 ? 1.5*std::sqrt(smooth[BS_DRIVE]) : 0;
+  const double mix=smooth[BS_OSC_MIX],a=1-mix,w=smooth[BS_PULSE_WIDTH],pulseVariance=4*w*(1-w);
+  // Approximate RMS matching from ideal saw/pulse variance and covariance.
+  // This avoids rewarding Fullness mainly with gain, including other mix/drive settings.
+  const double dryRms=std::sqrt(std::max(1e-6,a*a/3+pulseVariance*(mix*mix-a*mix)));
+  const double fatRms=std::sqrt(std::max(1e-6,a*a/3+pulseVariance*(mix*mix+a*mix)));
+  const double shapedRms=std::min(1.0,fatRms*preGain);
+  const double bodyGain=fullness>0 ? std::tanh(dryRms*smooth[BS_DRIVE])/(shapedRms-shapedRms*shapedRms*shapedRms/3) : 0;
   double l=0,r=0;
   for(auto &v:voices) if(v.active) {
    v.driftAge+=dt; if(v.driftAge>=1/driftSpeed) { v.driftAge-=1/driftSpeed; v.driftTarget=random_signed(v.rng); }
@@ -128,12 +145,18 @@ struct bs_synth {
    const double drop=v.drop*(1-bend(v.age/v.dropTime,v.dropBend));
    const double frequency=v.frequency*std::exp2((v.drift*smooth[BS_DRIFT_CENTS]+drop)/1200);
    const double step1=clamp(frequency*dt,1e-9,.45),step2=clamp(frequency*std::exp2(smooth[BS_OSC2_DETUNE]/1200)*dt,1e-9,.45);
-   const double mix=smooth[BS_OSC_MIX];
-   const double raw=(1-mix)*saw(v.phase1,step1)+mix*pulse(v.phase2,step2,smooth[BS_PULSE_WIDTH]);
+   const double saw1=saw(v.phase1,step1),pulse2=pulse(v.phase2,step2,smooth[BS_PULSE_WIDTH]);
+   const double raw=(1-mix)*saw1+mix*pulse2;
+   // These waveforms have opposite fundamental polarity at equal phase.
+   // Only the Fullness path aligns them; the legacy dry mix stays untouched.
+   const double fatRaw=(1-mix)*saw1-mix*pulse2;
    v.phase1+=step1; v.phase1-=std::floor(v.phase1); v.phase2+=step2; v.phase2-=std::floor(v.phase2);
    v.filter+=filterAlpha*(raw-v.filter); if(std::abs(v.filter)<1e-20) v.filter=0;
    const double amplitude=envelope(v,dt)*v.velocity;
-   const double value=std::tanh(v.filter*smooth[BS_DRIVE])*amplitude*.25;
+   const double dry=std::tanh(v.filter*smooth[BS_DRIVE]);
+   // The zero branch retains the v1 signal path and operation order exactly.
+   const double body=fullness>0 ? bodyGain*v.bodyLevel*v.fullness.process(fatRaw,preGain,fatAlpha,dcPole) : 0;
+   const double value=(fullness>0 ? dry+(body-dry)*fullness : dry)*amplitude*.25;
    l+=value*v.panLeft; r+=value*v.panRight; v.age+=dt;
   }
   left=float(std::tanh(l)*smooth[BS_GAIN]); right=float(std::tanh(r)*smooth[BS_GAIN]);
@@ -158,7 +181,7 @@ bs_synth *bs_create(void) { return new(std::nothrow) bs_synth; }
 void bs_destroy(bs_synth *synth) { delete synth; }
 int bs_prepare(bs_synth *synth,double rate) {
  if(!synth||!std::isfinite(rate)||rate<8000||rate>384000) return 0;
- synth->rate=rate; synth->dt=1/rate; synth->smoothing=1-std::exp(-1/(.005*rate)); synth->reset(); return 1;
+ synth->rate=rate; synth->dt=1/rate; synth->smoothing=1-std::exp(-1/(.005*rate)); synth->dcPole=std::exp(-2*pi*10/rate); synth->reset(); return 1;
 }
 void bs_reset(bs_synth *synth) { if(synth) synth->reset(); }
 int bs_set_parameter(bs_synth *synth,uint32_t id,float physical) {
@@ -171,9 +194,12 @@ int bs_get_patch(const bs_synth *synth,bs_patch *patch) {
  for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) patch->values[i]=synth->parameters[i]; return 1;
 }
 int bs_set_patch(bs_synth *synth,const bs_patch *patch) {
- if(!synth||!patch||patch->version!=BS_ABI_VERSION) return 0;
- for(float value:patch->values) if(!std::isfinite(value)) return 0;
- for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) bs_set_parameter(synth,i,patch->values[i]); return 1;
+ if(!synth||!patch||(patch->version!=BS_ABI_VERSION&&patch->version!=1)) return 0;
+ const uint32_t count=patch->version==1 ? 18u : BS_PARAMETER_COUNT;
+ for(uint32_t i=0;i<count;++i) if(!std::isfinite(patch->values[i])) return 0;
+ for(uint32_t i=0;i<count;++i) bs_set_parameter(synth,i,patch->values[i]);
+ if(patch->version==1) bs_set_parameter(synth,BS_FULLNESS,0);
+ return 1;
 }
 void bs_note_on(bs_synth *synth,uint32_t channel,uint32_t key,float velocity) { if(synth) synth->on(channel,key,velocity); }
 void bs_note_off(bs_synth *synth,uint32_t channel,uint32_t key) { if(synth&&channel<16&&key<128) synth->off(channel,key); }

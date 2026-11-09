@@ -1,6 +1,6 @@
 # Synth product plan
 
-Date: 9 November 2026. Status: product/design specification, not an implemented engine or a performance claim.
+Date: 9 November 2026. Status: product/design direction with a portable engine and first touch UI prototype; physical-device and listening acceptance are still outstanding.
 
 ## Product direction and current evidence
 
@@ -59,6 +59,40 @@ Warmth, Echo and Space still require real saturation, delay and reverb DSP. A re
 
 Begin with a curated small selection. Expand the recipe library as shared building blocks become proven. A large library is compatible with a quiet interface; a large permanent bank of knobs is not the goal.
 
+## Signature sound: Character and Fullness
+
+User direction: an instrument that feels alive, with an edge that is slightly broken but stays harmonic. A distinctive, lightweight character should be present in the starting sound, not depend on adding a stack of effects. Aim for small changes in harmonic density, attack texture and persistent voice differences; keep pitch drift gentle enough that chords remain in tune. More character must not simply mean louder, noisier or more detuned.
+
+Keep two purposes separate within Synth's Character area:
+
+- **Character** controls wear and motion: a curated overall macro over a small, versioned mapping of existing sound parameters. Advanced values remain collapsed. Editing an underlying mapped value independently marks the macro **Custom**; it must not silently overwrite that edit, create a second competing parameter owner, or pretend the patch still follows the macro. Returning to a macro setting is an explicit, undoable gesture. Drift remains independently evolving per voice rather than a shared pitch wobble.
+- **Fullness** controls tonal body: the sense of depth and weight in bass, but also solidity in chords and upper-register notes. It is distinct from wear, pitch drift and output volume. Do not implement it as hidden unison, an extra octave, or an unexplained gain boost. The control earns its place only if a level-matched comparison demonstrates a useful tonal change across registers.
+
+The initial core already has soft tanh drive and seeded pitch drift. Those can shape the first factory patches; the broader character ideas below are not claims about current DSP. Gentle default settings are a listening target, not a requirement to enable every proposed process. Keep a clean, reproducible setting available and serialize the exact values and macro version.
+
+### Fullness prototype, not accepted sound
+
+The approved prototype now implements a parallel asymmetric mixer path using antiderivative antialiasing (ADAA), DC blocking and a nonresonant four-pole low-pass, with Fullness assigned parameter ID 18. The driven path aligns the oscillators' fundamentals before saturation. Fullness zero retains the original path. Core/WASM checks cover bounded output, DC rejection, level comparisons across registers/mixes and an isolated aliasing fixture; these do not establish listening quality. ABI/patch version 2 appends Fullness; version-1 patches retain their 18 values and load Fullness zero. See the core README for measurements and limits.
+
+The signal-path inspiration is oscillators → mixer/drive → filter → output, informed by the oscillator, mixer, ladder-filter and MultiDrive sections of the [official Moog Subsequent 37 manual](https://cdn.inmusicbrands.com/Moog/Subsequent37/Subsequent_37_Manual_0.pdf). The proposal is original DSP, not a Moog emulation, ladder-circuit model or claim of equivalent sound. Its nonresonant four-pole filter must not be labelled a resonant ladder filter.
+
+### Later character experiments
+
+Log these as candidates, not additional requirements for the current slice:
+
+- A light **Heater** drive flavour for gentle harmonic density and rounded attacks, with compensated output.
+- Controlled asymmetric saturation for a different even/odd harmonic balance; retain DC rejection and stable silence.
+- Persistent per-voice differences in attack, filter response or saturation, using bounded seeded variation rather than unrelated random changes on every audio block.
+- A small stateful/hysteresis experiment for history-dependent response, only if it adds an audible musical benefit beyond the cheaper static curve. Do not imply physical circuit accuracy.
+
+Expose successful experiments through a few named recipes or advanced drive flavours, not another permanent bank of controls. Character and Fullness must remain understandable when both are active.
+
+### Acceptance before default use
+
+Compare bypass, gentle default and extremes at matched perceived level, including quiet/loud notes, low bass, upper notes and dense sustained chords. Measure DC offset, output peaks, silence/release tails, aliasing at high pitches and across supported sample rates, parameter-sweep clicks and worst-case phone CPU/thermal load. ADAA is a technique to test, not proof that aliasing is eliminated. Retain native/WASM parity and block-size invariance; variation must stay deterministic under the declared reset/seed policy. No allocations or hidden quality changes in rendering, no changes to captured MIDI, and no claim of a signature sound until listening supports it.
+
+These notes preserve the broader instrument vision while the current slice binds the approved touch surface and useful patches. They do not authorize adding more processors or UI beyond the separately approved Fullness prototype.
+
 ## Voicing
 
 - **Mono/Poly:** one note or simultaneous notes.
@@ -111,7 +145,7 @@ Store recipes and movement separately from immutable captured performances. Laye
 | Movement, later | Record/draw automation, LFO/custom-shape lanes | Musical phase, loop seams, Undo, override/resume and deterministic replay |
 | Sampler, later | Sample import/recording and curated instrument packs | Rights, loading/memory, quality and device acceptance |
 
-The initial scope above was research and mockup work. The subsequent user instruction authorizes an independent instrument engineering spike, suitable for future online and VST hosts. The first implementation is now [the portable C++ core](../packages/synth-core/README.md) and [a separate browser reference host](../packages/synth-web/README.md). It does not replace Blocks production audio. The reference host proves real sound and state boundaries; it is not the finished touch UI or a shipped VST. Filter Pluck, unison, effects expansion and Movement remain future work. Physical phone performance and listening acceptance remain gates before production integration.
+The initial scope above was research and mockup work. Subsequent user instructions authorize an independent instrument and its Character/Fullness sound direction, suitable for future online and VST hosts. The implementation is [the portable C++ core](../packages/synth-core/README.md) and [a separate browser instrument](../packages/synth-web/README.md). The first actual phone/desktop surface now includes tone/curved-envelope editing, a declarative Character macro, separate Fullness, Pitch Drop, three factory patches, gesture Undo/cancellation and playable octave selection. It does not replace Blocks production audio or constitute a shipped VST. Filter Pluck, resonance, unison, effects expansion and Movement remain future work. Physical phone performance and listening acceptance remain gates before production integration.
 
 ## Research references
 
