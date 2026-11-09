@@ -98,6 +98,15 @@ describe("roll time matches the scheduler", () => {
     expectAligned(pickup, zoomWindow({ start: 0n, end: 2n * US }, 0.5, pickup, us(100), 8n * US), 800);
   });
 
+  it("retains prefix gridlines without zero or negative bar labels", () => {
+    const known: KnownGrid = { bpm: 120, beatsPerBar: 4, phase: 4n * US };
+    const marks = rulerMarks({ start: 0n, end: 6n * US }, known);
+    const prefixBars = marks.filter(mark => mark.kind === "bar" && mark.time < known.phase);
+    expect(prefixBars.map(mark => mark.time)).toEqual([0n, 2n * US]);
+    expect(prefixBars.every(mark => mark.label === "")).toBe(true);
+    expect(marks.filter(mark => mark.kind === "bar" && mark.time >= known.phase).map(mark => mark.label)).toEqual(["1", "2"]);
+  });
+
   it("does not pull rubato notes onto the grid", () => {
     const rubato = [0, 420, 980, 1410].map(us);
     const known: KnownGrid = { bpm: 120, beatsPerBar: 4, phase: 0n };

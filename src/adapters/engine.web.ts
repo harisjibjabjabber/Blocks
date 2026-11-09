@@ -1,5 +1,6 @@
-import { WebElectricPiano } from "../audio/web/instrument";
+import { WebInstrumentRack } from "../audio/web/instrument-rack";
 import { EP_PRESET } from "../audio/web/preset";
+import { INSTRUMENTS, type InstrumentDescriptor, type InstrumentId, type SynthEnvelope } from "../audio/instruments";
 import { joinAtSeam, liveAudioTime, planFromElapsed, selectDue, type PlannedEvent } from "../audio/web/schedule";
 import { readTransport, type TransportSnapshot } from "../audio/web/transport";
 import type { IncomingEvent } from "../domain/capture";
@@ -20,7 +21,11 @@ export interface SketchEngine {
   domain: "web-performance-us";
   presetId: string;
   presetName: string;
-  capabilities: { audition: boolean; soundingPitches: boolean };
+  instruments: readonly InstrumentDescriptor[];
+  setLiveInstrument(id: string, envelope?: SynthEnvelope): InstrumentId;
+  setLayerInstrument(layerId: string, id: string, envelope?: SynthEnvelope): InstrumentId;
+  setAuditionInstrument(id: string, envelope?: SynthEnvelope): InstrumentId;
+  capabilities: { audition: boolean; soundingPitches: boolean; synthEnvelope: boolean };
   enable(): Promise<ReturnType<typeof idleGate>>;
   resumeAudio(): Promise<void>;
   getGate(): ReturnType<typeof idleGate>;
@@ -61,9 +66,9 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
       : typeof navigator !== "undefined" && navigator.requestMIDIAccess
         ? (midiOptions: { sysex: boolean }) => navigator.requestMIDIAccess(midiOptions)
         : undefined;
-  const piano = new WebElectricPiano(context);
+  const piano = new WebInstrumentRack(context);
   // Separate voices and pedal state: editor audition cannot steal a loop voice.
-  const auditionPiano = new WebElectricPiano(context);
+  const auditionPiano = new WebInstrumentRack(context);
   let gate = idleGate();
   let access: MIDIAccess | null = null;
   let bound: MIDIInput[] = [];
@@ -328,7 +333,14 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
     domain: "web-performance-us",
     presetId: EP_PRESET.id,
     presetName: EP_PRESET.name,
-    capabilities: { audition: true, soundingPitches: true },
+    instruments: INSTRUMENTS,
+    setLiveInstrument(id, envelope) {
+      piano.configure("touch", id, envelope);
+      return piano.configure("midi", id, envelope);
+    },
+    setLayerInstrument(id, preset, envelope) { return piano.configure(layerSource(id), preset, envelope); },
+    setAuditionInstrument(id, envelope) { return auditionPiano.configure("audition", id, envelope); },
+    capabilities: { audition: true, soundingPitches: true, synthEnvelope: true },
     getGate: () => {
       gate = syncAudioGate(gate, context.state);
       return gate;

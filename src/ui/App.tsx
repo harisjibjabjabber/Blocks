@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { createEngine } from "../adapters/engine";
-import { RollingHistory, type CapturedEvent, type RibbonNotice } from "../domain/capture";
+import { defaultEnvelope, clampEnvelope, type InstrumentId, type SynthEnvelope } from "../audio/instruments";
+import { SynthControls } from "./SynthControls";
+import { type CapturedEvent, type RibbonNotice } from "../domain/capture";
+import { LayerTape, type TapeCheckpoint } from "../domain/layer-tape";
 import { inferPulse, type InferenceReport } from "../domain/inference";
 import { capturePerformance, defaultOverlay, loopWindow, type Performance, type PhraseOverlay } from "../domain/phrase";
 import { beatForCut, createProject, projectFromJson, projectToJson, type Project } from "../domain/project";
@@ -33,8 +36,10 @@ const BYTE_CAP = 262144;
 
 interface TempoSnapshot { project: Pick<Project, "tempoBpm" | "proposedTempoBpm" | "gridLocked">; settings: { bpm: number; beatsPerBar: number }; grids: Record<string, KnownGrid | null> }
 interface EditSnapshot { notes: RollNote[]; bounds: RangeBounds; edited: boolean; grid: KnownGrid | null; tempo?: TempoSnapshot }
+interface SoundSettings { instrumentId: InstrumentId; envelope: SynthEnvelope }
 interface Take {
   id: string;
+  sound: SoundSettings;
   performance: Performance;
   overlay: PhraseOverlay;
   report: InferenceReport;
@@ -50,7 +55,8 @@ interface Take {
 
 interface UndoCapture {
   takes: Take[];
-  ribbon: CapturedEvent[];
+  tape: TapeCheckpoint;
+  livePhase: bigint | null;
   project: Project;
   gridSettings: { bpm: number; beatsPerBar: number };
 }
@@ -75,7 +81,7 @@ export default function App() {
   const palette = resolveTheme(themeChoice, systemDark);
   const domain = engine.domain;
   const history = useMemo(
-    () => new RollingHistory(domain, BigInt(unitFor(domain) * 120), EVENT_CAP, BYTE_CAP),
+    () => new LayerTape(domain, BigInt(unitFor(domain) * 120), EVENT_CAP, BYTE_CAP),
     [domain],
   );
   const [project, setProject] = useState<Project>(createProject());
@@ -84,6 +90,9 @@ export default function App() {
   const livePhase = useRef<bigint | null>(null);
   const [notice, setNotice] = useState<RibbonNotice>({ kind: "none" });
   const [takes, setTakes] = useState<Take[]>([]);
+  const [nextSound, setNextSound] = useState<SoundSettings>({ instrumentId: "blocks.ep.fm.v1", envelope: defaultEnvelope("blocks.ep.fm.v1") });
+  const [soundTarget, setSoundTarget] = useState<string | null | undefined>(undefined);
+  const [soundPreview, setSoundPreview] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -187,7 +196,10 @@ export default function App() {
       if (event.kind === "note-on" || event.kind === "note-off") {
         setCaptureRange(null); setCaptureRangeUndo(null); setCaptureView(null);
       }
-      if (livePhase.current === null) livePhase.current = history.snapshot()[0]?.scheduleElapsed ?? null;
+      if (event.kind === "note-on" && event.velocity > 0) {
+        if (livePhase.current === null) livePhase.current = captured.scheduleElapsed;
+        if (!historyActions.current.room) setRangeMode(false);
+      }
       setRibbon(history.snapshot());
       setNotice(history.ribbonNotice());
       const routed = routeLearnedControl(event, learningRef.current, mapRef.current);
@@ -246,16 +258,17 @@ export default function App() {
 
   const take = takes.find((item) => item.id === selected) ?? null;
   const looping = take ? loopingIds.includes(take.id) : false;
+  useEffect(() => { if (room && take) engine.setAuditionInstrument(take.sound.instrumentId, take.sound.envelope); }, [room, take?.id, take?.sound]);
   const newest = ribbon.length ? ribbon[ribbon.length - 1].scheduleElapsed : 0n;
   const age = ribbon.length ? newest - ribbon[0].scheduleElapsed : 0n;
   const automaticCut = useMemo(() => recentPhraseCut(ribbon, {
     ticksPerSecond: unitFor(domain),
-    gridPeriodTicks: beatForCut(project) ? BigInt(Math.round(60 / beatForCut(project)! * unitFor(domain))) : null,
-    gridOriginTicks: takes[0]?.overlay.selectionStart ?? null,
+    gridPeriodTicks: takes.length && beatForCut(project) ? BigInt(Math.round(60 / beatForCut(project)! * unitFor(domain))) : null,
+    gridOriginTicks: livePhase.current,
     historyMayBeTruncated: notice.kind !== "none",
   }), [ribbon, project, takes, notice.kind, domain]);
   const liveBounds = captureRange ?? automaticCut.loop;
-  const liveGrid: KnownGrid = { ...editorGridSettings, phase: takes[0]?.rollGrid?.phase ?? livePhase.current ?? 0n };
+  const liveGrid: KnownGrid = { ...editorGridSettings, phase: livePhase.current ?? 0n };
   const liveFrame = captureView ?? editorFrame(ribbon[0]?.scheduleElapsed ?? 0n, liveBounds.start, liveBounds.end, liveGrid, 2);
   const liveNotes = useMemo(() => notesFromEvents(ribbon), [ribbon]);
   const snapPreset = SNAP_PRESETS.find(item => JSON.stringify(item.division) === JSON.stringify(snapDivision));
@@ -276,6 +289,7 @@ export default function App() {
   }
 
   function playTake(item: Take, updateAtSeam = false) {
+    engine.setLayerInstrument(item.id, item.sound.instrumentId, item.sound.envelope);
     const scheduleLayer = updateAtSeam ? engine.updateLayer : engine.loopLayer;
     const bounds = loopWindow(item.overlay);
     const durationSec = Number(bounds.end - bounds.start) / unitFor(domain);
@@ -343,7 +357,7 @@ export default function App() {
   }
 
   function saveCapture(events: CapturedEvent[], chosenRange?: RangeBounds, explicitRecording = false) {
-    if (events.length === 0) {
+    if (!events.some(event => event.kind === "note-on" && event.velocity > 0)) {
       setMessage("Nothing to capture yet — play something");
       return;
     }
@@ -352,7 +366,7 @@ export default function App() {
     const automatic = recentPhraseCut(events, {
       ticksPerSecond,
       gridPeriodTicks: tempoForCut ? BigInt(Math.round((60 / tempoForCut) * ticksPerSecond)) : null,
-      gridOriginTicks: takes[0] ? takes[0].overlay.selectionStart : null,
+      gridOriginTicks: explicitRecording ? chosenRange?.start ?? null : livePhase.current,
       historyMayBeTruncated: notice.kind !== "none",
     });
     if (!explicitRecording && chosenRange && chosenRange.start < events[0].scheduleElapsed) {
@@ -378,8 +392,9 @@ export default function App() {
     const capturedProject = takes.length === 0 ? { ...project, tempoBpm: captureBpm, proposedTempoBpm: predictedBpm, gridLocked: true } : project;
     const id = "layer-" + nextLayerId.current++;
     const editingGrid: KnownGrid = { ...liveGrid, bpm: captureBpm, phase: cut.loop.start, provisional: takes.length === 0 && predictedBpm !== null };
-    const created: Take = { id, performance, overlay, report, cut, rangeCeiling: cut.loop.end, rollNotes: notesFromEvents(events), rollPast: [], rollFuture: [], rollGrid: editingGrid, rollEdited: false };
-    setUndo({ takes, ribbon: events, project, gridSettings: editorGridSettings });
+    const created: Take = { id, sound: { ...nextSound, envelope: { ...nextSound.envelope } }, performance, overlay, report, cut, rangeCeiling: cut.loop.end, rollNotes: notesFromEvents(events), rollPast: [], rollFuture: [], rollGrid: editingGrid, rollEdited: false };
+    setUndo({ takes, tape: history.checkpoint(), livePhase: livePhase.current, project, gridSettings: editorGridSettings });
+    history.advance(); livePhase.current = null; setRibbon([]); setNotice({ kind: "none" });
     setDeletedTake(null); setSessionUndo(null); setLayerMenu(null); setRangeMode(true);
     setCaptureRange(null); setCaptureRangeUndo(null); setCaptureView(null);
     setTakes((current) => [...current, created]);
@@ -410,6 +425,9 @@ export default function App() {
       engine.stopLayer(removed.id);
       setLoopingIds((current) => current.filter((id) => id !== removed.id));
     }
+    history.restore(undo.tape); livePhase.current = undo.livePhase;
+    setRibbon(history.snapshot()); setNotice(history.ribbonNotice());
+    setCaptureRange(null); setCaptureRangeUndo(null); setCaptureView(null); setRangeMode(false);
     setTakes(undo.takes);
     setProject(undo.project);
     setEditorGridSettings(undo.gridSettings);
@@ -421,6 +439,7 @@ export default function App() {
   }
 
   function enterEditor(item: Take) {
+    engine.setAuditionInstrument(item.sound.instrumentId, item.sound.envelope);
     const bounds = loopWindow(item.overlay);
     const grid = item.rollGrid ?? { ...editorGridSettings, phase: bounds.start, provisional: false };
     if (!item.rollGrid) setTakes(current => current.map(entry => entry.id === item.id ? { ...entry, rollGrid: grid } : entry));
@@ -435,8 +454,8 @@ export default function App() {
     const grid: KnownGrid = { ...editorGridSettings, phase: 0n, provisional: false };
     const bounds = rangeForBars(0n, grid, loopBars ?? 4)!;
     const cut = withCaptureRange([], recentPhraseCut([], { ticksPerSecond: unitFor(domain), gridPeriodTicks: null, gridOriginTicks: null, historyMayBeTruncated: false }), bounds);
-    const created: Take = { id: "layer-" + nextLayerId.current++, performance: { domain, events: [] }, overlay: { selectionStart: bounds.start, selectionEnd: bounds.end, loopStart: bounds.start, loopEnd: bounds.end, tempoChoice: "estimated", phaseBeats: 0, quantiseStrength: 0, playback: { mode: "original" } }, report: inferPulse([], unitFor(domain)), cut, rangeCeiling: bounds.end, rollNotes: [], rollPast: [], rollFuture: [], rollGrid: grid, rollEdited: true };
-    setUndo({ takes, ribbon: history.snapshot(), project, gridSettings: editorGridSettings }); setDeletedTake(null);
+    const created: Take = { id: "layer-" + nextLayerId.current++, sound: { ...nextSound, envelope: { ...nextSound.envelope } }, performance: { domain, events: [] }, overlay: { selectionStart: bounds.start, selectionEnd: bounds.end, loopStart: bounds.start, loopEnd: bounds.end, tempoChoice: "estimated", phaseBeats: 0, quantiseStrength: 0, playback: { mode: "original" } }, report: inferPulse([], unitFor(domain)), cut, rangeCeiling: bounds.end, rollNotes: [], rollPast: [], rollFuture: [], rollGrid: grid, rollEdited: true };
+    setUndo({ takes, tape: history.checkpoint(), livePhase: livePhase.current, project, gridSettings: editorGridSettings }); setDeletedTake(null);
     setTakes(items => [...items, created]); setSelected(created.id); setRangeMode(true); setRollTool("draw");
     enterEditor(created);
     void engine.resumeAudio().then(() => setAudioState(engine.readAudioState())).catch(() => setMessage("Sound could not start. Try Play again."));
@@ -723,26 +742,52 @@ export default function App() {
       <Text style={[styles.secondaryText, { color: options.primary || options.active ? palette.accentInk : palette.ink }]}>{label}</Text>
     </Pressable>
   );
+  const soundName = (sound: SoundSettings) => engine.instruments.find(item => item.id === sound.instrumentId)?.name ?? "Warm EP";
+  const targetTake = takes.find(item => item.id === soundTarget);
+  const shownSound = targetTake?.sound ?? nextSound;
+  const closeSound = () => { engine.stopAudition(); setSoundPreview(false); setSoundTarget(undefined); };
+  const openSound = (id: string | null) => { setSoundTarget(id); setSoundPreview(false); engine.stopAudition(); setLayerMenu(null); };
+  const changeSound = (sound: SoundSettings) => {
+    const resolved = targetTake ? engine.setLayerInstrument(targetTake.id, sound.instrumentId, sound.envelope) : engine.setLiveInstrument(sound.instrumentId, sound.envelope);
+    const next = { instrumentId: resolved, envelope: clampEnvelope(sound.envelope, resolved) };
+    if (!targetTake) setNextSound(next);
+    engine.setAuditionInstrument(next.instrumentId, next.envelope);
+    if (soundPreview && shownSound.instrumentId !== next.instrumentId) [60, 64, 67].forEach(note => engine.audition(note, true));
+    if (targetTake) {
+      setTakes(items => items.map(item => item.id === targetTake.id ? { ...item, sound: next } : item));
+    }
+  };
+  const soundModal = <Modal visible={soundTarget !== undefined} transparent animationType="none" onRequestClose={closeSound}>
+    <View style={{ flex: 1, backgroundColor: "#0009", alignItems: "center", justifyContent: "center", padding: 12 }}>
+      <View accessibilityLabel="Sound settings" style={{ width: "100%", maxWidth: 480, backgroundColor: palette.card, borderColor: palette.line, borderWidth: 1, borderRadius: 16, padding: 16, gap: 16 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><Text style={{ flex: 1, color: palette.ink, fontFamily: "Instrument Serif", fontSize: 26 }}>Synth</Text><Text style={[styles.meta, { color: palette.muted }]}>{targetTake ? `Layer ${takes.indexOf(targetTake) + 1}` : "Next capture"}</Text>{button("Done", closeSound, { accessibilityLabel: "Close sound settings" })}</View>
+        <SelectControl label="Synth preset" value={shownSound.instrumentId} options={engine.instruments.map(item => ({ value: item.id, label: item.name }))} onChange={id => changeSound({ instrumentId: id as InstrumentId, envelope: defaultEnvelope(id) })} palette={palette} />
+        {engine.capabilities.synthEnvelope && <SynthControls palette={palette} envelope={shownSound.envelope} onChange={envelope => changeSound({ ...shownSound, envelope })} />}
+        {button(soundPreview ? "Stop preview" : "Preview sound", () => { if (soundPreview) [60, 64, 67].forEach(note => engine.audition(note, false)); else { engine.setAuditionInstrument(shownSound.instrumentId, shownSound.envelope); [60, 64, 67].forEach(note => engine.audition(note, true)); } setSoundPreview(!soundPreview); })}
+      </View>
+    </View>
+  </Modal>;
   const layerStrip = <View style={{ gap: 10 }} accessibilityLabel="Layers">
     {takes.map((item, index) => <View key={item.id} style={[styles.layerChip, { padding: 12, gap: 8, backgroundColor: palette.card, borderColor: item.id === selected ? palette.ink : palette.line, borderWidth: item.id === selected ? 2 : 1 }]}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        <Pressable accessibilityRole="button" accessibilityLabel={`Layer ${index + 1}, Warm EP${loopingIds.includes(item.id) ? ", looping" : ""}`} accessibilityState={{ selected: item.id === selected }} onPress={() => { setSelected(item.id); setRangeMode(true); setRollWindow(null); }} style={{ flex: 1, minHeight: 48, flexDirection: "row", gap: 12, alignItems: "center" }}>
-          <Text style={{ color: palette.ink, fontFamily: "Geist Mono", fontSize: 18 }}>{index + 1}</Text><View><Text style={[styles.layerText, { color: palette.ink }]}>Piano</Text><Text style={[styles.meta, { color: palette.muted }]}>Warm EP · {loopingIds.includes(item.id) ? "looping" : "stopped"}</Text></View>
+        <Pressable accessibilityRole="button" accessibilityLabel={`Layer ${index + 1}, ${soundName(item.sound)}${loopingIds.includes(item.id) ? ", looping" : ""}`} accessibilityState={{ selected: item.id === selected }} onPress={() => { setSelected(item.id); setRangeMode(true); setRollWindow(null); }} style={{ flex: 1, minHeight: 48, flexDirection: "row", gap: 12, alignItems: "center" }}>
+          <Text style={{ color: palette.ink, fontFamily: "Geist Mono", fontSize: 18 }}>{index + 1}</Text><View><Text style={[styles.layerText, { color: palette.ink }]}>Piano</Text><Text style={[styles.meta, { color: palette.muted }]}>{soundName(item.sound)} · {loopingIds.includes(item.id) ? "looping" : "stopped"}</Text></View>
         </Pressable>
         {button("⋯", () => setLayerMenu(layerMenu === item.id ? null : item.id), { accessibilityLabel: `Layer ${index + 1} actions` })}
       </View>
-      <Pressable accessibilityRole="button" accessibilityLabel={item.id === selected ? "Edit MIDI" : `Edit MIDI layer ${index + 1}`} onPress={() => { setSelected(item.id); enterEditor(item); }} style={{ minHeight: 48 }}><MiniRoll notes={item.rollNotes} palette={palette} /><Text style={{ color: palette.ink, fontFamily: "Inter Tight", fontSize: 13, paddingTop: 8, paddingBottom: 4 }}>Edit MIDI</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel={item.id === selected ? "Edit MIDI" : `Edit MIDI layer ${index + 1}`} onPress={() => { setSelected(item.id); enterEditor(item); }} style={{ minHeight: 48 }}><MiniRoll notes={item.rollNotes} palette={palette} /></Pressable><View style={{ flexDirection: "row", gap: 8 }}>{button("Edit MIDI", () => { setSelected(item.id); enterEditor(item); }, { accessibilityLabel: `Open editor layer ${index + 1}` })}{button(`${soundName(item.sound)} ▾`, () => openSound(item.id), { accessibilityLabel: `Sound for layer ${index + 1}` })}</View>
       {layerMenu === item.id && <View style={{ gap: 6 }}>
         {button(loopingIds.includes(item.id) ? "Stop layer" : "Play layer", () => { if (loopingIds.includes(item.id)) { engine.stopLayer(item.id); setLoopingIds(ids => ids.filter(id => id !== item.id)); } else playTake(item); setLayerMenu(null); })}
         {button("Loop range", () => { setSelected(item.id); setRangeMode(true); setRollWindow(null); setLayerMenu(null); })}
         {button(`Delete Layer ${index + 1}`, () => deleteCapture(item.id))}
       </View>}
     </View>)}
-    <View style={[styles.layerChip, { borderColor: palette.accent, borderWidth: 2, minHeight: 64, flexDirection: "row", alignItems: "center", gap: 16, justifyContent: "flex-start" }]}><Text style={{ color: palette.accent, fontFamily: "Geist Mono", fontSize: 20 }}>{takes.length + 1}</Text><View><Text style={[styles.layerText, { color: palette.ink }]}>Layer {takes.length + 1} · next capture</Text><Text style={[styles.meta, { color: palette.muted }]}>Warm EP</Text></View></View>
+    <View style={[styles.layerChip, { borderColor: palette.accent, borderWidth: 2, minHeight: 64, flexDirection: "row", alignItems: "center", gap: 16, justifyContent: "flex-start" }]}><Text style={{ color: palette.accent, fontFamily: "Geist Mono", fontSize: 20 }}>{takes.length + 1}</Text><View><Text style={[styles.layerText, { color: palette.ink }]}>Layer {takes.length + 1} · next capture</Text><Pressable accessibilityRole="button" accessibilityLabel="Sound for next capture" onPress={() => openSound(null)} style={{ minHeight: 48, justifyContent: "center" }}><Text style={[styles.meta, { color: palette.muted }]}>{soundName(nextSound)} ▾</Text></Pressable></View></View>
   </View>;
 
-  if (room && take) return <Editor key={take.id}
-    palette={palette} layers={takes.map(item => ({ id: item.id, looping: loopingIds.includes(item.id) }))} selectedLayer={take.id}
+  if (room && take) return <><Editor key={take.id}
+    soundName={soundName(take.sound)} onSound={() => openSound(take.id)}
+    palette={palette} layers={takes.map(item => ({ id: item.id, soundName: soundName(item.sound), looping: loopingIds.includes(item.id) }))} selectedLayer={take.id}
     captureBpm={take.report.bpm} loopBars={loopBars} onLoopBars={setLoopBars} onResetLoop={() => resetLoop(take)} firstLayer={takes[0]?.id === take.id} onShowFullTake={() => showFullTake(take)} loopRange={loopWindow(take.overlay)} onCutRange={() => cutRange(take)} onQuantiseNow={() => commitRoll(take, applyPreview(take.rollNotes, quantisePreview(take.rollNotes, selectedIds, take.rollGrid, snapDivision, 100, 0)))} notes={take.rollNotes} selectedNote={selectedNote} selectedIds={selectedIds} grid={take.rollGrid} tool={rollTool} looping={looping}
     canUndo={take.rollPast.length > 0} canRedo={take.rollFuture.length > 0}
     snapDivision={snapDivision} snapMode={snapMode} previewing={ghosts.length > 0}
@@ -768,7 +813,7 @@ export default function App() {
       onAudition={engine.capabilities.audition ? (note, down) => engine.audition(note, down) : undefined} onStopAudition={() => engine.stopAudition()}
       readSoundingPitches={() => engine.capabilities.soundingPitches ? engine.soundingPitches(take.id) : null}
     />}
-  />;
+  />{soundModal}</>;
 
   const historyItem = rangeMode ? take : null;
   const historyGrid = historyItem?.rollGrid ?? liveGrid;
@@ -831,7 +876,7 @@ export default function App() {
       {message ? <View style={{ flexDirection: "row", gap: 8, alignItems: "center", minHeight: 32, paddingBottom: 6 }}><Text accessibilityLiveRegion="polite" style={[styles.meta, { color: palette.muted, flex: 1 }]}>{message}</Text>{deletedTake ? button("Undo", undoCapture, { accessibilityLabel: "Undo delete capture" }) : sessionUndo ? button("Undo edits", () => { const item=takes.find(entry => entry.id===sessionUndo.id); if(item) undoSession(); }) : null}</View> : null}
       <View style={[styles.transportRow, { marginBottom: keyboardOpen ? 8 : 0 }]}>
         {button("↶", () => { if (sessionUndo) { const item=takes.find(entry => entry.id===sessionUndo.id); if(item) undoSession(); } else undoCapture(); }, { disabled: !undo && !deletedTake && !sessionUndo, accessibilityLabel: sessionUndo ? "Undo edits" : "Undo capture" })}
-        {take ? <Pressable accessibilityRole="button" accessibilityLabel="Edit MIDI" dataSet={{ editorEntry: "dock" }} onPress={() => enterEditor(take)} style={{ flex: 1, minHeight: 48, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: palette.line, borderRadius: 8, backgroundColor: palette.card }}><Text style={{ color: palette.ink, fontFamily: "Inter Tight", fontSize: 14, fontWeight: "600" }}>Edit MIDI →</Text><Text style={{ color: palette.muted, fontFamily: "Inter Tight", fontSize: 11 }}>Layer {takes.indexOf(take) + 1} · Warm EP</Text></Pressable> : <View style={{ flex: 1, alignItems: "center" }}><Text style={[styles.cardTitle, { color: palette.ink }]}>Warm EP</Text><Text style={[styles.meta, { color: palette.muted }]}>sound for Layer {takes.length + 1}</Text></View>}
+        {take ? <Pressable accessibilityRole="button" accessibilityLabel="Edit MIDI" dataSet={{ editorEntry: "dock" }} onPress={() => enterEditor(take)} style={{ flex: 1, minHeight: 48, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: palette.line, borderRadius: 8, backgroundColor: palette.card }}><Text style={{ color: palette.ink, fontFamily: "Inter Tight", fontSize: 14, fontWeight: "600" }}>Edit MIDI →</Text><Text style={{ color: palette.muted, fontFamily: "Inter Tight", fontSize: 11 }}>Layer {takes.indexOf(take) + 1} · {soundName(take.sound)}</Text></Pressable> : <Pressable accessibilityRole="button" accessibilityLabel="Choose sound" onPress={() => openSound(null)} style={{ flex: 1, alignItems: "center", justifyContent: "center", minHeight: 48 }}><Text style={[styles.cardTitle, { color: palette.ink }]}>{soundName(nextSound)} ▾</Text><Text style={[styles.meta, { color: palette.muted }]}>sound for Layer {takes.length + 1}</Text></Pressable>}
         {button(keyboardOpen ? "⌨ −" : "⌨ +", () => setKeyboardOpen(value => !value), { accessibilityLabel: keyboardOpen ? "Hide keyboard" : "Show keyboard" })}
         {button(looping ? "■" : "▶", () => looping ? stopLoop() : take ? playTake(take) : undefined, { disabled: !take, accessibilityLabel: looping ? "Stop" : "Play" })}
       </View>
@@ -841,6 +886,7 @@ export default function App() {
         <Pressable accessibilityRole="button" accessibilityLabel="Capture" accessibilityState={{ disabled: isRecording }} disabled={isRecording} onPress={capture} style={[styles.capture, { backgroundColor: palette.card, borderColor: palette.accent, borderWidth: 2, opacity: isRecording ? .45 : 1 }]}><View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><Text style={{ color: palette.accent, fontSize: 28 }}>↶</Text><View><Text style={[styles.captureText, { color: palette.ink }]}>Capture</Text><Text style={[styles.meta, { color: palette.muted }]}>{captureRange ? "Selected range" : "Last phrase"} · Layer {takes.length + 1}</Text></View></View></Pressable>
       </View>
     </View></View>
+    {soundModal}
   </View>;
 }
 

@@ -90,7 +90,9 @@ export function rulerMarks(window: TimeWindow, grid: KnownGrid | null, ticksPerS
       marks.push({
         time,
         kind: bar ? "bar" : "beat",
-        label: bar ? String(barNumber) : "",
+        // Retained material before the grid origin is labelled once by the
+        // renderer as "Before loop"; keep its grid lines, not negative bars.
+        label: bar && index >= 0n ? String(barNumber) : "",
         tentative: grid.provisional === true,
       });
     }

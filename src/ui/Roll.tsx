@@ -5,7 +5,7 @@ import type { TransportSnapshot } from "../audio/web/transport";
 import { type RollNote } from "./roll-notes";
 import { DEFAULT_SNAP, snapStep, snapTime, snapMoveStart, snapIndexAt, snapPointAt, type SnapDivision } from "./snap";
 import { visibleSnapGrid } from "./roll-snap-grid";
-import { boundedSnap, chordSelection, doubleTapDeletes, isBlackKey, keyShape, moveSelection, nearestBoundary, nextDrawId, notesInMarquee, rangeFromDrag, resizeSelection, scaleSelectionVelocity, RollTapTracker, RollTransaction, type RollTap, type SelectionBox } from "./roll-interaction";
+import { boundedSnap, chordSelection, doubleTapDeletes, isBlackKey, keyShape, moveSelection, nearestBoundary, nextDrawId, notesInMarquee, rangeFromDrag, resizeSelection, scaleSelectionVelocity, snapRangeStart, RollTapTracker, RollTransaction, type RollTap, type SelectionBox } from "./roll-interaction";
 import type { Palette } from "./theme";
 
 export type RollTool = "select" | "draw" | "erase" | "velocity" | "pan";
@@ -285,12 +285,14 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
         }
         edgeFrame.current = requestAnimationFrame(() => { edgeFrame.current = null; handlers.current.move(event); });
       }
-      const rawTime = xToTime(x, current.view, current.width) + (current.grabOffset ?? 0n);
+      const atTapeStart = current.edge === "start" && x <= 12 && current.view.start <= historyStart;
+      const rawTime = atTapeStart ? historyStart : xToTime(x, current.view, current.width) + (current.grabOffset ?? 0n);
       const start = current.bounds.start;
       const end = current.bounds.end;
       const minimum = current.edge === "start" ? historyStart : start + 1n;
       const maximum = current.edge === "start" ? end - 1n : current.view.end;
-      const time = event.altKey ? maxBig(minimum, minBig(rawTime, maximum)) : boundedSnap(rawTime, minimum, maximum, grid, snapDivision);
+      const snapBoundary = current.edge === "start" ? snapRangeStart : boundedSnap;
+      const time = event.altKey ? maxBig(minimum, minBig(rawTime, maximum)) : snapBoundary(rawTime, minimum, maximum, grid, snapDivision);
       if (time === null) return;
       const next = current.edge === "start"
         ? { start: maxBig(historyStart, minBig(time, end - 1n)), end }
@@ -412,7 +414,8 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
       const desired = index !== null ? snapPointAt(index + (direction > 0n ? 1n : floor! < position ? 0n : -1n), grid, snapDivision)! : position + direction * 50_000n;
       const minimum = edge === "start" ? historyStart : bounds.start + 1n;
       const maximum = edge === "start" ? bounds.end - 1n : view.end;
-      const next = event.altKey ? maxBig(minimum, minBig(desired, maximum)) : boundedSnap(desired, minimum, maximum, grid, snapDivision);
+      const snapBoundary = edge === "start" ? snapRangeStart : boundedSnap;
+      const next = event.altKey ? maxBig(minimum, minBig(desired, maximum)) : snapBoundary(desired, minimum, maximum, grid, snapDivision);
       if (next !== null && next !== position) onBoundsCommit({ ...bounds, [edge]: next });
       return;
     }
@@ -521,11 +524,12 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
   const beat = grid ? beatTicks(grid.bpm) : 0n;
   const beatWidth = view.end > view.start ? Number(beat) / Number(view.end - view.start) * plotWidth : 0;
   const marks = rulerMarks(view, grid).map(mark => {
-    if (mark.kind === "bar") return { ...mark, time: snapTime(mark.time, grid, { kind: "bar", bars: 1 }), label: `Bar ${mark.label}` };
+    if (mark.kind === "bar") return { ...mark, time: snapTime(mark.time, grid, { kind: "bar", bars: 1 }), label: mark.label ? `Bar ${mark.label}` : "" };
     if (mark.kind === "beat") return { ...mark, time: snapTime(mark.time, grid, { kind: "note", numerator: 1, denominator: 4 }), label: "" };
     return mark;
   });
   const snapLines = visibleSnapGrid(view, grid, snapDivision, plotWidth);
+  const prefixWidth = grid && view.start < grid.phase ? Math.min(plotWidth, timeToX(grid.phase, view, plotWidth)) : 0;
   const dark = palette.bg === "#0A0C0F";
   const playedX = playhead === null ? null : timeToX(BigInt(Math.round(playhead * 1_000_000)), view, plotWidth);
   const averageVelocity = shownNotes.length ? Math.round(shownNotes.reduce((sum, note) => sum + note.velocity, 0) / shownNotes.length) : 0;
@@ -580,6 +584,7 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
             {mark.label ? <WebView pointerEvents="none" dataSet={{ rulerLabel: mark.label }} style={{ position: "absolute", left: timeToX(mark.time, view, plotWidth) + 3, top: 5 }}><Text style={{ color: mark.kind === "bar" ? palette.ink : palette.muted, fontSize: 10, fontFamily: "Geist Mono" }}>{mark.label}</Text></WebView> : null}
             {grid && mark.kind !== "second" && beat > 0n && beatWidth >= 24 && snapStep(grid, snapDivision) !== null && snapTime(mark.time, grid, snapDivision) === mark.time ? <WebView pointerEvents="none" dataSet={{ rulerBeat: String(((snapIndexAt(mark.time, grid, { kind: "note", numerator: 1, denominator: 4 }) ?? 0n) % BigInt(grid.beatsPerBar) + BigInt(grid.beatsPerBar)) % BigInt(grid.beatsPerBar) + 1n) }} style={{ position: "absolute", left: timeToX(mark.time, view, plotWidth) + (shownBounds?.start === mark.time ? 16 : 3), top: 26 }}><Text style={{ color: palette.muted, fontSize: 10, fontFamily: "Geist Mono" }}>{String(((snapIndexAt(mark.time, grid, { kind: "note", numerator: 1, denominator: 4 }) ?? 0n) % BigInt(grid.beatsPerBar) + BigInt(grid.beatsPerBar)) % BigInt(grid.beatsPerBar) + 1n)}</Text></WebView> : null}
           </React.Fragment>)}
+          {prefixWidth >= 64 ? <WebView pointerEvents="none" dataSet={{ rulerPrefix: "true" }} style={{ position: "absolute", left: 3, top: 5, width: prefixWidth - 6 }}><Text numberOfLines={1} style={{ color: palette.muted, fontSize: 9, fontFamily: "Geist Mono" }}>Before loop</Text></WebView> : null}
           {shownBounds ? <WebView pointerEvents="none" style={{ position: "absolute", left: timeToX(shownBounds.start, view, plotWidth), width: Math.max(0, timeToX(shownBounds.end, view, plotWidth) - timeToX(shownBounds.start, view, plotWidth)), top: RULER, bottom: 0, backgroundColor: palette.ink, opacity: 0.04 }} /> : null}
           {backgroundLayers.flatMap(layer => layer.notes.map(note => {
             const box = noteBox(note.start, note.end, note.pitch, view, plotWidth, pitchTop, rowHeight);

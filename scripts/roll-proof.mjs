@@ -260,9 +260,9 @@ try {
     const samples=[];for(let i=0;i<5;i++){samples.push(await b.evaluate(`document.querySelector('[data-playhead]')?.dataset.playhead??null`));await delay(100);}
     assert.ok(samples.every(Boolean),q(samples));assert.ok(new Set(samples).size>1,q(samples));await button('Stop');await delay(80);assert.equal(await b.evaluate(`document.querySelector('[data-playhead]')`),null);await button('Play');
   });
-  // Re-capture unchanged raw history after audition: edited notes and audition must not leak into it.
-  await check('recapture proves editor audition and edits did not enter capture history',async()=>{
-    await button('Back to Play');await button('Capture');await editMidi();assert.deepEqual(await notes(),initial);
+  // A successful Capture consumes its tape. Editor input must never refill it.
+  await check('editor audition and edits leave the next tape empty and cannot duplicate Capture',async()=>{
+    const edited=await notes();await button('Back to Play');const count=await b.evaluate(`document.querySelectorAll('[aria-label^="Layer "][aria-label$=" actions"]').length`);await button('Next capture');assert.deepEqual(await notes(),[]);await button('Capture');assert.deepEqual(await notes(),[]);assert.equal(await b.evaluate(`document.querySelectorAll('[aria-label^="Layer "][aria-label$=" actions"]').length`),count);await editMidi();assert.deepEqual(await notes(),edited);
   });
   for(const [width,height,name] of [[1440,900,'desktop'],[390,844,'phone']]) {
     await size(width,height);
@@ -291,18 +291,18 @@ try {
   });
   await check('changing keyboard scale during a held gesture releases the recorded note',async()=>{
     await button('Back to Play');const r=await rect('[data-key="60"]');await mouse('mousePressed',r.x+r.w/2,r.y+r.h-18);await delay(100);await select('Keyboard scale','major');assert.equal(await b.evaluate(`document.querySelectorAll('[data-key][aria-pressed="true"]').length`),0);await mouse('mouseReleased',r.x+r.w/2,r.y+r.h-18);await delay(100);
-    await button('Capture');await editMidi();const captured=await notes();assert.equal(captured.length,4);assert.ok(captured.every(n=>BigInt(n.end)>BigInt(n.start)));
+    await button('Capture');await editMidi();const captured=await notes();assert.equal(captured.length,1);assert.equal(captured[0].pitch,'60');assert.ok(captured.every(n=>BigInt(n.end)>BigInt(n.start)));
   });
   await check('two emulated fingers sharing a key produce one note until the last release',async()=>{
     await button('Back to Play');await select('Keyboard scale','chromatic');const r=await rect('[data-key="60"]');const p=id=>({id,x:r.x+r.w*(id===1?.3:.7),y:r.y+r.h-15,radiusX:3,radiusY:3,force:1});
     await b.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:2});await b.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[p(1)]});await delay(80);await b.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[p(1),p(2)]});await delay(80);assert.equal(await b.evaluate(`document.querySelectorAll('[data-key][aria-pressed="true"]').length`),1);
     await b.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[p(2)]});await delay(80);assert.equal(await b.evaluate(`document.querySelectorAll('[data-key][aria-pressed="true"]').length`),1);await b.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await b.send('Emulation.setTouchEmulationEnabled',{enabled:false});await delay(100);assert.equal(await b.evaluate(`document.querySelectorAll('[data-key][aria-pressed="true"]').length`),0);
-    await button('Capture');await editMidi();assert.equal((await notes()).length,5,'shared pitch does not retrigger or prematurely finish a second captured note');
+    await button('Capture');await editMidi();const captured=await notes();assert.equal(captured.length,1,'fresh tape contains one shared-pitch note until the last release');assert.equal(captured[0].pitch,'60');assert.ok(BigInt(captured[0].end)-BigInt(captured[0].start)>=200000n,'the first finger release must not close the shared note');
   });
   await check('keyboard glissando releases outside the keys and resumes on re-entry',async()=>{
     await button('Back to Play');const c=await rect('[data-key="60"]'),d=await rect('[data-key="62"]');await mouse('mousePressed',c.x+c.w/2,c.y+c.h-15);await delay(90);await mouse('mouseMoved',c.x+c.w/2,c.y-15);await delay(70);assert.equal(await b.evaluate(`document.querySelectorAll('[data-key][aria-pressed="true"]').length`),0);
     await mouse('mouseMoved',d.x+d.w/2,d.y+d.h-15);await delay(90);assert.equal(await b.evaluate(`document.querySelector('[data-key="62"]').getAttribute('aria-pressed')`),'true');await mouse('mouseReleased',d.x+d.w/2,d.y+d.h-15);await delay(100);assert.equal(await b.evaluate(`document.querySelectorAll('[data-key][aria-pressed="true"]').length`),0);
-    await button('Capture');await editMidi();const captured=await notes();assert.equal(captured.length,7);assert.ok(captured.every(n=>BigInt(n.end)>BigInt(n.start)));
+    await button('Capture');await editMidi();const captured=await notes();assert.equal(captured.length,2);assert.deepEqual(captured.map(n=>n.pitch).sort(),['60','62']);assert.ok(captured.every(n=>BigInt(n.end)>BigInt(n.start)));
   });
   await check('capture deletion and Undo restore the complete working layer',async()=>{
     const before=await notes();await button('Back to Play');const count=await b.evaluate(`document.querySelectorAll('[aria-label^="Layer "][aria-label$=" actions"]').length`);assert.ok(count>=2);await button(`Layer ${count} actions`);await button(`Delete Layer ${count}`);assert.equal(await b.evaluate(`document.querySelectorAll('[aria-label^="Layer "][aria-label$=" actions"]').length`),count-1);

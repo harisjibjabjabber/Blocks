@@ -47,7 +47,7 @@ export interface RecentPhraseOptions {
   ticksPerSecond: number;
   /** Read-only locked beat. Null means free time. Never written back. */
   gridPeriodTicks: bigint | null;
-  /** Read-only phase origin from an earlier layer. Not stored on the project. */
+  /** Legacy read-only grid origin. Grid phase alone never establishes a phrase boundary. */
   gridOriginTicks: bigint | null;
   historyMayBeTruncated: boolean;
 }
@@ -586,6 +586,8 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     attackGaps.push(clusters[i] - clusters[i - 1]);
   }
   const timeNote = beat === null ? "Free time: no locked beat, so the gap hypothesis is 1.5s." : "A locked beat was read and not changed. The gap hypothesis is max(1.5s, 2 beats).";
+  // A locked tempo/phase is not evidence that the wanted phrase is one bar.
+  // Preserve the available tape unless rest or progression evidence narrows it.
   let selection: CutBounds = { start: first, end: last };
   let status: RecentPhraseCut["status"] = "ambiguous";
   let priorPhrase: CutBounds | null = null;
@@ -650,26 +652,6 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     const previousStart = breaks.length > 1 ? clusters[breaks[breaks.length - 2]] : clusters[0];
     const previousEndLimit = phraseStart - 1n;
     priorPhrase = boundsFrom(events, previousStart, previousEndLimit);
-  } else if (beat !== null) {
-    const bar = beat * 4n;
-    const origin = options.gridOriginTicks ?? first;
-    const relative = last - origin;
-    const mod = ((relative % bar) + bar) % bar;
-    let barStart = last - (mod === 0n ? bar : mod);
-    if (barStart < first) {
-      barStart = first;
-    }
-    if (barStart < last) {
-      selection = { start: barStart, end: last };
-      status = "recent";
-      how = "No rest cleared the hypothesis. The window is the last bar of the locked grid, as a basic cut. The grid and its phase were not changed.";
-      const earlier = barStart - bar;
-      if (earlier >= first) {
-        priorBar = boundsFrom(events, earlier, barStart - 1n);
-      }
-    } else {
-      how = "The recording is shorter than one bar of the locked grid. The window stays the whole ribbon. The grid was not changed.";
-    }
   } else if (gaps.length > 0 && gaps.every((item) => item === 0n)) {
     status = "recent";
     how = "Note-offs under a held CC64 are not rests, so the chords stay one phrase. Basic cut, not finished Capture.";

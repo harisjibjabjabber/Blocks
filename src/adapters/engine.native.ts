@@ -1,5 +1,6 @@
 import { DeviceEventEmitter, NativeModules } from "react-native";
 import { EP_PRESET } from "../audio/web/preset";
+import { INSTRUMENTS, type InstrumentId, type SynthEnvelope } from "../audio/instruments";
 import type { IncomingEvent } from "../domain/capture";
 
 interface NativeEngine {
@@ -91,7 +92,12 @@ export function createNativeEngine() {
     domain: "android-monotonic-ns" as const,
     presetId: EP_PRESET.id,
     presetName: EP_PRESET.name,
-    capabilities: { audition: false, soundingPitches: false },
+    // The native bridge currently implements only the fixed Warm EP voice.
+    instruments: INSTRUMENTS.filter(item => item.id === EP_PRESET.id),
+    setLiveInstrument(_id: string, _envelope?: SynthEnvelope): InstrumentId { return EP_PRESET.id; },
+    setLayerInstrument(_layerId: string, _id: string, _envelope?: SynthEnvelope): InstrumentId { return EP_PRESET.id; },
+    setAuditionInstrument(_id: string, _envelope?: SynthEnvelope): InstrumentId { return EP_PRESET.id; },
+    capabilities: { audition: false, soundingPitches: false, synthEnvelope: false },
     // Native bridge has no isolated audition or authoritative sounding-state API.
     audition(_note: number, _down: boolean) {},
     stopAudition() {},

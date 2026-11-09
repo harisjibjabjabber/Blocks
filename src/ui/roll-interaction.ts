@@ -9,10 +9,20 @@ export function nearestBoundary(x: number, startX: number, endX: number, hitWidt
 
 export function rangeFromDrag(anchor: bigint, current: bigint, floor: bigint, ceiling: bigint, grid: KnownGrid | null, division: SnapDivision, bypass = false): { start: bigint; end: bigint } | null {
   const clamp = (time: bigint) => time < floor ? floor : time > ceiling ? ceiling : time;
-  const a = bypass ? clamp(anchor) : boundedSnap(anchor, floor, ceiling, grid, division);
-  const b = bypass ? clamp(current) : boundedSnap(current, floor, ceiling, grid, division);
-  if (a === null || b === null || a === b) return null;
-  return a < b ? { start: a, end: b } : { start: b, end: a };
+  if (clamp(anchor) === clamp(current)) return null;
+  const first = anchor < current ? anchor : current;
+  const last = anchor < current ? current : anchor;
+  const start = bypass ? clamp(first) : snapRangeStart(first, floor, ceiling, grid, division);
+  const end = bypass ? clamp(last) : boundedSnap(last, floor, ceiling, grid, division);
+  return start !== null && end !== null && start < end ? { start, end } : null;
+}
+
+/** The retained tape's first tick remains reachable even when it precedes the
+ * first permitted grid point. This exception is only for recovering a range
+ * start at the tape edge; note edits and end markers keep ordinary snapping. */
+export function snapRangeStart(time: bigint, minimum: bigint, maximum: bigint | null, grid: KnownGrid | null, division: SnapDivision): bigint | null {
+  if (maximum !== null && maximum < minimum) return null;
+  return time <= minimum ? minimum : boundedSnap(time, minimum, maximum, grid, division);
 }
 
 /** Clamp to an available grid point, never to an off-grid boundary tick. */

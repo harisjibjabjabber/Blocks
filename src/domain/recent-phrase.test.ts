@@ -135,18 +135,56 @@ describe("basic recent-phrase cut, not validated capture", () => {
     expect(ids(events, cut.priorPhrase as { start: bigint; end: bigint })).toEqual(first.map((event) => event.id));
   });
 
-  it("uses the last bar once a grid exists, and does not return the whole session", () => {
-    const events = Array.from({ length: 21 }, (_, index) => ev({ sequence: index + 1, atMs: index * 500 }));
-    const beat = 500_000n;
-    const cut = recentPhraseCut(events, options({ gridPeriodTicks: beat, gridOriginTicks: 0n }));
-    expect(cut.status).toBe("recent");
-    expect(cut.note).toMatch(/locked beat was read and not changed/i);
-    const selected = eventsInSelection(events, cut.selection);
-    expect(selected.length).toBeLessThan(events.length);
-    expect(selected[selected.length - 1].id).toBe("e21");
-    expect(Number(cut.selection.end - cut.selection.start)).toBeLessThanOrEqual(2_000_000);
-    expect(cut.priorBar).not.toBeNull();
-    expect(cut.selection.start).not.toBe(events[0].scheduleElapsed);
+  it("does not discard a continuous melody merely because a previous layer has a locked grid", () => {
+    const events = Array.from({ length: 24 }, (_, index) => index * 500).flatMap((atMs, index) => [
+      ev({ sequence: index * 2, atMs, note: 60 + index % 7 }),
+      ev({ sequence: index * 2 + 1, atMs: atMs + 200, note: 60 + index % 7, kind: "note-off", velocity: 0 }),
+    ]);
+    const before = structuredClone(events);
+    const free = recentPhraseCut(events, options());
+    expect(ids(events, free.selection)).toEqual(events.map(event => event.id));
+    for (const gridPeriodTicks of [400_000n, 500_000n, 750_000n]) {
+      for (const gridOriginTicks of [0n, 125_000n, 90_000_000n]) {
+        const cut = recentPhraseCut(events, options({ gridPeriodTicks, gridOriginTicks }));
+        expect(cut.selection).toEqual(free.selection);
+        expect(cut.loop).toEqual(free.loop);
+        expect(cut.priorBar).toBeNull();
+      }
+    }
+    expect(events).toEqual(before);
+  });
+
+  it("finds a released phrase and its pickup after noodling and a real rest with an unrelated grid origin", () => {
+    const times = [0, 200, 400, 600, 800, 5000, 5250, 5750, 6250, 6750, 7250];
+    const events = times.flatMap((atMs, index) => [
+      ev({ sequence: index * 2, atMs, note: 60 + index % 5 }),
+      ev({ sequence: index * 2 + 1, atMs: atMs + 100, note: 60 + index % 5, kind: "note-off", velocity: 0 }),
+    ]);
+    const cut = recentPhraseCut(events, options({ gridPeriodTicks: 500_000n, gridOriginTicks: 17_000_000n }));
+    expect(cut.selection.start).toBe(5_000_000n);
+    expect(cut.selection.end).toBe(7_350_000n);
+    expect(ids(events, cut.selection)).toEqual(events.slice(10).map(event => event.id));
+  });
+
+  it("keeps a repeated two-spacing motif intact without forcing it to one bar", () => {
+    const events = [0, 250, 1000, 1250, 2000, 2250, 3000, 3250, 4000, 4250].flatMap((atMs, index) => [
+      ev({ sequence: index * 2, atMs, note: 60 + index % 2 }),
+      ev({ sequence: index * 2 + 1, atMs: atMs + 100, note: 60 + index % 2, kind: "note-off", velocity: 0 }),
+    ]);
+    const cut = recentPhraseCut(events, options({ gridPeriodTicks: 500_000n, gridOriginTicks: 0n }));
+    expect(ids(events, cut.selection)).toEqual(events.map(event => event.id));
+  });
+
+  it("documents that an isolated long internal rest is still treated as a phrase boundary", () => {
+    // No pitch/motif model can currently distinguish this intended internal rest
+    // from a new phrase. Preserve that limitation rather than claim recognition.
+    const events = [0, 500, 1000, 1500, 5000, 5500, 6000, 6500].flatMap((atMs, index) => [
+      ev({ sequence: index * 2, atMs }),
+      ev({ sequence: index * 2 + 1, atMs: atMs + 100, kind: "note-off", velocity: 0 }),
+    ]);
+    const cut = recentPhraseCut(events, options({ gridPeriodTicks: 500_000n }));
+    expect(cut.selection.start).toBe(5_000_000n);
+    expect(cut.priorPhrase).not.toBeNull();
   });
 
   it("stays in free time and says the cut is ambiguous when the pulse is unreliable", () => {

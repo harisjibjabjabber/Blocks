@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { boundedSnap, chordSelection, doubleTapDeletes, isBlackKey, keyShape, moveSelection, nearestBoundary, nextDrawId, notesInMarquee, rangeFromDrag, resizeSelection, scaleSelectionVelocity, RollTapTracker, RollTransaction, type RollTap } from "./roll-interaction";
+import { boundedSnap, chordSelection, doubleTapDeletes, isBlackKey, keyShape, moveSelection, nearestBoundary, nextDrawId, notesInMarquee, rangeFromDrag, resizeSelection, scaleSelectionVelocity, snapRangeStart, RollTapTracker, RollTransaction, type RollTap } from "./roll-interaction";
 import { snapIndexAt, snapPointAt } from "./snap";
 import { pitchLabel, pitchToY } from "./roll-time";
 import type { RollNote } from "./roll-notes";
@@ -69,14 +69,40 @@ describe("ruler range gestures", () => {
     expect(rangeFromDrag(130_000n, 1_080_000n, 0n, 2_000_000n, grid, division)).toEqual({ start: 100_000n, end: 1_100_000n });
     expect(rangeFromDrag(1_080_000n, 130_000n, 0n, 2_000_000n, grid, division)).toEqual({ start: 100_000n, end: 1_100_000n });
   });
-  it("never creates a zero range or clamps a snapped endpoint between gridlines", () => {
+  it("rejects zero ranges and preserves a snapped end while recovering the tape floor", () => {
     expect(rangeFromDrag(120_000n, 200_000n, 0n, 2_000_000n, grid, division)).toBeNull();
-    expect(rangeFromDrag(0n, 2_000_000n, 110_000n, 1_700_000n, grid, division)).toEqual({ start: 600_000n, end: 1_600_000n });
+    expect(rangeFromDrag(0n, 2_000_000n, 110_000n, 1_700_000n, grid, division)).toEqual({ start: 110_000n, end: 1_600_000n });
+    expect(rangeFromDrag(2_000_000n, 0n, 110_000n, 1_700_000n, grid, division)).toEqual({ start: 110_000n, end: 1_600_000n });
+    expect(rangeFromDrag(110_000n, 110_000n, 110_000n, 1_700_000n, grid, division)).toBeNull();
+    expect(rangeFromDrag(0n, 100_000n, 110_000n, 1_700_000n, grid, division)).toBeNull();
   });
   it("Alt and free-time retain the exact drag positions within history and visible end", () => {
     const expected = { start: 123_456n, end: 987_654n };
     expect(rangeFromDrag(expected.start, expected.end, 0n, 2_000_000n, grid, division, true)).toEqual(expected);
     expect(rangeFromDrag(expected.start, expected.end, 0n, 2_000_000n, null, division)).toEqual(expected);
+  });
+});
+
+describe("recovering a phrase prefix with snapping enabled", () => {
+  const grid = { bpm: 120, beatsPerBar: 4, phase: 1_000_000n };
+  const bars = { kind: "bar", bars: 1 } as const;
+  const earliestNote = 30_000n;
+  it("lets a start grip reach the first note despite a later inferred downbeat", () => {
+    expect(snapRangeStart(earliestNote, earliestNote, 3_000_000n, grid, bars)).toBe(earliestNote);
+    expect(snapRangeStart(-1_000_000n, earliestNote, 3_000_000n, grid, bars)).toBe(earliestNote);
+    // A normal end marker or note edit still uses the first valid lattice point.
+    expect(boundedSnap(earliestNote, earliestNote, 3_000_000n, grid, bars)).toBe(grid.phase);
+  });
+  it("recovers the floor on an ArrowLeft step and rejoins the grid on ArrowRight", () => {
+    const previous = snapPointAt(snapIndexAt(grid.phase, grid, bars)! - 1n, grid, bars)!;
+    const recovered = snapRangeStart(previous, earliestNote, 3_000_000n, grid, bars)!;
+    expect(recovered).toBe(earliestNote);
+    const next = snapPointAt(snapIndexAt(recovered, grid, bars)! + 1n, grid, bars)!;
+    expect(snapRangeStart(next, earliestNote, 3_000_000n, grid, bars)).toBe(grid.phase);
+  });
+  it("does not create off-grid starts elsewhere or permit an invalid interval", () => {
+    expect(snapRangeStart(200_000n, earliestNote, 3_000_000n, grid, bars)).toBe(grid.phase);
+    expect(snapRangeStart(0n, earliestNote, earliestNote - 1n, grid, bars)).toBeNull();
   });
 });
 

@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import type { IncomingEvent } from "../domain/capture";
 import { createWebEngine, type PlaybackEvent } from "./engine.web";
+import { clampEnvelope, defaultEnvelope } from "../audio/instruments";
+import { WebInstrumentRack } from "../audio/web/instrument-rack";
 
 class FakeParam {
   value = 0.2;
@@ -23,6 +25,7 @@ class FakeNode {
   stops: number[] = [];
   frequency = new FakeParam();
   gain = new FakeParam();
+  Q = new FakeParam();
   type = "sine";
   connect() {
     return this;
@@ -56,6 +59,7 @@ class FakeContext {
   createGain() {
     return new FakeNode();
   }
+  createBiquadFilter() { return new FakeNode(); }
   createOscillator() {
     const oscillator = new FakeNode();
     this.oscillators.push(oscillator);
@@ -85,6 +89,56 @@ function note(): PlaybackEvent {
 }
 
 describe("web engine adapter", () => {
+  it("keeps per-layer sounds independent from live input and captures only original touch events", async () => {
+    vi.useFakeTimers();
+    const context = new FakeContext(); context.state = "running";
+    const engine = createWebEngine({ createContext: () => context as unknown as AudioContext, requestMIDIAccess: undefined });
+    const captured: IncomingEvent[] = []; engine.subscribe(event => captured.push(event));
+    engine.setLayerInstrument("pad", "blocks.pad.warm.v1");
+    engine.loopLayer("ep", [note()], 1, 1);
+    engine.loopLayer("pad", [note()], 1, 1);
+    context.currentTime = 1.055; vi.advanceTimersByTime(10);
+    expect(context.oscillators.some(osc => osc.type === "triangle")).toBe(true);
+    expect(context.oscillators.some(osc => osc.type === "sawtooth")).toBe(true);
+    const before = context.oscillators.length;
+    engine.setLiveInstrument("blocks.ep.fm.v1"); engine.touch(67, 90, true);
+    expect(context.oscillators.slice(before).every(osc => osc.type === "sine")).toBe(true);
+    expect(engine.soundingPitches("pad")).toContain(60);
+    expect(captured).toHaveLength(1); expect(captured[0].raw).toEqual([0x90, 67, 90]);
+    engine.setLayerInstrument("ep", "blocks.pad.warm.v1");
+    context.currentTime += 0.1;
+    expect(engine.soundingPitches("ep")).toEqual([]);
+    expect(engine.soundingPitches("pad")).toContain(60);
+    expect(captured).toHaveLength(1);
+    engine.silence(); vi.useRealTimers();
+  });
+
+  it("preserves pedal state on a sound change and snapshots each voice's ADSR", () => {
+    const context = new FakeContext(); context.state = "running";
+    const rack = new WebInstrumentRack(context as unknown as AudioContext);
+    const message = { channel: 0, note: 60, velocity: 96, controller: 64, value: 127, source: "midi" as const };
+    rack.play(1, { ...message, kind: "cc" });
+    rack.configure("midi", "blocks.pad.warm.v1", { ...defaultEnvelope("blocks.pad.warm.v1"), releaseMs: 200 });
+    rack.play(1, { ...message, kind: "note-on" });
+    rack.play(1.1, { ...message, kind: "note-off", velocity: 0 });
+    context.currentTime = 2; expect(rack.soundingPitches("midi")).toEqual([60]);
+    const before = context.oscillators.flatMap(osc => osc.stops).length;
+    rack.configure("midi", "blocks.pad.warm.v1", { ...defaultEnvelope("blocks.pad.warm.v1"), releaseMs: 5000 });
+    expect(context.oscillators.flatMap(osc => osc.stops)).toHaveLength(before);
+    rack.play(2, { ...message, kind: "cc", value: 0 });
+    context.currentTime = 2.3; expect(rack.soundingPitches("midi")).toEqual([]);
+    rack.play(2.3, { ...message, kind: "note-on" });
+    rack.play(2.4, { ...message, kind: "note-off", velocity: 0 });
+    context.currentTime = 3; expect(rack.soundingPitches("midi")).toEqual([60]);
+    rack.cancelAll(); expect(rack.soundingPitches("midi")).toEqual([]);
+  });
+
+  it("clamps invalid envelopes without mutating the caller or preset defaults", () => {
+    const envelope = { attackMs: -20, decayMs: NaN, sustain: 20, releaseMs: Infinity };
+    expect(clampEnvelope(envelope, "blocks.pad.warm.v1")).toEqual({ attackMs: 2, decayMs: 1000, sustain: 1, releaseMs: 700 });
+    expect(envelope.attackMs).toBe(-20); expect(defaultEnvelope("blocks.pad.warm.v1").attackMs).toBe(160);
+  });
+
   it("pauses a cut second layer until it rejoins the first layer at the next boundary", () => {
     const context = new FakeContext(); context.setState("running"); context.currentTime = 10;
     const engine = createWebEngine({ createContext: () => context as unknown as AudioContext });
