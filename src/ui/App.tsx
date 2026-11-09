@@ -885,7 +885,7 @@ export default function App() {
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6, height: 48 }}>
             {rangeMode && take && button("Cut range", () => cutRange(take))}
             <View style={{ flex: 1 }} />
-            {button("?", () => changeHistoryZoom(Math.max(0, zoomDetail - 12)), { accessibilityLabel: "Zoom out time", disabled: historyFrame.end - historyFrame.start >= BigInt(Math.floor(zoomMax)) })}
+            {button("\u2212", () => changeHistoryZoom(Math.max(0, zoomDetail - 12)), { accessibilityLabel: "Zoom out time", disabled: historyFrame.end - historyFrame.start >= BigInt(Math.floor(zoomMax)) })}
             {button("+", () => changeHistoryZoom(Math.min(100, zoomDetail + 12)), { accessibilityLabel: "Zoom in time" })}
             {button("Fit", () => setHistoryWindow({ start: historyFloor, end: historyEnd }), { accessibilityLabel: "Fit clip" })}
           </View>
