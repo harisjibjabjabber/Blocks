@@ -26,10 +26,10 @@ if(process.exitCode)throw Error('Core diagnostic failed.');
 const renderWallMs=performance.now()-started;
 if(JSON.stringify(before)!==JSON.stringify(sourceHashes()))throw Error('Core or fixture changed during rendering; discard this evidence and rerun after freeze.');
 const matrix=JSON.parse(readFileSync(resolve(out,'matrix.json'),'utf8'));
-if(![4,5].includes(matrix.abiVersion)||matrix.cases.length!==130||matrix.normalized!==false)throw Error('Incorrect diagnostic matrix.');
+if(![4,5,6].includes(matrix.abiVersion)||matrix.cases.length!==130||matrix.normalized!==false)throw Error('Incorrect diagnostic matrix.');
 const parameter=(c,id)=>c.parameters.find(p=>p.id===id)?.value;
 for(const c of matrix.cases){
- if(c.parameters.length!==(matrix.abiVersion===4?35:40)||Math.abs(parameter(c,0)-Math.fround(.3))>1e-10||parameter(c,6)!==1||parameter(c,11)!==6000||parameter(c,13)!==0||parameter(c,18)!==0||parameter(c,23)!==1||parameter(c,24)!==0||parameter(c,32)!==0||parameter(c,34)!==0)throw Error('Non-neutral diagnostic setting: '+c.id);
+ if(c.parameters.length!==({4:35,5:40,6:42}[matrix.abiVersion])||Math.abs(parameter(c,0)-Math.fround(.3))>1e-10||parameter(c,6)!==1||parameter(c,11)!==6000||parameter(c,13)!==0||parameter(c,18)!==0||parameter(c,23)!==1||parameter(c,24)!==0||parameter(c,32)!==0||parameter(c,34)!==0)throw Error('Non-neutral diagnostic setting: '+c.id);
  if(c.metrics.clippedSamples||c.metrics.voicesAtEnd||Object.values(c.metrics).some(v=>!Number.isFinite(v))||c.metrics.monoAcRms<=0)throw Error('Invalid output: '+c.id);
 }
 const near=(a,b)=>Math.abs(a-b)<=1e-8*Math.max(1,Math.abs(a),Math.abs(b));

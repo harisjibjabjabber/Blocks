@@ -32,22 +32,24 @@
       <button type="button" data-module="envelope" aria-pressed="false">Envelope</button>
       <button type="button" data-module="character" aria-pressed="false">Character</button>
       <button type="button" data-module="drop" aria-pressed="false">Sauce</button>
+      <button type="button" data-module="lfo" aria-pressed="false">LFO</button>
     </nav>
     <div id="sauce-rack" hidden></div>
     <section id="sound-editor" class="sound-editor" aria-label="Sound editing">
       <div class="visual-panel">
-        <div class="surface-heading"><div id="envelope-tabs" role="group" aria-label="Envelope destination" hidden><button type="button" data-envelope="amp" aria-pressed="true">Amp</button><button type="button" data-envelope="filter" aria-pressed="false">Filter</button></div><button id="motion-details-toggle" type="button" aria-expanded="false" aria-controls="motion-details" hidden>Motion details <span aria-hidden="true">⌄</span></button><h2 id="module-title">Oscillator + filter</h2><output id="value-summary" aria-live="off"></output></div>
+        <div class="surface-heading"><div id="envelope-tabs" role="group" aria-label="Envelope destination" hidden><button type="button" data-envelope="amp" aria-pressed="true">Amp</button><button type="button" data-envelope="filter" aria-pressed="false">Filter</button></div><button id="motion-details-toggle" type="button" aria-expanded="false" aria-controls="motion-details" hidden>Pitch details <span aria-hidden="true">⌄</span></button><h2 id="module-title">Oscillator + filter</h2><output id="value-summary" aria-live="off"></output></div>
         <div id="waveforms" aria-label="Oscillator waveforms" hidden></div>
         <div id="scope-wrapper" hidden><div class="waveform-caption"><span>Waveform</span><span id="scope-label">Preview</span></div><canvas id="scope" aria-label="Synth waveform preview"></canvas></div>
         <div id="shape-surface" aria-label="Interactive sound graph"></div>
         <div id="performance-panel" hidden></div>
-        <div id="motion-details" role="group" aria-label="Motion details" hidden><div class="motion-details-heading"><span>Motion</span><button id="motion-details-close" type="button" aria-label="Close Motion details">×</button></div><div id="motion-controls"></div></div>
+        <div id="lfo-panel" hidden></div>
+        <div id="motion-details" role="group" aria-label="Pitch details" hidden><div class="motion-details-heading"><span>Pitch</span><button id="motion-details-close" type="button" aria-label="Close Pitch details">×</button></div><div id="motion-controls"></div></div>
         <p id="module-description">Drag the filter point to change tone.</p>
       </div>
       <div id="macros" aria-label="Sound controls"></div>
     </section>
     <section class="keyboard-section" aria-label="Touch instrument">
-      <div class="keyboard-heading"><span>Keyboard</span><div class="keyboard-performance"><button id="mono-toggle" type="button" aria-pressed="false" title="Mono · last note priority">Mono</button><div class="octave-controls" aria-label="Keyboard octave"><button id="octave-down" type="button" aria-label="Lower keyboard octave">−</button><span id="octave-label" aria-live="polite">C4</span><button id="octave-up" type="button" aria-label="Higher keyboard octave">+</button></div></div></div>
+      <div class="keyboard-heading"><span>Keyboard</span><div class="keyboard-performance"><button id="mono-toggle" type="button" aria-pressed="false" title="Mono · last note priority">Mono</button><button id="glide-toggle" type="button" aria-pressed="false">Glide</button><button id="glide-time-toggle" type="button" aria-expanded="false" aria-controls="glide-panel" hidden>80 ms</button><div id="glide-panel" role="group" aria-label="Glide time" hidden></div><div class="octave-controls" aria-label="Keyboard octave"><button id="octave-down" type="button" aria-label="Lower keyboard octave">−</button><span id="octave-label" aria-live="polite">C4</span><button id="octave-up" type="button" aria-label="Higher keyboard octave">+</button></div></div></div>
       <div class="keyboard" id="keyboard" aria-label="Playable piano"></div>
     </section>
     <div class="utilities">

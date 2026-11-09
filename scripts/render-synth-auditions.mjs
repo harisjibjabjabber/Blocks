@@ -21,7 +21,7 @@ const run=(await import(pathToFileURL(target).href)).default;
 await run({arguments:[out,'--describe']});
 if(process.exitCode)throw Error('Audition descriptor export failed');
 const descriptors=JSON.parse(readFileSync(resolve(out,'descriptors.json'),'utf8'));
-if(descriptors.length!==40)throw Error('Expected ABI5/count40 descriptors');
+if(descriptors.length!==42)throw Error('Expected ABI6/count42 descriptors');
 const factoryInput=resolve(out,'factory-values.txt');
 writeFileSync(factoryInput,['velvet','glass','low'].map(id=>id+' '+factoryPatch(id,descriptors).join(' ')).join('\n')+'\n');
 await run({arguments:[out,factoryInput]});
@@ -30,7 +30,7 @@ if(process.exitCode)throw Error('Audition renderer exited with code '+process.ex
 const sha256=path=>createHash('sha256').update(readFileSync(path)).digest('hex');
 const clips=['velvet','glass','low','sine-triangle','voice-overflow'].map(id=>{
  const manifest=JSON.parse(readFileSync(resolve(out,id+'.json'),'utf8'));
- if(manifest.abiVersion!==5||manifest.patchVersion!==5||manifest.parameters.length!==40)throw Error('Audition requires ABI5/count40: '+id);
+ if(manifest.abiVersion!==6||manifest.patchVersion!==6||manifest.parameters.length!==42)throw Error('Audition requires ABI6/count42: '+id);
  if(manifest.frames>manifest.sampleRate*6||manifest.normalized!==false||manifest.measurements.clippedSamples||manifest.measurements.voicesAtEnd)throw Error('Invalid audition fixture: '+id);
  if(!(manifest.measurements.rms>1e-4)||!Number.isFinite(manifest.measurements.peak)||manifest.measurements.lastHalfSecondRms>1e-5)throw Error('Silent or uncleared audition fixture: '+id);
  if(['velvet','glass','low'].includes(id)) {

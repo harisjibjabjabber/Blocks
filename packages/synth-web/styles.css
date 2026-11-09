@@ -210,3 +210,110 @@ button:disabled{opacity:.35;cursor:default}button:focus-visible,input:focus-visi
 .instrument[data-module=drop][data-sauce=fullness] #macros .macro{flex:0 1 112px}
 @media(min-width:700px){.sauce-rack{grid-template-columns:1fr 1fr;gap:24px;margin-bottom:14px}.sauce-lane h3{font-size:10px;margin-bottom:7px}.sauce-block-open{font-size:12px}.sauce-block-power{font-size:10px}}
 @media(max-width:360px){.instrument[data-module=drop]{padding-inline:8px}.sauce-note-cards{gap:3px}}
+.instrument[data-module=drop] .keyboard-section{display:none}
+.sauce-rack{display:flex;flex-wrap:wrap;align-items:flex-start;gap:16px 24px;margin-bottom:12px}
+.sauce-lane{flex:0 1 auto;max-width:100%}
+.sauce-note-cards,.sauce-audio-cards{display:flex;flex-wrap:wrap;gap:6px;overflow:visible;min-height:44px}
+.sauce-block{flex:0 0 auto;grid-template-columns:minmax(44px,max-content) 44px}
+.sauce-audio-block{grid-template-columns:44px minmax(44px,max-content) 44px}
+.sauce-lane h3:has(#sauce-audio-swap){height:44px;margin-top:-14px;margin-bottom:3px;gap:8px}
+#sauce-audio-flow{margin-left:auto}
+#sauce-audio-swap{font-size:18px;flex:0 0 44px}
+.sauce-drag-grip{width:44px;height:44px;min-height:44px;padding:0;font-size:20px;color:var(--quiet);background:transparent;border:0;touch-action:none;cursor:grab;border-radius:10px 0 0 10px}
+.sauce-audio-block .sauce-block-open{border-radius:0}
+.sauce-drag-grip:active{cursor:grabbing}
+.sauce-block[data-dragging=true]{opacity:.3}
+.sauce-drag-ghost{position:fixed;z-index:1000;pointer-events:none;background:#201b18;box-shadow:0 6px 20px #0008,inset 0 0 0 1px var(--accent)}
+body:has(.sauce-audio-cards[data-drop-valid=false]) .sauce-drag-ghost{opacity:.45}
+.instrument[data-module=drop] #sound-editor{max-width:360px;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);gap:8px;align-items:center}
+.instrument[data-module=drop] #shape-surface{height:72px}
+.instrument[data-module=drop] #shape-surface .plot-label{display:none}
+.instrument[data-module=drop] #macros{min-height:0;padding:0;border:0;gap:8px;display:flex;justify-content:center}
+.instrument[data-module=drop] #macros[hidden]{display:none}
+.instrument[data-module=drop] #macros .macro{max-width:112px;gap:2px}
+.instrument[data-module=drop] #macros .dial{width:44px;height:44px;min-height:44px}
+.instrument[data-module=drop] #macros .dial-face{width:32px;height:32px}
+.instrument[data-module=drop] #macros .dial-needle{left:14px;top:3px;height:8px;transform-origin:1px 12px}
+.instrument[data-module=drop] #macros .macro-name{font-size:10px;line-height:12px}
+.instrument[data-module=drop] #macros .macro-value{font-size:9px;line-height:12px}
+.instrument[data-module=drop][data-sauce=drive] #sound-editor{max-width:300px;grid-template-columns:minmax(0,1fr) 76px}
+.instrument[data-module=drop][data-sauce=drop] #sound-editor{max-width:300px;grid-template-columns:minmax(0,1fr)}
+.instrument[data-module=drop][data-sauce=fullness] #sound-editor{max-width:132px;grid-template-columns:minmax(0,1fr)}
+.instrument[data-module=drop][data-sauce=fullness] #macros{min-height:0;padding:0}
+.instrument[data-module=drop] .performance-panel{display:grid;grid-template-columns:minmax(0,1fr);min-height:0;max-width:none;padding:0;gap:6px;align-content:start}
+.performance-mini-controls{display:grid;grid-template-columns:minmax(74px,1fr) 56px 56px;gap:8px;align-items:center}
+.performance-control{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.performance-dial{display:grid;place-items:center;width:44px;height:44px;min-height:44px;padding:0;border:0;background:transparent;touch-action:none;cursor:ns-resize;border-radius:50%}
+.performance-dial-face{position:relative;width:32px;height:32px;border-radius:50%;border:1px solid #454b50;background:linear-gradient(145deg,#2d3439,#15191d);box-shadow:0 2px 4px #0004;pointer-events:none}
+.performance-dial-needle{position:absolute;left:14px;top:3px;width:2px;height:8px;border-radius:2px;background:var(--ivory);transform-origin:1px 12px;transform:rotate(var(--rotation,0deg))}
+.performance-dial:focus-visible{outline:none}.performance-dial:focus-visible .performance-dial-face{outline:2px solid var(--accent);outline-offset:3px}
+.performance-dial-label{font-size:10px;line-height:12px;color:var(--muted)}
+.performance-control output{font:9px "Geist Mono",monospace;line-height:12px;white-space:nowrap}
+.performance-tempo output{font-size:9px}
+#motion-controls .macro:last-child:nth-child(odd){grid-column:1/-1}
+.keyboard-performance{position:relative;gap:4px}
+#glide-toggle,#glide-time-toggle{height:44px;min-height:44px;min-width:44px;padding:0 4px;font-size:10px;background:transparent;border-color:transparent}
+#glide-toggle[aria-pressed=true]{color:var(--accent);border-color:var(--line);background:var(--panel)}
+#glide-time-toggle{font:9px "Geist Mono",monospace;color:var(--muted)}
+#glide-panel{position:absolute;right:0;bottom:calc(100% + 6px);width:144px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);z-index:8;box-shadow:0 6px 20px #0006}
+#glide-panel>.macro{max-width:none;width:100%}
+#glide-panel[hidden],#glide-time-toggle[hidden]{display:none}
+@media(max-width:699px){.sauce-note-cards .sauce-block{grid-template-columns:44px 44px}.sauce-audio-block{grid-template-columns:44px 44px 44px}.sauce-audio-block .sauce-block-open{font-size:10px;padding:0 1px;gap:1px}.instrument[data-module=character] #macros{gap:4px}.instrument[data-module=character] #macros .macro-name{font-size:10px;white-space:nowrap}.instrument[data-module=character] .motion-value{font-size:9px}}
+@media(max-width:360px){.keyboard-heading:has(#glide-toggle[aria-pressed=true])>span{display:none}.keyboard-heading:has(#glide-toggle[aria-pressed=true]) .keyboard-performance{width:100%;justify-content:space-between;gap:0}.instrument[data-module=drop] #sound-editor{padding:8px}.instrument[data-module=character] #macros .macro-name{font-size:9px}}
+/* Configurable Sauce workspace: every card is an instrument, never a detached popup. */
+#module-tabs{grid-template-columns:repeat(5,minmax(0,1fr))}
+#lfo-panel[hidden],.rack-grip[hidden],.rack-card-actions button[hidden],.lfo-panel [hidden],.rack-picker-capacity[hidden]{display:none}
+.instrument[data-module=lfo] #sound-editor{display:block;width:100%}
+.instrument[data-module=lfo] .surface-heading{display:none}
+.sauce-workspace{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:4px 0 16px;min-height:230px}
+.rack-grid{display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px;width:100%}
+.rack-card{flex:0 0 auto;min-width:0;width:144px;max-width:100%;border:1px solid var(--line);border-radius:12px;background:linear-gradient(145deg,#161b20,#111519);overflow:hidden}
+.rack-card[data-rack-type=drop]{width:218px}.rack-card[data-rack-type=arp]{width:294px}.rack-card[data-rack-type=strum]{width:250px}.rack-card[data-rack-type=lfo]{width:276px}
+.rack-card-header{display:flex;align-items:center;min-height:44px;border-bottom:1px solid #ffffff06;gap:0;padding:0 3px}
+.rack-card-title{min-width:0;flex:1;padding:0 2px}.rack-card-title h3{font-size:12px;line-height:15px;font-weight:500;margin:0;white-space:nowrap}.rack-card-title>span{font-size:8px;color:var(--quiet);letter-spacing:.04em}
+.rack-grip{width:32px;min-width:32px;height:44px;min-height:44px;border:0;background:transparent;border-radius:0;padding:0;color:var(--quiet);font-size:18px;touch-action:none;cursor:grab}
+.rack-grip:active{cursor:grabbing}.rack-grip:disabled{opacity:.2}
+.rack-power{width:44px;min-width:44px;height:44px;min-height:44px;border:0;background:transparent;padding:0;color:var(--quiet);font:9px "Geist Mono",monospace;gap:4px}.rack-power:before{content:"";width:4px;height:4px;border-radius:50%;background:var(--quiet)}.rack-power[aria-checked=true]{color:var(--ivory)}.rack-power[aria-checked=true]:before{background:var(--accent)}
+.rack-card-controls{display:flex;justify-content:center;align-items:flex-start;gap:14px;padding:8px 10px 5px;min-width:0}
+.rack-card[data-enabled=false] .rack-card-controls{opacity:.6}
+.rack-deeper{border-top:1px solid #ffffff06;padding:0 8px}.rack-deeper>summary{display:flex;justify-content:center;align-items:center;list-style:none;min-height:44px;color:var(--quiet);font-size:9px;cursor:pointer;gap:6px}.rack-deeper>summary::-webkit-details-marker{display:none}.rack-deeper>summary:after{content:"⌄";font-size:13px}.rack-deeper[open]>summary:after{content:"⌃"}.rack-deeper[open]>summary{color:var(--ivory)}
+.rack-extra{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}.rack-card-actions{display:flex;justify-content:flex-end;gap:2px;align-items:center;border-top:1px solid var(--line);margin-top:6px}.rack-card-actions button{min-width:44px;height:44px;min-height:44px;border:0;background:transparent;padding:0 6px;color:var(--muted);font-size:10px}.rack-card-actions button:last-child{margin-left:auto}
+.rack-contour{display:block;width:100%;height:48px}.rack-contour path{stroke:var(--accent);fill:none;stroke-width:1.5;vector-effect:non-scaling-stroke}
+.rack-card .performance-panel{width:100%;max-width:none;display:grid;padding:8px;gap:8px}.rack-card .performance-mini-controls{grid-template-columns:minmax(76px,1fr) 58px 58px;gap:4px}.rack-card .performance-rhythm{gap:6px}.rack-card .performance-tempo{min-width:0;gap:0}.rack-card .performance-tempo button{width:44px;min-width:44px;padding:0}.rack-card .performance-tempo output{min-width:46px;text-align:center}.rack-card .performance-select{min-width:0}.rack-card .performance-select select{font-size:11px;padding:0 4px}
+.rack-card .performance-preview,.rack-card .performance-hint{display:none}.rack-card:has(.rack-deeper[open]) .performance-preview{display:flex}.rack-card:has(.rack-deeper[open]) .performance-hint{display:block}
+.rack-card[data-rack-type=lfo] .rack-card-controls{flex-wrap:wrap}.rack-route-badge{flex-basis:100%;text-align:center;color:var(--quiet);font:9px "Geist Mono",monospace}
+#sauce-add{min-width:96px;height:44px;min-height:44px;padding:0 18px;border-style:dashed;background:transparent;color:var(--ivory);font-size:12px;border-radius:10px}
+#sauce-picker{color:var(--ivory);background:var(--panel);border:1px solid var(--line);border-radius:16px;width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 40px);padding:16px;box-shadow:0 20px 80px #0009}
+#sauce-picker::backdrop{background:#050709b8;backdrop-filter:blur(4px)}.rack-picker-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.rack-picker-heading h2{font:28px "Instrument Serif",serif;margin:0}.rack-picker-heading button{width:44px;height:44px;min-height:44px;background:transparent;border:0;font-size:20px;padding:0}
+.rack-picker-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rack-picker-options button{min-height:70px;align-items:flex-start;flex-direction:column;gap:5px;padding:12px;background:var(--bg)}.rack-picker-options strong{font-size:14px;font-weight:450}.rack-picker-options span{color:var(--quiet);font-size:10px}.rack-picker-capacity{font:9px "Geist Mono",monospace;color:var(--quiet);margin:16px 0 2px}
+.rack-card[data-dragging=true]{opacity:.25}.rack-drag-ghost{position:fixed;z-index:1000;pointer-events:none;box-shadow:0 8px 25px #0008;border-color:var(--accent);opacity:.95}.rack-drag-ghost[data-invalid=true]{opacity:.4}
+.config-control{display:flex;min-width:0;flex-direction:column;align-items:center;gap:2px;flex:0 1 82px}.config-dial{display:grid;place-items:center;width:44px;height:44px;min-height:44px;min-width:44px;padding:0;border:0;background:transparent;border-radius:50%;touch-action:none;cursor:ns-resize;position:relative}
+.config-dial-face{position:relative;width:34px;height:34px;border:1px solid #454b50;background:linear-gradient(145deg,#30373d,#15191d);border-radius:50%;box-shadow:0 2px 4px #0005;pointer-events:none}.config-dial-needle{position:absolute;left:15px;top:3px;width:2px;height:8px;border-radius:2px;background:var(--ivory);transform-origin:1px 13px;transform:rotate(var(--rotation,0deg))}.config-dial-label{font-size:10px;line-height:13px;color:var(--muted)}.config-dial-value{font:9px "Geist Mono",monospace;line-height:13px;white-space:nowrap}.config-dial:focus-visible{outline:none}.config-dial:focus-visible .config-dial-face{outline:2px solid var(--accent);outline-offset:3px}
+.config-control-inline{flex:0 0 44px}.config-control-inline .config-dial-face{width:40px;height:40px}.config-control-inline .config-dial-needle{left:18px;top:2px;height:5px;transform-origin:1px 17px}.config-control-inline .config-dial-value{position:absolute;top:19px;left:0;right:0;font-size:8px;pointer-events:none}
+.lfo-panel{width:100%;max-width:680px;position:relative;display:grid;gap:8px;margin:0 auto 10px;min-width:0}
+.lfo-toolbar{display:flex;justify-content:space-between;gap:8px}.lfo-toolbar>button{height:44px;min-height:44px;background:transparent;font-size:12px}.lfo-toolbar>button:first-child{display:flex;gap:12px;flex:1;justify-content:space-between}.lfo-toolbar>button:last-child{min-width:50px}.lfo-toolbar [role=switch][aria-checked=true]{border-color:var(--accent);color:var(--accent)}
+[data-lfo-ref=lfo-shape]{width:70px;height:24px}[data-lfo-ref=lfo-shape] path{fill:none;stroke:var(--accent);stroke-width:1.4;vector-effect:non-scaling-stroke}
+[data-lfo-ref=lfo-wave-options]{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}[data-lfo-ref=lfo-wave-options] button{min-width:0;padding:0 4px;height:44px;min-height:44px;font-size:10px}[data-lfo-ref=lfo-wave-options] button[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
+.lfo-primary-controls{display:grid;grid-template-columns:1fr 1fr 52px 76px;gap:8px;align-items:center}.lfo-primary-controls>.config-control{margin:auto}.lfo-primary-controls>div>.config-control{margin:auto}.lfo-primary-controls>button{min-height:44px;height:44px;padding:0 6px;background:transparent;font-size:11px}.lfo-primary-controls>button[aria-pressed=true]{color:var(--accent);border-color:var(--accent)}
+.lfo-tempo{display:flex;align-items:center;justify-content:flex-end;gap:2px;border-bottom:1px solid var(--line)}.lfo-tempo>span{font-size:10px;color:var(--muted);margin-right:auto}.lfo-tempo>button{width:44px;height:44px;min-height:44px;padding:0;background:transparent;border:0;font-size:18px}.lfo-tempo>output{font:10px "Geist Mono",monospace;min-width:54px;text-align:center}
+[data-lfo-ref=lfo-routes]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.lfo-route{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;position:relative;border:1px solid var(--line);border-radius:9px;padding:3px 4px 3px 8px;min-width:0}.lfo-route>span{font-size:10px;line-height:13px;padding-right:18px}.lfo-route>.config-control{grid-column:2;grid-row:1/3}.lfo-route-remove{position:absolute;left:4px;bottom:0;width:44px;height:44px;min-height:44px;padding:18px 0 0;justify-content:flex-start;background:transparent;border:0;color:var(--quiet);font-size:15px}.lfo-route>span{min-height:46px;display:flex;align-items:flex-start;padding-top:4px}.lfo-route:has(.lfo-route-remove:focus-visible){border-color:var(--accent)}
+[data-lfo-ref=lfo-add-route]{width:100%;height:44px;background:transparent;border:1px dashed var(--line);border-radius:8px;padding:0 10px;color:var(--muted);font-size:11px}
+.rack-extra>.lfo-panel{margin:0}.rack-extra .lfo-primary-controls{grid-template-columns:1fr 1fr}.rack-extra [data-lfo-ref=lfo-routes]{grid-template-columns:1fr}.rack-extra .lfo-route{min-height:48px}.rack-extra .lfo-toolbar>button:first-child{gap:4px;padding:0 6px}.rack-extra .lfo-toolbar [data-lfo-ref=lfo-shape]{width:42px}.rack-extra [data-lfo-ref=lfo-wave-options]{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:699px){.sauce-workspace{min-height:320px}.rack-grid{gap:8px}.instrument[data-module=drop]{padding-inline:12px}.rack-card[data-rack-type=arp],.rack-card[data-rack-type=lfo]{width:100%}.rack-card[data-rack-type=drive],.rack-card[data-rack-type=fullness]{width:calc((100% - 8px)/2);min-width:134px}.rack-card-header{padding:0}.rack-grip{min-width:30px;width:30px}.rack-card-title h3{font-size:11px}.lfo-panel{gap:5px}.lfo-primary-controls{gap:4px;grid-template-columns:1fr 1fr 48px 70px}.lfo-route>span{font-size:9px}.lfo-toolbar>button:first-child{gap:6px}}
+@media(min-width:700px){.instrument[data-module=lfo] .keyboard-section{margin-top:12px}.lfo-panel{grid-template-columns:1fr 1fr;gap:12px 24px;max-width:none}.lfo-toolbar,[data-lfo-ref=lfo-wave-options],.lfo-primary-controls{grid-column:1}.lfo-tempo{grid-column:1;grid-row:3}.lfo-panel>[data-lfo-ref=lfo-routes]{grid-column:2;grid-row:1/4;align-content:start;grid-template-columns:1fr}.lfo-panel>[data-lfo-ref=lfo-add-route]{grid-column:2}.rack-extra>.lfo-panel{display:grid;grid-template-columns:1fr;gap:6px}.rack-extra .lfo-panel>*{grid-column:auto;grid-row:auto}.rack-extra .lfo-panel>[data-lfo-ref=lfo-routes]{grid-column:auto;grid-row:auto}.rack-extra .lfo-panel>[data-lfo-ref=lfo-add-route]{grid-column:auto}}
+
+/* Route actions have separate targets; source timing readout uses the sync clock. */
+.rack-grip{width:44px;min-width:44px}
+.rack-deeper>summary:before{display:none}
+[data-lfo-ref=lfo-routes]{grid-template-columns:1fr}
+.lfo-route{grid-template-columns:minmax(0,1fr) 44px 44px;padding:0 4px 0 10px;min-height:46px}
+.lfo-route>span{min-height:44px;align-items:center;padding:0 5px 0 0;font-size:11px}
+.lfo-route>.config-control{grid-column:2;grid-row:1}
+.lfo-route-remove{position:static;grid-column:3;grid-row:1;width:44px;height:44px;min-height:44px;padding:0;justify-content:center}
+@media(max-width:699px){.lfo-panel{gap:4px}.rack-card-title h3{font-size:10px}}
+
+.rack-extra .lfo-toolbar>[role=switch]{display:none}
+
+.rack-card .performance-hint:has([data-performance-ref=performance-status]:not(:empty)){display:block}
+#lfo-panel>[data-lfo-ref=lfo-routes]{max-height:230px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+@media(max-width:699px){#lfo-panel>[data-lfo-ref=lfo-routes]{max-height:98px}}

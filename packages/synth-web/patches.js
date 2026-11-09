@@ -1,6 +1,6 @@
 // Patch versions describe physical parameter arrays, never transient voices.
 import {canonicalLevels} from './parameter-state.js';
-const counts = new Map([[1,18],[2,19],[3,21],[4,35],[5,40]]);
+const counts = new Map([[1,18],[2,19],[3,21],[4,35],[5,40],[6,42]]);
 export function migratePatch(patch, parameters, engineVersion) {
   const count = counts.get(patch?.version);
   if (patch?.format !== 'blocks-synth-patch' || !count || patch.version > engineVersion ||

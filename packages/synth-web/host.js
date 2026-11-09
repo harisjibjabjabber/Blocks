@@ -4,9 +4,11 @@ import { migratePatch } from './patches.js';
 import {emptyPeak,receivePeak,peakDisplay} from './peak-meter.js';
 import {canonicalLevels,parameterBatch} from './parameter-state.js';
 import {DEFAULT_PERFORMANCE,normalizePerformance,toCorePerformance} from './performance-state.js';
+import {DEFAULT_RACK,normalizeRack,legacyRack,hydrateRack,toCoreSauce,toCoreNotes} from './sauce-state.js';
+import {DEFAULT_MODULATION,normalizeModulation,toCoreModulation} from './modulation-state.js';
 const $=id=>document.getElementById(id);
 let context,node,analyser,parameters=[],values=[],ready=false,access,raf=0,lastDraw=0,instrument,version=1;
-let performanceSettings=normalizePerformance(DEFAULT_PERFORMANCE);
+let performanceSettings=normalizePerformance(DEFAULT_PERFORMANCE),rackSettings=normalizeRack(DEFAULT_RACK),modulationSettings=normalizeModulation(DEFAULT_MODULATION);
 const pressed=new Map(),keys=new Map();
 let keyboardShift=0,voiceCount=0,peakState=emptyPeak();
 const error=message=>{$('error').textContent=message;};
@@ -23,6 +25,17 @@ function applyPerformance(next){
   if(reset)clearInputUI();
   if(ready)node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});
 }
+function getRack(){return values.length?hydrateRack(rackSettings,values):normalizeRack(rackSettings);}
+function sendRack(){if(!ready)return;node.port.postMessage({kind:'sauce',config:toCoreSauce(getRack())});node.port.postMessage({kind:'notes',config:toCoreNotes(getRack())});}
+function applyRack(next){
+  const normalized=normalizeRack(next),previous=rackSettings;
+  const shape=r=>JSON.stringify(r.notes.map(b=>[b.id,b.type,b.enabled]));if(shape(previous)!==shape(normalized))clearInputUI();
+  rackSettings=normalized;
+  if(values.length){const tone=[...values];for(const b of normalized.audio)if(b.primary){tone[b.type==='drive'?12:18]=b.amount;tone[b.type==='drive'?36:39]=Number(b.enabled);}for(const b of normalized.notes)if(b.type==='drop'&&b.primary){tone[15]=b.amount;tone[16]=b.time;tone[17]=b.bend;tone[37]=Number(b.enabled);}const drive=normalized.audio.findIndex(b=>b.primary&&b.type==='drive'),full=normalized.audio.findIndex(b=>b.primary&&b.type==='fullness');if(drive>=0&&full>=0)tone[38]=Number(drive>full);applyValues(tone);}
+  sendRack();
+}
+function applyModulation(next){modulationSettings=normalizeModulation(next);if(ready)node.port.postMessage({kind:'modulation',config:toCoreModulation(modulationSettings)});}
+function sendExtended(){sendRack();if(ready)node.port.postMessage({kind:'modulation',config:toCoreModulation(modulationSettings)});}
 const engineData=(async()=>{
   const response=await fetch('./synth.wasm');if(!response.ok)throw Error('Cannot load synth.wasm');
   const wasm=await response.arrayBuffer();
@@ -30,7 +43,7 @@ const engineData=(async()=>{
   version=api.bs_abi_version();const view=new DataView(api.memory.buffer),bytes=new Uint8Array(api.memory.buffer);
   const string=p=>{let s='';while(bytes[p])s+=String.fromCharCode(bytes[p++]);return s;};
   parameters=Array.from({length:api.bs_parameter_count()},(_,id)=>{const p=api.bs_parameter_info(id);return{id,name:string(view.getUint32(p+4,true)),unit:string(view.getUint32(p+8,true)),min:view.getFloat32(p+12,true),max:view.getFloat32(p+16,true),default:view.getFloat32(p+20,true),mapping:view.getUint32(p+24,true)};});
-  instrument=createInstrumentUI({parameters,getValues:()=>values,applyValues,releaseVoices:panic,onViewChange:drawScope,getPerformance:()=>performanceSettings,applyPerformance});
+  instrument=createInstrumentUI({parameters,getValues:()=>values,applyValues,releaseVoices:panic,onViewChange:drawScope,getPerformance:()=>performanceSettings,applyPerformance,getRack,applyRack,getModulation:()=>modulationSettings,applyModulation});
   for(const id of ['init','export','import'])$(id).disabled=false;
   return wasm;
 })();
@@ -65,7 +78,7 @@ function showPeak(){const display=peakDisplay(peakState);$('peak-indicator').dat
 $('peak-reset').addEventListener('click',()=>{peakState=emptyPeak();showPeak();});
 window.addEventListener('resize',()=>drawScope());
 
-async function start(){error('');$('start').disabled=true;try{if(!context){context=new AudioContext({latencyHint:'interactive'});await context.resume();const wasm=await engineData;await context.audioWorklet.addModule('./processor.js');node=new AudioWorkletNode(context,'blocks-synth',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[2],processorOptions:{wasm}});analyser=context.createAnalyser();analyser.fftSize=1024;node.connect(analyser);analyser.connect(context.destination);await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Synth initialization timed out')),15000);node.port.onmessage=e=>{const m=e.data;if(m.kind==='error'){error(m.message);if(!ready){clearTimeout(timer);reject(Error(m.message));}}else if(m.kind==='ready'){clearTimeout(timer);ready=true;version=m.version;node.port.postMessage({kind:'patch',version,values});node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});for(const id of ['midi','init','export','import'])$(id).disabled=false;resolve();}else if(m.kind==='status'){voiceCount=m.voices;instrument?.setPerformancePending?.(Boolean(m.performancePending));$('monitor').textContent=m.voices+' voices';peakState=receivePeak(peakState,m);showPeak();if(m.invalid<0)error('Audio event block rejected');}else if(m.kind==='patch'){values=m.values;instrument?.update();}};});}else {await context.resume();node.port.postMessage({kind:'patch',version,values});node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});}$('status').textContent='Sound running · '+Math.round(context.sampleRate)+' Hz';$('stop').disabled=false;$('start').disabled=true;scope();}catch(e){error(String(e));if(context){await context.close();context=null;}node=null;ready=false;$('start').disabled=false;$('status').textContent='Sound unavailable';}}
+async function start(){error('');$('start').disabled=true;try{if(!context){context=new AudioContext({latencyHint:'interactive'});await context.resume();const wasm=await engineData;await context.audioWorklet.addModule('./processor.js');node=new AudioWorkletNode(context,'blocks-synth',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[2],processorOptions:{wasm}});analyser=context.createAnalyser();analyser.fftSize=1024;node.connect(analyser);analyser.connect(context.destination);await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Synth initialization timed out')),15000);node.port.onmessage=e=>{const m=e.data;if(m.kind==='error'){error(m.message);if(!ready){clearTimeout(timer);reject(Error(m.message));}}else if(m.kind==='ready'){clearTimeout(timer);ready=true;version=m.version;node.port.postMessage({kind:'patch',version,values});node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});sendExtended();for(const id of ['midi','init','export','import'])$(id).disabled=false;resolve();}else if(m.kind==='status'){voiceCount=m.voices;instrument?.setPerformancePending?.(Boolean(m.performancePending));instrument?.setRackPending?.(m.notesPendingMask??0);$('monitor').textContent=m.voices+' voices';peakState=receivePeak(peakState,m);showPeak();if(m.invalid<0)error('Audio event block rejected');}else if(m.kind==='patch'){values=m.values;instrument?.update();}};});}else {await context.resume();node.port.postMessage({kind:'patch',version,values});node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});sendExtended();}$('status').textContent='Sound running · '+Math.round(context.sampleRate)+' Hz';$('stop').disabled=false;$('start').disabled=true;scope();}catch(e){error(String(e));if(context){await context.close();context=null;}node=null;ready=false;$('start').disabled=false;$('status').textContent='Sound unavailable';}}
 $('start').addEventListener('click',start);$('stop').addEventListener('click',stop);
 const whites=[60,62,64,65,67,69,71,72,74,76,77,79,81,83],blacks=[[61,1],[63,2],[66,4],[68,5],[70,6],[73,8],[75,9],[78,11],[80,12],[82,13]],names=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
 for(const pitch of whites){const b=document.createElement('button');b.className='key white';b.dataset.pitch=pitch;b.textContent=names[pitch%12]+(pitch%12===0?Math.floor(pitch/12)-1:'');b.setAttribute('aria-label','Play '+names[pitch%12]+(Math.floor(pitch/12)-1));$('keyboard').append(b);keys.set(pitch,b);}
@@ -93,13 +106,13 @@ for(const name of ['pointerup','pointercancel','lostpointercapture'])$('keyboard
 const mapping={a:60,w:61,s:62,e:63,d:64,f:65,t:66,g:67,y:68,h:69,u:70,j:71,k:72};
 window.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(e.target.tagName))return;const base=mapping[e.key.toLowerCase()],pitch=base===undefined?undefined:base+keyboardShift*12;if(pitch!==undefined&&!e.repeat){e.preventDefault();startNote('key-'+e.code,pitch);}});window.addEventListener('keyup',e=>releaseNote('key-'+e.code));
 for(const[pitch,key]of keys){key.addEventListener('keydown',e=>{if([' ','Enter'].includes(e.key)&&!e.repeat){e.preventDefault();startNote('button-'+pitch,Number(key.dataset.pitch));}});key.addEventListener('keyup',e=>{if([' ','Enter'].includes(e.key)){e.preventDefault();releaseNote('button-'+pitch);}});}
-$('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({format:'blocks-synth-patch',version,values,performance:performanceSettings,macroVersions:{character:characterRecipe.version,motion:motionRecipe.version}},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='blocks-synth-patch.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);});
+$('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({format:'blocks-synth-patch',version,values,performance:performanceSettings,rack:getRack(),modulation:modulationSettings,macroVersions:{character:characterRecipe.version,motion:motionRecipe.version}},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='blocks-synth-patch.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);});
 $('import').addEventListener('change',async e=>{
   try{
     const file=e.target.files[0];if(!file)return;if(file.size>65536)throw Error('Patch exceeds 64 KiB');
     const patch=JSON.parse(await file.text());
-    const tone=migratePatch(patch,parameters,version),performance=normalizePerformance(patch.performance===undefined?DEFAULT_PERFORMANCE:patch.performance);
-    instrument.loadPatch(tone,'custom',performance);error('');
+    const tone=migratePatch(patch,parameters,version),performance=normalizePerformance(patch.performance===undefined?DEFAULT_PERFORMANCE:patch.performance),rack=patch.rack===undefined?legacyRack(tone,performance):normalizeRack(patch.rack),modulation=normalizeModulation(patch.modulation===undefined?DEFAULT_MODULATION:patch.modulation);
+    performance.mode='off';instrument.loadPatch(tone,'custom',performance,{rack,modulation});error('');
   }catch(e){error(String(e));}finally{e.target.value='';}
 });
 

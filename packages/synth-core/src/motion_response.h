@@ -16,7 +16,15 @@ inline double motionShortness(double attack,double decay,double sustain,double r
  const double tailEnergy=R*(1-2/(pr+1)+1/(2*pr+1)),tail=std::exp(-std::max(0.0,tailEnergy-.06)/.5);
  return unit(fast*smoothUnit((1-energy-.05)/.85)*std::pow(1-S,2)*std::pow(1-residual*residual,2)*tail);
 }
-inline double settlingAllowance(double requested,double shortness){return std::min(requested,8.9+std::max(0.0,requested-8.9)*shortness);}
-inline double responsiveDrift(double requested,double shortness,double age){const double base=std::min(requested,29.8);if(requested<=29.8||shortness==0)return base;return base+(requested-base)*shortness*std::exp(-age/(.06+.12*shortness));}
+// Preserve the gentle region, but do not turn the upper knob range into a hard
+// musical ceiling. The top is intentionally exploratory and can sound wrong.
+inline double settlingAllowance(double requested,double shortness){const double base=std::min(requested,8.9+.5*std::max(0.0,requested-8.9));return base+(requested-base)*shortness;}
+inline double responsiveDrift(double requested,double shortness,double age){const double base=std::min(requested,29.8+.6*std::max(0.0,requested-29.8));if(requested<=29.8||shortness==0)return base;return base+(requested-base)*shortness*std::exp(-age/(.06+.12*shortness));}
+inline double settlingResponseTime(double requestedTime,double requestedAmount,double shortness){
+ // Identical to the prior time rule through8.9cents. At60cents, held notes get
+ // up to120ms instead of60ms; short plucks retain the180ms upper envelope.
+ const double stronger=smoothUnit((requestedAmount-8.9)/(60-8.9));
+ return std::min(requestedTime,.06+.12*shortness+.06*stronger*(1-shortness));
+}
 }
 #endif

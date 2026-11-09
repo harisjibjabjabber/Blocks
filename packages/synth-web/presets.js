@@ -1,5 +1,5 @@
 import {applyRecipe,characterRecipe,motionRecipe} from './recipes.js';
-function setCharacter(amount,values){const next=applyRecipe(characterRecipe,amount,values);for(const t of characterRecipe.targets)values[t.id]=next[t.id];const motion=applyRecipe(motionRecipe,amount,values);for(const t of motionRecipe.targets)values[t.id]=motion[t.id];values[14]=.1+amount*.5;}
+function setCharacter(amount,values){const next=applyRecipe(characterRecipe,amount,values);for(const t of characterRecipe.targets)values[t.id]=next[t.id];const motion=applyRecipe(motionRecipe,amount,values);for(const t of motionRecipe.targets)values[t.id]=motion[t.id];values[14]=.1+amount*.5;values[33]=.18;values[34]=.85*amount;}
 export function factoryPatch(name,parameters) {
     const next=parameters.map(p=>p.default);
     if(name==='velvet'){next[4]=.12;next[5]=.7;next[6]=.72;next[7]=.8;next[11]=2800;next[2]=4;setCharacter(.32,next);if(parameters[18])next[18]=.28;}

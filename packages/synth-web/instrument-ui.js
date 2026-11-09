@@ -5,12 +5,20 @@ import {envelopeGeometry} from './envelope-geometry.js';
 import {DEFAULT_PERFORMANCE,normalizePerformance,curlPhase,performanceSteps} from './performance-state.js';
 import {createPerformanceUI} from './performance-ui.js';
 import {createSauceRack} from './sauce-rack-ui.js';
+import {createRackEditor} from './rack-editor.js';
+import {createLfoUI} from './lfo-ui.js';
+import {DEFAULT_RACK,normalizeRack,legacyRack,newSauceBlock} from './sauce-state.js';
+import {DEFAULT_MODULATION,normalizeModulation,defaultLfo} from './modulation-state.js';
 // The instrument surface owns gestures, never voices or the audio clock.
-export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, getPerformance, applyPerformance, onViewChange=()=>{} }) {
+export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, getPerformance, applyPerformance, getRack, applyRack, getModulation, applyModulation, onViewChange=()=>{} }) {
   let localPerformance={...DEFAULT_PERFORMANCE};
   getPerformance??=()=>localPerformance;
   applyPerformance??=next=>{localPerformance={...next};};
   const performance=()=>normalizePerformance(getPerformance());
+  let localRack=normalizeRack(),localModulation=normalizeModulation();
+  getRack??=()=>localRack;applyRack??=next=>{localRack=normalizeRack(next);};
+  getModulation??=()=>localModulation;applyModulation??=next=>{localModulation=normalizeModulation(next);};
+  const rack=()=>normalizeRack(getRack()),modulation=()=>normalizeModulation(getModulation());
   const $ = id => document.getElementById(id);
   const history = [];
   let module = 'tone', sauce = null, envelopeTarget='amp', gesture = null, preset = 'velvet';
@@ -24,18 +32,20 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   const timeValue=(id,unit)=>timeFromUnit(unit,parameters[id].min,parameters[id].max);
   const norm = (id, value = getValues()[id]) => {
     const p = parameters[id];
+    if(id===41)return clamp(Math.sqrt(Math.max(0,value)/p.max));
     return clamp(p.mapping === 1 ? Math.log(value / p.min) / Math.log(p.max / p.min) : (value - p.min) / (p.max - p.min));
   };
   const physical = (id, n) => {
     const p = parameters[id]; n = clamp(n);
+    if(id===41)return p.max*n*n;
     const value=p.mapping === 1 ? p.min * Math.pow(p.max / p.min, n) : p.min + (p.max - p.min) * n;
     return p.mapping===2?Math.round(value):value;
   };
   const format = (id, value = getValues()[id]) => {
-    if([36,37,39].includes(id))return value>=.5?'On':'Off';
+    if([36,37,39,40].includes(id))return value>=.5?'On':'Off';
     if(id===38)return value>=.5?'Fullness → Drive':'Drive → Fullness';
     if (id===19||id===20) return waveNames[Math.round(value)]||'Unknown';
-    if ([...timingIds,16,33].includes(id)) return value < 1 ? Math.round(value * 1000) + ' ms' : value.toFixed(2) + ' s';
+    if ([...timingIds,16,33,41].includes(id)) return value < 1 ? Math.round(value * 1000) + ' ms' : value.toFixed(2) + ' s';
     if (id === 11) return value < 1000 ? Math.round(value) + ' Hz' : (value / 1000).toFixed(1) + ' kHz';
     if ([0,1,6,18,21,22,23,27,34,35].includes(id)) return Math.round(value * 100) + '%';
     if(id===24)return (value>0?'+':'')+Number(value.toFixed(1))+' st';
@@ -43,10 +53,10 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     return Number(value.toFixed(id === 14 ? 2 : 1)) + (id === 14 ? ' Hz' : id === 12 ? '×' : id === 3 ? '' : ' ct');
   };
   const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
-  const state = () => ({values: [...getValues()], performance:performance(), preset});
+  const state = () => ({values: [...getValues()], performance:performance(), rack:rack(), modulation:modulation(), preset});
   const restorePerformance=next=>{if(JSON.stringify(next)!==JSON.stringify(performance()))applyPerformance(next);};
   function commit(before) {
-    if (!same(before.values, getValues()) || JSON.stringify(before.performance)!==JSON.stringify(performance())) { history.push(before); if (history.length > 40) history.shift(); }
+    if (!same(before.values, getValues()) || JSON.stringify(before.performance)!==JSON.stringify(performance()) || JSON.stringify(before.rack)!==JSON.stringify(rack()) || JSON.stringify(before.modulation)!==JSON.stringify(modulation())) { history.push(before); if (history.length > 40) history.shift(); }
     $('undo').disabled = !history.length;
   }
   function apply(next, markCustom = true) {
@@ -58,8 +68,9 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   function cancel() {
     if (!gesture) return;
     const before = gesture.before;
-    gesture = null; preset = before.preset; restorePerformance(before.performance); apply(before.values, false);
+    gesture = null; restore(before);
   }
+  function restore(before){preset=before.preset;applyValues(before.values);restorePerformance(before.performance);applyRack(before.rack);applyModulation(before.modulation);update();}
   function begin(e, type, data = {}) {
     if (gesture || (e.button !== undefined && e.button !== 0)) return false;
     gesture = {type, pointer: e.pointerId, before: state(), x: e.clientX, y: e.clientY, ...data};
@@ -81,6 +92,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   const motionN=()=>readRecipe(motionRecipe,getValues()).amount;
   const motionCustom=()=>readRecipe(motionRecipe,getValues()).custom;
   function closeMotion(focus=false){$('motion-details').hidden=true;$('motion-details-toggle').setAttribute('aria-expanded','false');if(focus&&module==='character')$('motion-details-toggle').focus();}
+  function closeGlide(focus=false){$('glide-panel').hidden=true;$('glide-time-toggle').setAttribute('aria-expanded','false');if(focus&&!$('glide-time-toggle').hidden)$('glide-time-toggle').focus();}
   function changeKnob(id, n) {
     const next = [...getValues()];
     if(id==='character')character(clamp(n),next);
@@ -108,12 +120,12 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     });
     bindCompletion(button);if(mini){button.prepend(label);button.append(value);container.append(button);}else container.append(button,label,value);return container;
   }
-  const macros={tone:[[11,'Cutoff'],[23,'Filter mix'],['character','Character']],envelope:[['character','Character']],character:[['character','Character'],['motion','Motion']],drop:[[15,'Amount'],[16,'Fall time'],['character','Character']]};
+  const macros={tone:[[11,'Cutoff'],[23,'Filter mix'],['character','Character']],envelope:[['character','Character']],character:[['character','Character'],['motion','Pitch'],[14,'Speed']],drop:[[15,'Amount'],[16,'Fall time'],['character','Character']]};
   if(parameters[18]) {macros.character.push([18,'Fullness']);}
-  const titles={tone:'Oscillator + filter',envelope:'Amplitude envelope',character:'Character',drop:'Pitch Drop'};
+  const titles={tone:'Oscillator + filter',envelope:'Amplitude envelope',character:'Character',drop:'Sauce',lfo:'LFO'};
   const descriptions={tone:'Across: cutoff · up/down: filter mix',envelope:'Drag points or stage labels · bend curves for shape',character:'Movement follows the amplitude envelope',drop:'Per-note pitch fall · drag the curve to bend · new notes'};
   function select(next) {
-    cancel(); module=next;
+    cancel();rackUI.cancel();closeGlide(false); module=next;
     document.querySelector('.instrument').dataset.module=module;
     document.querySelector('.instrument').dataset.envelope=envelopeTarget;
     document.querySelector('.instrument').dataset.sauce=sauce||'none';
@@ -122,17 +134,18 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     $('waveforms').hidden=module!=='tone'||!parameters[19];
     $('scope-wrapper').hidden=module!=='tone';
     $('sauce-rack').hidden=module!=='drop';
-    $('sound-editor').hidden=module==='drop'&&!sauce;
+    $('sound-editor').hidden=module==='drop';
     $('sound-editor').setAttribute('aria-label',module==='drop'&&sauce?sauceTitles[sauce]+' settings':'Sound editing');
     $('envelope-tabs').hidden=module!=='envelope';
-    const isPerformance=module==='drop'&&['arp','strum'].includes(sauce);
-    $('performance-panel').hidden=!isPerformance;$('shape-surface').hidden=isPerformance||module==='drop'&&sauce==='fullness';
-    $('macros').hidden=isPerformance;$('module-description').hidden=module==='drop';
+    const isPerformance=false;
+    $('lfo-panel').hidden=module!=='lfo';
+    $('performance-panel').hidden=!isPerformance;$('shape-surface').hidden=isPerformance||module==='lfo'||module==='drop';
+    $('macros').hidden=isPerformance||module==='lfo';$('module-description').hidden=module==='drop'||module==='lfo';
     for(const b of document.querySelectorAll('[data-envelope]'))if(b.tagName==='BUTTON')b.setAttribute('aria-pressed',String(b.dataset.envelope===envelopeTarget));
     svg.setAttribute('preserveAspectRatio',module==='tone'?'none':'xMidYMid meet');
     for(const b of document.querySelectorAll('#module-tabs [data-module]')) {const active=b.dataset.module===module;b.setAttribute('aria-pressed',String(active));b.classList.toggle('selected',active);}
     $('module-title').textContent=module==='envelope'?(envelopeTarget==='amp'?'Amplitude envelope':'Filter envelope'):module==='drop'?(sauceTitles[sauce]||'Sauce'):titles[module]; $('module-description').textContent=module==='drop'&&sauce==='drive'?'Mixer warmth · turn up for more edge':descriptions[module];
-    const selected=module==='envelope'&&envelopeTarget==='filter'?[[24,'Filter amount'],[11,'Base cutoff'],['character','Character']]:module==='drop'?(sauce==='drive'?[[12,'Drive']]:sauce==='fullness'?[[18,'Fullness']]:sauce==='drop'?[[15,'Amount'],[16,'Fall time']]:[]):macros[module];
+    const selected=module==='envelope'&&envelopeTarget==='filter'?[[24,'Filter amount'],[11,'Base cutoff'],['character','Character']]:module==='drop'?(sauce==='drive'?[[12,'Drive']]:sauce==='fullness'?[[18,'Fullness']]:sauce==='drop'?[[15,'Amount'],[16,'Fall time']]:[]):(macros[module]||[]);
     $('macros').replaceChildren(...(isPerformance?[]:selected.map(([id,name])=>knob(String(id),name))));
     update();
   }
@@ -285,48 +298,55 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   $('volume-range').addEventListener('pointerdown',e=>{if(!begin(e,'volume'))e.preventDefault();});
   $('volume-range').addEventListener('input',()=>{if(gesture&&gesture.type!=='volume')return;const before=state(),next=[...getValues()];next[0]=Number($('volume-range').value)/100;apply(next);if(!gesture)commit(before);});
   bindCompletion($('volume-range'));
-  document.addEventListener('pointerdown',e=>{if(!e.target.closest('#volume-panel,#volume-toggle')){$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}if(!e.target.closest('#waveforms'))closeOsc(false);if(!gesture&&!e.target.closest('#motion-details,#motion-details-toggle,.keyboard-section'))closeMotion(false);});
-  window.addEventListener('keydown',e=>{if(e.key==='Escape'){const editing=!!gesture;cancel();closeOsc(true);if(!editing)closeMotion(true);$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}});window.addEventListener('blur',cancel);
-  $('undo').addEventListener('click',()=>{cancel();const before=history.pop();if(before){preset=before.preset;restorePerformance(before.performance);apply(before.values,false);}$('undo').disabled=!history.length;});
-  function loadPatch(next,name='custom',settings=DEFAULT_PERFORMANCE) {cancel();closeOsc(false);const before=state();releaseVoices();preset=name;applyPerformance(normalizePerformance(settings));apply(next,false);commit(before);}
+  document.addEventListener('pointerdown',e=>{if(!e.target.closest('#volume-panel,#volume-toggle')){$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}if(!e.target.closest('#waveforms'))closeOsc(false);if(!gesture&&!e.target.closest('#motion-details,#motion-details-toggle,.keyboard-section'))closeMotion(false);if(!gesture&&!e.target.closest('.keyboard-section'))closeGlide(false);});
+  window.addEventListener('keydown',e=>{if(e.key==='Escape'){const editing=!!gesture;cancel();closeOsc(true);if(!editing){closeMotion(true);closeGlide(true);}$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}});window.addEventListener('blur',cancel);
+  $('undo').addEventListener('click',()=>{cancel();rackUI.cancel();const before=history.pop();if(before)restore(before);$('undo').disabled=!history.length;});
+  function loadPatch(next,name='custom',settings=DEFAULT_PERFORMANCE,extras={}) {cancel();rackUI.cancel();closeOsc(false);lfoUI.close();const before=state();releaseVoices();preset=name;applyValues(next);applyPerformance(normalizePerformance(settings));applyRack(extras.rack?normalizeRack(extras.rack):legacyRack(next,settings));applyModulation(extras.modulation?normalizeModulation(extras.modulation):normalizeModulation());update();commit(before);}
   if(!$('presets').querySelector('[value="custom"]')){const option=document.createElement('option');option.value='custom';option.textContent='Custom patch';option.disabled=true;$('presets').append(option);}
   $('presets').addEventListener('change',e=>loadPatch(factoryPatch(e.target.value,parameters),e.target.value));
   $('init').addEventListener('click',()=>loadPatch(parameters.map(p=>p.default)));
   for(const button of document.querySelectorAll('#module-tabs [data-module]'))button.addEventListener('click',()=>select(button.dataset.module));
   for(const button of document.querySelectorAll('#envelope-tabs [data-envelope]'))button.addEventListener('click',()=>{envelopeTarget=button.dataset.envelope;select('envelope');});
   function changePerformance(patch,commitNow=true){if(gesture&&(gesture.type!=='performance'||commitNow))return;const before=state();applyPerformance(normalizePerformance({...performance(),...patch}));preset='custom';update();if(commitNow)commit(before);}
-  const performanceUI=createPerformanceUI({container:$('performance-panel'),getPerformance:performance,change:changePerformance,begin,getGesture:()=>gesture,bindCompletion});
   $('mono-toggle').addEventListener('click',()=>changePerformance({mono:!performance().mono}));
-  function toggleSauce(component){
-    if(gesture)return;
-    if(component==='arp'||component==='strum'){changePerformance({mode:performance().mode===component?'off':component});return;}
-    const id={drive:36,drop:37,fullness:39}[component];if(!parameters[id])return;
-    const before=state(),next=[...getValues()];next[id]=getValues()[id]>=.5?0:1;apply(next);commit(before);
-  }
-  const rackUI=createSauceRack({container:$('sauce-rack'),onOpen:component=>{sauce=sauce===component?null:component;select('drop');},onToggle:toggleSauce,onSwap:()=>{if(gesture||!parameters[38])return;const before=state(),next=[...getValues()];next[38]=getValues()[38]>=.5?0:1;apply(next);commit(before);}});
-  $('motion-controls').replaceChildren(...[[14,'Speed'],[32,'Attack settling'],[33,'Settle time'],[34,'Velocity']].map(([id,name])=>knob(String(id),name)));
-  $('motion-details-toggle').addEventListener('click',()=>{if(gesture)return;const open=$('motion-details').hidden;$('motion-details').hidden=!open;$('motion-details-toggle').setAttribute('aria-expanded',String(open));if(open)$('motion-controls').querySelector('[data-knob]').focus();});
+  function changeConfig(action,commitNow=true){if(gesture&&(commitNow||!['config','performance'].includes(gesture.type)))return;const before=state();action();preset='custom';update();if(commitNow)commit(before);}
+  function getNode(key){const[lane,id]=key.split(':');return lane==='lfo'?modulation().sources.find(n=>n.id===Number(id)):rack()[lane].find(n=>n.id===Number(id));}
+  function changeNode(key,patch,commitNow=true){changeConfig(()=>{const[lane,id]=key.split(':');if(lane==='lfo'){const m=modulation();m.sources=m.sources.map(n=>n.id===Number(id)?{...n,...patch}:n);applyModulation(normalizeModulation(m));}else{const r=rack();r[lane]=r[lane].map(n=>n.id===Number(id)?{...n,...patch}:n);applyRack(normalizeRack(r));}},commitNow);}
+  const commonControls={parameters,begin,getGesture:()=>gesture,bindCompletion,getTempo:()=>performance().bpm,changeTempo:delta=>changePerformance({bpm:performance().bpm+delta})};
+  const rackUI=createSauceRack({container:$('sauce-rack'),canDrag:()=>!gesture,
+    createEditor:(item,body,extra)=>createRackEditor({...commonControls,item,body,extra,getNode:()=>getNode(item.key),changeNode:(patch,commit)=>changeNode(item.key,patch,commit)}),
+    onToggle:key=>changeNode(key,{enabled:!getNode(key).enabled}),
+    onRemove:key=>changeConfig(()=>{const[lane,id]=key.split(':');if(lane==='lfo'){const m=modulation();m.sources=m.sources.filter(n=>n.id!==Number(id));applyModulation(m);}else{const r=rack();r[lane]=r[lane].filter(n=>n.id!==Number(id));applyRack(r);}}),
+    onAdd:type=>changeConfig(()=>{if(type==='lfo'){const m=modulation();if(m.sources.length>=4)return;const id=Math.max(...m.sources.map(s=>s.id))+1;m.sources.push({...defaultLfo(id),enabled:true});applyModulation(m);}else{const r=rack(),lane=['drive','fullness'].includes(type)?'audio':'notes';if(r[lane].length>=16)return;r[lane].push(newSauceBlock(r,type));applyRack(r);}}),
+    onReorder:(lane,ids)=>changeConfig(()=>{const r=rack();r[lane]=ids.map(id=>r[lane].find(n=>n.id===id));applyRack(r);})
+  });
+  const lfoUI=createLfoUI({...commonControls,container:$('lfo-panel'),getSource:()=>getNode('lfo:1'),changeSource:(patch,commit)=>changeNode('lfo:1',patch,commit)});
+  $('motion-controls').replaceChildren(...[[32,'Attack settling'],[33,'Settle time'],[34,'Velocity']].map(([id,name])=>knob(String(id),name)));
+  $('motion-details-toggle').addEventListener('click',()=>{if(gesture)return;const open=$('motion-details').hidden;$('motion-details').hidden=!open;$('motion-details-toggle').setAttribute('aria-expanded',String(open));if(open){closeGlide(false);$('motion-controls').querySelector('[data-knob]').focus();}});
   $('motion-details-close').addEventListener('click',()=>{if(!gesture)closeMotion(true);});
+  if(parameters[41])$('glide-panel').replaceChildren(knob('41','Glide time'));
+  $('glide-toggle').addEventListener('click',()=>{if(gesture||!parameters[40])return;const before=state(),next=[...getValues()];next[40]=next[40]>=.5?0:1;apply(next);commit(before);});
+  $('glide-time-toggle').addEventListener('click',()=>{if(gesture||!parameters[41])return;const open=$('glide-panel').hidden;$('glide-panel').hidden=!open;$('glide-time-toggle').setAttribute('aria-expanded',String(open));if(open){closeMotion(false);$('glide-panel').querySelector('[data-knob]').focus();}});
   window.addEventListener('resize',()=>{cancel();update();});
   function update() {
     for(const p of parameters){const input=document.querySelector(`[data-param="${p.id}"]`);input.value=p.mapping===2?getValues()[p.id]:Math.round((timingIds.includes(p.id)?timeUnit: norm)(p.id)*1000);input.setAttribute('aria-valuetext',format(p.id));document.querySelector(`[data-value="${p.id}"]`).textContent=format(p.id);}
     for(const chooser of document.querySelectorAll('[data-waveosc]')){const id=Number(chooser.dataset.waveosc),number=id===19?1:2;chooser.querySelector('.wave-name').textContent=format(id);chooser.setAttribute('aria-label','Oscillator '+number+' waveform '+format(id));}
 
     $('volume-range').value=Math.round(getValues()[0]*100);$('volume-value').textContent=Math.round(getValues()[0]*100)+'%';$('volume-toggle').setAttribute('aria-label','Volume '+Math.round(getValues()[0]*100)+'%');
-    for(const dial of document.querySelectorAll('[data-knob]')){const id=dial.dataset.knob,n=knobN(id),text=id==='character'?(characterCustom()?'Custom · ':'')+Math.round(n*100)+'%':id==='motion'?(motionCustom()?'Custom. ':'')+'Drift up to '+format(13)+', attack settling up to '+format(32):format(Number(id));dial.style.setProperty('--rotation',(-135+n*270)+'deg');dial.setAttribute('aria-valuenow',String(Math.round(n*100)));dial.setAttribute('aria-valuetext',text);const output=document.querySelector(`[data-knob-value="${id}"]`);if(id==='motion'){output.classList.add('motion-value');const drift=document.createElement('span'),hit=document.createElement('span');drift.textContent='Drift '+format(13);hit.textContent='Hit '+format(32);output.replaceChildren(drift,hit);dial.closest('.macro').querySelector('.macro-name').textContent=motionCustom()?'Motion · Custom':'Motion';}else output.textContent=text;}
+    for(const dial of document.querySelectorAll('[data-knob]')){const id=dial.dataset.knob,n=knobN(id),text=id==='character'?(characterCustom()?'Custom · ':'')+Math.round(n*100)+'%':id==='motion'?(motionCustom()?'Custom. ':'')+'Drift up to '+format(13)+', attack settling up to '+format(32):format(Number(id));dial.style.setProperty('--rotation',(-135+n*270)+'deg');dial.setAttribute('aria-valuenow',String(Math.round(n*100)));dial.setAttribute('aria-valuetext',text);const output=document.querySelector(`[data-knob-value="${id}"]`);if(id==='motion'){output.classList.add('motion-value');const drift=document.createElement('span'),hit=document.createElement('span');drift.textContent='≤ '+format(13);hit.textContent='Hit '+format(32);output.replaceChildren(drift,hit);dial.closest('.macro').querySelector('.macro-name').textContent=motionCustom()?'Pitch · Custom':'Pitch';}else output.textContent=text;}
     $('presets').value=preset;
     $('value-summary').textContent=module==='tone'?format(11)+' · filter '+format(23):module==='envelope'?(envelopeTarget==='filter'?format(24):'New notes'):module==='drop'?(sauce==='drive'?format(12):'+'+format(15)):characterCustom()?'Custom':Math.round(characterN()*100)+'%';
     if(module==='envelope'&&envelopeTarget==='filter')$('module-description').textContent=getValues()[24]===0?'Raise Filter amount to add movement':'Each note has its own filter envelope';
     if(module==='character')$('module-description').textContent=getValues()[35]>0?'Movement follows the amplitude envelope':'Envelope response off';
     const p=performance();$('mono-toggle').setAttribute('aria-pressed',String(p.mono));
-    const count=performanceSteps(p);
-    const preview=sauce==='strum'?Array.from({length:4},(_,i)=>i/3*p.strum/100):Array.from({length:count},(_,i)=>curlPhase(i/count,p.curl));
-    rackUI.update({selected:sauce,enabled:{drive:getValues()[36]>=.5,drop:getValues()[37]>=.5,fullness:getValues()[39]>=.5,arp:p.mode==='arp',strum:p.mode==='strum'},audioOrder:Math.round(getValues()[38]||0),supported:Boolean(parameters[39])});
-    performanceUI.update(preview,sauce==='strum'?'strum':'arp');
+    const glide=parameters[40]&&getValues()[40]>=.5;$('glide-toggle').disabled=!parameters[40];$('glide-toggle').setAttribute('aria-pressed',String(Boolean(glide)));$('glide-time-toggle').hidden=!glide;
+    if(parameters[41]){$('glide-time-toggle').textContent=format(41);$('glide-time-toggle').setAttribute('aria-label','Glide time '+format(41));}if(!glide)closeGlide(false);
+    rackUI.update({rack:rack(),modulation:modulation()});
+    lfoUI.update();
     draw();
     onViewChange();
   }
   // Factory selection changes the patch, not the captured performance.
   applyValues(factoryPatch('velvet',parameters)); select('tone');
-  return {update,updatePerformance:update,setPerformancePending:performanceUI.setPending,loadPatch,cancel};
+  return {update,updatePerformance:update,setPerformancePending:()=>{},setRackPending:rackUI.setPending,loadPatch,cancel};
 }

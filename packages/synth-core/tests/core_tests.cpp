@@ -52,7 +52,7 @@ static double aliasRatio(std::vector<std::complex<double>> data,unsigned fundame
  return aliased/wanted;
 }
 int main() {
- CHECK(bs_abi_version()==5 && bs_parameter_count()==40);
+ CHECK(bs_abi_version()==6 && bs_parameter_count()==42);
  {
   Synth s; CHECK(!bs_prepare(s.p,0)); CHECK(!bs_prepare(s.p,std::numeric_limits<double>::infinity())); CHECK(bs_prepare(s.p,44100));
   for(unsigned i=0;i<BS_PARAMETER_COUNT;++i) {
@@ -64,10 +64,10 @@ int main() {
   }
   CHECK(!bs_parameter_info(99)); CHECK(!bs_set_parameter(s.p,99,1));
   bs_patch patch{},after{}; CHECK(bs_get_patch(s.p,&patch)); patch.version=999; CHECK(!bs_set_patch(s.p,&patch)); patch.version=2; patch.values[7]=std::numeric_limits<float>::infinity(); CHECK(!bs_set_patch(s.p,&patch)); CHECK(bs_get_patch(s.p,&after)); CHECK(after.values[7]==bs_parameter_info(7)->maximum);
-  patch=after; patch.version=1; patch.values[BS_FULLNESS]=std::numeric_limits<float>::quiet_NaN(); CHECK(bs_set_patch(s.p,&patch)); CHECK(bs_get_parameter(s.p,BS_FULLNESS)==0); CHECK(bs_get_patch(s.p,&after)); CHECK(after.version==5);
+  patch=after; patch.version=1; patch.values[BS_FULLNESS]=std::numeric_limits<float>::quiet_NaN(); CHECK(bs_set_patch(s.p,&patch)); CHECK(bs_get_parameter(s.p,BS_FULLNESS)==0); CHECK(bs_get_patch(s.p,&after)); CHECK(after.version==6);
   for(unsigned i=0;i<18;++i) CHECK(after.values[i]==patch.values[i]);
-  CHECK(sizeof(bs_patch)==164);
-  patch=after;patch.version=4;for(unsigned i=35;i<BS_PARAMETER_COUNT;++i)patch.values[i]=std::numeric_limits<float>::quiet_NaN();CHECK(bs_set_patch(s.p,&patch));CHECK(bs_get_patch(s.p,&after));CHECK(after.version==5);CHECK(after.values[BS_ENVELOPE_RESPONSE]==0&&after.values[BS_DRIVE_ENABLED]==1&&after.values[BS_PITCH_DROP_ENABLED]==1&&after.values[BS_SAUCE_ORDER]==0&&after.values[BS_FULLNESS_ENABLED]==1);for(unsigned i=0;i<35;++i)CHECK(after.values[i]==patch.values[i]);
+  CHECK(sizeof(bs_patch)==172);
+  patch=after;patch.version=4;for(unsigned i=35;i<BS_PARAMETER_COUNT;++i)patch.values[i]=std::numeric_limits<float>::quiet_NaN();CHECK(bs_set_patch(s.p,&patch));CHECK(bs_get_patch(s.p,&after));CHECK(after.version==6);CHECK(after.values[BS_ENVELOPE_RESPONSE]==0&&after.values[BS_DRIVE_ENABLED]==1&&after.values[BS_PITCH_DROP_ENABLED]==1&&after.values[BS_SAUCE_ORDER]==0&&after.values[BS_FULLNESS_ENABLED]==1);for(unsigned i=0;i<35;++i)CHECK(after.values[i]==patch.values[i]);
   patch=after;patch.values[BS_ENVELOPE_RESPONSE]=.6f;patch.values[BS_DRIVE_ENABLED]=0;patch.values[BS_PITCH_DROP_ENABLED]=0;patch.values[BS_SAUCE_ORDER]=1;patch.values[BS_FULLNESS_ENABLED]=0;CHECK(bs_set_patch(s.p,&patch));CHECK(bs_get_patch(s.p,&after));CHECK(std::memcmp(&patch,&after,sizeof patch)==0);patch.values[BS_FULLNESS_ENABLED]=std::numeric_limits<float>::quiet_NaN();CHECK(!bs_set_patch(s.p,&patch));bs_patch retained{};CHECK(bs_get_patch(s.p,&retained));CHECK(std::memcmp(&retained,&after,sizeof after)==0);
   patch=after; patch.values[BS_FULLNESS]=.55f; CHECK(bs_set_patch(s.p,&patch)); CHECK(bs_get_patch(s.p,&after)); CHECK(std::memcmp(&patch,&after,sizeof patch)==0);
  }
@@ -226,9 +226,11 @@ int main() {
   Synth base,hard,soft,repeat;configure(base.p,0,0);configure(hard.p,20,1);configure(soft.p,20,1);configure(repeat.p,20,1);const auto b=render(base.p,144000,127,{note(0,69)}),h=render(hard.p,144000,127,{note(0,69)}),s=render(soft.p,144000,256,{note(0,69,.2f)});same(h,render(repeat.p,144000,256,{note(0,69)}));
   const double baseFrequency=estimateFrequency(b,500,2500),hardCents=1200*std::log2(estimateFrequency(h,500,2500)/baseFrequency),softCents=1200*std::log2(estimateFrequency(s,500,2500)/baseFrequency),lateCents=1200*std::log2(estimateFrequency(h,100000,140000)/estimateFrequency(b,100000,140000));CHECK(hardCents>10&&hardCents<=20);CHECK(std::abs(softCents)<std::abs(hardCents)*.3);CHECK(std::abs(lateCents)<.05);
   // Controls are captured pernote; disabling their targets during a held note
-  // does not reset/retrigger its settling or independent rate seed.
+  // does not reset/retrigger its settling or captured velocity response.
   Synth snapshot;configure(snapshot.p,20,1);same(h,render(snapshot.p,144000,127,{note(0,69),{500,BS_PARAMETER,0,0,BS_SETTLING_CENTS,0},{500,BS_PARAMETER,0,0,BS_SETTLING_TIME,.02f},{500,BS_PARAMETER,0,0,BS_VELOCITY_MOVEMENT,0}}));
-  Synth legacyA,legacyB,motion;for(auto*x:{legacyA.p,legacyB.p,motion.p}){configure(x,0,0);bs_set_parameter(x,BS_DRIFT_CENTS,20);bs_set_parameter(x,BS_DRIFT_HZ,.58f);}bs_set_parameter(legacyB.p,BS_SETTLING_TIME,.02f);bs_set_parameter(motion.p,BS_VELOCITY_MOVEMENT,1);const auto old=render(legacyA.p,144000,127,{note(0,69)});same(old,render(legacyB.p,144000,256,{note(0,69)}));CHECK(old.l!=render(motion.p,144000,127,{note(0,69)}).l);
+  // At velocity1 the response scale is1 for every sensitivity. Keyed free drift
+  // must not acquire an unrelated new rate/phase merely by enabling sensitivity.
+  Synth legacyA,legacyB,motion;for(auto*x:{legacyA.p,legacyB.p,motion.p}){configure(x,0,0);bs_set_parameter(x,BS_DRIFT_CENTS,20);bs_set_parameter(x,BS_DRIFT_HZ,.58f);}bs_set_parameter(legacyB.p,BS_SETTLING_TIME,.02f);bs_set_parameter(motion.p,BS_VELOCITY_MOVEMENT,1);const auto old=render(legacyA.p,144000,127,{note(0,69)});same(old,render(legacyB.p,144000,256,{note(0,69)}));same(old,render(motion.p,144000,127,{note(0,69)}));
   std::printf("METRIC settling early_hard_cents=%.6f early_soft_cents=%.6f late_cents=%.7f\n",hardCents,softCents,lateCents);clean(h);clean(s);
  }
  std::puts("PASS seeded pitch settling, velocity articulation, stable tuning, note snapshots, repeatability and disabled legacy movement behavior");
