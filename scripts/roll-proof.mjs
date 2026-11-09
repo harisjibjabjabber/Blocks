@@ -83,7 +83,7 @@ try {
     const raw=await notes();assert.equal(raw.length,5);await select('Capture snap division','1/4');assert.deepEqual(await notes(),raw);
     const before=await bounds();assert.ok(before.start!==undefined&&before.end!==undefined);
     const lattice=await b.evaluate(`Array.from(document.querySelectorAll('[data-snap-grid]'),e=>({time:e.dataset.snapGrid,x:e.getBoundingClientRect().x}))`);
-    const target=lattice.filter(p=>BigInt(p.time)>BigInt(before.start)&&BigInt(p.time)<BigInt(before.end)).at(-1);assert.ok(target,'a quarter-note grid point inside the captured phrase');
+    const target=lattice.filter(p=>BigInt(p.time)>BigInt(before.start)&&BigInt(p.time)<=BigInt(before.end)-500000n).at(-1);assert.ok(target,'a quarter-note grid point at least one beat inside the phrase, beyond the drag threshold');
     const handle=await rect('[data-boundary-handle="end"]'),line=await rect('[data-boundary="end"]',0,false);const x=handle.x+handle.w/2,y=handle.y+handle.h/2,to=x+target.x-line.x;
     await gesture(x,y,to,y,false);assert.equal((await bounds()).end,target.time);assert.equal(await b.evaluate(`document.querySelector('[data-snap-target]')?.dataset.snapTarget`),target.time);assert.deepEqual(await notes(),raw);
     await mouse('mouseReleased',to,y);await delay(100);capturedRange=await bounds();assert.equal(capturedRange.end,target.time);
