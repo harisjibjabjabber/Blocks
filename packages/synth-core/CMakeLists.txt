@@ -1,0 +1,37 @@
+cmake_minimum_required(VERSION 3.16)
+project(blocks_synth_core VERSION 0.1.0 LANGUAGES C CXX)
+add_library(blocks_synth STATIC src/blocks_synth.cpp)
+add_library(Blocks::Synth ALIAS blocks_synth)
+target_include_directories(blocks_synth PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_compile_features(blocks_synth PUBLIC cxx_std_17)
+set_target_properties(blocks_synth PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(blocks_synth PROPERTIES EXPORT_NAME Synth)
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+install(TARGETS blocks_synth EXPORT blocks_synthTargets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(FILES include/blocks_synth.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(EXPORT blocks_synthTargets NAMESPACE Blocks:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/blocks_synth)
+configure_package_config_file(cmake/blocks_synthConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/blocks_synthConfig.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/blocks_synth)
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/blocks_synthConfigVersion.cmake
+  VERSION ${PROJECT_VERSION} COMPATIBILITY SameMajorVersion)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/blocks_synthConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/blocks_synthConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/blocks_synth)
+if(MSVC)
+  target_compile_options(blocks_synth PRIVATE /W4)
+else()
+  target_compile_options(blocks_synth PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+option(BLOCKS_SYNTH_BUILD_TESTS "Build offline tests and WAV renderer" ON)
+if(BLOCKS_SYNTH_BUILD_TESTS)
+  enable_testing()
+  add_executable(blocks_synth_tests tests/core_tests.cpp)
+  target_link_libraries(blocks_synth_tests PRIVATE blocks_synth)
+  add_test(NAME blocks_synth_core COMMAND blocks_synth_tests)
+  add_executable(blocks_synth_render tests/render_wav.cpp)
+  target_link_libraries(blocks_synth_render PRIVATE blocks_synth)
+endif()

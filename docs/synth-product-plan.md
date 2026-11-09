@@ -111,7 +111,7 @@ Store recipes and movement separately from immutable captured performances. Laye
 | Movement, later | Record/draw automation, LFO/custom-shape lanes | Musical phase, loop seams, Undo, override/resume and deterministic replay |
 | Sampler, later | Sample import/recording and curated instrument packs | Rights, loading/memory, quality and device acceptance |
 
-No production synth implementation is authorized merely by logging this future scope. The immediate next deliverable is a coherent product/interaction contract, followed by the expandable mockup. The app source remains separate from the design study.
+The initial scope above was research and mockup work. The subsequent user instruction authorizes an independent instrument engineering spike, suitable for future online and VST hosts. The first implementation is now [the portable C++ core](../packages/synth-core/README.md) and [a separate browser reference host](../packages/synth-web/README.md). It does not replace Blocks production audio. The reference host proves real sound and state boundaries; it is not the finished touch UI or a shipped VST. Filter Pluck, unison, effects expansion and Movement remain future work. Physical phone performance and listening acceptance remain gates before production integration.
 
 ## Research references
 

@@ -1,0 +1,62 @@
+name: standalone synth
+on:
+  pull_request:
+  push:
+    branches-ignore: [main, handover/status]
+permissions:
+  contents: read
+concurrency:
+  group: synth-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  portable-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Native core and installable package
+        run: |
+          cmake -S packages/synth-core -B "$RUNNER_TEMP/native" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/synth-install"
+          cmake --build "$RUNNER_TEMP/native" --parallel 2
+          ctest --test-dir "$RUNNER_TEMP/native" --output-on-failure
+          cmake --install "$RUNNER_TEMP/native"
+          cmake -S packages/synth-core/tests/consumer -B "$RUNNER_TEMP/consumer" -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/synth-install"
+          cmake --build "$RUNNER_TEMP/consumer" --parallel 2
+          "$RUNNER_TEMP/consumer/synth_consumer"
+          mkdir -p "$RUNNER_TEMP/synth-evidence"
+          "$RUNNER_TEMP/native/blocks_synth_render" "$RUNNER_TEMP/synth-evidence/native.wav"
+      - name: Install official Emscripten toolchain
+        run: |
+          git clone --depth 1 --branch 7.0.0 https://github.com/emscripten-core/emsdk.git "$RUNNER_TEMP/emsdk"
+          "$RUNNER_TEMP/emsdk/emsdk" install 7.0.0
+          "$RUNNER_TEMP/emsdk/emsdk" activate 7.0.0
+          echo "EMSDK=$RUNNER_TEMP/emsdk" >> "$GITHUB_ENV"
+      - name: WebAssembly core and native render comparison
+        env:
+          SYNTH_CORE_EVIDENCE: ${{ runner.temp }}/synth-evidence
+          PYTHON: python3
+        run: |
+          node scripts/test-synth-core.mjs
+          node scripts/compare-synth-renders.mjs "$RUNNER_TEMP/synth-evidence/native.wav" "$RUNNER_TEMP/synth-evidence/wasm.wav"
+          node scripts/build-synth.mjs
+      - name: Actual browser audio
+        env:
+          SYNTH_PROOF_DIR: ${{ runner.temp }}/synth-browser
+        run: |
+          python3 -m http.server 41821 --bind 127.0.0.1 --directory packages/synth-web/build > "$RUNNER_TEMP/synth-server.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:41821/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/synth-standalone-proof.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: standalone-synth-evidence
+          path: |
+            ${{ runner.temp }}/synth-evidence/*.wav
+            ${{ runner.temp }}/synth-browser
+            ${{ runner.temp }}/synth-install
+            packages/synth-web/build

@@ -1,0 +1,3 @@
+@PACKAGE_INIT@
+include("${CMAKE_CURRENT_LIST_DIR}/blocks_synthTargets.cmake")
+check_required_components(blocks_synth)
