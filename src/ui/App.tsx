@@ -771,7 +771,7 @@ export default function App() {
     {takes.map((item, index) => <View key={item.id} style={[styles.layerChip, { padding: 12, gap: 8, backgroundColor: palette.card, borderColor: item.id === selected ? palette.ink : palette.line, borderWidth: item.id === selected ? 2 : 1 }]}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
         <Pressable accessibilityRole="button" accessibilityLabel={`Layer ${index + 1}, ${soundName(item.sound)}${loopingIds.includes(item.id) ? ", looping" : ""}`} accessibilityState={{ selected: item.id === selected }} onPress={() => { setSelected(item.id); setRangeMode(true); setRollWindow(null); }} style={{ flex: 1, minHeight: 48, flexDirection: "row", gap: 12, alignItems: "center" }}>
-          <Text style={{ color: palette.ink, fontFamily: "Geist Mono", fontSize: 18 }}>{index + 1}</Text><View><Text style={[styles.layerText, { color: palette.ink }]}>Piano</Text><Text style={[styles.meta, { color: palette.muted }]}>{soundName(item.sound)} · {loopingIds.includes(item.id) ? "looping" : "stopped"}</Text></View>
+          <Text style={{ color: palette.ink, fontFamily: "Geist Mono", fontSize: 18 }}>{index + 1}</Text><View><Text style={[styles.layerText, { color: palette.ink }]}>Synth</Text><Text style={[styles.meta, { color: palette.muted }]}>{soundName(item.sound)} · {loopingIds.includes(item.id) ? "looping" : "stopped"}</Text></View>
         </Pressable>
         {button("⋯", () => setLayerMenu(layerMenu === item.id ? null : item.id), { accessibilityLabel: `Layer ${index + 1} actions` })}
       </View>
