@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { planFromElapsed } from "../audio/web/schedule";
-import { alignmentPx, beatTicks, framePhrase, noteBox, panWindow, pitchToY, rulerMarks, timeToX, xToTime, zoomWindow, type KnownGrid, type TimeWindow } from "./roll-time";
+import { alignmentPx, beatTicks, musicalPosition, framePhrase, noteBox, panWindow, pitchToY, rulerMarks, timeToX, xToTime, zoomWindow, type KnownGrid, type TimeWindow } from "./roll-time";
 
 const US = 1_000_000n;
 
@@ -143,4 +143,12 @@ describe("roll time matches the scheduler", () => {
       expectAligned(note, window, 1280);
     }
   });
+});
+
+it("labels an inferred four-bar endpoint on the exact snap lattice", () => {
+  const duration = 12_151_899n;
+  const grid = { bpm: 960_000_000 / Number(duration), beatsPerBar: 4, phase: 6_890_000n };
+  expect(musicalPosition(grid.phase + duration, grid)).toBe("5.1");
+  expect(musicalPosition(grid.phase + duration - 1n, grid)).toBe("4.4");
+  expect(musicalPosition(grid.phase, grid)).toBe("1.1");
 });

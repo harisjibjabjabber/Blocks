@@ -6,7 +6,7 @@ import type { RollNote } from "./roll-notes";
 import { beatTicks, musicalPosition, pitchLabel, type KnownGrid } from "./roll-time";
 import { SNAP_PRESETS, type SnapDivision, type SnapMode } from "./snap";
 import { SelectControl } from "./SelectControl";
-import { LoopSettings } from "./LoopSettings";
+import { LoopSettings, LoopLengthControl } from "./LoopSettings";
 import { tempoForBars, type FixedBars } from "./loop-assist";
 import { TempoControl } from "./TempoControl";
 
@@ -24,7 +24,7 @@ interface EditorProps {
   onVelocity: (velocity: number, scale?: boolean) => void; onPreview: () => void; onApply: () => void; onCancelPreview: () => void;
   onQuantiseNow: () => void;
   onCutRange: () => void;
-  loopBars: FixedBars | null; onLoopBars: (bars: FixedBars | null) => void; onResetLoop: () => void; firstLayer: boolean;
+  captureBpm: number | null; loopBars: FixedBars | null; onLoopBars: (bars: FixedBars | null) => void; onResetLoop: () => void; firstLayer: boolean;
   onShowFullTake: () => void;
   showOthers: boolean; onShowOthers: () => void; canPaste: boolean;
   onSelectionAction: (action: "all" | "delete" | "copy" | "paste" | "duplicate") => void;
@@ -97,7 +97,7 @@ export function Editor(p: EditorProps) {
     <View style={s.row}>{button("↓ Pitches", () => changeView("lower"), { flex: true })}{button("↑ Pitches", () => changeView("higher"), { flex: true })}</View>
   </View>;
   const gridHeight = Math.max(80, rollViewportHeight > 0 ? rollViewportHeight - (ROLL_RULER_HEIGHT + 104) : height - (desktop ? 390 : 484));
-  return <View dataSet={{ editor: "storyboard-18" }} style={[s.page, { backgroundColor: c.bg }]}>
+  return <View dataSet={{ editor: "storyboard-18", captureBpm: p.captureBpm === null ? "" : String(p.captureBpm) }} style={[s.page, { backgroundColor: c.bg }]}>
     <View style={[s.header, { borderColor: c.line }]}>
       {button("‹ Play", p.onBack, { aria: "Back to Play" })}
       <View style={{ flex: 1, alignItems: desktop ? "flex-start" : "center", minWidth: 0 }}><Text numberOfLines={1} style={{ fontFamily: "Instrument Serif", fontSize: desktop ? 30 : 26, color: c.ink }}>Edit · Piano</Text>{text(`Layer ${p.layers.findIndex(l => l.id === p.selectedLayer) + 1} · Warm EP`, true, { fontSize: 12 })}</View>
@@ -119,7 +119,7 @@ export function Editor(p: EditorProps) {
         </View>
         <View style={[s.context, { backgroundColor: c.card, borderColor: c.line }]}>
           {desktop && <View style={{ flex: 1, minWidth: 0 }}>{text(selection.length > 1 ? `${selection.length} selected` : note ? `${pitchLabel(note.pitch)} · 1` : `${p.notes.length} notes`, false, { fontWeight: "600", fontSize: 12 })}</View>}
-          {button("Loop", () => setPanel(panel === "loop" ? null : "loop"), { aria: "Loop settings" })}
+          <LoopLengthControl bars={p.loopBars} onPress={() => setPanel(panel === "loop" ? null : "loop")} open={panel === "loop"} palette={c} />
           {desktop && button("Velocity", () => setPanel(panel === "velocity" ? null : "velocity"), { disabled: !note })}
           {panel !== "loop" && button("Cut range", () => { p.onCancelPreview(); p.onCutRange(); setPanel(null); })}
           {button("Quantise", () => { p.onCancelPreview(); p.onQuantiseNow(); setPanel(null); }, { disabled: !p.grid || p.snapDivision.kind === "off" || !p.notes.length })}

@@ -62,6 +62,9 @@ try {
   await check('Draw MIDI opens an empty editor and plays drawn notes without capturing fake input',async()=>{
     await button('Draw MIDI');assert.equal((await notes()).length,0);const plot=await rect('[data-roll]');await gesture(plot.x+plot.w*.3,plot.y+plot.h*.45,plot.x+plot.w*.4,plot.y+plot.h*.45);assert.equal((await notes()).length,1);await button('Play');await delay(150);assert.ok(await b.evaluate(`!!document.querySelector('[data-playhead]')`));await button('Stop');await button('Undo');assert.equal((await notes()).length,0);await button('Redo');assert.equal((await notes()).length,1);await button('Back to Play');await button('Capture');assert.equal(await b.evaluate(`document.querySelectorAll('[aria-label^="Layer "][aria-label$=" actions"]').length`),1);await b.navigate(url);await delay(300);
   });
+  // Editing fixtures use an explicit 120 BPM drawing master. First-performance
+  // tempo adoption is tested separately in capture-tempo-proof.mjs.
+  await button('Draw MIDI');await button('Back to Play');await button('Next capture');
   await button('Enable');await delay(500);
   for(const pitch of [60,64,67,64,60]) await playInput(pitch);
   let capturedRange;
@@ -86,7 +89,7 @@ try {
     await mouse('mouseReleased',to,y);await delay(100);capturedRange=await bounds();assert.equal(capturedRange.end,target.time);
     const again=await rect('[data-boundary-handle="end"]');await gesture(again.x+again.w/2,again.y+again.h/2,again.x+again.w/2-50,again.y+again.h/2,false);await key('Escape');await mouse('mouseReleased',again.x+again.w/2-50,again.y+again.h/2);await delay(100);assert.deepEqual(await bounds(),capturedRange);assert.deepEqual(await notes(),raw);await screenshot('capture-range-snap');await select('Capture snap division','1/16');assert.deepEqual(await bounds(),capturedRange);
   });
-  await button('Capture');await editMidi();
+  await button('Capture');await button('Layer 1 actions');await button('Delete Layer 1');await editMidi();
   const initial=await notes();
   assert.equal(initial.length,5,'UI keyboard must capture exactly five synthetic notes');
   assert.deepEqual(await bounds(),capturedRange,'Capture inherits the adjusted live range');
@@ -328,7 +331,7 @@ try {
   });
   await check('Cut range edits the same working layer and Undo restores complete notes and bounds',async()=>{
     await select('Snap division','1/4');const ordered=[...recordingFixture].sort((a,b)=>Number(BigInt(a.start)-BigInt(b.start)));const points=await b.evaluate(`Array.from(document.querySelectorAll('[data-snap-grid]'),e=>({time:e.dataset.snapGrid,x:e.getBoundingClientRect().x}))`);const first=points.find(p=>BigInt(p.time)>0n&&BigInt(p.time)<BigInt(ordered[0].start)),last=points.find(p=>BigInt(p.time)>BigInt(ordered[0].end)&&BigInt(p.time)<BigInt(ordered[1].start));assert.ok(first&&last);const h=await rect('[data-roll]'),y=h.y+24;await gesture(first.x+2,y,last.x+2,y);const range=await bounds();assert.deepEqual(range,{start:first.time,end:last.time});
-    await button('Loop settings');await select('Cut length','free');await button('Close settings');const count=await b.evaluate(`document.querySelectorAll('[aria-label^="Layer "][aria-label*="Warm EP"]').length`);await button('Cut range');const clipped=recordingFixture.filter(n=>BigInt(n.end)>BigInt(range.start)&&BigInt(n.start)<BigInt(range.end)).map(n=>({...n,start:String(BigInt(n.start)<BigInt(range.start)?BigInt(range.start):BigInt(n.start)),end:String(BigInt(n.end)>BigInt(range.end)?BigInt(range.end):BigInt(n.end))}));assert.deepEqual(await notes(),clipped);assert.ok(clipped.length<recordingFixture.length);assert.equal(await b.evaluate(`document.querySelectorAll('[aria-label^="Layer "][aria-label*="Warm EP"]').length`),count);
+    await click('[data-loop-settings]');await button('Use free range');await button('Close settings');const count=await b.evaluate(`document.querySelectorAll('[aria-label^="Layer "][aria-label*="Warm EP"]').length`);await button('Cut range');const clipped=recordingFixture.filter(n=>BigInt(n.end)>BigInt(range.start)&&BigInt(n.start)<BigInt(range.end)).map(n=>({...n,start:String(BigInt(n.start)<BigInt(range.start)?BigInt(range.start):BigInt(n.start)),end:String(BigInt(n.end)>BigInt(range.end)?BigInt(range.end):BigInt(n.end))}));assert.deepEqual(await notes(),clipped);assert.ok(clipped.length<recordingFixture.length);assert.equal(await b.evaluate(`document.querySelectorAll('[aria-label^="Layer "][aria-label*="Warm EP"]').length`),count);
     await button('Undo');assert.deepEqual(await notes(),recordingFixture);assert.deepEqual(await bounds(),range);await button('Redo');assert.deepEqual(await notes(),clipped);await button('Undo');await button('Undo');assert.deepEqual(await notes(),recordingFixture);assert.deepEqual(await bounds(),recordingBounds);
   });
   await check('Show full take recovers earlier recorded notes without changing the chosen range',async()=>{

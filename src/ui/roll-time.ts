@@ -150,7 +150,11 @@ export function musicalPosition(time: bigint, grid: KnownGrid): string {
   const beat = beatTicks(grid.bpm);
   if (beat <= 0n) return "1.1";
   const relative = time - grid.phase;
-  const index = relative / beat - (relative < 0n && relative % beat !== 0n ? 1n : 0n);
+  // Match the once-rounded snap lattice rather than accumulating rounded beats.
+  const idealBeat = 60_000_000 / grid.bpm;
+  const position = Number(relative) / idealBeat;
+  const nearest = Math.round(position);
+  const index = BigInt(Math.abs(Number(relative) - nearest * idealBeat) <= 0.500001 ? nearest : Math.floor(position));
   const meter = BigInt(grid.beatsPerBar);
   const bar = index / meter - (index < 0n && index % meter !== 0n ? 1n : 0n);
   return `${bar + 1n}.${index - bar * meter + 1n}`;

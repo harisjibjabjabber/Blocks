@@ -4,7 +4,7 @@ import { createEngine } from "../adapters/engine";
 import { RollingHistory, type CapturedEvent, type RibbonNotice } from "../domain/capture";
 import { inferPulse, type InferenceReport } from "../domain/inference";
 import { capturePerformance, defaultOverlay, loopWindow, type Performance, type PhraseOverlay } from "../domain/phrase";
-import { beatForCut, createProject, projectFromJson, projectToJson, proposeTempo, type Project } from "../domain/project";
+import { beatForCut, createProject, projectFromJson, projectToJson, type Project } from "../domain/project";
 import { eventsInSelection, recentPhraseCut, withCaptureRange, type RecentPhraseCut } from "../domain/recent-phrase";
 import { recordedTake } from "../domain/explicit-recording";
 import { rangeForBars, tempoForBars, type FixedBars } from "./loop-assist";
@@ -16,7 +16,7 @@ import { TouchKeyboard } from "./TouchKeyboard";
 import { DEFAULT_SNAP, SNAP_PRESETS, type SnapDivision, type SnapMode } from "./snap";
 import { SelectControl } from "./SelectControl";
 import { TempoControl } from "./TempoControl";
-import { LoopSettings } from "./LoopSettings";
+import { LoopSettings, LoopLengthControl } from "./LoopSettings";
 import { TimelineZoom } from "./TimelineZoom";
 import { ReadinessStrip } from "./Readiness";
 import { moveBound, undoRange, type RangeBounds } from "./range";
@@ -52,6 +52,7 @@ interface UndoCapture {
   takes: Take[];
   ribbon: CapturedEvent[];
   project: Project;
+  gridSettings: { bpm: number; beatsPerBar: number };
 }
 
 function unitFor(domain: CapturedEvent["domain"]): number {
@@ -347,7 +348,7 @@ export default function App() {
       return;
     }
     const ticksPerSecond = unitFor(domain);
-    const tempoForCut = beatForCut(project);
+    const tempoForCut = takes.length ? beatForCut(project) : null;
     const automatic = recentPhraseCut(events, {
       ticksPerSecond,
       gridPeriodTicks: tempoForCut ? BigInt(Math.round((60 / tempoForCut) * ticksPerSecond)) : null,
@@ -370,19 +371,23 @@ export default function App() {
     };
     const selected = eventsInSelection(events, cut.selection);
     const report = inferPulse(selected.length > 0 ? selected : events, ticksPerSecond);
+    // The first performance establishes the sketch tempo. An older saved sketch's
+    // tempo must not suppress this reading; later layers follow the first layer.
+    const predictedBpm = report.pulse === "estimated" && report.bpm !== null && Number.isFinite(report.bpm) && report.bpm > 0 ? report.bpm : null;
+    const captureBpm = takes.length === 0 && predictedBpm !== null ? predictedBpm : liveGrid.bpm;
+    const capturedProject = takes.length === 0 ? { ...project, tempoBpm: captureBpm, proposedTempoBpm: predictedBpm, gridLocked: true } : project;
     const id = "layer-" + nextLayerId.current++;
-    const editingGrid: KnownGrid = { ...liveGrid, phase: cut.loop.start, provisional: false };
+    const editingGrid: KnownGrid = { ...liveGrid, bpm: captureBpm, phase: cut.loop.start, provisional: takes.length === 0 && predictedBpm !== null };
     const created: Take = { id, performance, overlay, report, cut, rangeCeiling: cut.loop.end, rollNotes: notesFromEvents(events), rollPast: [], rollFuture: [], rollGrid: editingGrid, rollEdited: false };
-    setUndo({ takes, ribbon: events, project });
+    setUndo({ takes, ribbon: events, project, gridSettings: editorGridSettings });
     setDeletedTake(null); setSessionUndo(null); setLayerMenu(null); setRangeMode(true);
     setCaptureRange(null); setCaptureRangeUndo(null); setCaptureView(null);
     setTakes((current) => [...current, created]);
     setSelected(id);
-    const proposal = cut.status === "recent" ? proposeTempo(project, report.bpm, takes.length) : proposeTempo(project, null, takes.length);
-    setProject(proposal.project);
-    engine.saveProject(projectToJson(proposal.project));
-    const reading = report.pulse === "none" || report.bpm === null ? "No pulse reading. Quantise stays off." : report.bpm.toFixed(1) + " bpm · one reading, 4/4. Quantise stays off.";
-    setMessage(explicitRecording ? "Recorded · Layer " + (takes.length + 1) : chosenRange ? "Captured · chosen range · Layer " + (takes.length + 1) : cut.status === "recent" ? "Captured · Layer " + (takes.length + 1) : "Captured · no clear rest; kept the available phrase.");
+    setProject(capturedProject);
+    setEditorGridSettings(settings => ({ ...settings, bpm: captureBpm }));
+    engine.saveProject(projectToJson(capturedProject));
+    setMessage(takes.length === 0 && predictedBpm !== null ? `${explicitRecording ? "Recorded" : "Captured"} · ${Number(predictedBpm.toFixed(2))} BPM estimate` : explicitRecording ? "Recorded · Layer " + (takes.length + 1) : chosenRange ? "Captured · chosen range · Layer " + (takes.length + 1) : cut.status === "recent" ? "Captured · Layer " + (takes.length + 1) : "Captured · no clear rest; kept the available phrase.");
     if (project.afterCapture === "silent") {
       return;
     }
@@ -407,6 +412,7 @@ export default function App() {
     }
     setTakes(undo.takes);
     setProject(undo.project);
+    setEditorGridSettings(undo.gridSettings);
     engine.saveProject(projectToJson(undo.project));
     setSelected(undo.takes.length ? undo.takes[undo.takes.length - 1].id : null);
     setUndo(null);
@@ -430,7 +436,7 @@ export default function App() {
     const bounds = rangeForBars(0n, grid, loopBars ?? 4)!;
     const cut = withCaptureRange([], recentPhraseCut([], { ticksPerSecond: unitFor(domain), gridPeriodTicks: null, gridOriginTicks: null, historyMayBeTruncated: false }), bounds);
     const created: Take = { id: "layer-" + nextLayerId.current++, performance: { domain, events: [] }, overlay: { selectionStart: bounds.start, selectionEnd: bounds.end, loopStart: bounds.start, loopEnd: bounds.end, tempoChoice: "estimated", phaseBeats: 0, quantiseStrength: 0, playback: { mode: "original" } }, report: inferPulse([], unitFor(domain)), cut, rangeCeiling: bounds.end, rollNotes: [], rollPast: [], rollFuture: [], rollGrid: grid, rollEdited: true };
-    setUndo({ takes, ribbon: history.snapshot(), project }); setDeletedTake(null);
+    setUndo({ takes, ribbon: history.snapshot(), project, gridSettings: editorGridSettings }); setDeletedTake(null);
     setTakes(items => [...items, created]); setSelected(created.id); setRangeMode(true); setRollTool("draw");
     enterEditor(created);
     void engine.resumeAudio().then(() => setAudioState(engine.readAudioState())).catch(() => setMessage("Sound could not start. Try Play again."));
@@ -598,7 +604,7 @@ export default function App() {
     const bounds = !first && loopBars ? rangeForBars(selectedBounds.start, currentGrid, loopBars) : selectedBounds;
     if (!bounds) return;
     const bpm = first && loopBars ? tempoForBars(bounds, loopBars, currentGrid.beatsPerBar) : null;
-    const grid = { ...currentGrid, ...(bpm ? { bpm } : {}), phase: bounds.start };
+    const grid = { ...currentGrid, ...(bpm ? { bpm, provisional: false } : {}), phase: bounds.start };
     const notes = item.rollNotes.filter(note => note.end > bounds.start && note.start < bounds.end).map(note => ({ ...note, start: note.start < bounds.start ? bounds.start : note.start, end: note.end > bounds.end ? bounds.end : note.end }));
     const before = { ...editSnapshot(item), ...(bpm ? { tempo: tempoSnapshot() } : {}) };
     const updated: Take = { ...item, overlay: { ...item.overlay, loopStart: bounds.start, loopEnd: bounds.end, selectionStart: bounds.start, selectionEnd: bounds.end }, rangeCeiling: bounds.end > item.rangeCeiling ? bounds.end : item.rangeCeiling, rollNotes: notes, rollEdited: true, rollGrid: grid, rollPast: [...item.rollPast, before], rollFuture: [] };
@@ -699,6 +705,7 @@ export default function App() {
         event.preventDefault();
         event.shiftKey ? historyActions.current.redo() : historyActions.current.undo();
       } else if (event.code === "Space") {
+        if ((event.target as HTMLElement)?.closest("button, [role=button], [role=radio], [role=slider]")) return;
         event.preventDefault(); actions.current.togglePlay();
       } else if (event.key === "Escape") {
         setGhosts([]); setPanel(null); engine.stopAudition();
@@ -736,7 +743,7 @@ export default function App() {
 
   if (room && take) return <Editor key={take.id}
     palette={palette} layers={takes.map(item => ({ id: item.id, looping: loopingIds.includes(item.id) }))} selectedLayer={take.id}
-    loopBars={loopBars} onLoopBars={setLoopBars} onResetLoop={() => resetLoop(take)} firstLayer={takes[0]?.id === take.id} onShowFullTake={() => showFullTake(take)} loopRange={loopWindow(take.overlay)} onCutRange={() => cutRange(take)} onQuantiseNow={() => commitRoll(take, applyPreview(take.rollNotes, quantisePreview(take.rollNotes, selectedIds, take.rollGrid, snapDivision, 100, 0)))} notes={take.rollNotes} selectedNote={selectedNote} selectedIds={selectedIds} grid={take.rollGrid} tool={rollTool} looping={looping}
+    captureBpm={take.report.bpm} loopBars={loopBars} onLoopBars={setLoopBars} onResetLoop={() => resetLoop(take)} firstLayer={takes[0]?.id === take.id} onShowFullTake={() => showFullTake(take)} loopRange={loopWindow(take.overlay)} onCutRange={() => cutRange(take)} onQuantiseNow={() => commitRoll(take, applyPreview(take.rollNotes, quantisePreview(take.rollNotes, selectedIds, take.rollGrid, snapDivision, 100, 0)))} notes={take.rollNotes} selectedNote={selectedNote} selectedIds={selectedIds} grid={take.rollGrid} tool={rollTool} looping={looping}
     canUndo={take.rollPast.length > 0} canRedo={take.rollFuture.length > 0}
     snapDivision={snapDivision} snapMode={snapMode} previewing={ghosts.length > 0}
     onBack={leaveEditor} onLayer={setSelected} onTool={setRollTool}
@@ -798,8 +805,8 @@ export default function App() {
         <View style={styles.row}>{button(project.afterCapture === "loop" ? "After capture: loop" : "After capture: stay silent", () => setAfterCapture(project.afterCapture === "loop" ? "silent" : "loop"))}{button("Learn Capture", () => { learningRef.current = "capture"; setLearning("capture"); })}{button("Learn Play/Stop", () => { learningRef.current = "transport"; setLearning("transport"); })}{button("Stop all sound", () => { engine.stopAudition(); engine.stopReplay(); engine.silence(); setLoopingIds([]); })}</View>
       </View>}
       <View style={{ flexDirection: width >= 1000 ? "row" : "column", gap: 16, marginTop: 16 }}>
-        <View style={[styles.card, { marginTop: 0, flex: width >= 1000 ? 1 : undefined, backgroundColor: palette.card, borderColor: palette.line, padding: 8 }]}>
-          <View style={{ flexDirection: "row", gap: 8, alignItems: "center", marginBottom: 8 }}><View style={{ flex: 1, flexDirection: "row", gap: 4 }}>{button("Live", () => setRangeMode(false), { active: !rangeMode || !take, accessibilityLabel: "Next capture" })}{take && button(`Layer ${takes.indexOf(take) + 1}`, () => setRangeMode(true), { active: rangeMode })}</View>{button("Loop", () => setPanel(panel === "loop" ? null : "loop"), { accessibilityLabel: "Loop settings" })}{button(rangeMode && take ? "Edit MIDI" : "Draw MIDI", () => rangeMode && take ? enterEditor(take) : drawMidi())}</View>
+        <View dataSet={{ captureBpm: rangeMode && take?.report.bpm ? String(take.report.bpm) : "" }} style={[styles.card, { marginTop: 0, flex: width >= 1000 ? 1 : undefined, backgroundColor: palette.card, borderColor: palette.line, padding: 8 }]}>
+          <View style={{ flexDirection: "row", gap: width < 360 ? 4 : 8, alignItems: "center", marginBottom: 8 }}><View style={{ flex: 1, flexDirection: "row", gap: 4 }}>{button("Live", () => setRangeMode(false), { active: !rangeMode || !take, accessibilityLabel: "Next capture" })}{take && button(`Layer ${takes.indexOf(take) + 1}`, () => setRangeMode(true), { active: rangeMode })}</View><LoopLengthControl bars={loopBars} onPress={() => setPanel(panel === "loop" ? null : "loop")} open={panel === "loop"} palette={palette} />{button(rangeMode && take ? "Edit MIDI" : "Draw MIDI", () => rangeMode && take ? enterEditor(take) : drawMidi())}</View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginVertical: 8, flexWrap: "wrap" }}>
             <TempoControl value={rangeMode && take?.rollGrid ? Number(take.rollGrid.bpm.toFixed(2)) : liveGrid.bpm} onChange={changeCaptureTempo} palette={palette} caption={`BPM · ${rangeMode && take?.rollGrid ? take.rollGrid.beatsPerBar : liveGrid.beatsPerBar}/4`} valueLabel="Capture grid settings" onValuePress={() => { setMeterText(String(rangeMode && take?.rollGrid ? take.rollGrid.beatsPerBar : liveGrid.beatsPerBar)); setPanel(panel === "grid" ? null : "grid"); }} />
             <View style={{ flex: 1, minWidth: 100 }}><SelectControl label="Capture snap division" value={captureCustomSnap || !snapPreset ? "custom" : snapPreset.id} options={[...SNAP_PRESETS.map(item => ({ value: item.id, label: `Snap ${item.label}` })), { value: "custom", label: !snapPreset && snapDivision.kind === "note" ? `Snap ${snapDivision.numerator}/${snapDivision.denominator}` : "Custom…" }]} onChange={id => { setCaptureCustomSnap(id === "custom"); if (id !== "custom") setSnapDivision(SNAP_PRESETS.find(item => item.id === id)!.division); }} palette={palette} /></View>
@@ -811,7 +818,7 @@ export default function App() {
           {!rangeMode && ribbon.length > 0 && <View style={{ flexDirection: "row", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 8 }}><Text style={[styles.meta, { color: palette.muted, flex: 1 }]}>{captureRange ? "Manual range · next capture" : "Auto range · next capture"}</Text>{captureRange && button("Auto range", () => { setCaptureRangeUndo({ bounds: captureRange }); setCaptureRange(null); setCaptureView(null); })}{captureRangeUndo && button("Undo range", () => { setCaptureRange(captureRangeUndo.bounds); setCaptureRangeUndo(null); })}</View>}
           {panel === "loop" && <View style={{ position: "absolute", zIndex: 20, top: 64, left: 8, right: 8, padding: 12, gap: 8, borderRadius: 10, borderWidth: 1, borderColor: palette.line, backgroundColor: palette.card }}>
             {compactTimeline && <TimelineZoom value={zoomDetail} onChange={changeHistoryZoom} onFit={() => showFullTake()} palette={palette} />}
-            {rangeMode && take ? <><LoopSettings onUndo={boundsUndo ? () => { undoBounds(); setPanel(null); } : undefined} bars={loopBars} onBars={setLoopBars} onReset={() => resetLoop(take)} onCut={() => { cutRange(take); setPanel(null); }} palette={palette} tempoPreview={takes[0]?.id === take.id && loopBars ? tempoForBars(loopWindow(take.overlay), loopBars, take.rollGrid?.beatsPerBar ?? 4) : null} /></> : <Text style={[styles.meta, { color: palette.muted }]}>Capture or draw a layer to set its loop.</Text>}
+            {rangeMode && take ? <><LoopSettings onUndo={boundsUndo ? () => { undoBounds(); setPanel(null); } : undefined} bars={loopBars} onBars={setLoopBars} onReset={() => resetLoop(take)} onCut={() => { cutRange(take); setPanel(null); }} palette={palette} tempoPreview={takes[0]?.id === take.id && loopBars ? tempoForBars(loopWindow(take.overlay), loopBars, take.rollGrid?.beatsPerBar ?? 4) : null} /></> : <LoopSettings bars={loopBars} onBars={setLoopBars} onReset={() => undefined} onCut={() => undefined} palette={palette} canEdit={false} />}
           </View>}
           {boundsUndo && rangeMode && take && !compactPlay && panel !== "loop" ? <View style={{ flexDirection: "row", gap: 8 }}>{button("Cut range", () => cutRange(take))}{button("Undo range", undoBounds)}</View> : null}
         </View>
