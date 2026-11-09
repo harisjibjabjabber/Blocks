@@ -12,7 +12,7 @@ const exports=['malloc','free','bs_abi_version','bs_parameter_count','bs_paramet
 const sources=readdirSync(resolve(root,'packages/synth-core/src')).filter(n=>n.endsWith('.cpp')).map(n=>resolve(root,'packages/synth-core/src',n));
 const args=[compiler,...sources,'-I'+resolve(root,'packages/synth-core/include'),'-std=c++17','-O2','-fno-exceptions','-fno-rtti','--no-entry','-sSTANDALONE_WASM=1','-sALLOW_MEMORY_GROWTH=0','-sINITIAL_MEMORY=16777216','-sEXPORTED_FUNCTIONS='+JSON.stringify(exports.map(n=>'_'+n)),'-o',resolve(out,'synth.wasm')];
 const result=spawnSync(process.env.PYTHON||'python',args,{stdio:'inherit',cwd:root});if(result.error)throw result.error;if(result.status)process.exit(result.status);
-for(const name of ['index.html','host.js','processor.js','instrument-ui.js','recipes.js','patches.js','presets.js','envelope-scale.js','peak-meter.js','styles.css'])copyFileSync(resolve(root,'packages/synth-web',name),resolve(out,name));
+for(const name of ['index.html','host.js','processor.js','instrument-ui.js','recipes.js','patches.js','presets.js','envelope-scale.js','envelope-geometry.js','peak-meter.js','parameter-state.js','styles.css'])copyFileSync(resolve(root,'packages/synth-web',name),resolve(out,name));
 mkdirSync(resolve(out,'fonts'),{recursive:true});
 for(const [family,file] of [['Instrument Serif','InstrumentSerif-Regular.ttf'],['Inter Tight','InterTight-VariableFont_wght.ttf'],['Geist Mono','GeistMono-VariableFont_wght.ttf']]) {
   copyFileSync(resolve(root,'web/public/fonts',family,file),resolve(out,'fonts',file));

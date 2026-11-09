@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(blocks_synth_core VERSION 0.3.0 LANGUAGES C CXX)
+project(blocks_synth_core VERSION 0.4.0 LANGUAGES C CXX)
 add_library(blocks_synth STATIC src/blocks_synth.cpp)
 add_library(Blocks::Synth ALIAS blocks_synth)
 target_include_directories(blocks_synth PUBLIC

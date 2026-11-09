@@ -1,16 +1,15 @@
-import { test } from 'node:test';
+import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import { applyRecipe,readRecipe,characterRecipe } from './recipes.js';
-test('Character is bounded, reversible and preserves unrelated patch parameters',()=>{
-  const original=Array.from({length:19},(_,i)=>i);
-  for(const amount of [-1,0,.16,.32,.6,.8,1,2]){
-    const next=applyRecipe(characterRecipe,amount,original),n=Math.max(0,Math.min(1,amount));
-    assert.ok(Math.abs(next[13]-(n<=.6?n*10:6+(n-.6)*35))<1e-12);assert.ok(Math.abs(next[12]-(1+n*1.2))<1e-12);assert.ok(Math.abs(next[14]-(.1+n*.5))<1e-12);
-    const read=readRecipe(characterRecipe,next);assert.ok(Math.abs(read.amount-n)<1e-12);assert.equal(read.custom,false);
-    for(let i=0;i<19;i++)if(![12,13,14].includes(i))assert.equal(next[i],original[i]);
-  }
-  assert.deepEqual(original,Array.from({length:19},(_,i)=>i));
-  const changed=applyRecipe(characterRecipe,.5,original);changed[12]=7;
-  assert.deepEqual(readRecipe(characterRecipe,changed),{amount:.5,custom:true});
-  assert.throws(()=>applyRecipe(characterRecipe,NaN,original));
+import {applyRecipe,readRecipe,characterRecipe,motionRecipe} from './recipes.js';
+test('calibration motion is bounded and reversible; upper range deliberately exceeds20 cents',()=>{
+ const before=Array.from({length:35},(_,i)=>i);
+ for(const amount of [-1,0,.16,.32,.6,.8,1,2]){
+  const n=Math.max(0,Math.min(1,amount)),next=applyRecipe(characterRecipe,amount,before);
+  assert(Math.abs(next[13]-(n<=.6?8*n:4.8+(n-.6)*88))<1e-12);
+  assert(Math.abs(next[32]-(n<=.6?2*n:1.2+(n-.6)*17))<1e-12);
+  const read=readRecipe(characterRecipe,next);assert(Math.abs(read.amount-n)<1e-12);assert.equal(read.custom,false);
+  for(let id=0;id<35;id++)if(!characterRecipe.targets.some(t=>t.id===id))assert.equal(next[id],before[id]);
+ }
+ const maximum=applyRecipe(motionRecipe,1,before);assert.equal(maximum[13],40);assert.equal(maximum[32],8);assert.equal(maximum[12],before[12]);assert.equal(maximum[14],before[14]);
+ assert.deepEqual(before,Array.from({length:35},(_,i)=>i));assert.throws(()=>applyRecipe(motionRecipe,NaN,before));
 });

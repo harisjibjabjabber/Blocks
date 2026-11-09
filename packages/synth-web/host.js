@@ -1,7 +1,8 @@
 import { createInstrumentUI } from './instrument-ui.js';
-import { characterRecipe } from './recipes.js';
+import { characterRecipe,motionRecipe } from './recipes.js';
 import { migratePatch } from './patches.js';
 import {emptyPeak,receivePeak,peakDisplay} from './peak-meter.js';
+import {canonicalLevels,parameterBatch} from './parameter-state.js';
 const $=id=>document.getElementById(id);
 let context,node,analyser,parameters=[],values=[],ready=false,access,raf=0,lastDraw=0,instrument,version=1;
 const pressed=new Map(),keys=new Map();
@@ -9,9 +10,9 @@ let keyboardShift=0,voiceCount=0,peakState=emptyPeak();
 const error=message=>{$('error').textContent=message;};
 function event(type,key=0,value=0,parameter=0,channel=15){if(ready&&context.state==='running')node.port.postMessage({kind:'event',type,key,value,parameter,channel,frame:Math.ceil(context.currentTime*context.sampleRate)});}
 function applyValues(next){
-  const before=values; values=[...next];
+  const before=values; values=canonicalLevels(next,before.length?before:undefined);
   if(!ready)return;
-  if(context.state==='running')for(let id=0;id<values.length;id++){if(values[id]!==before[id])event(2,0,values[id],id);}
+  if(context.state==='running')node.port.postMessage({kind:'parameter-batch',values:parameterBatch(before,values),frame:Math.ceil(context.currentTime*context.sampleRate)});
   else node.port.postMessage({kind:'patch',version,values});
 }
 const engineData=(async()=>{
@@ -43,7 +44,7 @@ function drawScope(samples){
   drawing.clearRect(0,0,w,h);drawing.lineWidth=1.2*ratio;
   const trace=(colour,sample)=>{drawing.strokeStyle=colour;drawing.beginPath();for(let i=0;i<w;i++){const y=h*.5-sample(i/(w-1))*h*.36;if(i)drawing.lineTo(i,y);else drawing.moveTo(i,y);}drawing.stroke();};
   if(output){const scale=Math.max(.003,peak);trace('#e9e3d7',n=>samples[Math.min(samples.length-1,Math.floor(n*(samples.length-1)))]/scale);}
-  else if(values.length){const shape=(wave,t)=>wave===0?Math.sin(2*Math.PI*t):wave===1?4*Math.abs(t-.5)-1:wave===2?2*t-1:t<(values[3]??.5)?1:-1;trace('#e9e3d7',n=>shape(values[19]??2,(n*2)%1));trace('#ff743f',n=>shape(values[20]??3,(n*2)%1)*.82);}
+  else if(values.length){const shape=(wave,t)=>wave===0?Math.sin(2*Math.PI*t):wave===1?4*Math.abs(t-.5)-1:wave===2?2*t-1:t<(wave===4?.5:(values[3]??.5))?1:-1;trace('#e9e3d7',n=>shape(values[19]??2,(n*2)%1)*(values[21]??.65));trace('#ff743f',n=>shape(values[20]??3,(n*2)%1)*(values[22]??.35));}
 }
 function scope(){
   if(!context||context.state!=='running')return;
@@ -83,7 +84,7 @@ for(const name of ['pointerup','pointercancel','lostpointercapture'])$('keyboard
 const mapping={a:60,w:61,s:62,e:63,d:64,f:65,t:66,g:67,y:68,h:69,u:70,j:71,k:72};
 window.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(e.target.tagName))return;const base=mapping[e.key.toLowerCase()],pitch=base===undefined?undefined:base+keyboardShift*12;if(pitch!==undefined&&!e.repeat){e.preventDefault();startNote('key-'+e.code,pitch);}});window.addEventListener('keyup',e=>releaseNote('key-'+e.code));
 for(const[pitch,key]of keys){key.addEventListener('keydown',e=>{if([' ','Enter'].includes(e.key)&&!e.repeat){e.preventDefault();startNote('button-'+pitch,Number(key.dataset.pitch));}});key.addEventListener('keyup',e=>{if([' ','Enter'].includes(e.key)){e.preventDefault();releaseNote('button-'+pitch);}});}
-$('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({format:'blocks-synth-patch',version,values,macroVersions:{character:characterRecipe.version}},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='blocks-synth-patch.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);});
+$('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({format:'blocks-synth-patch',version,values,macroVersions:{character:characterRecipe.version,motion:motionRecipe.version}},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='blocks-synth-patch.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);});
 $('import').addEventListener('change',async e=>{
   try{
     const file=e.target.files[0];if(!file)return;if(file.size>65536)throw Error('Patch exceeds 64 KiB');

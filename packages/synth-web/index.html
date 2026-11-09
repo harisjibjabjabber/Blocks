@@ -35,7 +35,7 @@
     </nav>
     <section class="sound-editor" aria-label="Sound editing">
       <div class="visual-panel">
-        <div class="surface-heading"><h2 id="module-title">Oscillator + filter</h2><output id="value-summary" aria-live="off"></output></div>
+        <div class="surface-heading"><div id="envelope-tabs" role="group" aria-label="Envelope destination" hidden><button type="button" data-envelope="amp" aria-pressed="true">Amp</button><button type="button" data-envelope="filter" aria-pressed="false">Filter</button></div><h2 id="module-title">Oscillator + filter</h2><output id="value-summary" aria-live="off"></output></div>
         <div id="waveforms" aria-label="Oscillator waveforms" hidden></div>
         <div id="sauce-tabs" role="group" aria-label="Sauce effect" hidden><button type="button" data-sauce="drive" aria-pressed="true">Drive</button><button type="button" data-sauce="drop" aria-pressed="false">Pitch Drop</button></div>
         <div id="scope-wrapper" hidden><div class="waveform-caption"><span>Waveform</span><span id="scope-label">Preview</span></div><canvas id="scope" aria-label="Synth waveform preview"></canvas></div>

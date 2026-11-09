@@ -31,18 +31,18 @@ const point = (id, x, y) => ({ id, x, y, radiusX: 4, radiusY: 4, force: 1 });
 async function touch(type, points) { await b.send('Input.dispatchTouchEvent', { type, touchPoints: points }); await delay(70); }
 async function exportPatch() { await b.evaluate(`window.__proofExport=null`); await click('#export'); await waitFor(`typeof window.__proofExport==='string'`); return JSON.parse(await b.evaluate(`window.__proofExport`)); }
 async function importPatch(patch, name) { const path=resolve(out,name+'.json');writeFileSync(path,JSON.stringify(patch));const {root}=await b.send('DOM.getDocument',{});const {nodeId}=await b.send('DOM.querySelector',{nodeId:root.nodeId,selector:'#import'});await b.send('DOM.setFileInputFiles',{nodeId,files:[path]});await delay(160); }
-function nearValues(actual,expected) { assert.equal(actual.length,expected.length);actual.forEach((value,i)=>assert.ok(Math.abs(value-expected[i])<=(i>=19?0:1),`parameter ${i}: ${value} != ${expected[i]}`)); }
+function nearValues(actual,expected) { assert.equal(actual.length,expected.length);actual.forEach((value,i)=>assert.ok(Math.abs(value-expected[i])<=([19,20].includes(i)?0:1),`parameter ${i}: ${value} != ${expected[i]}`)); }
 let defaults;
 try {
   // Explicit test instrumentation; application module private state is never read.
   await b.send('Page.addScriptToEvaluateOnNewDocument', { source: `const Context=window.AudioContext;window.AudioContext=class extends Context{createAnalyser(){const a=super.createAnalyser();window.__proofAnalyser=a;return a;}};const makeURL=URL.createObjectURL.bind(URL);URL.createObjectURL=blob=>{if(blob.type==='application/json')blob.text().then(text=>window.__proofExport=text);return makeURL(blob);};` });
   await b.send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath:out});
-  await size(1440); await b.navigate(url); await waitFor(`document.querySelectorAll('input[data-param]').length===21`);
+  await size(1440); await b.navigate(url); await waitFor(`document.querySelectorAll('input[data-param]').length===35`);
   report.scripts = await b.evaluate(`Array.from(document.scripts,s=>s.src)`);
   await check('standalone modules expose descriptor controls before audio starts', async () => {
     assert.equal(await b.evaluate(`document.getElementById('status').textContent`), 'Sound stopped'); assert.ok(report.scripts.every(s => !s.includes('/assets/index-') && !s.includes('react')));
     assert.deepEqual(await b.evaluate(`Array.from(document.querySelectorAll('#module-tabs [data-module]'),e=>e.dataset.module)`), ['tone', 'envelope', 'character', 'drop']);
-    const initial=await values(); assert.equal(initial.length, 21); assert.ok(initial.every(n => Number.isFinite(n) && n >= 0 && n <= 1000)); assert.equal(await b.evaluate(`document.getElementById('error').textContent`), '');
+    const initial=await values(); assert.equal(initial.length, 35); assert.ok(initial.every(n => Number.isFinite(n) && n >= 0 && n <= 1000)); assert.equal(await b.evaluate(`document.getElementById('error').textContent`), '');
     for (const name of ['envelope', 'character', 'drop', 'tone']) { await module(name); assert.deepEqual(await values(), initial); }
     await click('.patch-files > summary');await click('#init');defaults=await values();assert.notDeepEqual(defaults,initial);await click('#undo');assert.deepEqual(await values(),initial);await click('#init');
   });
@@ -50,19 +50,24 @@ try {
     const before = await values(), beforeUndo = await undoDisabled(); await drag('[data-knob="11"]', 0, -30); const changed = await values(); assert.notEqual(changed[11], before[11]); for (let i = 0; i < before.length; i++) if (i !== 11) assert.equal(changed[i], before[i]);
     await click('#undo'); assert.deepEqual(await values(), before); assert.equal(await undoDisabled(), beforeUndo);
   });
-  await check('both oscillators expose four discrete waves with independent single-step Undo',async()=>{
+  await check('both oscillator popovers expose five discrete waves with one Undo',async()=>{
     await module('tone');
     for(const id of [19,20]){
-      const selector=`[data-waveosc="${id}"]`;
-      assert.deepEqual(await b.evaluate(`Array.from(document.querySelector('${selector}').options,o=>o.textContent)`),['Sine','Triangle','Saw','Pulse']);
-      for(const wave of [0,1,2,3]){
+      await click(`[data-waveosc="${id}"]`);assert.deepEqual(await b.evaluate(`Array.from(document.querySelectorAll('#wave-popover [data-wave]'),e=>e.textContent)`),['Sine','Triangle','Saw','Pulse','Square']);await key('Escape');
+      for(const wave of [0,1,2,3,4]){
         const before=await values(),undoBefore=await undoDisabled();if(before[id]===wave)continue;
-        await b.evaluate(`(()=>{const e=document.querySelector('${selector}');e.value=${wave};e.dispatchEvent(new Event('change',{bubbles:true}));})()`);
-        const changed=await values();assert.equal(changed[id],wave);for(let i=0;i<changed.length;i++)if(i!==id)assert.equal(changed[i],before[i]);
+        await click(`[data-waveosc="${id}"]`);await click(`#wave-popover [data-wave="${wave}"]`);
+        const changed=await values();assert.equal(changed[id],wave);for(let i=0;i<changed.length;i++)if(i!==id)assert.equal(changed[i],before[i]);assert.equal(await b.evaluate(`document.getElementById('wave-popover').hidden`),true);
         await click('#undo');assert.deepEqual(await values(),before);assert.equal(await undoDisabled(),undoBefore);
       }
     }
     await module('envelope');assert.equal(await b.evaluate(`document.getElementById('waveforms').hidden`),true);await module('tone');
+  });
+  await check('oscillator levels are independent, mute is reversible and legacy Mix stays canonical',async()=>{
+    for(const id of [21,22]){
+      const before=await values(),other=id===21?22:21;await click(`[data-osclevel="${id}"]`);await b.evaluate(`document.querySelector('[data-level-range="${id}"]').focus()`);await key('ArrowLeft');const changed=await values();assert.notEqual(changed[id],before[id]);assert.equal(changed[other],before[other]);for(let i=0;i<changed.length;i++)if(![1,id].includes(i))assert.equal(changed[i],before[i]);assert.ok(Math.abs(changed[1]-Math.round(1000*changed[22]/(changed[21]+changed[22])))<=1);await key('Escape');await click('#undo');nearValues(await values(),before);
+      await click(`[data-osclevel="${id}"]`);await click('#wave-popover .osc-mute');assert.equal((await values())[id],0);assert.equal((await values())[other],before[other]);await key('Escape');await click('#undo');nearValues(await values(),before);
+    }
   });
   await check('top-right Volume and visible Sauce Drive each edit the existing patch with one Undo',async()=>{
     const before=await values(),undoBefore=await undoDisabled();await click('#volume-toggle');assert.equal(await b.evaluate(`document.getElementById('volume-panel').hidden`),false);await b.evaluate(`document.getElementById('volume-range').focus()`);await key('ArrowRight');assert.notEqual((await values())[0],before[0]);await key('Escape');assert.equal(await b.evaluate(`document.getElementById('volume-panel').hidden`),true);await click('#undo');assert.deepEqual(await values(),before);assert.equal(await undoDisabled(),undoBefore);
@@ -83,6 +88,14 @@ try {
       const before = await values(); await drag(`[data-bend="${name}"]`, 0, -22); const changed = await values(); assert.notEqual(changed[id], before[id]); for (let i = 0; i < before.length; i++) if (i !== id) assert.equal(changed[i], before[i]); await click('#undo'); assert.deepEqual(await values(), before);
     }
   });
+  await check('filter envelope has independent gestures and curves without changing amplitude ADSR',async()=>{
+    const baseline=await values();await click('#envelope-tabs [data-envelope="filter"]');nearValues(await values(),baseline);assert.equal(await b.evaluate(`document.getElementById('module-title').textContent`),'Filter envelope');
+    for(const[handle,ids,dx,dy]of [['attack',[25],18,0],['decay',[26,27],15,-15],['release',[28],18,0]]){const before=await values();await drag(`[data-handle="${handle}"]`,dx,dy);const changed=await values();assert.ok(ids.some(id=>changed[id]!==before[id]));for(let i=0;i<before.length;i++)if(!ids.includes(i))assert.equal(changed[i],before[i]);await click('#undo');nearValues(await values(),before);}
+    await drag('[data-stage-readout][data-handle="sustain"]',0,-35);assert.ok((await values())[27]>0);
+    for(const[name,id]of [['attack',29],['decay',30],['release',31]]){const before=await values();await drag(`[data-bend="${name}"]`,0,-22);assert.notEqual((await values())[id],before[id]);await click('#undo');nearValues(await values(),before);}
+    await click('#undo');nearValues(await values(),baseline);
+    const before=await values();await drag('[data-knob="24"]',0,-25);assert.notEqual((await values())[24],before[24]);await click('#undo');nearValues(await values(),before);await click('#envelope-tabs [data-envelope="amp"]');nearValues(await values(),baseline);
+  });
   await check('Escape and touch cancellation restore exact envelope values without history', async () => {
     const before = await values(), beforeUndo = await undoDisabled(); const preview = await drag('[data-handle="attack"]', 18, 0, true); assert.notEqual(preview[4], before[4]); assert.deepEqual(await values(), before); assert.equal(await undoDisabled(), beforeUndo);
     const r = await rect('[data-handle="release"]'), p = point(1, r.x + r.w / 2, r.y + r.h / 2);
@@ -94,8 +107,11 @@ try {
     await b.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 2 }); await touch('touchStart', [p]); await touch('touchMove', [moved]); const preview = await values(); assert.notDeepEqual(preview, before);
     const secondMoved={...second,x:second.x-22};await touch('touchStart', [moved, second]); await touch('touchMove', [moved, secondMoved]); assert.deepEqual(await values(), preview); await touch('touchEnd', [secondMoved]); assert.deepEqual(await values(), preview);await touch('touchMove',[{...moved,x:moved.x+10}]);const continued=await values();assert.notEqual(continued[4],preview[4],'original owner must keep editing after secondary finger lifts'); await touch('touchEnd', []); await b.send('Emulation.setTouchEmulationEnabled', { enabled: false }); assert.deepEqual(await values(), continued); await click('#undo'); assert.deepEqual(await values(), before); assert.equal(await undoDisabled(), beforeUndo);
   });
-  await check('Character changes drift amount, speed and drive as one undoable gesture', async () => {
-    await module('character'); const before = await values(), beforeUndo = await undoDisabled(); await drag('[data-knob="character"]', 0, -30); const changed = await values(); for (const id of [12, 13, 14]) assert.notEqual(changed[id], before[id]); for (let i = 0; i < before.length; i++) if (![12, 13, 14].includes(i)) assert.equal(changed[i], before[i]); await click('#undo'); assert.deepEqual(await values(), before); assert.equal(await undoDisabled(), beforeUndo);
+  await check('Character changes its declared sound and movement parameters as one gesture', async () => {
+    await module('character'); const before = await values(), beforeUndo = await undoDisabled(); await drag('[data-knob="character"]', 0, -30); const changed = await values(); for (const id of [12, 13, 14,32,34]) assert.notEqual(changed[id], before[id]); for (let i = 0; i < before.length; i++) if (![12, 13, 14,32,33,34].includes(i)) assert.equal(changed[i], before[i]); await click('#undo'); assert.deepEqual(await values(), before); assert.equal(await undoDisabled(), beforeUndo);
+  });
+  await check('Motion changes only movement, stays finite and is independently undoable',async()=>{
+    await module('character');const before=await values(),undoBefore=await undoDisabled();await drag('[data-knob="motion"]',0,-45);const changed=await values();for(const id of [13,32,34])assert.notEqual(changed[id],before[id]);for(let i=0;i<changed.length;i++)if(![13,32,33,34].includes(i))assert.equal(changed[i],before[i]);assert.doesNotMatch(await b.evaluate(`document.querySelector('[data-knob="motion"]').getAttribute('aria-valuetext')`),/NaN/);await click('#undo');nearValues(await values(),before);assert.equal(await undoDisabled(),undoBefore);
   });
   await check('Precision changes individual character parameters and reports a Custom macro', async () => {
     await click('#parameters summary');
@@ -109,13 +125,14 @@ try {
     for (const name of ['velvet', 'glass', 'low']) { const before = await values(), beforeUndo = await undoDisabled(); await preset(name); const changed = await values(); assert.notDeepEqual(changed, before); assert.ok(changed.every(n => Number.isFinite(n) && n >= 0 && n <= 1000)); await click('#undo'); assert.deepEqual(await values(), before); assert.equal(await undoDisabled(), beforeUndo); }
     await preset('glass'); await click('#init'); assert.deepEqual(await values(), defaults);
   });
-  await check('JSON v1/v2 imports retain old waves; v3 exports round-trip with atomic rejection', async () => {
-    await preset('velvet');const before=await values(),patch=await exportPatch();assert.equal(patch.version,3);assert.equal(patch.values.length,21);assert.ok(before[18]>0);
-    await importPatch({...patch,version:1,values:patch.values.slice(0,18)},'legacy-v1');const migrated=await values();nearValues(migrated.slice(0,18),before.slice(0,18));assert.equal(migrated[18],0);assert.deepEqual(migrated.slice(19),[2,3]);assert.equal(await b.evaluate(`document.getElementById('error').textContent`),'');await click('#undo');nearValues(await values(),before);
-    await click('#init');const legacyBefore=await values();await importPatch({...patch,version:2,values:patch.values.slice(0,19)},'legacy-v2');nearValues((await values()).slice(0,19),before.slice(0,19));assert.deepEqual((await values()).slice(19),[2,3]);await click('#undo');nearValues(await values(),legacyBefore);await preset('velvet');
-    await click('#init');const init=await values();await importPatch(patch,'current-v3');nearValues(await values(),before);await click('#undo');nearValues(await values(),init);
+  await check('JSON v1/v2/v3 import defaults and canonical levels; v4 round-trip rejects invalid patches atomically',async()=>{
+    await preset('velvet');const before=await values(),patch=await exportPatch();assert.equal(patch.version,4);assert.equal(patch.values.length,35);
+    for(const[version,count]of [[1,18],[2,19],[3,21]]){
+      await importPatch({...patch,version,values:patch.values.slice(0,count)},'legacy-v'+version);const migrated=await values();nearValues(migrated.slice(0,count),before.slice(0,count));if(version===1)assert.equal(migrated[18],0);if(version<3)assert.deepEqual(migrated.slice(19,21),[2,3]);assert.ok(Math.abs(migrated[21]-Math.round((1-patch.values[1])*1000))<=1);assert.ok(Math.abs(migrated[22]-Math.round(patch.values[1]*1000))<=1);nearValues(migrated.slice(23),defaults.slice(23));assert.equal(await b.evaluate(`document.getElementById('error').textContent`),'');await click('#undo');nearValues(await values(),before);
+    }
+    await click('#init');const init=await values();await importPatch(patch,'current-v4');nearValues(await values(),before);await click('#undo');nearValues(await values(),init);
     const undoBefore=await undoDisabled();await importPatch({...patch,version:999},'invalid-version');nearValues(await values(),init);assert.equal(await undoDisabled(),undoBefore);assert.match(await b.evaluate(`document.getElementById('error').textContent`),/invalid|unsupported/i);
-    await importPatch({...patch,values:patch.values.map((v,i)=>i===18?null:v)},'invalid-value');nearValues(await values(),init);assert.equal(await undoDisabled(),undoBefore);await importPatch({...patch,values:patch.values.map((v,i)=>i===18?0:v)},'valid-again');assert.equal(await b.evaluate(`document.getElementById('error').textContent`),'');await click('#init');nearValues(await values(),defaults);
+    await importPatch({...patch,values:patch.values.map((v,i)=>i===34?null:v)},'invalid-value');nearValues(await values(),init);assert.equal(await undoDisabled(),undoBefore);await importPatch({...patch,values:patch.values.map((v,i)=>i===18?0:v)},'valid-again');assert.equal(await b.evaluate(`document.getElementById('error').textContent`),'');await click('#init');nearValues(await values(),defaults);
   });
   await check('Start retains edited parameters and initializes the actual WASM AudioWorklet', async () => {
     await module('tone'); await drag('[data-knob="11"]', 0, -15); const before = await values(); await click('#start'); await waitFor(`document.getElementById('status').textContent.startsWith('Sound running')`); assert.deepEqual(await values(), before); assert.equal(await b.evaluate(`document.getElementById('error').textContent`), ''); await click('#init'); await delay(120);
@@ -138,12 +155,23 @@ try {
     const r=await rect('[data-pitch="60"]'),p=point(1,r.x+r.w/2,r.y+r.h-20);
     await b.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:2});await touch('touchStart',[p]);await delay(400);
     const before=await meter();const waveSignals=[];
-    for(const wave of [0,1,3,2]){
-      await b.evaluate(`(()=>{const e=document.querySelector('[data-waveosc="19"]');e.value=${wave};e.dispatchEvent(new Event('change',{bubbles:true}));})()`);await delay(200);
+    for(const wave of [0,1,3,4,2]){
+      await click('[data-waveosc="19"]');await click(`#wave-popover [data-wave="${wave}"]`);await delay(200);
       const audio=await meter();assert.ok(audio.finite&&audio.peak<=1&&audio.rms>.0001);assert.equal(await b.evaluate(`document.querySelector('[data-pitch="60"]').classList.contains('active')`),true);waveSignals.push({wave,...audio});
     }
     assert.ok(waveSignals.some(s=>Math.abs(s.rms-before.rms)>.0002),'Wave selection should measurably change audio');report.waveSignals=waveSignals;
     await touch('touchEnd',[]);await b.send('Emulation.setTouchEmulationEnabled',{enabled:false});await click('#init');
+  });
+  await check('independent oscillator level batches mute and restore actual held audio',async()=>{
+    await click('#init');await module('tone');const r=await rect('[data-pitch="60"]'),p=point(1,r.x+r.w/2,r.y+r.h-20);await b.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:2});await touch('touchStart',[p]);await delay(300);const sounding=await meter();assert.ok(sounding.rms>.001);
+    for(const id of [21,22]){await click(`[data-osclevel="${id}"]`);await b.evaluate(`document.querySelector('[data-level-range="${id}"]').focus()`);await key('Home');await key('Escape');}await delay(250);const silent=await meter();assert.equal((await values())[21],0);assert.equal((await values())[22],0);assert.ok(silent.rms<.0001);assert.equal(await b.evaluate(`document.querySelector('[data-pitch="60"]').classList.contains('active')`),true);
+    await click('[data-osclevel="21"]');await b.evaluate(`document.querySelector('[data-level-range="21"]').focus()`);await key('End');await key('Escape');await delay(250);const restored=await meter();assert.ok(restored.rms>.001);assert.equal((await values())[22],0);report.oscillatorLevels={sounding,silent,restored};await touch('touchEnd',[]);await b.send('Emulation.setTouchEmulationEnabled',{enabled:false});await click('#init');
+  });
+  await check('independent filter envelope amount and dry mix reach the actual held-note DSP',async()=>{
+    await click('#init');await module('tone');await b.evaluate(`(()=>{for(const[id,value]of [[1,0],[4,0],[6,1000],[11,300],[25,0],[27,1000],[24,500],[23,1000]]){const e=document.querySelector('input[data-param="'+id+'"]');e.value=value;e.dispatchEvent(new Event('input',{bubbles:true}));}})()`);await delay(120);
+    const r=await rect('[data-pitch="60"]'),p=point(1,r.x+r.w/2,r.y+r.h-20);await b.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:2});await touch('touchStart',[p]);await delay(500);const base=await meter();
+    await module('envelope');await click('#envelope-tabs [data-envelope="filter"]');await b.evaluate(`document.querySelector('[data-knob="24"]').focus()`);await key('End');await delay(300);const envelope=await meter();assert.ok(envelope.rms>base.rms*1.4,JSON.stringify({base,envelope}));assert.equal(await b.evaluate(`document.querySelector('[data-pitch="60"]').classList.contains('active')`),true);
+    await b.evaluate(`(()=>{const e=document.querySelector('input[data-param="24"]');e.value=500;e.dispatchEvent(new Event('input',{bubbles:true}));})()`);await module('tone');await b.evaluate(`document.querySelector('[data-knob="23"]').focus()`);await key('Home');await delay(300);const bypass=await meter();assert.ok(bypass.rms>base.rms*1.4);report.filterEnvelope={base,envelope,bypass};await touch('touchEnd',[]);await b.send('Emulation.setTouchEmulationEnabled',{enabled:false});await module('envelope');await click('#envelope-tabs [data-envelope="amp"]');await click('#init');await module('tone');
   });
   await check('Fullness adds harmonic colour without attenuating the held-note foundation', async () => {
     await click('#init');await module('character');

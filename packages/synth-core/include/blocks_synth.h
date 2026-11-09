@@ -4,8 +4,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* Original Blocks DSP spike. ABI 3. Physical-unit parameters, not MIDI CCs. */
-#define BS_ABI_VERSION 3u
+/* Original Blocks DSP spike. ABI 4. Physical-unit parameters, not MIDI CCs. */
+#define BS_ABI_VERSION 4u
 #define BS_MAX_VOICES 16u
 typedef struct bs_synth bs_synth;
 typedef enum bs_parameter_id {
@@ -14,10 +14,14 @@ typedef enum bs_parameter_id {
   BS_ATTACK_BEND=8, BS_DECAY_BEND=9, BS_RELEASE_BEND=10,
   BS_CUTOFF=11, BS_DRIVE=12, BS_DRIFT_CENTS=13, BS_DRIFT_HZ=14,
   BS_PITCH_DROP_CENTS=15, BS_PITCH_DROP_TIME=16, BS_PITCH_DROP_BEND=17,
-  BS_FULLNESS=18, BS_OSC1_WAVE=19, BS_OSC2_WAVE=20, BS_PARAMETER_COUNT=21
+  BS_FULLNESS=18, BS_OSC1_WAVE=19, BS_OSC2_WAVE=20,
+  BS_OSC1_LEVEL=21, BS_OSC2_LEVEL=22, BS_FILTER_MIX=23, BS_FILTER_AMOUNT=24,
+  BS_FILTER_ATTACK=25, BS_FILTER_DECAY=26, BS_FILTER_SUSTAIN=27, BS_FILTER_RELEASE=28,
+  BS_FILTER_ATTACK_BEND=29, BS_FILTER_DECAY_BEND=30, BS_FILTER_RELEASE_BEND=31,
+  BS_SETTLING_CENTS=32, BS_SETTLING_TIME=33, BS_VELOCITY_MOVEMENT=34, BS_PARAMETER_COUNT=35
 } bs_parameter_id;
 typedef enum bs_mapping { BS_LINEAR=0, BS_LOGARITHMIC=1, BS_DISCRETE=2 } bs_mapping;
-typedef enum bs_waveform { BS_SINE=0, BS_TRIANGLE=1, BS_SAW=2, BS_PULSE=3 } bs_waveform;
+typedef enum bs_waveform { BS_SINE=0, BS_TRIANGLE=1, BS_SAW=2, BS_PULSE=3, BS_SQUARE=4 } bs_waveform;
 typedef struct bs_parameter_descriptor {
   uint32_t id; const char *name; const char *unit;
   float minimum, maximum, default_value; uint32_t mapping;
@@ -43,12 +47,15 @@ void bs_destroy(bs_synth *synth);
  * prepare accepts 8k..384kHz, resets voices, retains parameters. Invalid rates fail. */
 int bs_prepare(bs_synth *synth, double sample_rate);
 void bs_reset(bs_synth *synth); /* reset voices, pedal and deterministic RNG sequence */
+/* Setting legacy Mix sets levels to1-Mix/Mix. Setting either level updates
+ * canonical Mix, without changing the other level. Levels need not sum to1. */
 int bs_set_parameter(bs_synth *synth, uint32_t id, float physical);
 float bs_get_parameter(const bs_synth *synth, uint32_t id);
 int bs_get_patch(const bs_synth *synth, bs_patch *patch);
-/* v3 writes/reads 21 values. Setter accepts v1 (18) or v2 (19) prefixes,
- * supplying Fullness=0 for v1 and Saw/Pulse waveforms for both. Getter always v3.
- * Unknown versions/nonfinite input: atomic reject. */
+/* v4 writes/reads35 values; v1(18), v2(19), v3(21) prefixes migrate.
+ * Legacy Mix maps to oscillator levels; v4 levels are authoritative and Mix
+ * is exported as level2/(level1+level2), or .5 when both are zero.
+ * Unknown versions/nonfinite input: atomic reject. Getter always v4. */
 int bs_set_patch(bs_synth *synth, const bs_patch *patch);
 void bs_note_on(bs_synth *synth, uint32_t channel, uint32_t key, float velocity);
 void bs_note_off(bs_synth *synth, uint32_t channel, uint32_t key);

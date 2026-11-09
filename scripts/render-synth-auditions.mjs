@@ -18,11 +18,17 @@ const compileArgs=[compiler,...sources,fixture,'-I'+resolve(core,'include'),'-st
 const compiled=spawnSync(process.env.PYTHON||'python',compileArgs,{stdio:'inherit',cwd:root});
 if(compiled.error)throw compiled.error;if(compiled.status)process.exit(compiled.status);
 const run=(await import(pathToFileURL(target).href)).default;
-await run({arguments:[out]});
+await run({arguments:[out,'--describe']});
+const descriptors=JSON.parse(readFileSync(resolve(out,'descriptors.json'),'utf8'));
+if(descriptors.length!==35)throw Error('Expected ABI4/count35 descriptors');
+const factoryInput=resolve(out,'factory-values.txt');
+writeFileSync(factoryInput,['velvet','glass','low'].map(id=>id+' '+factoryPatch(id,descriptors).join(' ')).join('\n')+'\n');
+await run({arguments:[out,factoryInput]});
 if(process.exitCode)throw Error('Audition renderer exited with code '+process.exitCode);
 const sha256=path=>createHash('sha256').update(readFileSync(path)).digest('hex');
 const clips=['velvet','glass','low','sine-triangle','voice-overflow'].map(id=>{
  const manifest=JSON.parse(readFileSync(resolve(out,id+'.json'),'utf8'));
+ if(manifest.abiVersion!==4||manifest.patchVersion!==4||manifest.parameters.length!==35)throw Error('Audition requires ABI4/count35: '+id);
  if(manifest.frames>manifest.sampleRate*6||manifest.normalized!==false||manifest.measurements.clippedSamples||manifest.measurements.voicesAtEnd)throw Error('Invalid audition fixture: '+id);
  if(!(manifest.measurements.rms>1e-4)||!Number.isFinite(manifest.measurements.peak)||manifest.measurements.lastHalfSecondRms>1e-5)throw Error('Silent or uncleared audition fixture: '+id);
  if(['velvet','glass','low'].includes(id)) {

@@ -39,10 +39,7 @@ jobs:
           SYNTH_CORE_EVIDENCE: ${{ runner.temp }}/synth-evidence
           PYTHON: python3
         run: |
-          node --test packages/synth-web/recipes.test.mjs
-          node --test packages/synth-web/patches.test.mjs
-          node --test packages/synth-web/envelope-scale.test.mjs packages/synth-web/processor.test.mjs
-          node --test packages/synth-web/peak-meter.test.mjs
+          node --test packages/synth-web/*.test.mjs
           node scripts/test-synth-core.mjs
           node scripts/compare-synth-renders.mjs "$RUNNER_TEMP/synth-evidence/native.wav" "$RUNNER_TEMP/synth-evidence/wasm.wav"
           node scripts/build-synth.mjs
