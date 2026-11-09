@@ -13,7 +13,7 @@
     "test:native": "g++ -std=c++20 -O2 -Wall -Wextra -I native/include native/src/midi_parser.cpp native/src/instrument.cpp native/src/pipeline.cpp native/src/render.cpp native/tests/test_main.cpp -o /tmp/blocks-host-tests && /tmp/blocks-host-tests",
     "test:js": "vitest run",
     "typecheck:web": "tsc -p tsconfig.web.json",
-    "test:browser": "node scripts/roll-proof.mjs"
+    "test:browser": "node scripts/roll-proof.mjs && node scripts/loop-assist-proof.mjs"
   },
   "dependencies": {
     "@react-native/new-app-screen": "0.88.1",

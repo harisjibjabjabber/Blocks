@@ -6,6 +6,8 @@ import type { RollNote } from "./roll-notes";
 import { beatTicks, musicalPosition, pitchLabel, type KnownGrid } from "./roll-time";
 import { SNAP_PRESETS, type SnapDivision, type SnapMode } from "./snap";
 import { SelectControl } from "./SelectControl";
+import { LoopSettings } from "./LoopSettings";
+import { tempoForBars, type FixedBars } from "./loop-assist";
 import { TempoControl } from "./TempoControl";
 
 type ViewKind = "zoom-in" | "zoom-out" | "refocus" | "earlier" | "later" | "higher" | "lower" | "taller" | "shorter";
@@ -22,6 +24,7 @@ interface EditorProps {
   onVelocity: (velocity: number, scale?: boolean) => void; onPreview: () => void; onApply: () => void; onCancelPreview: () => void;
   onQuantiseNow: () => void;
   onCutRange: () => void;
+  loopBars: FixedBars | null; onLoopBars: (bars: FixedBars | null) => void; onResetLoop: () => void; firstLayer: boolean;
   onShowFullTake: () => void;
   showOthers: boolean; onShowOthers: () => void; canPaste: boolean;
   onSelectionAction: (action: "all" | "delete" | "copy" | "paste" | "duplicate") => void;
@@ -35,7 +38,7 @@ export function Editor(p: EditorProps) {
   const desktop = width >= 1100;
   const split = width >= 720;
   const c = p.palette;
-  const [panel, setPanel] = useState<"grid" | "view" | "velocity" | "quantise" | "selection" | null>(null);
+  const [panel, setPanel] = useState<"grid" | "view" | "velocity" | "quantise" | "selection" | "loop" | null>(null);
   const [meter, setMeter] = useState(String(p.grid?.beatsPerBar ?? 4));
   const [error, setError] = useState("");
   const [custom, setCustom] = useState(p.snapDivision.kind === "note" ? `${p.snapDivision.numerator}/${p.snapDivision.denominator}` : "1/12");
@@ -115,9 +118,10 @@ export function Editor(p: EditorProps) {
           {p.renderRoll(gridHeight, viewAction)}
         </View>
         <View style={[s.context, { backgroundColor: c.card, borderColor: c.line }]}>
-          <View style={{ flex: 1, minWidth: 0 }}>{text(selection.length > 1 ? `${selection.length} selected` : note ? `${pitchLabel(note.pitch)} · 1` : `${p.notes.length} notes`, false, { fontWeight: "600", fontSize: 12 })}</View>
+          {desktop && <View style={{ flex: 1, minWidth: 0 }}>{text(selection.length > 1 ? `${selection.length} selected` : note ? `${pitchLabel(note.pitch)} · 1` : `${p.notes.length} notes`, false, { fontWeight: "600", fontSize: 12 })}</View>}
+          {button("Loop", () => setPanel(panel === "loop" ? null : "loop"), { aria: "Loop settings" })}
           {desktop && button("Velocity", () => setPanel(panel === "velocity" ? null : "velocity"), { disabled: !note })}
-          {button("Cut range", () => { p.onCancelPreview(); p.onCutRange(); setPanel(null); })}
+          {panel !== "loop" && button("Cut range", () => { p.onCancelPreview(); p.onCutRange(); setPanel(null); })}
           {button("Quantise", () => { p.onCancelPreview(); p.onQuantiseNow(); setPanel(null); }, { disabled: !p.grid || p.snapDivision.kind === "off" || !p.notes.length })}
           {button("⋯", () => setPanel(panel === "selection" ? null : "selection"), { aria: "Selection actions" })}
         </View>
@@ -126,8 +130,9 @@ export function Editor(p: EditorProps) {
       {split && <ScrollView style={[s.inspector, { borderColor: c.line, flexBasis: desktop ? 230 : 0, flexGrow: desktop ? 0 : 1, flexShrink: desktop ? 0 : 1 }]} contentContainerStyle={{ gap: 28, paddingBottom: 24 }}><View style={[s.inspectorCard, { backgroundColor: c.card, borderColor: c.line }]}>{quantise}</View><View style={{ gap: 12 }}>{text("SELECTION", true, s.label)}{text(selection.length > 1 ? `${selection.length} selected · ${averageVelocity} avg` : note ? `${pitchLabel(note.pitch)} · Velocity ${note.velocity}` : "No selection", true)}{note && button("Velocity", () => setPanel("velocity"))}{button("Selection actions", () => setPanel("selection"))}</View><View style={{ gap: 8 }}>{text("KEYBOARD", true, s.label)}{text("B · Draw / Select", true)}{text("Double-click · draw / delete", true)}{text("Drag empty space · select notes", true)}{text("Shift-click · add to selection", true)}{text("D  S  E · Draw · Select · Erase", true)}{text("Space · Play / Stop", true)}{text("Ctrl/Cmd + Z · Undo", true)}{text("Shift + Ctrl/Cmd + Z · Redo", true)}{text("Alt + drag · no snap", true)}</View>{button("View…", () => setPanel("view"))}</ScrollView>}
     </View>
     {panel && <View dataSet={{ editorPanel: panel }} style={[s.overlay, { backgroundColor: c.card, borderColor: c.line, left: desktop ? 240 : 12, right: desktop ? 270 : split ? width / 2 : 12, maxHeight: height - 112 }]}>
-      <View style={[s.row, { justifyContent: "space-between", marginBottom: 12 }]}>{text(panel === "grid" ? "Grid & snap" : panel === "velocity" ? "Velocity" : panel === "view" ? "View" : panel === "selection" ? "Selection" : "Quantise", false, { fontSize: 18, fontWeight: "600" })}{button("×", () => { setPanel(null); setError(""); if (panel === "quantise") p.onCancelPreview(); }, { aria: "Close settings" })}</View>
+      <View style={[s.row, { justifyContent: "space-between", marginBottom: 12 }]}>{text(panel === "loop" ? "Loop" : panel === "grid" ? "Grid & snap" : panel === "velocity" ? "Velocity" : panel === "view" ? "View" : panel === "selection" ? "Selection" : "Quantise", false, { fontSize: 18, fontWeight: "600" })}{button("×", () => { setPanel(null); setError(""); if (panel === "quantise") p.onCancelPreview(); }, { aria: "Close settings" })}</View>
       <ScrollView contentContainerStyle={{ gap: 12 }}>
+        {panel === "loop" && <LoopSettings bars={p.loopBars} onBars={p.onLoopBars} onReset={() => { p.onResetLoop(); setPanel(null); }} onCut={() => { p.onCancelPreview(); p.onCutRange(); setPanel(null); }} palette={c} tempoPreview={p.firstLayer && p.loopBars ? tempoForBars(p.loopRange, p.loopBars, p.grid?.beatsPerBar ?? 4) : null} />}
         {panel === "grid" && <>
           <View>{text("Beats / bar", true)}<SelectControl label="Meter" value={meter} options={[2,3,4,5,6,7,8,9,10,11,12].map(value => ({ value: String(value), label: `${value}/4` }))} onChange={setMeter} palette={c} /></View>
           {text("Editing grid · notes keep their played timing", true)}
@@ -136,7 +141,7 @@ export function Editor(p: EditorProps) {
           {error ? text(error) : null}
           <View style={s.row}>{button("Confirm grid", () => {
             const bpm = p.grid?.bpm ?? 120, beats = Number(meter);
-            if (!Number.isFinite(bpm) || bpm < 20 || bpm > 400 || !Number.isInteger(beats) || beats < 2 || beats > 12) { setError("Use 20–400 BPM and 2–12 beats per bar."); return; }
+            if (!Number.isFinite(bpm) || bpm <= 0 || !Number.isInteger(beats) || beats < 2 || beats > 12) { setError("Use a positive BPM and 2–12 beats per bar."); return; }
             if (customOpen) { const match = custom.trim().match(/^(\d+)\s*\/\s*(\d+)$/); const numerator = Number(match?.[1]), denominator = Number(match?.[2]); if (!match || numerator < 1 || denominator < 1 || numerator > 128 || denominator > 1024) { setError("Enter a fraction, such as 3/8 or 1/12."); return; } p.onSnap({ kind: "note", numerator, denominator }); setCustomOpen(false); }
             p.onGrid(bpm, beats); p.onCancelPreview(); setPanel(null); setError("");
           }, { capture: true })}{button("Cancel", () => { setPanel(null); setCustomOpen(false); setError(""); })}</View>
