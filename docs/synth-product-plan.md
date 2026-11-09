@@ -72,9 +72,11 @@ The initial core already has soft tanh drive and seeded pitch drift. Those can s
 
 ### Fullness prototype, not accepted sound
 
-The approved prototype now implements a parallel asymmetric mixer path using antiderivative antialiasing (ADAA), DC blocking and a nonresonant four-pole low-pass, with Fullness assigned parameter ID 18. The driven path aligns the oscillators' fundamentals before saturation. Fullness zero retains the original path. Core/WASM checks cover bounded output, DC rejection, level comparisons across registers/mixes and an isolated aliasing fixture; these do not establish listening quality. ABI/patch version 2 appends Fullness; version-1 patches retain their 18 values and load Fullness zero. See the core README for measurements and limits.
+The corrected prototype adds a small same-phase harmonic residual to the actual oscillator mix, before the unchanged Tone and Drive stages. The residual is `0.12*x*x + 0.20*(x*x*x - 0.75*x)`, processed with first-order antiderivative antialiasing (ADAA) and a DC blocker. The former separately phased, four-pole wet path and note-dependent body trim have been removed. There is no additional dark filter, automatic gain pumping, resonance or transistor-circuit model. Fullness remains parameter ID 18. Fullness zero retains the original dry path; nonzero Fullness intentionally sounds different from the earlier prototype, including the old 0.55 fixture. No unchanged-audio claim applies to that former nonzero fixture.
 
-The signal-path inspiration is oscillators → mixer/drive → filter → output, informed by the oscillator, mixer, ladder-filter and MultiDrive sections of the [official Moog Subsequent 37 manual](https://cdn.inmusicbrands.com/Moog/Subsequent37/Subsequent_37_Manual_0.pdf). The proposal is original DSP, not a Moog emulation, ladder-circuit model or claim of equivalent sound. Its nonresonant four-pole filter must not be labelled a resonant ladder filter.
+Fullness was introduced in ABI/patch version 2. Current version 3 appends the two independent waveform choices while retaining IDs 0–18; older patch migration and current measurements are described in the [core README](../packages/synth-core/README.md). Core/WASM checks do not establish listening quality. High Drive may mask the subtle enrichment, and whether this correction provides the desired musical body remains a listening decision.
+
+The broader signal-path inspiration remains the oscillator, mixer, ladder-filter and MultiDrive sections of the [official Moog Subsequent 37 manual](https://cdn.inmusicbrands.com/Moog/Subsequent37/Subsequent_37_Manual_0.pdf). The current correction is original harmonic-enrichment DSP, not a Moog emulation, ladder-circuit model or claim of equivalent sound. The separate ladder/drive study below remains a future decision.
 
 ### Later character experiments
 
@@ -93,6 +95,28 @@ Compare bypass, gentle default and extremes at matched perceived level, includin
 
 These notes preserve the broader instrument vision while the current slice binds the approved touch surface and useful patches. They do not authorize adding more processors or UI beyond the separately approved Fullness prototype.
 
+### Latest listening direction and movement reference
+
+The user wants Character to be a curated selection of the best distortion, warmth and fatness behaviours, not a generic dark low-pass effect. Study the audible differences between soft/hard clipping, asymmetry, stateful saturation and filter drive before choosing a flavour. Longer term, the user wants a broader suite with both parallel blends and serial stacks. That requires explicit signal order, bypass/tail behaviour, gain staging and independent processor state; it is a future architecture goal, not an instruction to build a distortion stack in the current UI pass.
+
+**Fullness has not passed listening acceptance.** The user reported that increasing the earlier implementation became quieter and sounded like filtering rather than the desired warm, substantial analogue character. Initial source-level diagnosis included its steeper wet-path filtering, the shift of spectral energy toward lower frequencies, and note-dependent level trim; subsequent measurements also identified dry/wet cancellation with detuned oscillators. The same-phase correction removes that separate path rather than increasing output. Earlier fixture-specific level checks do not invalidate the original report or establish universal compensation. Preserve the complaint as a regression case and audition the correction without changing the player's envelope.
+
+The earlier live patch read had Sustain=0. A later screenshot has Sustain=1 and is saved as the rounded version-2 [user movement reference](audio-references/user-movement-20ct.json). These are different historical observations, not contradictory readings to overwrite. The accepted aspect of the later screenshot is pitch movement: approximately **20 cents drift, 0.58 Hz speed and 4.8 cents oscillator-2 detune**. Its Drive/Fullness sound is still under review; the file is not an exact exported patch or blanket sound-quality approval.
+
+Character recipe version 2 now extends the main macro to 20 cents while preserving the existing mapping throughout 0–60%, keeping the three factory patches' physical Character values unchanged. This is parameter compatibility, not unchanged audio across the separate Fullness correction. Keep direct advanced control independent: this does not impose a new hard cap on the core's existing 40-cent drift range. Store actual physical values and show Custom when they no longer fit the selected recipe version.
+
+### Proposed internal texture source
+
+The user's white-noise idea is a subtle internal noise/texture oscillator behind Character, **not a third pitched oscillator panel**. This is not implemented. If prototyped later, give it a separate deterministic random stream from pitch drift, shape it by each note's envelope and velocity, and audition its interaction with filter and drive. No notes should mean no idle hiss; release and panic must clear it. Start with a restrained default contribution and leave room for an advanced amount/colour control only when the sound earns it. Adding texture must not change drift sequences or masquerade as another pitched voice.
+
+### Next Fullness study, before more effects
+
+The working [official Subsequent 37 manual](https://cdn.inmusicbrands.com/Moog/Subsequent37/Subsequent_37_Manual_0.pdf), pages 27–30, separates mixer overload into the filter, resonant ladder behaviour, post-filter MultiDrive and a dedicated filter envelope. This is useful signal-path evidence, not evidence that the current prototype sounds like that instrument. Do not claim a genuine Moog implementation.
+
+Compare only two bounded candidates before choosing a new path: an original topology-preserving-transform ladder with analytically solved linear feedback plus controlled saturation, and the D'Angelo/Välimäki nonlinear model as a reference. The former is a lower-complexity approximation, not a transistor-circuit equivalent; [Faust's documented TPT ladder](https://faustlibraries.grame.fr/libs/vaeffects/#lowpassladder4) describes the filter topology. The [D'Angelo/Välimäki research](https://research.spa.aalto.fi/publications/papers/icassp13-moog/) provides the nonlinear-model rationale. Its reusable [ImprovedModel.h implementation](https://github.com/ddiakopoulos/MoogLadders/blob/main/src/ImprovedModel.h) carries an individual ISC copyright/permission notice; preserve that notice if code is reused. Do not infer every model's licence from the repository-wide licence: its Huovilainen variant is CSound/LGPL-derived.
+
+First compare the user's exact high-drive, zero-sustain complaint patch, then the later movement reference, bass/chords, velocities, waveform pairs and intermediate Fullness values. Keep cutoff, output and envelope fixed between comparisons. Measure transient energy as well as sustained RMS/fundamental balance; verify bounded gain and DC, aliasing, automation discontinuities, release tails, deterministic native/WASM behaviour and actual CPU cost. Prefer a useful level-preserving body change over a louder demo. Listening and physical-phone checks remain mandatory acceptance gates; generated WAVs and desktop timing results cannot stand in for them. This plan records the next study decision: no additional DSP or distortion-stack implementation is approved merely by finishing the current UI corrections.
+
 ## Voicing
 
 - **Mono/Poly:** one note or simultaneous notes.
@@ -102,6 +126,24 @@ These notes preserve the broader instrument vision while the current slice binds
 - **Glide/Legato:** specify note-trigger and envelope-retrigger behaviour explicitly.
 
 Offer clear controls rather than one ambiguous Voices value. Initial counts and quality modes are benchmark decisions. For illustration, eight simultaneous notes with four-way unison means 32 stacked voices before counting oscillators, release overlap and other layers. Do not promise unlimited counts on phones, and do not silently change another layer's patch to meet a budget.
+
+The current core's 16-note polyphony is not a unison count. Two oscillator waveform choices are already independent; separate per-oscillator level and tuning controls remain future work. Keep those distinct from future unison Count/Detune/Width and from the proposed unpitched texture source.
+
+## Focused sound-development roadmap
+
+The current continuation adds performance robustness, selectable oscillator waveforms and reproducible actual-core audition fixtures. The items below are future design work, not features shipped by that continuation. Preserve one portable sound core and a small parameter/recipe vocabulary across browser, future plugin and Blocks hosts.
+
+| Candidate | Musical purpose and bounded first experiment | What requires real engineering |
+|---|---|---|
+| Resonance | Give the filter an expressive peak and more articulation; first define useful gain-compensated behaviour with the existing waveform/Fullness range | A stable resonant filter, parameter smoothing, overload behaviour and high-frequency/aliasing tests. A resonance knob cannot be a macro around the current nonresonant poles. Self-oscillation is a separate decision, not an assumed requirement. |
+| Filter envelope / Filter Pluck | One per-note envelope with Amount and Decay; retain the amplitude envelope as a distinct control | Reuse envelope generators but add a real per-voice filter-modulation path. Define the cutoff baseline, modulation units and bounds; overlapping notes must not sweep the entire layer together. A recipe can simplify these controls only after the path exists. |
+| Mono, legato and glide | An expressive bass/lead mode with a clear last-note-priority policy and optional glide on overlapping notes | A held-note stack, retrigger rules, return-to-previous-note behaviour, sustain interaction and a choice of constant-time versus constant-rate glide. Glide changes generated pitch, not captured note values. Poly remains unchanged. |
+| Velocity and aftertouch | Let touch/MIDI playing shape brightness or expression without more permanent controls | Velocity is already an attack input; additional mappings need explicit depth and response. Channel pressure affects a channel, while polyphonic key pressure needs note ownership. Add host/core expression events and bounded smoothing deliberately; do not advertise aftertouch or MPE merely because a browser receives MIDI bytes. |
+| Heater and focused effects | Start with a subtle level-matched drive flavour and one useful Amount control; add further effects only after listening shows a need | A Heater recipe can configure existing drive/Fullness once its mapping is useful. A distinct asymmetric or hysteretic flavour needs its own tested DSP. Delay, chorus or reverb need actual processors, memory/tail/bypass policies and CPU measurements; they are not made real by drawing an automation curve. |
+
+The distinction between amplitude and filter envelopes, legato retrigger policy, and glide modes is informed by the [official Subsequent 37 envelope documentation](https://cdn.inmusicbrands.com/Moog/Subsequent37/Subsequent_37_Manual_0.pdf) and [u-he's Diva instrument description](https://u-he.com/products/diva/diva.html). These are references for musical semantics, not promises of matching their circuits or sound. MIDI expression meanings follow the [MIDI Association message summary](https://midi.org/summary-of-midi-1-0-messages).
+
+Choose one experiment at a time after auditioning the current factory patches. A successful addition must be distinguishable and useful at matched level, keep the stable harmonic character, preserve voice ownership and patch migration, pass native/WASM timing and numerical checks, and fit a measured phone budget. Show it first as a small extension of the existing Synth/Sauce surface; do not create a new permanent destination for each feature. Offline WAVs are deterministic listening material, not evidence that somebody listened or that a physical phone performed well.
 
 ## Future movement recording and drawing
 

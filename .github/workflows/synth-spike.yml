@@ -27,6 +27,7 @@ jobs:
           "$RUNNER_TEMP/consumer/synth_consumer"
           mkdir -p "$RUNNER_TEMP/synth-evidence"
           "$RUNNER_TEMP/native/blocks_synth_render" "$RUNNER_TEMP/synth-evidence/native.wav"
+          "$RUNNER_TEMP/native/blocks_synth_benchmark" "$RUNNER_TEMP/synth-evidence/native-benchmark.json"
       - name: Install official Emscripten toolchain
         run: |
           git clone --depth 1 --branch 7.0.0 https://github.com/emscripten-core/emsdk.git "$RUNNER_TEMP/emsdk"
@@ -39,9 +40,20 @@ jobs:
           PYTHON: python3
         run: |
           node --test packages/synth-web/recipes.test.mjs
+          node --test packages/synth-web/patches.test.mjs
+          node --test packages/synth-web/envelope-scale.test.mjs packages/synth-web/processor.test.mjs
+          node --test packages/synth-web/peak-meter.test.mjs
           node scripts/test-synth-core.mjs
           node scripts/compare-synth-renders.mjs "$RUNNER_TEMP/synth-evidence/native.wav" "$RUNNER_TEMP/synth-evidence/wasm.wav"
           node scripts/build-synth.mjs
+      - name: Reproducible audio auditions and core timing
+        env:
+          SYNTH_AUDITIONS: ${{ runner.temp }}/synth-auditions
+          SYNTH_BENCHMARK_DIR: ${{ runner.temp }}/synth-evidence
+          PYTHON: python3
+        run: |
+          node scripts/render-synth-auditions.mjs
+          node scripts/benchmark-synth.mjs
       - name: Actual browser audio
         env:
           SYNTH_PROOF_DIR: ${{ runner.temp }}/synth-browser
@@ -58,6 +70,9 @@ jobs:
           name: standalone-synth-evidence
           path: |
             ${{ runner.temp }}/synth-evidence/*.wav
+            ${{ runner.temp }}/synth-evidence/*.json
+            ${{ runner.temp }}/synth-auditions/*.wav
+            ${{ runner.temp }}/synth-auditions/*.json
             ${{ runner.temp }}/synth-browser
             ${{ runner.temp }}/synth-install
             packages/synth-web/build

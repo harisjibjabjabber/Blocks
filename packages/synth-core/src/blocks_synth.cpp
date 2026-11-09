@@ -1,5 +1,7 @@
 #include "blocks_synth.h"
 #include "fullness.h"
+#include "waveforms.h"
+#include <limits>
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -27,10 +29,12 @@ constexpr bs_parameter_descriptor descriptors[] = {
  {BS_PITCH_DROP_CENTS,"Pitch drop amount","cents",0,2400,0,BS_LINEAR},
  {BS_PITCH_DROP_TIME,"Pitch drop time","seconds",.001f,4,.12f,BS_LOGARITHMIC},
  {BS_PITCH_DROP_BEND,"Pitch drop bend","octaves",-2,2,0,BS_LINEAR},
- {BS_FULLNESS,"Fullness","ratio",0,1,0,BS_LINEAR}
+ {BS_FULLNESS,"Fullness","ratio",0,1,0,BS_LINEAR},
+ {BS_OSC1_WAVE,"Oscillator 1 waveform","waveform",0,3,BS_SAW,BS_DISCRETE},
+ {BS_OSC2_WAVE,"Oscillator 2 waveform","waveform",0,3,BS_PULSE,BS_DISCRETE}
 };
 static_assert(sizeof(bs_event)==24 && offsetof(bs_event,value)==20,"ABI event layout");
-static_assert(sizeof(bs_patch)==80,"ABI patch layout");
+static_assert(sizeof(bs_patch)==88,"ABI patch layout");
 double clamp(double x,double lo,double hi) { return std::max(lo,std::min(hi,x)); }
 double bend(double progress,double curve) { return std::pow(clamp(progress,0,1),std::exp2(curve)); }
 // Original implementation of the standard polynomial band-limited step correction.
@@ -44,19 +48,27 @@ double pulse(double phase,double dt,double width) {
  double shifted=phase-width; if(shifted<0) shifted+=1;
  return (phase<width?1:-1)+blep(phase,dt)-blep(shifted,dt);
 }
+using Weights=std::array<double,4>;
+double oscillator(const Weights &weights,double phase,double step,double width) {
+ double result=0;
+ if(weights[BS_SINE])result+=weights[BS_SINE]*blocks_detail::sine(phase);
+ if(weights[BS_TRIANGLE])result+=weights[BS_TRIANGLE]*blocks_detail::triangle(phase,step);
+ if(weights[BS_SAW])result+=weights[BS_SAW]*saw(phase,step);
+ if(weights[BS_PULSE])result+=weights[BS_PULSE]*pulse(phase,step,width);
+ return result;
+}
 double random_signed(uint32_t &state) {
  state^=state<<13; state^=state>>17; state^=state<<5;
  return double(state)/4294967295.0*2-1;
 }
 enum class Stage { attack,decay,sustain,release };
 struct Voice {
- bool active=false,held=false,pedal=false; uint32_t channel=0,key=0,rng=1; uint64_t order=0;
+ bool active=false,held=false,pedal=false; uint32_t channel=0,key=0,rng=1; uint64_t order=0,ordinal=0; uint32_t tailRemaining=0;
  Stage stage=Stage::attack; double phase1=0,phase2=0,age=0,stageAge=0,level=0,releaseLevel=0;
- double frequency=440,velocity=1,filter=0,panLeft=.7071,panRight=.7071,bodyLevel=1;
+ double frequency=440,velocity=1,filter=0,panLeft=.7071,panRight=.7071;
  double attack=.01,decay=.3,sustain=.6,release=.3,attackBend=0,decayBend=0,releaseBend=0;
  double drop=0,dropTime=.1,dropBend=0,drift=0,driftTarget=0,driftAge=0;
  blocks_detail::FullnessPath fullness;
- blocks_detail::FullnessPath fullnessQuadrature;
 };
 void release(Voice &voice) {
  if(voice.stage==Stage::release) return;
@@ -83,20 +95,36 @@ struct bs_synth {
  std::array<float,BS_PARAMETER_COUNT> parameters{};
  std::array<double,BS_PARAMETER_COUNT> smooth{};
  std::array<Voice,BS_MAX_VOICES> voices{};
+ std::array<Voice,BS_MAX_VOICES> tails{};
+ std::array<std::array<uint64_t,128>,16> onOrdinals{},offOrdinals{};
  std::array<bool,16> pedals{};
+ std::array<Weights,2> waveWeights{{Weights{{0,0,1,0}},Weights{{0,0,0,1}}}};
  uint64_t sequence=0;
- double bodyAngle=0;
  bs_synth() { for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) parameters[i]=float(smooth[i]=descriptors[i].default_value); }
- void reset() { voices={}; pedals={}; sequence=0; for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; bodyAngle=blocks_detail::fundamentalOrientation(parameters[BS_OSC_MIX],parameters[BS_PULSE_WIDTH],-pi/2); }
+ void reset() { for(unsigned osc=0;osc<2;++osc) {waveWeights[osc]={};waveWeights[osc][unsigned(parameters[BS_OSC1_WAVE+osc])]=1;} voices={}; tails={}; onOrdinals={}; offOrdinals={}; pedals={}; sequence=0; for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; }
+ void panic() {voices={};tails={};onOrdinals={};offOrdinals={};pedals={};}
  void on(uint32_t channel,uint32_t key,float velocity) {
   if(channel>=16 || key>127 || !std::isfinite(velocity)) return;
   if(velocity<=0) { off(channel,key); return; }
+  if(onOrdinals[channel][key]==std::numeric_limits<uint64_t>::max()||sequence==std::numeric_limits<uint64_t>::max()) {panic();sequence=0;}
+  const uint64_t ordinal=++onOrdinals[channel][key];
   Voice *v=nullptr;
   for(auto &candidate:voices) if(!candidate.active) { v=&candidate; break; }
-  if(!v) v=&*std::min_element(voices.begin(),voices.end(),[](const Voice&a,const Voice&b){return a.order<b.order;});
-  *v=Voice{}; v->active=v->held=true; v->channel=channel; v->key=key; v->order=++sequence;
+  if(!v) {
+   v=&*std::min_element(voices.begin(),voices.end(),[](const Voice&a,const Voice&b){
+    const auto rank=[](const Voice &x){return x.stage==Stage::release?0:x.pedal&&!x.held?1:2;};
+    const int ar=rank(a),br=rank(b);if(ar!=br)return ar<br;
+    if(ar<2&&a.level*a.velocity!=b.level*b.velocity)return a.level*a.velocity<b.level*b.velocity;
+    return a.order<b.order;
+   });
+   // Fixed 3ms snapshots keep a stolen oscillator/filter continuous. If all 16
+   // tails are occupied, replace the quietest remaining weighted tail.
+   Voice *tail=nullptr;for(auto &candidate:tails)if(!candidate.active){tail=&candidate;break;}
+   if(!tail)tail=&*std::min_element(tails.begin(),tails.end(),[](const Voice&a,const Voice&b){return a.level*a.velocity*a.tailRemaining<b.level*b.velocity*b.tailRemaining;});
+   *tail=*v;tail->tailRemaining=uint32_t(std::ceil(.003*rate));tail->held=false;
+  }
+  *v=Voice{}; v->active=v->held=true; v->channel=channel; v->key=key; v->order=++sequence; v->ordinal=ordinal;
   v->frequency=440*std::exp2((double(key)-69)/12); v->velocity=clamp(velocity,0,1);
-  v->bodyLevel=1/std::sqrt(1+(v->frequency/3000)*(v->frequency/3000));
   const double pan=.5+.15*(double(key%7)/3-1); v->panLeft=std::sqrt(1-pan); v->panRight=std::sqrt(pan);
   v->rng=0x9e3779b9u^uint32_t(sequence*747796405u)^uint32_t((key+channel*128)*2891336453u); if(!v->rng) v->rng=1;
   v->driftTarget=random_signed(v->rng);
@@ -105,9 +133,11 @@ struct bs_synth {
   v->drop=parameters[BS_PITCH_DROP_CENTS]; v->dropTime=parameters[BS_PITCH_DROP_TIME]; v->dropBend=parameters[BS_PITCH_DROP_BEND];
  }
  void off(uint32_t channel,uint32_t key) {
-  Voice *oldest=nullptr;
-  for(auto &v:voices) if(v.active&&v.held&&v.channel==channel&&v.key==key&&(!oldest||v.order<oldest->order)) oldest=&v;
-  if(oldest) { oldest->held=false; if(pedals[channel]) oldest->pedal=true; else release(*oldest); }
+  if(channel>=16||key>=128||offOrdinals[channel][key]>=onOrdinals[channel][key])return;
+  const uint64_t ordinal=++offOrdinals[channel][key];
+  for(auto &v:voices)if(v.active&&v.held&&v.channel==channel&&v.key==key&&v.ordinal==ordinal) {
+   v.held=false;if(pedals[channel])v.pedal=true;else release(v);break;
+  }
  }
  void pedal(uint32_t channel,bool down) {
   if(channel>=16) return; pedals[channel]=down;
@@ -115,7 +145,7 @@ struct bs_synth {
  }
  int event(const bs_event &e) {
   if(e.type==BS_PARAMETER) return bs_set_parameter(this,e.parameter_id,e.value)?0:1;
-  if(e.type==BS_PANIC) { voices={}; pedals={}; return 0; }
+  if(e.type==BS_PANIC) { panic(); return 0; }
   if(e.channel>=16 || !std::isfinite(e.value)) return 1;
   if(e.type==BS_PEDAL) { pedal(e.channel,e.value>=.5f); return 0; }
   if(e.key>127) return 1;
@@ -124,51 +154,38 @@ struct bs_synth {
   return 1;
  }
  void sample(float &left,float &right) {
-  for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]+=smoothing*(parameters[i]-smooth[i]);
+  for(uint32_t i=0;i<BS_OSC1_WAVE;++i) smooth[i]+=smoothing*(parameters[i]-smooth[i]);
+  for(unsigned osc=0;osc<2;++osc) {
+   const unsigned target=unsigned(parameters[BS_OSC1_WAVE+osc]);double sum=0;
+   for(unsigned wave=0;wave<4;++wave) {double &weight=waveWeights[osc][wave];weight+=smoothing*((wave==target?1.:0.)-weight);if(std::abs(weight)<1e-12)weight=0;sum+=weight;}
+   if(1-waveWeights[osc][target]<1e-12) {waveWeights[osc]={};waveWeights[osc][target]=1;} else for(auto &weight:waveWeights[osc])weight/=sum;
+  }
+  const bool legacyWaves=waveWeights[0][BS_SAW]==1 && waveWeights[1][BS_PULSE]==1;
   if(parameters[BS_FULLNESS]==0 && smooth[BS_FULLNESS]<1e-12) smooth[BS_FULLNESS]=0;
   const double cutoff=std::min(smooth[BS_CUTOFF],rate*.45), filterAlpha=1-std::exp(-2*pi*cutoff*dt);
   const double driftSpeed=smooth[BS_DRIFT_HZ], driftAlpha=1-std::exp(-2*pi*driftSpeed*dt);
   const double fullness=smooth[BS_FULLNESS];
-  // Four equal one-poles need ~2.299x per-pole cutoff for a combined -3dB
-  // corner near the requested cutoff at low frequencies. Clamp below Nyquist.
-  const double fatAlpha=fullness>0 ? 1-std::exp(-2*pi*std::min(cutoff*2.298959223,rate*.45)*dt) : 0;
-  const double preGain=fullness>0 ? 1.5*std::sqrt(smooth[BS_DRIVE]) : 0;
-  const double mix=smooth[BS_OSC_MIX],a=1-mix,w=smooth[BS_PULSE_WIDTH],pulseVariance=4*w*(1-w);
-  // Approximate RMS matching from ideal saw/pulse variance and covariance.
-  // This avoids rewarding Fullness mainly with gain, including other mix/drive settings.
-  const double dryRms=std::sqrt(std::max(1e-6,a*a/3+pulseVariance*(mix*mix-a*mix)));
-  const double fatRms=std::sqrt(std::max(1e-6,a*a/3+pulseVariance*(mix*mix+a*mix)));
-  const double shapedRms=std::min(1.0,fatRms*preGain);
-  const double bodyGain=fullness>0 ? std::tanh(dryRms*smooth[BS_DRIVE])/(shapedRms-shapedRms*shapedRms*shapedRms/3) : 0;
-  if(fullness>0) { const double target=blocks_detail::fundamentalOrientation(mix,w,bodyAngle); bodyAngle=std::remainder(bodyAngle+smoothing*std::remainder(target-bodyAngle,2*pi),2*pi); }
-  const double bodyCos=std::cos(bodyAngle),bodySin=std::sin(bodyAngle);
+  const double mix=smooth[BS_OSC_MIX],w=smooth[BS_PULSE_WIDTH];
   double l=0,r=0;
-  for(auto &v:voices) if(v.active) {
+  for(unsigned voiceIndex=0;voiceIndex<2*BS_MAX_VOICES;++voiceIndex) {
+   auto &v=voiceIndex<BS_MAX_VOICES?voices[voiceIndex]:tails[voiceIndex-BS_MAX_VOICES];if(!v.active)continue;
    v.driftAge+=dt; if(v.driftAge>=1/driftSpeed) { v.driftAge-=1/driftSpeed; v.driftTarget=random_signed(v.rng); }
    v.drift+=driftAlpha*(v.driftTarget-v.drift);
    const double drop=v.drop*(1-bend(v.age/v.dropTime,v.dropBend));
    const double frequency=v.frequency*std::exp2((v.drift*smooth[BS_DRIFT_CENTS]+drop)/1200);
    const double step1=clamp(frequency*dt,1e-9,.45),step2=clamp(frequency*std::exp2(smooth[BS_OSC2_DETUNE]/1200)*dt,1e-9,.45);
    const double saw1=saw(v.phase1,step1),pulse2=pulse(v.phase2,step2,smooth[BS_PULSE_WIDTH]);
-   const double raw=(1-mix)*saw1+mix*pulse2;
-   // These waveforms have opposite fundamental polarity at equal phase.
-   // Only the Fullness path aligns them; the legacy dry mix stays untouched.
-   const double fatRaw=(1-mix)*saw1-mix*pulse2;
+   const double raw=legacyWaves?(1-mix)*saw1+mix*pulse2:(1-mix)*oscillator(waveWeights[0],v.phase1,step1,w)+mix*oscillator(waveWeights[1],v.phase2,step2,w);
    v.phase1+=step1; v.phase1-=std::floor(v.phase1); v.phase2+=step2; v.phase2-=std::floor(v.phase2);
-   v.filter+=filterAlpha*(raw-v.filter); if(std::abs(v.filter)<1e-20) v.filter=0;
-   const double amplitude=envelope(v,dt)*v.velocity;
+   // Keep residual history warm while bypassed. The zero branch retains the
+   // legacy dry input and arithmetic exactly; no gain compensation or wet mix.
+   const double residual=v.fullness.process(raw,dcPole);
+   const double enriched=fullness>0?raw+fullness*residual:raw;
+   v.filter+=filterAlpha*(enriched-v.filter); if(std::abs(v.filter)<1e-20) v.filter=0;
+   double amplitude=envelope(v,dt)*v.velocity;
+   if(voiceIndex>=BS_MAX_VOICES) {amplitude*=double(v.tailRemaining)/std::ceil(.003*rate);if(--v.tailRemaining==0)v.active=false;}
    const double dry=std::tanh(v.filter*smooth[BS_DRIVE]);
-   // The zero branch retains the v1 signal path and operation order exactly.
-   double body=0;
-   if(fullness>0) {
-    // Fixed quadrature oscillators rotate the fat fundamental without changing
-    // oscillator frequency or fading a polarity coefficient through zero.
-    double q1=v.phase1-step1+.25,q2=v.phase2-step2+.25;
-    q1-=std::floor(q1); q2-=std::floor(q2);
-    const double quadrature=(1-mix)*saw(q1,step1)-mix*pulse(q2,step2,smooth[BS_PULSE_WIDTH]);
-    body=bodyGain*v.bodyLevel*(bodyCos*v.fullness.process(fatRaw,preGain,fatAlpha,dcPole)+bodySin*v.fullnessQuadrature.process(quadrature,preGain,fatAlpha,dcPole));
-   }
-   const double value=(fullness>0 ? dry+(body-dry)*fullness : dry)*amplitude*.25;
+   const double value=dry*amplitude*.25;
    l+=value*v.panLeft; r+=value*v.panRight; v.age+=dt;
   }
   left=float(std::tanh(l)*smooth[BS_GAIN]); right=float(std::tanh(r)*smooth[BS_GAIN]);
@@ -182,11 +199,12 @@ const bs_parameter_descriptor *bs_parameter_info(uint32_t id) { return id<BS_PAR
 float bs_normalized_to_physical(uint32_t id,float normalized) {
  if(id>=BS_PARAMETER_COUNT || !std::isfinite(normalized)) return 0;
  const auto &d=descriptors[id]; const double n=clamp(normalized,0,1);
- return float(d.mapping==BS_LOGARITHMIC?d.minimum*std::pow(d.maximum/d.minimum,n):d.minimum+(d.maximum-d.minimum)*n);
+ const double value=d.mapping==BS_LOGARITHMIC?d.minimum*std::pow(d.maximum/d.minimum,n):d.minimum+(d.maximum-d.minimum)*n;
+ return float(d.mapping==BS_DISCRETE?std::round(value):value);
 }
 float bs_physical_to_normalized(uint32_t id,float physical) {
  if(id>=BS_PARAMETER_COUNT || !std::isfinite(physical)) return 0;
- const auto &d=descriptors[id]; const double p=clamp(physical,d.minimum,d.maximum);
+ const auto &d=descriptors[id]; const double bounded=clamp(physical,d.minimum,d.maximum),p=d.mapping==BS_DISCRETE?std::round(bounded):bounded;
  return float(d.mapping==BS_LOGARITHMIC?std::log(p/d.minimum)/std::log(d.maximum/d.minimum):(p-d.minimum)/(d.maximum-d.minimum));
 }
 bs_synth *bs_create(void) { return new(std::nothrow) bs_synth; }
@@ -198,7 +216,8 @@ int bs_prepare(bs_synth *synth,double rate) {
 void bs_reset(bs_synth *synth) { if(synth) synth->reset(); }
 int bs_set_parameter(bs_synth *synth,uint32_t id,float physical) {
  if(!synth||id>=BS_PARAMETER_COUNT||!std::isfinite(physical)) return 0;
- synth->parameters[id]=float(clamp(physical,descriptors[id].minimum,descriptors[id].maximum)); return 1;
+ const double bounded=clamp(physical,descriptors[id].minimum,descriptors[id].maximum);
+ synth->parameters[id]=float(descriptors[id].mapping==BS_DISCRETE?std::round(bounded):bounded); return 1;
 }
 float bs_get_parameter(const bs_synth *synth,uint32_t id) { return synth&&id<BS_PARAMETER_COUNT?synth->parameters[id]:0; }
 int bs_get_patch(const bs_synth *synth,bs_patch *patch) {
@@ -206,17 +225,18 @@ int bs_get_patch(const bs_synth *synth,bs_patch *patch) {
  for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) patch->values[i]=synth->parameters[i]; return 1;
 }
 int bs_set_patch(bs_synth *synth,const bs_patch *patch) {
- if(!synth||!patch||(patch->version!=BS_ABI_VERSION&&patch->version!=1)) return 0;
- const uint32_t count=patch->version==1 ? 18u : BS_PARAMETER_COUNT;
+ if(!synth||!patch||(patch->version<1||patch->version>BS_ABI_VERSION)) return 0;
+ const uint32_t count=patch->version==1 ? 18u : patch->version==2 ? 19u : BS_PARAMETER_COUNT;
  for(uint32_t i=0;i<count;++i) if(!std::isfinite(patch->values[i])) return 0;
  for(uint32_t i=0;i<count;++i) bs_set_parameter(synth,i,patch->values[i]);
  if(patch->version==1) bs_set_parameter(synth,BS_FULLNESS,0);
+ if(patch->version<3) {bs_set_parameter(synth,BS_OSC1_WAVE,BS_SAW);bs_set_parameter(synth,BS_OSC2_WAVE,BS_PULSE);}
  return 1;
 }
 void bs_note_on(bs_synth *synth,uint32_t channel,uint32_t key,float velocity) { if(synth) synth->on(channel,key,velocity); }
 void bs_note_off(bs_synth *synth,uint32_t channel,uint32_t key) { if(synth&&channel<16&&key<128) synth->off(channel,key); }
 void bs_sustain(bs_synth *synth,uint32_t channel,float down) { if(synth&&std::isfinite(down)) synth->pedal(channel,down>=.5f); }
-void bs_panic(bs_synth *synth) { if(synth) { synth->voices={}; synth->pedals={}; } }
+void bs_panic(bs_synth *synth) { if(synth) synth->panic(); }
 uint32_t bs_active_voices(const bs_synth *synth) { uint32_t count=0; if(synth) for(const auto&v:synth->voices) if(v.active) ++count; return count; }
 int bs_render(bs_synth *synth,float *left,float *right,uint32_t frames,const bs_event *events,uint32_t count) {
  if(!synth||!left||!right||left==right) return -1;

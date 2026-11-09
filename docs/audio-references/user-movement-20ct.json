@@ -1,0 +1,31 @@
+{
+  "format": "blocks-synth-patch",
+  "version": 2,
+  "values": [
+    0.865,
+    0.678,
+    4.8,
+    0.6592,
+    0.015,
+    8,
+    1,
+    0.35,
+    0,
+    -0.77,
+    0,
+    6000,
+    12,
+    20,
+    0.58,
+    0,
+    0.12,
+    0,
+    1
+  ],
+  "reference": {
+    "name": "User movement reference - 20 cents",
+    "source": "User screenshot 9 November 2026; displayed values are rounded, not an exact exported patch. Earlier UI read supplies mix/pulse/output approximation.",
+    "acceptedAspect": "Pitch movement only: drift20 cents, speed about0.58Hz, oscillator2 detune4.8cents. Drive/Fullness musical quality remains under review.",
+    "musicalUpperDriftCents": 20
+  }
+}

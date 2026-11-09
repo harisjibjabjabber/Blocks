@@ -4,8 +4,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* Original Blocks DSP spike. ABI 2. Physical-unit parameters, not MIDI CCs. */
-#define BS_ABI_VERSION 2u
+/* Original Blocks DSP spike. ABI 3. Physical-unit parameters, not MIDI CCs. */
+#define BS_ABI_VERSION 3u
 #define BS_MAX_VOICES 16u
 typedef struct bs_synth bs_synth;
 typedef enum bs_parameter_id {
@@ -14,16 +14,17 @@ typedef enum bs_parameter_id {
   BS_ATTACK_BEND=8, BS_DECAY_BEND=9, BS_RELEASE_BEND=10,
   BS_CUTOFF=11, BS_DRIVE=12, BS_DRIFT_CENTS=13, BS_DRIFT_HZ=14,
   BS_PITCH_DROP_CENTS=15, BS_PITCH_DROP_TIME=16, BS_PITCH_DROP_BEND=17,
-  BS_FULLNESS=18, BS_PARAMETER_COUNT=19
+  BS_FULLNESS=18, BS_OSC1_WAVE=19, BS_OSC2_WAVE=20, BS_PARAMETER_COUNT=21
 } bs_parameter_id;
-typedef enum bs_mapping { BS_LINEAR=0, BS_LOGARITHMIC=1 } bs_mapping;
+typedef enum bs_mapping { BS_LINEAR=0, BS_LOGARITHMIC=1, BS_DISCRETE=2 } bs_mapping;
+typedef enum bs_waveform { BS_SINE=0, BS_TRIANGLE=1, BS_SAW=2, BS_PULSE=3 } bs_waveform;
 typedef struct bs_parameter_descriptor {
   uint32_t id; const char *name; const char *unit;
   float minimum, maximum, default_value; uint32_t mapping;
 } bs_parameter_descriptor;
 typedef enum bs_event_type { BS_NOTE_ON=0, BS_NOTE_OFF=1, BS_PARAMETER=2, BS_PANIC=3, BS_PEDAL=4 } bs_event_type;
 /* Exactly 24 bytes: six 32-bit fields at offsets 0,4,8,12,16,20.
- * NoteOn value=velocity [0,1]; NoteOff matches oldest held channel/key (FIFO).
+ * NoteOn value=velocity [0,1]; NoteOff consumes oldest channel/key NoteOn ordinal, including stolen notes (FIFO).
  * Pedal value>=.5 holds released notes on that channel. Panic silences immediately.
  * Parameter events use parameter_id/value in physical units.
  * Events must be sorted, offsets < frames. Equal offsets preserve caller order. */
@@ -45,8 +46,8 @@ void bs_reset(bs_synth *synth); /* reset voices, pedal and deterministic RNG seq
 int bs_set_parameter(bs_synth *synth, uint32_t id, float physical);
 float bs_get_parameter(const bs_synth *synth, uint32_t id);
 int bs_get_patch(const bs_synth *synth, bs_patch *patch);
-/* v2 writes/reads 19 values. Setter also accepts a v1 prefix (18 values),
- * supplying Fullness=0 without reading a nineteenth value. Getter always v2.
+/* v3 writes/reads 21 values. Setter accepts v1 (18) or v2 (19) prefixes,
+ * supplying Fullness=0 for v1 and Saw/Pulse waveforms for both. Getter always v3.
  * Unknown versions/nonfinite input: atomic reject. */
 int bs_set_patch(bs_synth *synth, const bs_patch *patch);
 void bs_note_on(bs_synth *synth, uint32_t channel, uint32_t key, float velocity);
@@ -57,7 +58,9 @@ uint32_t bs_active_voices(const bs_synth *synth);
 /* Outputs replace (not add). Distinct nonnull buffers, arbitrary block size.
  * No allocation, locks, IO, or host calls. Returns invalid event count, or -1
  * for invalid buffers/order/offsets (whole block rejected and output zeroed).
- * Voice stealing: oldest of the fixed 16 voices. No unison implemented. */
+ * Voice stealing prefers quiet released, then pedal-held, then oldest held.
+ * 16 additional fixed 3ms fade tails; overflow replaces quietest tail.
+ * active_voices counts primary voices, not these bounded tails. No unison. */
 int bs_render(bs_synth *synth, float *left, float *right, uint32_t frames,
               const bs_event *events, uint32_t event_count);
 #ifdef __cplusplus

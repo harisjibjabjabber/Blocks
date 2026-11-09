@@ -11,7 +11,11 @@
   <main class="instrument" aria-label="Blocks synthesizer">
     <header class="instrument-header">
       <span class="brand">BLOCKS <span>/ SOUND</span></span>
-      <button id="undo" class="icon-button" aria-label="Undo sound edit" title="Undo sound edit" disabled><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="m9 5-5 5 5 5M4 10h10a5 5 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="header-actions">
+        <button id="undo" class="icon-button" aria-label="Undo sound edit" title="Undo sound edit" disabled><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M9 5 4 10l5 5M4 10h10a5 5 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button id="volume-toggle" type="button" aria-expanded="false" aria-controls="volume-panel"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><path d="M3 8h3l4-4v12l-4-4H3ZM13 6q5 4 0 8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg><span>Volume</span><span id="peak-indicator" aria-hidden="true"></span></button>
+        <div id="volume-panel" role="group" aria-label="Output volume" hidden><div class="volume-caption"><label for="volume-range">Output volume</label><output id="volume-value" for="volume-range">—</output></div><input id="volume-range" type="range" min="0" max="100" step="1" value="30" aria-label="Output volume"><div class="peak-row"><span id="peak-readout">Peak —</span><button id="peak-reset" type="button" aria-label="Clear peak indicator">Clear peak</button></div></div>
+      </div>
     </header>
     <section class="patch-heading" aria-label="Instrument patch">
       <span class="eyebrow">SYNTH</span>
@@ -22,16 +26,19 @@
       <button id="stop" disabled>Stop</button>
       <button id="midi" disabled>Connect MIDI</button>
     </div>
-    <div class="signal-row"><span id="status" role="status">Sound stopped</span><canvas id="scope" aria-label="Actual synth output waveform"></canvas><span id="monitor">0 voices</span></div>
+    <div class="signal-row"><span id="status" role="status">Sound stopped</span><span id="monitor">0 voices</span></div>
     <nav id="module-tabs" aria-label="Sound module">
       <button type="button" data-module="tone" class="selected" aria-pressed="true">Tone</button>
       <button type="button" data-module="envelope" aria-pressed="false">Envelope</button>
       <button type="button" data-module="character" aria-pressed="false">Character</button>
-      <button type="button" data-module="drop" aria-pressed="false"><span>Pitch Drop</span><small>Sauce</small></button>
+      <button type="button" data-module="drop" aria-pressed="false">Sauce</button>
     </nav>
     <section class="sound-editor" aria-label="Sound editing">
       <div class="visual-panel">
         <div class="surface-heading"><h2 id="module-title">Oscillator + filter</h2><output id="value-summary" aria-live="off"></output></div>
+        <div id="waveforms" aria-label="Oscillator waveforms" hidden></div>
+        <div id="sauce-tabs" role="group" aria-label="Sauce effect" hidden><button type="button" data-sauce="drive" aria-pressed="true">Drive</button><button type="button" data-sauce="drop" aria-pressed="false">Pitch Drop</button></div>
+        <div id="scope-wrapper" hidden><div class="waveform-caption"><span>Waveform</span><span id="scope-label">Preview</span></div><canvas id="scope" aria-label="Synth waveform preview"></canvas></div>
         <div id="shape-surface" aria-label="Interactive sound graph"></div>
         <p id="module-description">Drag the filter point to change tone.</p>
       </div>
