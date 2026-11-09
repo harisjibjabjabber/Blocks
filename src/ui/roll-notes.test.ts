@@ -95,6 +95,27 @@ describe("working notes", () => {
     expect(quantisePreview(notes, ["e-on"], null)).toEqual([]);
   });
 
+  it("uses an explicitly chosen fraction for quantise without mutating notes or source", () => {
+    const sourceBefore = structuredClone(source);
+    const notes = notesFromEvents(source);
+    const notesBefore = structuredClone(notes);
+    const grid: KnownGrid = { bpm: 120, beatsPerBar: 4, phase: 100_000n };
+    // Controls alone only choose a lattice; even computing previews does not apply it.
+    for (const division of [
+      { kind: "bar" as const, bars: 1 },
+      { kind: "note" as const, numerator: 1, denominator: 8, triplet: true },
+      { kind: "note" as const, numerator: 3, denominator: 8 },
+    ]) {
+      const preview = quantisePreview(notes, ["e-on"], grid, division);
+      expect(preview).toHaveLength(1);
+      expect(preview[0].start).toBe(60_000n); // halfway from 20 ms to phase 100 ms
+      expect(preview[0].end - preview[0].start).toBe(400_000n);
+      expect(notes).toEqual(notesBefore);
+      expect(source).toEqual(sourceBefore);
+    }
+    expect(quantisePreview(notes, [], grid, { kind: "off" })).toEqual([]);
+  });
+
   it("clips a held note for playback and leaves the working length", () => {
     const note: RollNote = { id: "held", channel: 0, pitch: 60, start: 100_000n, end: 900_000n, velocity: 70, sourceOnId: "held", sourceOffId: "held-off" };
     const played = workingPlayback(source, [note], { start: 0n, end: 500_000n });

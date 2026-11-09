@@ -4,7 +4,8 @@
  */
 
 import type { CapturedEvent } from "../domain/capture";
-import { beatTicks, type KnownGrid } from "./roll-time";
+import type { KnownGrid } from "./roll-time";
+import { DEFAULT_SNAP, snapStep, snapTime, type SnapDivision } from "./snap";
 
 export interface RollNote {
   id: string;
@@ -95,9 +96,7 @@ export function setVelocity(notes: readonly RollNote[], id: string, velocity: nu
 
 /** Quarter-note beat divided by 4. Tie at exactly half a step rounds away from zero. */
 export function gridStep(grid: KnownGrid): bigint {
-  const beat = beatTicks(grid.bpm);
-  const sixteenth = beat / 4n;
-  return sixteenth > 0n ? sixteenth : beat;
+  return snapStep(grid, DEFAULT_SNAP) ?? 0n;
 }
 
 export function snapDelta(delta: bigint, step: bigint): bigint {
@@ -112,21 +111,12 @@ export function snapDelta(delta: bigint, step: bigint): bigint {
 }
 
 export function nearestStep(time: bigint, grid: KnownGrid): bigint {
-  const step = gridStep(grid);
-  if (step <= 0n) {
-    return time;
-  }
-  const relative = time - grid.phase;
-  if (relative >= 0n) {
-    return grid.phase + ((relative + step / 2n) / step) * step;
-  }
-  const abs = -relative;
-  return grid.phase - ((abs + step / 2n) / step) * step;
+  return snapTime(time, grid, DEFAULT_SNAP);
 }
 
 /** A preview. The notes array and the source events are not written. */
-export function quantisePreview(notes: readonly RollNote[], ids: readonly string[], grid: KnownGrid | null): { id: string; start: bigint; end: bigint }[] {
-  if (grid === null) {
+export function quantisePreview(notes: readonly RollNote[], ids: readonly string[], grid: KnownGrid | null, division: SnapDivision = DEFAULT_SNAP): { id: string; start: bigint; end: bigint }[] {
+  if (snapStep(grid, division) === null) {
     return [];
   }
   const chosen = new Set(ids);
@@ -134,7 +124,7 @@ export function quantisePreview(notes: readonly RollNote[], ids: readonly string
     .filter((note) => chosen.size === 0 || chosen.has(note.id))
     .map((note) => {
       const length = note.end > note.start ? note.end - note.start : 1n;
-      const target = nearestStep(note.start, grid);
+      const target = snapTime(note.start, grid, division);
       const start = note.start + (target - note.start) / 2n;
       return { id: note.id, start, end: start + length };
     });

@@ -9,10 +9,12 @@ import { eventsInSelection, recentPhraseCut, type RecentPhraseCut } from "../dom
 import { routeLearnedControl, type ControlMap, type LearnTarget } from "../domain/learn";
 import { loopEvents } from "../domain/loop-events";
 import { Roll, type RollTool } from "./Roll";
+import { Editor } from "./Editor";
+import { DEFAULT_SNAP, type SnapDivision, type SnapMode } from "./snap";
 import { notesInRecentWindow } from "./ribbon-view";
 import { ReadinessStrip } from "./Readiness";
 import { moveBound, undoRange, type RangeBounds } from "./range";
-import { applyPreview, notesFromEvents, quantisePreview, workingPlayback, type RollNote } from "./roll-notes";
+import { applyPreview, notesFromEvents, quantisePreview, workingPlayback, setVelocity, type RollNote } from "./roll-notes";
 import type { KnownGrid, TimeWindow } from "./roll-time";
 import { playChrome, resolveTheme, type ThemeChoice } from "./theme";
 import { touchFromPress, type PressPhase } from "./keys";
@@ -73,7 +75,7 @@ export default function App() {
   const [notice, setNotice] = useState<RibbonNotice>({ kind: "none" });
   const [takes, setTakes] = useState<Take[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
-  const [message, setMessage] = useState("Play, then capture. The ribbon keeps about 120 seconds.");
+  const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [loopingIds, setLoopingIds] = useState<string[]>([]);
   const [undo, setUndo] = useState<UndoCapture | null>(null);
@@ -81,6 +83,8 @@ export default function App() {
   const [learning, setLearning] = useState<LearnTarget | null>(null);
   const [room, setRoom] = useState(false);
   const [rollTool, setRollTool] = useState<RollTool>("select");
+  const [snapDivision, setSnapDivision] = useState<SnapDivision>(DEFAULT_SNAP);
+  const [snapMode, setSnapMode] = useState<SnapMode>("grid");
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
   const [ghosts, setGhosts] = useState<{ id: string; start: bigint; end: bigint }[]>([]);
   const [rollWindow, setRollWindow] = useState<TimeWindow | null>(null);
@@ -249,7 +253,7 @@ export default function App() {
       const next = await engine.enable();
       setGate(engine.getGate());
       setAudioState(engine.readAudioState());
-      setMessage(next.kind === "site-addon" ? "Firefox needs its site-permission add-on before MIDI. On-screen keys still play." : "Sound follows the audio state above.");
+      setMessage(next.kind === "site-addon" ? "Firefox needs its site-permission add-on before MIDI. On-screen keys still play." : "");
     } finally {
       setBusy(false);
     }
@@ -290,7 +294,7 @@ export default function App() {
     setProject(proposal.project);
     engine.saveProject(projectToJson(proposal.project));
     const reading = report.pulse === "none" || report.bpm === null ? "No pulse reading. Quantise stays off." : report.bpm.toFixed(1) + " bpm · one reading, 4/4. Quantise stays off.";
-    setMessage((cut.status === "recent" ? "Captured a recent phrase into " + id + ". " : "No clear rest, so the window may be the whole ribbon. ") + proposal.note + " Raw notes were not moved.");
+    setMessage(cut.status === "recent" ? "Captured · Layer " + (takes.length + 1) : "Captured · no clear rest; kept the available phrase.");
     if (project.afterCapture === "silent") {
       return;
     }
@@ -312,7 +316,7 @@ export default function App() {
     setSelected(undo.takes.length ? undo.takes[undo.takes.length - 1].id : null);
     setUndo(null);
     setBoundsUndo(null);
-    setMessage("Capture undone. The pinned layer is gone. The ribbon was left as it is, and other layers keep playing.");
+    setMessage("Capture undone.");
   }
 
   function commitBounds(item: Take, next: RangeBounds) {
@@ -323,7 +327,7 @@ export default function App() {
       overlay: { ...item.overlay, selectionStart: next.start, selectionEnd: next.end, loopStart: next.start, loopEnd: next.end },
     };
     setTakes((current) => current.map((entry) => (entry.id === item.id ? updated : entry)));
-    setMessage("Loop bounds updated. The notes and the pedal were not moved.");
+    setMessage("Loop range updated.");
     playTake(updated);
   }
 
@@ -343,7 +347,7 @@ export default function App() {
     };
     setTakes((current) => current.map((entry) => (entry.id === item.id ? updated : entry)));
     setBoundsUndo(null);
-    setMessage("Range undone. The ribbon was left as it is.");
+    setMessage("Range undone.");
     playTake(updated);
   }
 
@@ -352,7 +356,7 @@ export default function App() {
     setTakes((current) => current.map((entry) => (entry.id === item.id ? { ...entry, rollEdited: true, rollPast: [...entry.rollPast, entry.rollNotes], rollFuture: [], rollNotes: notes } : entry)));
     setGhosts([]);
     if (loopingIds.includes(item.id)) playTake({ ...item, rollEdited: true, rollNotes: notes }, true);
-    setMessage(loopingIds.includes(item.id) ? "Edit saved. Hear it on the next loop." : "Edit saved. Your original take is preserved.");
+    setMessage(loopingIds.includes(item.id) ? "Edit saved · next loop." : "Edit saved.");
   }
 
   function undoRoll() {
@@ -438,7 +442,7 @@ export default function App() {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (!historyActions.current.room) return;
-      if ((event.target as HTMLElement)?.closest("input, textarea, [contenteditable=true]")) return;
+      if ((event.target as HTMLElement)?.closest("input, select, textarea, [contenteditable=true]")) return;
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
         event.preventDefault();
         event.shiftKey ? historyActions.current.redo() : historyActions.current.undo();
@@ -461,15 +465,40 @@ export default function App() {
     </Pressable>
   );
   const selectedCount = selectedNote ? 1 : take?.rollNotes.length ?? 0;
-  const layerStrip = takes.length > 0 ? (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.layerRow} accessibilityLabel="Layers">
+  const layerStrip = (
+    <View style={{ gap: 8, marginTop: 12 }} accessibilityLabel="Layers">
       {takes.map((item, index) => <Pressable key={item.id} accessibilityRole="button" accessibilityLabel={`Layer ${index + 1}, Warm EP${loopingIds.includes(item.id) ? ", looping" : ""}`}
         accessibilityState={{ selected: item.id === selected }} onPress={() => setSelected(item.id)}
-        style={[styles.layerChip, { backgroundColor: palette.card, borderColor: item.id === selected ? palette.accent : palette.line, borderWidth: item.id === selected ? 2 : 1 }]}>
-        <Text style={[styles.layerText, { color: palette.ink }]}>{index + 1} · Warm EP {loopingIds.includes(item.id) ? "↻" : ""}</Text>
+        style={[styles.layerChip, { backgroundColor: palette.card, borderColor: item.id === selected ? palette.ink : palette.line, borderWidth: item.id === selected ? 2 : 1, flexDirection: "row", alignItems: "center", gap: 16, justifyContent: "flex-start", paddingVertical: 10 }]}>
+        <Text style={[styles.layerText, { color: palette.ink, fontFamily: "Geist Mono", fontSize: 20 }]}>{index + 1}</Text><View style={{ flex: 1 }}><Text style={[styles.layerText, { color: palette.ink }]}>Piano</Text><Text style={[styles.meta, { color: palette.muted }]}>Warm EP</Text></View><Text style={[styles.meta, { color: palette.muted }]}>{loopingIds.includes(item.id) ? "↻ looping" : "stopped"}</Text>
       </Pressable>)}
-    </ScrollView>
-  ) : null;
+      <View style={[styles.layerChip, { borderColor: palette.accent, borderWidth: 2, minHeight: 64, flexDirection: "row", alignItems: "center", gap: 16, justifyContent: "flex-start" }]}><Text style={{ color: palette.accent, fontFamily: "Geist Mono", fontSize: 20 }}>{takes.length + 1}</Text><View><Text style={[styles.layerText, { color: palette.ink }]}>Layer {takes.length + 1} · next capture</Text><Text style={[styles.meta, { color: palette.muted }]}>Warm EP</Text></View></View>
+    </View>
+  );
+
+  if (room && take) return <Editor key={take.id}
+    palette={palette} layers={takes.map(item => ({ id: item.id, looping: loopingIds.includes(item.id) }))} selectedLayer={take.id}
+    notes={take.rollNotes} selectedNote={selectedNote} grid={take.rollGrid} tool={rollTool} looping={looping}
+    canUndo={take.rollPast.length > 0} canRedo={take.rollFuture.length > 0}
+    snapDivision={snapDivision} snapMode={snapMode} previewing={ghosts.length > 0}
+    onBack={() => { setRoom(false); setPanel(null); }} onLayer={setSelected} onTool={setRollTool}
+    onUndo={undoRoll} onRedo={redoRoll} onPlay={() => looping ? stopLoop() : playTake(take)} onCapture={capture}
+    onGrid={(bpm, beatsPerBar) => { const phase = loopWindow(take.overlay).start; setTakes(current => current.map(entry => entry.id === take.id ? { ...entry, rollGrid: { bpm, beatsPerBar, phase, provisional: false } } : entry)); setGhosts([]); }}
+    onSnap={division => { setSnapDivision(division); setGhosts([]); }} onSnapMode={setSnapMode}
+    onVelocity={velocity => { if (selectedNote) commitRoll(take, setVelocity(take.rollNotes, selectedNote, velocity)); }}
+    onPreview={() => setGhosts(quantisePreview(take.rollNotes, selectedNote ? [selectedNote] : [], take.rollGrid, snapDivision))}
+    onApply={() => commitRoll(take, applyPreview(take.rollNotes, ghosts))} onCancelPreview={() => setGhosts([])}
+    renderRoll={(gridHeight, viewAction) => <Roll key={take.id}
+      notes={take.rollNotes} timeWindow={rollWindow} bounds={loopWindow(take.overlay)} ceiling={take.rangeCeiling}
+      historyStart={take.performance.events.reduce((min, event) => event.scheduleElapsed < min ? event.scheduleElapsed : min, take.performance.events[0].scheduleElapsed)}
+      grid={take.rollGrid} palette={palette} mode="room" tool={rollTool} selectedId={selectedNote} ghosts={ghosts} hitPx={48}
+      onWindow={setRollWindow} onBoundsCommit={next => commitBounds(take, next)} onSelect={setSelectedNote} onCommitNotes={notes => commitRoll(take, notes)}
+      onTool={setRollTool} showChrome={false} showVelocityLane gridHeight={gridHeight} viewAction={viewAction}
+      snapDivision={snapDivision} snapMode={snapMode} readTransport={() => engine.transport(take.id)}
+      onAudition={engine.capabilities.audition ? (note, down) => engine.audition(note, down) : undefined} onStopAudition={() => engine.stopAudition()}
+      readSoundingPitches={() => engine.capabilities.soundingPitches ? engine.soundingPitches(take.id) : null}
+    />}
+  />;
 
   return (
     <View style={[styles.page, { backgroundColor: palette.bg }]}>
@@ -484,8 +513,8 @@ export default function App() {
       <ScrollView style={styles.scroll} contentContainerStyle={[styles.content, { padding: chrome.pad, maxWidth: room ? 1240 : 1000 }]}>
         {!room ? <View style={styles.header}>
           <View style={{ flexShrink: 1 }}>
-            <Text style={[styles.kicker, { color: palette.muted }]}>BLOCKS / {room ? "EDIT" : "SKETCHBOOK"}</Text>
-            <Text style={[styles.title, { color: palette.ink, fontFamily: "Georgia, serif" }]}>{room ? "Edit · Warm EP" : "A little room to play."}</Text>
+            <Text style={[styles.kicker, { color: palette.muted }]}>BLOCKS</Text>
+            <Text style={[styles.title, { color: palette.ink, fontFamily: "Instrument Serif" }]}>{project.name}</Text>
           </View>
           {room ? button("‹ Play", () => { setRoom(false); setPanel(null); }, { accessibilityLabel: "Back to Play" }) : button("Settings", () => setPanel(panel === "settings" ? null : "settings"), { active: panel === "settings" })}
         </View> : null}
@@ -494,7 +523,7 @@ export default function App() {
           {button(busy ? "Starting…" : gate.kind === "idle" ? "Enable sound" : "Reconnect MIDI", enable, { disabled: busy, primary: gate.kind === "idle", accessibilityLabel: "Enable" })}
           <View style={{ flex: 1 }}>
             <ReadinessStrip audioState={audioState} showContext={false} ink={palette.ink} />
-            <Text style={[styles.meta, { color: palette.muted }]}>{inputCopy(gate.kind, engine.ports().length)} · {seconds(age, domain)} retained</Text>
+            <Text style={[styles.meta, { color: palette.muted }]}>{inputCopy(gate.kind, engine.ports().length)} · {seconds(age, domain)} kept</Text>
           </View>
         </View> : null}
 
@@ -514,8 +543,8 @@ export default function App() {
         <View style={[styles.card, { backgroundColor: palette.card, borderColor: palette.line, padding: room && width < 600 ? 8 : 16, marginTop: room ? 0 : 16 }]}>
           <View style={styles.header}>
             <View style={{ flexShrink: 1 }}>
-              <Text style={[styles.cardTitle, { color: palette.ink }]}>{room ? "Piano roll" : "Your take"}</Text>
-              <Text style={[styles.meta, { color: palette.muted }]}>{take ? `${take.rollNotes.length} notes · ${take.rollGrid ? `${take.rollGrid.bpm} BPM · ${take.rollGrid.beatsPerBar}/4` : "Free time · seconds"}` : "Play freely. Keep the phrase when it arrives."}</Text>
+              <Text style={[styles.cardTitle, { color: palette.ink }]}>{take ? "TAKE HISTORY" : "NOW PLAYING"}</Text>
+              <Text style={[styles.meta, { color: palette.muted }]}>{take ? `${take.rollNotes.length} notes · ${take.rollGrid ? `${take.rollGrid.bpm} BPM · ${take.rollGrid.beatsPerBar}/4` : "Free time · seconds"}` : "free play"}</Text>
               {room ? <Text style={[styles.meta, { color: palette.muted }]}>{looping ? "↻ Looping" : "Stopped"} · 🔒 Loop range · adjust on Play</Text> : null}
             </View>
           </View>
@@ -557,11 +586,12 @@ export default function App() {
           </View> : null}
         </View>
 
-        <Text accessibilityLiveRegion="polite" style={[styles.message, { color: palette.muted }]}>{message}</Text>
+        {!room ? layerStrip : null}
+        {message ? <Text accessibilityLiveRegion="polite" style={[styles.message, { color: palette.muted }]}>{message}</Text> : null}
         {learning ? <Text style={[styles.meta, { color: palette.muted }]}>Learning {learning === "capture" ? "Capture" : "Play/Stop"}. Use a controller other than sustain or a playing key.</Text> : null}
         {!room ? <>
           {notice.kind === "none" ? null : <Text style={[styles.meta, { color: palette.muted }]}>{evictionCopy(notice)}</Text>}
-          <View style={styles.header}><Text style={[styles.cardTitle, { color: palette.ink }]}>Try a few notes</Text><Text style={[styles.meta, { color: palette.muted }]}>Touch keyboard</Text></View>
+          <View style={styles.header}><Text style={[styles.cardTitle, { color: palette.ink }]}>Keyboard</Text><Text style={[styles.meta, { color: palette.muted }]}>Warm EP</Text></View>
           <View style={styles.keys} dataSet={{ keys: "true" }}>
             {NOTES.map((note, index) => <Pressable key={note} dataSet={{ key: String(note) }} accessibilityRole="button" accessibilityLabel={`Play ${NAMES[index]}${Math.floor(note / 12) - 1}`}
               style={[styles.pad, { backgroundColor: palette.card, borderColor: palette.line }]} onPressIn={() => pressKey(note, "in")} onPress={() => pressKey(note, "press")} onPressOut={() => pressKey(note, "out")}>
@@ -572,15 +602,15 @@ export default function App() {
       </ScrollView>
       <View style={[styles.dock, { backgroundColor: palette.dock, borderColor: palette.line }]}>
         <View style={styles.dockInner}>
-          {!room ? layerStrip : null}
           <View style={styles.transportRow}>
-            {button(looping ? "■ Stop" : "▶ Play", () => looping ? stopLoop() : take ? playTake(take) : undefined, { disabled: !take, accessibilityLabel: looping ? "Stop" : "Play" })}
-            <Pressable accessibilityRole="button" accessibilityLabel="Capture" onPress={capture} style={[styles.capture, { backgroundColor: palette.accent }]}>
-              <Text style={[styles.captureText, { color: palette.accentInk }]}>Capture</Text>
-            </Pressable>
             {!room ? button("↶", undoCapture, { disabled: !undo, accessibilityLabel: "Undo capture" }) : null}
+            <View style={{ flex: 1, alignItems: "center" }}><Text style={[styles.cardTitle, { color: palette.ink }]}>Warm EP</Text><Text style={[styles.meta, { color: palette.muted }]}>sound for Layer {takes.length + 1}</Text></View>
+            {button(looping ? "■ Stop" : "▶ Play", () => looping ? stopLoop() : take ? playTake(take) : undefined, { disabled: !take, accessibilityLabel: looping ? "Stop" : "Play" })}
             {!room && boundsUndo ? button("Undo range", undoBounds) : null}
           </View>
+          <Pressable accessibilityRole="button" accessibilityLabel="Capture" onPress={capture} style={[styles.capture, { backgroundColor: palette.card, borderColor: palette.accent, borderWidth: 2, marginTop: 12, flex: undefined }]}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}><Text style={{ color: palette.accent, fontSize: 36 }}>↶</Text><View><Text style={[styles.captureText, { color: palette.ink }]}>Capture</Text><Text style={[styles.meta, { color: palette.muted }]}>keep the last phrase → Layer {takes.length + 1}</Text></View></View>
+          </Pressable>
         </View>
       </View>
     </View>
@@ -648,15 +678,12 @@ function LiveRoll({ events, palette, hitPx }: { events: CapturedEvent[]; palette
   const recent = notesInRecentWindow(events, 12_000_000n);
   const notes = notesFromEvents(recent);
   const historyStart = recent.length ? recent.reduce((min, event) => (event.scheduleElapsed < min ? event.scheduleElapsed : min), recent[0].scheduleElapsed) : 0n;
-  if (notes.length === 0) {
-    return <Text style={{ color: palette.muted, marginTop: 8 }}>Nothing played yet</Text>;
-  }
   return (
     <Roll
       notes={notes}
       timeWindow={null}
       bounds={null}
-      ceiling={notes.reduce((max, note) => (note.end > max ? note.end : max), notes[0].end)}
+      ceiling={notes.reduce((max, note) => (note.end > max ? note.end : max), 0n)}
       historyStart={historyStart}
       grid={null}
       palette={palette}
@@ -681,7 +708,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, marginVertical: 8 },
   editorHeader: { flexShrink: 0, paddingHorizontal: 16, paddingTop: 10, borderBottomWidth: 1 },
   kicker: { letterSpacing: 2, fontSize: 11, fontWeight: "600" },
-  title: { fontSize: 32, marginTop: 6, letterSpacing: -0.7 },
+  title: { fontSize: 36, marginTop: 6, letterSpacing: -0.7 },
   meta: { fontSize: 12, lineHeight: 18, marginTop: 3 },
   message: { fontSize: 12, lineHeight: 18, marginTop: 12, marginBottom: 16 },
   row: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12, flexWrap: "wrap" },
@@ -698,7 +725,7 @@ const styles = StyleSheet.create({
   dock: { flexShrink: 0, paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1 },
   dockInner: { width: "100%", maxWidth: 1200, alignSelf: "center" },
   transportRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  capture: { borderRadius: 12, minHeight: 52, flex: 1, alignItems: "center", justifyContent: "center" },
+  capture: { borderRadius: 40, minHeight: 80, flex: 1, alignItems: "center", justifyContent: "center" },
   captureText: { fontSize: 18, fontWeight: "700" },
   secondary: { borderRadius: 8, minHeight: 48, minWidth: 48, paddingVertical: 10, paddingHorizontal: 12, justifyContent: "center", alignItems: "center" },
   secondaryText: { fontSize: 13, fontWeight: "500" },

@@ -1,0 +1,69 @@
+{
+  "scope": "Local provenance verification only; no upstream release/hash pin or fresh download claimed.",
+  "source_directory": "/workspace/blocks-design/hifi/fonts/Instrument Serif",
+  "local_licence_file": "OFL.txt",
+  "licence_sha256": "129ed7618959716959f2941fdd5b49e0ad6e6c1d78726761786a00253d865521",
+  "assessment": "Unmodified copied font binaries identify expected family and SIL OFL 1.1 in embedded name metadata, consistent with corresponding full OFL.txt. Redistribution bundled with documentation allowed with copyright/licence retained; do not sell fonts alone or imply endorsement. Respect Reserved Font Names for future modifications.",
+  "fonts": [
+    {
+      "file": "InstrumentSerif-Italic.ttf",
+      "sha256": "9c86e4d5a47b50224a2463a9eca8535835257c8e85c470c2c6b454b1af6f046e",
+      "embedded_name_table": {
+        "0": [
+          "Copyright 2022 The Instrument Serif Project Authors (https://github.com/Instrument/instrument-serif)"
+        ],
+        "1": [
+          "Instrument Serif"
+        ],
+        "5": [
+          "Version 1.000; ttfautohint (v1.8.4.7-5d5b);gftools[0.9.27]"
+        ],
+        "8": [
+          "fragTYPE"
+        ],
+        "9": [
+          "Rodrigo Fuenzalida"
+        ],
+        "11": [
+          "www.fragtypefoundry.xyz"
+        ],
+        "13": [
+          "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL"
+        ],
+        "14": [
+          "https://scripts.sil.org/OFL"
+        ]
+      }
+    },
+    {
+      "file": "InstrumentSerif-Regular.ttf",
+      "sha256": "56ac3be03ac3ba283196b3e77850ab2ffcf56cfb6fd3212c5620109a972f8c99",
+      "embedded_name_table": {
+        "0": [
+          "Copyright 2022 The Instrument Serif Project Authors (https://github.com/Instrument/instrument-serif)"
+        ],
+        "1": [
+          "Instrument Serif"
+        ],
+        "5": [
+          "Version 1.000; ttfautohint (v1.8.4.7-5d5b);gftools[0.9.27]"
+        ],
+        "8": [
+          "fragTYPE"
+        ],
+        "9": [
+          "Rodrigo Fuenzalida"
+        ],
+        "11": [
+          "www.fragtypefoundry.xyz"
+        ],
+        "13": [
+          "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL"
+        ],
+        "14": [
+          "https://scripts.sil.org/OFL"
+        ]
+      }
+    }
+  ]
+}

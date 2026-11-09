@@ -1,14 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Pressable, Text, View, useWindowDimensions } from "react-native";
-import { framePhrase, noteBox, panWindow, pitchLabel, pitchToY, rulerMarks, timeToX, xToTime, zoomWindow, type KnownGrid, type TimeWindow } from "./roll-time";
+import { beatTicks, framePhrase, noteBox, panWindow, pitchLabel, pitchToY, rulerMarks, timeToX, xToTime, zoomWindow, type KnownGrid, type TimeWindow } from "./roll-time";
 import type { TransportSnapshot } from "../audio/web/transport";
-import { gridStep, nearestStep, resizeNote, snapDelta, type RollNote } from "./roll-notes";
+import { resizeNote, type RollNote } from "./roll-notes";
+import { DEFAULT_SNAP, snapStep, snapTime, snapMoveStart, snapIndexAt, snapPointAt, type SnapDivision } from "./snap";
+import { visibleSnapGrid } from "./roll-snap-grid";
 import { isBlackKey, keyShape, nextDrawId, RollTransaction } from "./roll-interaction";
 import type { Palette } from "./theme";
 
 export type RollTool = "select" | "draw" | "erase" | "velocity" | "pan";
 const WebView = View as React.ComponentType<React.ComponentProps<typeof View> & { dataSet?: Record<string, string> }>;
 const RULER = 28;
+const VELOCITY_HEIGHT = 90;
+const VELOCITY_HEADER = 24;
+export type RollViewAction = { id: number; kind: "zoom-in" | "zoom-out" | "refocus" | "earlier" | "later" | "higher" | "lower" | "taller" | "shorter" };
 type Range = { start: bigint; end: bigint };
 type RollProps = {
   notes: readonly RollNote[]; timeWindow: TimeWindow | null; bounds: Range | null;
@@ -21,19 +26,22 @@ type RollProps = {
   showPan?: boolean; readTransport?: () => TransportSnapshot;
   onAudition?: (pitch: number, down: boolean) => void; onStopAudition?: () => void;
   readSoundingPitches?: () => readonly number[] | null;
+  snapDivision?: SnapDivision; snapMode?: "grid" | "offset";
+  showChrome?: boolean; gridHeight?: number; showVelocityLane?: boolean; viewAction?: RollViewAction;
 };
 type Drag = {
   kind: "bound" | "draw" | "erase" | "velocity" | "move" | "resize";
   pointer: number; x: number; y: number; clientY: number; view: TimeWindow;
   row: number; top: number; width: number; bounds: Range | null;
-  note?: RollNote; edge?: "start" | "end"; erased: Set<string>; selection: string | null; moved?: boolean;
+  note?: RollNote; edge?: "start" | "end"; erased: Set<string>; selection: string | null; moved?: boolean; velocityScale?: number;
 };
 type Pinch = { distance: number; x: number; y: number; view: TimeWindow; top: number; row: number; width: number };
 
-export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, palette, mode, tool, selectedId, ghosts, hitPx, onWindow, onBoundsCommit, onSelect, onCommitNotes, onEdit, onClose, onTool, showPan = true, readTransport, onAudition, onStopAudition, readSoundingPitches }: RollProps) {
+export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, palette, mode, tool, selectedId, ghosts, hitPx, onWindow, onBoundsCommit, onSelect, onCommitNotes, onEdit, onClose, onTool, showPan = true, readTransport, onAudition, onStopAudition, readSoundingPitches, snapDivision = DEFAULT_SNAP, snapMode = "grid", showChrome = true, gridHeight, showVelocityLane = mode === "room", viewAction }: RollProps) {
   const viewport = useWindowDimensions();
   const host = useRef<HTMLElement | null>(null);
   const keyboard = useRef<HTMLElement | null>(null);
+  const velocityHost = useRef<HTMLElement | null>(null);
   const [plotWidth, setPlotWidth] = useState(640);
   const [topPitch, setTopPitch] = useState(() => topOf(notes));
   const [roomRow, setRoomRow] = useState(24);
@@ -54,8 +62,8 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
   const view = timeWindow ?? (bounds ? framePhrase(historyStart, bounds.start, bounds.end) : frameOf(notes, historyStart));
   const rowHeight = mode === "room" ? roomRow : fitRow(notes);
   const pitchTop = mode === "compact" ? topOf(notes) : topPitch;
-  const noteHeight = mode === "room" ? Math.max(240, Math.min(432, viewport.height - (viewport.width < 720 ? 520 : 360))) : 112;
-  const labelWidth = mode === "compact" ? 20 : plotWidth < 500 ? 32 : 44;
+  const noteHeight = gridHeight ?? (mode === "room" ? Math.max(240, Math.min(432, viewport.height - (viewport.width < 720 ? 520 : 360))) : 112);
+  const labelWidth = mode === "compact" ? 20 : plotWidth < 500 ? 34 : 44;
   const pitches = visiblePitches(pitchTop, noteHeight, rowHeight);
   const canAudition = mode === "room" && rowHeight >= 24 && !!onAudition;
   const selected = shownNotes.find(note => note.id === selectedId);
@@ -103,17 +111,17 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
     onStopAudition?.();
   }
   function cancelAll() { cancelEdit(); pointers.current.clear(); pinch.current = null; stopAuditions(); }
-  const handlers = useRef({ begin: (_event: PointerEvent) => {}, move: (_event: PointerEvent) => {}, end: (_event: PointerEvent) => {}, audition: (_event: PointerEvent) => {}, cancel: () => {}, key: (_event: KeyboardEvent) => {} });
+  const handlers = useRef({ begin: (_event: PointerEvent, _source?: "grid" | "velocity") => {}, move: (_event: PointerEvent) => {}, end: (_event: PointerEvent) => {}, audition: (_event: PointerEvent) => {}, cancel: () => {}, key: (_event: KeyboardEvent) => {} });
 
   function capturePointer(event: PointerEvent, element: HTMLElement | null) {
     try { element?.setPointerCapture(event.pointerId); } catch { /* Window listeners still release the gesture. */ }
   }
-  function begin(event: PointerEvent) {
+  function begin(event: PointerEvent, source: "grid" | "velocity" = "grid") {
     if (event.button !== 0 && event.pointerType !== "touch") return;
     event.preventDefault();
     if (pointers.current.has(event.pointerId)) return;
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
-    capturePointer(event, host.current);
+    capturePointer(event, source === "velocity" ? velocityHost.current : host.current);
     if (pointers.current.size >= 2) {
       cancelEdit();
       stopAuditions();
@@ -124,6 +132,16 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
     }
     const { x, y } = local(event.clientX, event.clientY);
     const base: Omit<Drag, "kind"> = { pointer: event.pointerId, x, y, clientY: event.clientY, view, row: rowHeight, top: pitchTop, width: plotWidth, bounds, erased: new Set(), selection: selectedId };
+    if (source === "velocity") {
+      if (ghosts.length || mode !== "room") return;
+      const candidates = notes.filter(note => Math.abs(x - timeToX(note.start, view, plotWidth)) <= 10);
+      const hit = candidates.find(note => note.id === selectedId) ?? candidates.sort((a, b) => Math.abs(x - timeToX(a.start, view, plotWidth)) - Math.abs(x - timeToX(b.start, view, plotWidth)))[0];
+      if (!hit) return;
+      onSelect(hit.id);
+      transaction.current = new RollTransaction(notes);
+      drag.current = { ...base, kind: "velocity", note: hit, velocityScale: 127 / (VELOCITY_HEIGHT - VELOCITY_HEADER - 8) };
+      return;
+    }
     if (mode === "compact") {
       if (bounds && y >= -RULER && y < 20) {
         const startDistance = Math.abs(x - timeToX(bounds.start, view, plotWidth));
@@ -144,8 +162,11 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
     if (tool === "draw") {
       if (hit) { onSelect(hit.id); transaction.current = null; return; }
       const rawStart = xToTime(x, view, plotWidth);
-      const start = grid && !event.altKey ? nearestStep(rawStart, grid) : rawStart;
-      const length = grid && !event.altKey ? gridStep(grid) : 150_000n;
+      const start = !event.altKey ? snapTime(rawStart, grid, snapDivision) : rawStart;
+      const step = !event.altKey ? snapStep(grid, snapDivision) : null;
+      const index = step !== null ? snapIndexAt(start, grid, snapDivision) : null;
+      const nextPoint = index !== null ? snapPointAt(index + 1n, grid, snapDivision) : null;
+      const length = nextPoint !== null && nextPoint > start ? nextPoint - start : step ?? 150_000n;
       const note: RollNote = { id: nextDrawId(notes), channel: 0, pitch: clampPitch(pitchTop - Math.floor(y / rowHeight)), start, end: start + length, velocity: 96, sourceOnId: null, sourceOffId: null };
       drag.current = { ...base, kind: "draw", note };
       previewNotes([...notes, note]);
@@ -207,25 +228,32 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
     if (!current.moved && Math.abs(x - current.x) < 3 && Math.abs(y - current.y) < 3) return;
     current.moved = true;
     const rawTime = xToTime(x, current.view, current.width);
-    const time = grid && !event.altKey ? nearestStep(rawTime, grid) : rawTime;
+    const time = !event.altKey ? snapTime(rawTime, grid, snapDivision) : rawTime;
     if (current.kind === "draw") {
-      const drawn = { ...note, start: minBig(note.start, time), end: maxBig(note.start + 1n, time) };
+      const drawn = time < note.start
+        ? { ...note, start: time, end: note.start }
+        : { ...note, end: time > note.start ? time : note.end };
       previewNotes([...baseline, drawn]); setGestureText(describe(drawn)); return;
     }
     if (current.kind === "resize") {
       const delta = rawTime - xToTime(current.x, current.view, current.width);
-      const end = note.end + (grid && !event.altKey ? snapDelta(delta, gridStep(grid)) : delta);
+      const rawEnd = note.end + delta;
+      let end = !event.altKey ? snapTime(rawEnd, grid, snapDivision) : rawEnd;
+      if (!event.altKey && end <= note.start) {
+        const startIndex = snapIndexAt(note.start, grid, snapDivision);
+        const next = startIndex !== null ? snapPointAt(startIndex + 1n, grid, snapDivision) : null;
+        if (next !== null && next > note.start) end = next;
+      }
       const next = resizeNote(baseline, note.id, "end", end);
       previewNotes(next); setGestureText(describe(next.find(n => n.id === note.id)!)); return;
     }
     if (current.kind === "velocity") {
-      const velocity = Math.max(1, Math.min(127, Math.round(note.velocity + current.clientY - event.clientY)));
+      const velocity = Math.max(1, Math.min(127, Math.round(note.velocity + (current.clientY - event.clientY) * (current.velocityScale ?? 1))));
       previewNotes(baseline.map(n => n.id === note.id ? { ...n, velocity } : n));
       setGestureText(`${pitchLabel(note.pitch)} · velocity ${velocity}`); return;
     }
     const deltaTime = rawTime - xToTime(current.x, current.view, current.width);
-    const delta = grid && !event.altKey ? snapDelta(deltaTime, gridStep(grid)) : deltaTime;
-    const start = maxBig(0n, note.start + delta);
+    const start = maxBig(0n, event.altKey ? note.start + deltaTime : snapMoveStart(note.start, deltaTime, grid, snapDivision, snapMode));
     const moved = { ...note, pitch: clampPitch(note.pitch - Math.round((y - current.y) / current.row)), start, end: start + note.end - note.start };
     previewNotes(baseline.map(n => n.id === note.id ? moved : n)); setGestureText(describe(moved));
   }
@@ -275,19 +303,21 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
   handlers.current = { begin, move, end, audition, cancel: cancelAll, key };
   useEffect(() => {
     if (typeof window === "undefined" || typeof document === "undefined") return;
-    const element = host.current; const keys = keyboard.current;
+    const element = host.current; const keys = keyboard.current; const lane = velocityHost.current;
     const down = (event: PointerEvent) => handlers.current.begin(event);
     const keyDown = (event: PointerEvent) => handlers.current.audition(event);
+    const velocityDown = (event: PointerEvent) => handlers.current.begin(event, "velocity");
     const moveEvent = (event: PointerEvent) => handlers.current.move(event);
     const up = (event: PointerEvent) => handlers.current.end(event);
     const cancel = () => handlers.current.cancel();
     const lost = (event: PointerEvent) => { if (pointers.current.has(event.pointerId) || auditions.current.has(event.pointerId)) cancel(); };
     const keyEvent = (event: KeyboardEvent) => handlers.current.key(event);
     const outsideDown = (event: PointerEvent) => {
-      if (pointers.current.size && !element?.contains(event.target as Node)) cancel();
+      if (pointers.current.size && !element?.contains(event.target as Node) && !lane?.contains(event.target as Node)) cancel();
     };
     const visibility = () => { if (document.hidden) cancel(); };
     element?.addEventListener("pointerdown", down); keys?.addEventListener("pointerdown", keyDown);
+    lane?.addEventListener("pointerdown", velocityDown); lane?.addEventListener("lostpointercapture", lost);
     element?.addEventListener("lostpointercapture", lost); keys?.addEventListener("lostpointercapture", lost);
     window.addEventListener("pointermove", moveEvent, { passive: false }); window.addEventListener("pointerup", up);
     window.addEventListener("pointerdown", outsideDown, true);
@@ -295,14 +325,17 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
     document.addEventListener("visibilitychange", visibility);
     return () => {
       cancel(); element?.removeEventListener("pointerdown", down); keys?.removeEventListener("pointerdown", keyDown);
+      lane?.removeEventListener("pointerdown", velocityDown); lane?.removeEventListener("lostpointercapture", lost);
       element?.removeEventListener("lostpointercapture", lost); keys?.removeEventListener("lostpointercapture", lost);
       window.removeEventListener("pointermove", moveEvent); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", cancel);
       window.removeEventListener("pointerdown", outsideDown, true);
       window.removeEventListener("blur", cancel); window.removeEventListener("keydown", keyEvent); document.removeEventListener("visibilitychange", visibility);
     };
-  }, []);
+  }, [showVelocityLane]);
   useEffect(() => { handlers.current.cancel(); }, [mode, tool]);
-  useEffect(() => { setTopPitch(topOf(notes)); if (mode === "room") setRoomRow(fitRoomRow(notes, noteHeight)); }, [mode, viewport.width, viewport.height]);
+  const snapIdentity = JSON.stringify(snapDivision);
+  useEffect(() => { if (drag.current) handlers.current.cancel(); }, [snapIdentity, snapMode, grid?.bpm, grid?.beatsPerBar, grid?.phase]);
+  useEffect(() => { setTopPitch(topOf(notes)); if (mode === "room") setRoomRow(fitRoomRow(notes, noteHeight)); }, [mode, viewport.width, viewport.height, noteHeight]);
   useEffect(() => { if (drag.current) handlers.current.cancel(); }, [notes]);
   useEffect(() => { if (!canAudition) stopAuditions(); }, [canAudition]);
 
@@ -314,9 +347,39 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
     const tx = new RollTransaction(notes); tx.preview(notes.map(note => note.id === selected.id ? change(note) : note));
     const next = tx.commit(); if (next) onCommitNotes(next);
   }
-  const marks = rulerMarks(view, grid);
+  const lastViewAction = useRef<number | null>(null);
+  useEffect(() => {
+    if (!viewAction || lastViewAction.current === viewAction.id) return;
+    lastViewAction.current = viewAction.id;
+    cancelAll();
+    switch (viewAction.kind) {
+      case "zoom-in": zoom(0.5); break;
+      case "zoom-out": zoom(2); break;
+      case "refocus": refocus(); break;
+      case "earlier": onWindow(panWindow(view, -(view.end - view.start) / 2n, historyStart)); break;
+      case "later": onWindow(panWindow(view, (view.end - view.start) / 2n, historyStart)); break;
+      case "higher": setTopPitch(pitch => Math.min(127, pitch + 12)); break;
+      case "lower": setTopPitch(pitch => Math.max(12, pitch - 12)); break;
+      case "taller": setRoomRow(row => Math.min(40, row + 8)); break;
+      case "shorter": setRoomRow(row => Math.max(8, row - 8)); break;
+    }
+  }, [viewAction?.id]);
+  const beat = grid ? beatTicks(grid.bpm) : 0n;
+  const beatWidth = view.end > view.start ? Number(beat) / Number(view.end - view.start) * plotWidth : 0;
+  const marks = rulerMarks(view, grid).map(mark => {
+    if (mark.kind !== "beat" || !grid || beat <= 0n || beatWidth < 32) return mark;
+    const index = (mark.time - grid.phase) / beat;
+    const meter = BigInt(grid.beatsPerBar);
+    const number = ((index % meter) + meter) % meter + 1n;
+    return { ...mark, label: `.${number}` };
+  });
+  const snapLines = visibleSnapGrid(view, grid, snapDivision, plotWidth);
+  const dark = palette.bg === "#0A0C0F";
+  const playedX = playhead === null ? null : timeToX(BigInt(Math.round(playhead * 1_000_000)), view, plotWidth);
+  const averageVelocity = shownNotes.length ? Math.round(shownNotes.reduce((sum, note) => sum + note.velocity, 0) / shownNotes.length) : 0;
   return (
-    <WebView accessibilityLabel={mode === "room" ? "Piano roll" : "Take ribbon"} style={{ marginTop: 8 }}>
+    <WebView accessibilityLabel={mode === "room" ? "Piano roll" : "Take ribbon"} style={{ marginTop: showChrome ? 8 : 0 }}>
+      {showChrome ? <>
       <WebView style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <Text style={{ color: palette.muted, fontSize: 12, width: mode === "room" ? "100%" : undefined }}>{grid ? `${grid.bpm} BPM · ${grid.beatsPerBar}/4${grid.provisional ? " · proposed" : ""}` : "Seconds"}{mode === "room" ? " · Loop locked" : ""}</Text>
         {mode === "compact" && onEdit ? <Tool label="Edit" onPress={onEdit} palette={palette} hit={hitPx} /> : null}
@@ -339,6 +402,7 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
         </> : null}
       </WebView> : null}
       {mode === "room" ? <Text style={{ color: palette.muted, fontSize: 12, marginBottom: 6 }}>{ghosts.length ? "Quantise preview · dashed notes keep original timing · Apply or Cancel to edit" : tool === "velocity" ? "Velocity · drag a selected note up or down" : activeTool === "draw" ? "Draw · drag to add a note; tap a note to select" : activeTool === "erase" ? "Erase · stroke notes, release to apply" : "Select · drag a note to move; drag its right edge to resize"}{" · Two fingers pan/zoom"}</Text> : null}
+      </> : null}
       <WebView style={{ flexDirection: "row" }}>
         <WebView ref={node => { keyboard.current = node as unknown as HTMLElement; }} dataSet={{ keyboard: mode, rowHeight: String(rowHeight), audition: canAudition ? "enabled" : "display-only" }} accessibilityLabel={canAudition ? "Piano keys, hold to audition" : "Piano keys, display only"} style={{ width: labelWidth, height: noteHeight, marginTop: RULER + 1, position: "relative", overflow: "hidden", touchAction: "none", backgroundColor: "#E7E1D6" } as never}>
           {[...pitches].sort((a, b) => Number(isBlackKey(a)) - Number(isBlackKey(b))).map(pitch => {
@@ -346,23 +410,24 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
             return <WebView key={pitch} pointerEvents="none" dataSet={{ pianoKey: String(pitch) }} style={{ position: "absolute", top: shape.top, height: shape.height, left: 0, width: shape.black ? "63%" : "100%", backgroundColor: shape.black ? "#252931" : "#E7E1D6", borderBottomWidth: 1, borderBottomColor: shape.black ? "#0A0C0F" : "#8C8C8C", borderRightWidth: 1, borderRightColor: "#737373", borderBottomRightRadius: shape.black ? 2 : 0 }} />;
           })}
           {pitches.map(pitch => <WebView key={`target-${pitch}`} pointerEvents="none" dataSet={{ pitchRow: String(pitch) }} style={{ position: "absolute", top: pitchToY(pitch, pitchTop, rowHeight), height: rowHeight, left: 0, right: 0, justifyContent: "center", alignItems: "flex-end", borderRightWidth: sounding.includes(pitch) ? 4 : 0, borderRightColor: palette.accent }}>
-            {pitch % 12 === 0 ? <Text style={{ fontSize: mode === "compact" ? 7 : 9, color: "#17150F", marginRight: 2, fontWeight: pitch === 60 ? "900" : "600" }}>{pitchLabel(pitch)}{pitch === 60 ? "·" : ""}</Text> : null}
+            {pitch % 12 === 0 ? <Text style={{ fontSize: mode === "compact" ? 7 : 9, fontFamily: "Geist Mono", color: "#17150F", marginRight: 2, fontWeight: pitch === 60 ? "900" : "600" }}>{pitchLabel(pitch)}{pitch === 60 ? "·" : ""}</Text> : null}
             {sounding.includes(pitch) ? <Text style={{ position: "absolute", left: 1, color: isBlackKey(pitch) ? "#FFFFFF" : "#17150F", fontSize: Math.min(12, rowHeight - 2) }}>●</Text> : null}
           </WebView>)}
         </WebView>
-        <WebView ref={node => { host.current = node as unknown as HTMLElement; }} dataSet={{ roll: "true" }} onLayout={event => { const next = host.current?.clientWidth || event.nativeEvent.layout.width; if (next > 0 && Math.abs(next - plotWidth) > 1) setPlotWidth(next); }} style={{ position: "relative", flex: 1, height: RULER + noteHeight + 2, backgroundColor: palette.plot, borderRadius: 8, borderWidth: 1, borderColor: palette.line, overflow: "hidden", touchAction: "none", userSelect: "none" } as never}>
-          {pitches.map(pitch => <WebView key={`row-${pitch}`} pointerEvents="none" style={{ position: "absolute", left: 0, right: 0, top: RULER + pitchToY(pitch, pitchTop, rowHeight), height: rowHeight, backgroundColor: isBlackKey(pitch) ? palette.line : "transparent", opacity: 0.4, borderBottomWidth: 1, borderBottomColor: palette.line }} />)}
+        <WebView ref={node => { host.current = node as unknown as HTMLElement; }} dataSet={{ roll: "true" }} onLayout={event => { const next = host.current?.clientWidth || event.nativeEvent.layout.width; if (next > 0 && Math.abs(next - plotWidth) > 1) setPlotWidth(next); }} style={{ position: "relative", flex: 1, height: RULER + noteHeight + 2, backgroundColor: palette.plot, borderRadius: showChrome ? 8 : 0, borderWidth: 1, borderColor: palette.line, overflow: "hidden", touchAction: "none", userSelect: "none" } as never}>
+          {pitches.map(pitch => <WebView key={`row-${pitch}`} pointerEvents="none" style={{ position: "absolute", left: 0, right: 0, top: RULER + pitchToY(pitch, pitchTop, rowHeight), height: rowHeight, backgroundColor: isBlackKey(pitch) ? (dark ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.03)") : "transparent", borderBottomWidth: 1, borderBottomColor: dark ? "rgba(255,255,255,0.035)" : "rgba(0,0,0,0.04)" }} />)}
+          {snapLines.map(time => <WebView key={`snap-${time}`} pointerEvents="none" dataSet={{ snapGrid: time.toString() }} style={{ position: "absolute", left: timeToX(time, view, plotWidth), top: RULER, bottom: 0, width: 1, backgroundColor: palette.muted, opacity: 0.18 }} />)}
           {marks.map(mark => <React.Fragment key={mark.kind + mark.time.toString()}>
-            <WebView pointerEvents="none" style={{ position: "absolute", left: timeToX(mark.time, view, plotWidth), top: RULER, bottom: 0, width: mark.kind === "bar" ? 2 : 1, backgroundColor: mark.kind === "bar" ? palette.muted : palette.line, opacity: mark.tentative ? 0.4 : 0.65 }} />
-            {mark.label ? <Text pointerEvents="none" style={{ position: "absolute", left: timeToX(mark.time, view, plotWidth) + 3, top: 5, color: palette.muted, fontSize: 10 }}>{mark.label}</Text> : null}
+            <WebView pointerEvents="none" style={{ position: "absolute", left: timeToX(mark.time, view, plotWidth), top: RULER, bottom: 0, width: mark.kind === "bar" ? 2 : 1, backgroundColor: palette.muted, opacity: mark.tentative ? 0.4 : mark.kind === "bar" ? 1 : 0.55 }} />
+            {mark.label ? <Text pointerEvents="none" style={{ position: "absolute", left: timeToX(mark.time, view, plotWidth) + 3, top: 5, color: palette.muted, fontSize: 10, fontFamily: "Geist Mono" }}>{mark.label}</Text> : null}
           </React.Fragment>)}
           {shownBounds ? <WebView pointerEvents="none" style={{ position: "absolute", left: timeToX(shownBounds.start, view, plotWidth), width: Math.max(0, timeToX(shownBounds.end, view, plotWidth) - timeToX(shownBounds.start, view, plotWidth)), top: RULER, bottom: 0, backgroundColor: palette.ink, opacity: 0.04 }} /> : null}
           {shownNotes.map(note => {
             const target = ghosts.find(ghost => ghost.id === note.id);
             const box = noteBox(target?.start ?? note.start, target?.end ?? note.end, note.pitch, view, plotWidth, pitchTop, rowHeight);
             const chosen = note.id === selectedId;
-            return <WebView key={note.id} pointerEvents="none" dataSet={{ note: note.id, start: (target?.start ?? note.start).toString(), end: (target?.end ?? note.end).toString(), velocity: String(note.velocity), pitch: String(note.pitch) }} style={{ position: "absolute", left: box.x, top: RULER + box.y + 1, width: Math.max(8, box.width), height: box.height, borderRadius: 3, backgroundColor: chosen ? palette.accent : palette.note, borderWidth: chosen ? 2 : 0, borderColor: palette.ink, overflow: "hidden", opacity: 0.65 + note.velocity / 127 * 0.35 }}>
-              {chosen && mode === "room" ? <>{box.width >= 30 ? <Text numberOfLines={1} style={{ fontSize: 10, color: palette.accentInk, paddingLeft: 2 }}>{pitchLabel(note.pitch)}</Text> : null}<WebView style={{ position: "absolute", right: 2, top: 3, bottom: 3, width: 2, backgroundColor: palette.accentInk }} /></> : null}
+            return <WebView key={note.id} pointerEvents="none" dataSet={{ note: note.id, start: (target?.start ?? note.start).toString(), end: (target?.end ?? note.end).toString(), velocity: String(note.velocity), pitch: String(note.pitch) }} style={{ position: "absolute", left: box.x, top: RULER + box.y + 1, width: Math.max(8, box.width), height: box.height, borderRadius: 3, backgroundColor: palette.note, borderWidth: 0, overflow: "visible", opacity: 1 }}>
+              {chosen && mode === "room" ? <><WebView style={{ position: "absolute", left: -3, right: -3, top: -3, bottom: -3, borderWidth: 1.5, borderColor: palette.ink, borderRadius: 4 }} />{box.width >= 30 ? <Text numberOfLines={1} style={{ fontSize: 10, color: palette.plot, fontFamily: "Geist Mono", paddingLeft: 2 }}>{pitchLabel(note.pitch)}</Text> : null}<WebView style={{ position: "absolute", right: -3, top: Math.max(0, (box.height - 12) / 2), width: 6, height: Math.min(12, box.height), borderRadius: 2, borderWidth: 1, borderColor: palette.plot, backgroundColor: palette.ink }} /></> : null}
             </WebView>;
           })}
           {ghosts.map(ghost => {
@@ -374,20 +439,39 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
             <Boundary x={timeToX(shownBounds.start, view, plotWidth)} palette={palette} handle={mode === "compact"} />
             <Boundary x={timeToX(shownBounds.end, view, plotWidth)} palette={palette} handle={mode === "compact"} />
           </> : null}
-          {playhead !== null ? <WebView pointerEvents="none" dataSet={{ playhead: String(playhead) }} style={{ position: "absolute", left: timeToX(BigInt(Math.round(playhead * 1_000_000)), view, plotWidth), top: 0, bottom: 0, width: 2, backgroundColor: palette.accent }} /> : null}
+          {playedX !== null ? <WebView pointerEvents="none" dataSet={{ playhead: String(playhead) }} style={{ position: "absolute", left: playedX, top: 0, bottom: 0, width: 2, backgroundColor: palette.accent }}><WebView style={{ position: "absolute", left: -4, top: 0, width: 0, height: 0, borderLeftWidth: 5, borderRightWidth: 5, borderTopWidth: 7, borderLeftColor: "transparent", borderRightColor: "transparent", borderTopColor: palette.accent }} /></WebView> : null}
           {gestureText ? <WebView pointerEvents="none" style={{ position: "absolute", top: RULER + 6, left: 8, right: 8, alignItems: "center" }}><Text style={{ color: palette.ink, backgroundColor: palette.card, padding: 6, borderRadius: 6, fontSize: 12 }}>{gestureText}</Text></WebView> : null}
         </WebView>
       </WebView>
-      {mode === "room" ? <Text style={{ color: palette.muted, fontSize: 11, marginTop: 5 }}>{canAudition ? "Hold a piano key to audition · C4 is middle C" : "Keyboard display only · taller rows enable audition when sound is available"}</Text> : null}
-      {mode === "room" && selected ? <WebView style={{ marginTop: 8, gap: 8, flexDirection: "row", flexWrap: "wrap", alignItems: "center" }}>
+      {showVelocityLane ? <WebView style={{ marginTop: 6, flexDirection: "row", height: VELOCITY_HEIGHT }}>
+        <WebView style={{ width: labelWidth }} />
+        <WebView ref={node => { velocityHost.current = node as unknown as HTMLElement; }} accessibilityLabel="Velocity lane" dataSet={{ velocityLane: "true" }} style={{ position: "relative", flex: 1, backgroundColor: palette.plot, borderWidth: 1, borderColor: palette.line, overflow: "hidden", touchAction: "none", userSelect: "none" } as never}>
+          <WebView pointerEvents="none" style={{ position: "absolute", left: 8, right: 8, top: 5, flexDirection: "row", justifyContent: "space-between" }}>
+            <Text style={{ fontFamily: "Inter Tight", fontSize: 11, color: palette.muted }}>Velocity</Text>
+            <Text style={{ fontFamily: "Geist Mono", fontSize: 10, color: palette.muted }}>{selected ? `1 selected · ${selected.velocity}` : `Avg ${averageVelocity}`}</Text>
+          </WebView>
+          {marks.map(mark => <WebView key={`velocity-grid-${mark.time}`} pointerEvents="none" style={{ position: "absolute", left: timeToX(mark.time, view, plotWidth), top: VELOCITY_HEADER, bottom: 0, width: 1, backgroundColor: palette.line, opacity: mark.kind === "bar" ? 0.8 : 0.4 }} />)}
+          {shownNotes.map(note => {
+            const target = ghosts.find(ghost => ghost.id === note.id);
+            const height = Math.max(2, (VELOCITY_HEIGHT - VELOCITY_HEADER - 8) * note.velocity / 127);
+            const chosen = note.id === selectedId;
+            return <WebView key={`velocity-${note.id}`} pointerEvents="none" dataSet={{ velocityNote: note.id, velocity: String(note.velocity) }} style={{ position: "absolute", left: timeToX(target?.start ?? note.start, view, plotWidth), bottom: 4, width: 5, height, borderRadius: 1, backgroundColor: palette.note, opacity: chosen ? 1 : 0.6 }}>
+              {chosen ? <WebView style={{ position: "absolute", left: -2, right: -2, top: -2, bottom: -2, borderWidth: 1, borderColor: palette.ink }} /> : null}
+            </WebView>;
+          })}
+          {playedX !== null ? <WebView pointerEvents="none" style={{ position: "absolute", left: playedX, top: VELOCITY_HEADER, bottom: 0, width: 2, backgroundColor: palette.accent }} /> : null}
+        </WebView>
+      </WebView> : null}
+      {showChrome && mode === "room" ? <Text style={{ color: palette.muted, fontSize: 11, marginTop: 5 }}>{canAudition ? "Hold a piano key to audition · C4 is middle C" : "Keyboard display only · taller rows enable audition when sound is available"}</Text> : null}
+      {showChrome && mode === "room" && selected ? <WebView style={{ marginTop: 8, gap: 8, flexDirection: "row", flexWrap: "wrap", alignItems: "center" }}>
         <Text style={{ color: palette.ink, fontSize: 12 }}>{pitchLabel(selected.pitch)} · {seconds(selected.start)}s · velocity {selected.velocity}</Text>
         <Tool label="Velocity" onPress={() => { cancelAll(); onTool?.(tool === "velocity" ? "select" : "velocity"); }} palette={palette} hit={hitPx} on={tool === "velocity"} />
         <Tool disabled={ghosts.length > 0} label="Softer" onPress={() => editSelected(note => ({ ...note, velocity: Math.max(1, note.velocity - 8) }))} palette={palette} hit={hitPx} />
         <Tool disabled={ghosts.length > 0} label="Louder" onPress={() => editSelected(note => ({ ...note, velocity: Math.min(127, note.velocity + 8) }))} palette={palette} hit={hitPx} />
-        <Tool disabled={ghosts.length > 0} label="Shorter" onPress={() => editSelected(note => ({ ...note, end: maxBig(note.start + 1n, note.end - (grid ? gridStep(grid) : 50_000n)) }))} palette={palette} hit={hitPx} />
-        <Tool disabled={ghosts.length > 0} label="Longer" onPress={() => editSelected(note => ({ ...note, end: note.end + (grid ? gridStep(grid) : 50_000n) }))} palette={palette} hit={hitPx} />
+        <Tool disabled={ghosts.length > 0} label="Shorter" onPress={() => editSelected(note => ({ ...note, end: maxBig(note.start + 1n, note.end - (snapStep(grid, snapDivision) ?? 50_000n)) }))} palette={palette} hit={hitPx} />
+        <Tool disabled={ghosts.length > 0} label="Longer" onPress={() => editSelected(note => ({ ...note, end: note.end + (snapStep(grid, snapDivision) ?? 50_000n) }))} palette={palette} hit={hitPx} />
       </WebView> : null}
-      {shownBounds && shownNotes.length > 0 && shownBounds.end > lastEnd(shownNotes) ? <Text style={{ color: palette.muted, marginTop: 6, fontSize: 12 }}>The loop keeps the space after the last note.</Text> : null}
+      {showChrome && shownBounds && shownNotes.length > 0 && shownBounds.end > lastEnd(shownNotes) ? <Text style={{ color: palette.muted, marginTop: 6, fontSize: 12 }}>The loop keeps the space after the last note.</Text> : null}
     </WebView>
   );
 }

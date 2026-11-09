@@ -1,58 +1,29 @@
-# Piano-roll quality checkpoint
+# Blocks build review — storyboard restoration
 
-8 November 2026, Europe/London. Owner: main coordinating agent. Frontend, core engineering, independent browser QA, and embedded UI/UX contributed to this checkpoint.
+9 November 2026. Branch: `codex/piano-roll-quality`. Draft PR: https://github.com/harisjibjabjabber/Blocks/pull/1
 
-## State and scope
+## What changed
 
-Application baseline: `main` at `7ef7982a6b446af2269d41601703722f71380aab`. Work continued from `wip/piano-roll` at `54d3686bc5133c5aafd67f5e2bcf1ac9126db685`, on `codex/piano-roll-quality`. Handover/design source: `handover/status` at `75a78ce39daf8f6ccff9fe5ea42a97cda2b24878`. The older documentation branch was not merged into application code.
+The earlier editor introduced an unsupported layout and confusing controls. Its scoped UX approval was withdrawn after the user's rejection. This revision follows the handover's frame 18 layout: title and layer identity, settings bar, dominant roll, visible velocity lane, context controls and Draw/Select/Erase with compact outlined Capture. Desktop uses a layer/tool rail and inspector; narrow screens retain the bottom tools. The original Graphite/Paper palette and bundled Instrument Serif, Inter Tight and Geist Mono fonts are restored. Invented headline copy was removed from Play, which now uses the actual sketch name, layer cards and next-capture target.
 
-This is a local browser correction with independent UX and QA evidence. It is not full storyboard acceptance or authorization to merge/deploy. The existing live site remains separate. The original capture-prefix defect remains open; none of the synthetic playing below is Haris's missing take.
+The user's requested amendments are real piano keys, clearer grid lines and a settings bar. Snap offers Off, Bar, straight 1/2 through 1/64, triplets and custom fractions such as 3/8 or 1/12. A complete tempo/meter grid is explicitly confirmed, with bar 1 at loop start. Move aligns to the grid by default; an optional mode preserves timing offset. Alt bypasses snap. Exact rational positions prevent triplet rounding drift. Changing settings never quantises existing notes; quantise remains a separate preview/apply action.
 
-## Implemented
+Single-note draw, move, resize, erase and velocity are reversible. The velocity lane now edits actual velocities. Audition remains isolated from captured MIDI, and edits update loop playback at the next seam. Original performance, controller events and silent tails are preserved.
 
-- Dedicated editor shell with pinned Back, Undo/Redo and Play/Stop/Capture; responsive phone/desktop layouts in Graphite/Paper themes.
-- Shared roll and keyboard pitch geometry, real black/white keys, C4 marker, pitch fitting, and tap alternatives for view navigation.
-- Single-note draw, select, move, resize, erase and velocity changes. Gestures use baseline previews and one reversible commit. Cancel, Escape, second touch and undo during drag discard pending work. No-op gestures do not add undo entries.
-- Explicit quantise preview: solid proposed positions and dashed originals, with Cancel/Apply. Complete-grid changes preserve notes. Raw MIDI, CC64 and silent tails stay intact.
-- Engine-owned selected-layer playback position and sounding pitches. Audition uses an isolated audio path and never emits into capture history. Native capabilities remain explicitly unavailable where unsupported.
-- Committed edits, undo and redo update looping playback at the next seam. Erase-all retains the loop as silence. Raw and edited loop paths exclude attacks at the end boundary.
-- Portable web build, explicit web typecheck, isolated Chrome test harness, strict browser assertions, and CI checks with retained browser artifacts. Pages now checks types/tests before building a release.
+## Review and evidence
 
-## UI/UX authority and verdict
+**Independent UI/UX: PASS for restored frame-18 layout and implemented single-note flow. Full storyboard functionality and release acceptance: CHANGES REQUIRED.** The coordinator cannot replace this gate with green automated tests.
 
-Haris requires UI/UX to stay embedded throughout implementation and actively test the running product. UI/UX can issue **Pass**, **Changes required**, or **Reject**; a block cannot be silently waived by the coordinator or replaced with green unit tests. QA has its own independent verdict. Both must pass for the relevant acceptance scope.
+The reviewer exercised the running product and rejected clipped velocity lanes, a truncated snap field, stale pitch fitting after resize, missing loop status, an oversized Capture control and an overfilled inspector. These were corrected and retested at 1440×900, 840×1000, 390×844 and 320×740, including both themes. The grid and velocity lane fit at rest; C4 remains visible after resize; no page-width overflow was observed. All three bundled fonts loaded. Browser interaction review covered grid immutability, quantise cancel/apply/undo, drawing/undo/redo and velocity-lane editing.
 
-The reviewer rejected the initial layout because scrolling hid Undo and transport. It also required corrections to the record-dot Capture icon, wrapped tools, quantise preview direction, narrow-note text overflow and pitch clipping after resize. These were corrected and retested.
+Independent code review also found hidden preview state during panel changes and desktop-to-phone transitions, stale custom-snap labels, Escape handling in focused fields, and view commands replayed on another layer. These were fixed and covered by production browser checks where applicable.
 
-**Final local UX verdict: PASS for this implemented correction scope. Full storyboard/release acceptance: BLOCKED.**
+Validation: web typecheck passed; 132 JavaScript tests across 19 files passed; production build succeeded with `/Blocks/` base. The expanded browser harness checks actual pointer editing, snap lattices, history and cancellation, velocity, audition isolation, recapture integrity, playback position, responsive layout and loaded fonts. It records source state, screenshots and uncaught exceptions. CI runs typecheck, the JavaScript and native host suites, production build and the browser harness; current results are attached to the PR. Windows does not have g++, so native verification comes from CI.
 
-Independent UX exercised populated takes at 1440×900, 390×844 and 320×740, and both themes. Back/Undo/Redo and transport remained in the viewport, all fixture pitches fitted, notes remained readable, and no uncaught browser exceptions were observed. Audition followed by Capture preserved the seven-note fixture without adding audition notes.
+The prior scoped implementation was already pushed in commit `4aa1b8f`; its CI passed all steps, including native tests. The current revision's result must be read from its own CI run, not inferred from that earlier success.
 
-## Verification actually performed
+## Remaining scope
 
-| Evidence class | Result and boundary |
-|---|---|
-| Web types | `npm run typecheck:web` passed. This is a web build check, not an Android/iOS build. |
-| Automated tests | `npm run test:js`: 117 passed across 17 files. Includes synthetic capture regressions and editing/core invariants. |
-| Rendered audio | Chrome OfflineAudioContext passed attack, note-off release, sustained hold, pedal-up and stop cleanup checks. This is not listening or latency measurement. |
-| Production build | `npm run build:web` passed with exact `/Blocks/` base. |
-| Browser QA | `npm run test:browser`: 17 checks passed on the local development build and production preview, with four screenshots and zero uncaught exceptions. Uses actual Chrome pointer input and explicitly emulated touch. |
-| Independent UX | Separate actual-build walkthrough, rejection/fix/retest cycle and screenshots. Local correction passed; full release remains blocked. |
-| Native host tests | Not executed on this Windows machine because `g++` is unavailable. The Ubuntu `checks` workflow runs the native suite through `npm test`; read the corresponding Actions result before claiming it passed. |
-| Physical devices/listening | Not run. No Fold, USB MIDI, pedal hardware, measured latency or audiovisual-sync claim. |
+This revision restores the visual hierarchy and implemented editing flow; it does not claim every storyboard behavior is complete. Chord/multiple-note selection, other-layer ghosts and below-range cues, richer selection actions, and adjustable quantise strength remain absent (current strength is honestly shown as 50%). Clipboard/full shortcut coverage, session undo, further accessibility and range gestures remain broader work.
 
-Browser QA checks capture via onscreen notes, draw/move/resize/velocity/erase, exact undo/redo, no-op history, Escape/pointercancel, undo during drag, emulated second-touch cancellation, grid immutability, quantise preview/cancel/apply, audition isolation, recapture integrity, moving playhead/stop, note hit-testing after resize, and phone/desktop light/dark viewport/pinned-control geometry.
-
-The proof script records source commit, dirty-tree status, result, screenshots and exceptions. Run with a server at `BLOCKS_PROOF_URL`, optionally setting `BLOCKS_PROOF_DIR`. The `checks` workflow tests the built site and uploads `piano-roll-browser-evidence`. Use its exact run/commit for durable CI evidence. Local outputs are outside the source repository.
-
-## Remaining acceptance blockers and scope
-
-- Real-device touch/Fold usability, audiovisual timing at 90/140 BPM, and deployed-build recording required by the full acceptance package remain outstanding. A local production preview is not a public deployment.
-- Multiselect/marquee/chord selection, full velocity lane/group scaling, clipboard/full keyboard command map, session undo, screen-reader note actions, accessible range-slider actions, minimap/edge auto-scroll/overlapping-handle picker, and full quantise parameters remain broader storyboard work.
-- Pause/seek are not implemented transport features and are not represented by fake controls or estimated positions.
-- Main-screen Quantise, pickup repetition and remaining product choices stay open; no user decision was silently invented.
-- Prefix contamination remains a separate Capture/Timing task. Preserve the synthetic/research provenance and do not call these checks a reproduction or fix of Haris's real take.
-
-## Next handoff
-
-Product scopes the next bounded interaction/accessibility increment from the outstanding storyboard criteria. UX supplies the interaction contract and tests each running increment. Frontend and core agree interfaces before parallel edits; independent QA verifies the integrated candidate. Keep UX's blocking authority and distinct evidence classes. No merge to main or deployment while full release acceptance is blocked.
+Physical touch/Fold, USB MIDI and pedal hardware, listening/latency and deployed-build audiovisual acceptance have not been certified. The separate capture-prefix defect remains open; synthetic fixtures are not a reproduction of the user's missing take. No merge to main or deployment was performed.
