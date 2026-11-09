@@ -129,6 +129,9 @@ try {
   });
   await check('Bar, quarter, eighth-triplet and custom draws and moves land on visible exact grid',async()=>{
     const baseline=await notes();
+    // The live fixture duration varies with scheduling. Show more than one bar
+    // before targeting an interior bar line rather than relying on host timing.
+    await button('View settings');await panelButton('view','− Zoom');await panelButton('view','Close settings');
     for(const [division,numerator,denominator] of [['bar',2000000n,1n],['1/4',500000n,1n],['1/8t',500000n,3n],['custom',500000n,3n]]) {
       if(division==='custom') {await select('Snap division','custom');await input('Custom fraction','1/12');await panelButton('grid','Confirm grid');}
       else await select('Snap division',division);
