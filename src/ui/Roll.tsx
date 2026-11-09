@@ -5,7 +5,7 @@ import type { TransportSnapshot } from "../audio/web/transport";
 import { type RollNote } from "./roll-notes";
 import { DEFAULT_SNAP, snapStep, snapTime, snapMoveStart, snapIndexAt, snapPointAt, type SnapDivision } from "./snap";
 import { visibleSnapGrid } from "./roll-snap-grid";
-import { boundedSnap, chordSelection, doubleTapDeletes, isBlackKey, keyShape, moveSelection, nearestBoundary, nextDrawId, notesInMarquee, rangeFromDrag, resizeSelection, scaleSelectionVelocity, snapRangeStart, RollTapTracker, RollTransaction, type RollTap, type SelectionBox } from "./roll-interaction";
+import { boundedSnap, chordSelection, doubleTapDeletes, isBlackKey, keyShape, moveSelection, rangeGripPositions, nextDrawId, notesInMarquee, rangeFromDrag, resizeSelection, scaleSelectionVelocity, snapRangeStart, RollTapTracker, RollTransaction, type RollTap, type SelectionBox } from "./roll-interaction";
 import type { Palette } from "./theme";
 
 export type RollTool = "select" | "draw" | "erase" | "velocity" | "pan";
@@ -74,6 +74,7 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
   const shownNotes = preview ?? notes;
   const shownBounds = previewBounds ?? bounds;
   const view = timeWindow ?? (bounds ? framePhrase(historyStart, bounds.start, bounds.end) : frameOf(notes, historyStart));
+  const gripPositions = shownBounds ? rangeGripPositions(timeToX(shownBounds.start, view, plotWidth), timeToX(shownBounds.end, view, plotWidth), plotWidth) : { start: 0, end: 48 };
   const noteHeight = Math.max(mode === "compact" ? 56 : 48, (gridHeight ?? (mode === "room" ? Math.max(240, Math.min(432, viewport.height - (viewport.width < 720 ? 520 : 360))) : 112)) - (bounds ? RANGE_STRIP : 0));
   const rowHeight = mode === "room" ? roomRow : compactRow ?? fitRow(notes, noteHeight);
   const pitchTop = mode === "compact" ? compactTop ?? topOf(notes) : topPitch;
@@ -156,7 +157,7 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
     const base: Omit<Drag, "kind"> = { pointer: event.pointerId, x, y, clientY: event.clientY, view, row: rowHeight, top: pitchTop, width: plotWidth, bounds, erased: new Set(), selection: [...selectionIds] };
     if ((source === "bound-start" || source === "bound-end") && bounds) {
       taps.current.clear(); pendingTap.current = null;
-      const edge = nearestBoundary(x, timeToX(bounds.start, view, plotWidth), timeToX(bounds.end, view, plotWidth), Infinity)!;
+      const edge = source === "bound-start" ? "start" : "end";
       drag.current = { ...base, kind: "bound", edge, originalView: view, grabOffset: bounds[edge] - xToTime(x, view, plotWidth) };
       setFocusedBoundary(edge);
       setGestureText(`${edge === "start" ? "Start" : "End"} ${grid ? musicalPosition(bounds[edge], grid) : `${seconds(bounds[edge])}s`}`);
@@ -377,6 +378,11 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
     if (current.deleteOnTap && !current.moved && current.note) transaction.current?.preview(transaction.current.baseline.filter(note => note.id !== current.note!.id));
     const range = liveBounds.current;
     const next = transaction.current?.commit() ?? null;
+    if (current.kind === "bound" && range && current.edge) {
+      const marker = range[current.edge];
+      if (marker < current.view.start) onWindow(panWindow(current.view, marker - current.view.start, historyStart));
+      else if (marker > current.view.end) onWindow(panWindow(current.view, marker - current.view.end, historyStart));
+    }
     clearPreview();
     if ((current.kind === "bound" || current.kind === "range") && range && (!current.bounds || range.start !== current.bounds.start || range.end !== current.bounds.end)) onBoundsCommit(range);
     if (next) {
@@ -610,9 +616,9 @@ export function Roll({ notes, timeWindow, bounds, ceiling, historyStart, grid, p
           })}
           {shownBounds ? <>
             <WebView pointerEvents="none" dataSet={{ rangeStrip: "true" }} style={{ position: "absolute", top: RULER + noteHeight, height: RANGE_STRIP, left: 0, right: 0, backgroundColor: palette.card, borderTopWidth: 1, borderTopColor: palette.line }} />
-            <Boundary x={timeToX(shownBounds.start, view, plotWidth)} palette={palette} active={focusedBoundary === "start" || drag.current?.kind === "range" || (drag.current?.kind === "bound" && drag.current.edge === "start")} edge="start" time={shownBounds.start} />
-            <Boundary x={timeToX(shownBounds.end, view, plotWidth)} palette={palette} active={focusedBoundary === "end" || drag.current?.kind === "range" || (drag.current?.kind === "bound" && drag.current.edge === "end")} edge="end" time={shownBounds.end} />
-            {(["start", "end"] as const).map(edge => <Pressable key={edge} ref={node => { if (edge === "start") startHandle.current = node as unknown as HTMLElement; else endHandle.current = node as unknown as HTMLElement; }} accessibilityRole="button" accessibilityLabel={`Drag ${edge} marker; left and right arrows adjust`} dataSet={{ boundaryHandle: edge }} onFocus={() => setFocusedBoundary(edge)} onBlur={() => setFocusedBoundary(null)} style={{ display: shownBounds[edge] < view.start || shownBounds[edge] > view.end ? "none" : "flex", position: "absolute", left: Math.max(0, Math.min(plotWidth - 48, timeToX(shownBounds[edge], view, plotWidth) - 24)), top: RULER + noteHeight, width: 48, height: RANGE_STRIP, touchAction: "none", cursor: "ew-resize", backgroundColor: "transparent", outlineStyle: "none" } as never} />)}
+            <Boundary gripX={gripPositions.start + 24} x={timeToX(shownBounds.start, view, plotWidth)} palette={palette} active={focusedBoundary === "start" || drag.current?.kind === "range" || (drag.current?.kind === "bound" && drag.current.edge === "start")} edge="start" time={shownBounds.start} />
+            <Boundary gripX={gripPositions.end + 24} x={timeToX(shownBounds.end, view, plotWidth)} palette={palette} active={focusedBoundary === "end" || drag.current?.kind === "range" || (drag.current?.kind === "bound" && drag.current.edge === "end")} edge="end" time={shownBounds.end} />
+            {(["start", "end"] as const).map(edge => <Pressable key={edge} ref={node => { if (edge === "start") startHandle.current = node as unknown as HTMLElement; else endHandle.current = node as unknown as HTMLElement; }} accessibilityRole="button" accessibilityLabel={`Drag ${edge} marker; left and right arrows adjust`} dataSet={{ boundaryHandle: edge }} onFocus={() => setFocusedBoundary(edge)} onBlur={() => setFocusedBoundary(null)} style={{ display: (shownBounds[edge] < view.start || shownBounds[edge] > view.end) && !(drag.current?.kind === "bound" && drag.current.edge === edge) ? "none" : "flex", position: "absolute", left: gripPositions[edge], top: RULER + noteHeight, width: 48, height: RANGE_STRIP, touchAction: "none", cursor: "ew-resize", backgroundColor: "transparent", outlineStyle: "none" } as never} />)}
           </> : null}
           {marquee ? <WebView pointerEvents="none" dataSet={{ marquee: "true" }} style={{ position: "absolute", left: marquee.x, top: RULER + marquee.y, width: marquee.width, height: marquee.height, borderWidth: 1, borderStyle: "dashed", borderColor: palette.ink, backgroundColor: dark ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.06)" }} /> : null}
           {snapTarget !== null ? <WebView pointerEvents="none" dataSet={{ snapTarget: snapTarget.toString() }} style={{ position: "absolute", left: timeToX(snapTarget, view, plotWidth), top: 0, bottom: 0, width: 2, backgroundColor: palette.accent }} /> : null}
@@ -671,9 +677,9 @@ function noteAt(notes: readonly RollNote[], x: number, y: number, view: TimeWind
   for (let i = notes.length - 1; i >= 0; i--) { const note = notes[i]; const box = noteBox(note.start, note.end, note.pitch, view, width, top, row); if (x >= box.x && x <= box.x + Math.max(8, box.width) && y >= box.y && y < box.y + row) return note; }
   return null;
 }
-function Boundary({ x, palette, active, edge, time }: { x: number; palette: Palette; active: boolean; edge: "start" | "end"; time: bigint }) {
+function Boundary({ x, gripX, palette, active, edge, time }: { x: number; gripX: number; palette: Palette; active: boolean; edge: "start" | "end"; time: bigint }) {
   const color = active ? palette.accent : palette.muted;
-  return <WebView pointerEvents="none" dataSet={{ boundary: edge, boundaryTime: time.toString(), [edge === "start" ? "boundStart" : "boundEnd"]: time.toString() }} style={{ position: "absolute", left: x, top: RULER, bottom: 0, width: 1, backgroundColor: color }}><WebView style={{ position: "absolute", left: edge === "start" ? 0 : -13, bottom: 10, width: 14, height: 16, backgroundColor: palette.card, borderBottomWidth: 2, ...(edge === "start" ? { borderLeftWidth: 2, borderTopRightRadius: 5 } : { borderRightWidth: 2, borderTopLeftRadius: 5 }), borderColor: color, alignItems: "center", justifyContent: "center" }}><WebView style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: color }} /></WebView></WebView>;
+  return <WebView pointerEvents="none" dataSet={{ boundary: edge, boundaryTime: time.toString(), [edge === "start" ? "boundStart" : "boundEnd"]: time.toString() }} style={{ position: "absolute", left: x, top: RULER, bottom: 0, width: 1, backgroundColor: color }}><WebView style={{ position: "absolute", left: Math.min(0, gripX - x), width: Math.abs(gripX - x), height: 1, bottom: 10, backgroundColor: color }} /><WebView style={{ position: "absolute", left: gripX - x - 7, bottom: 10, width: 14, height: 16, backgroundColor: palette.card, borderBottomWidth: 2, ...(edge === "start" ? { borderLeftWidth: 2, borderTopRightRadius: 5 } : { borderRightWidth: 2, borderTopLeftRadius: 5 }), borderColor: color, alignItems: "center", justifyContent: "center" }}><WebView style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: color }} /></WebView></WebView>;
 }
 function Tool({ label, onPress, palette, hit, on, radio, disabled }: { label: string; onPress: () => void; palette: Palette; hit: number; on?: boolean; radio?: boolean; disabled?: boolean }) {
   return <Pressable accessibilityRole={radio ? "radio" : "button"} accessibilityLabel={label} accessibilityState={radio ? { checked: !!on, disabled } : { selected: !!on, disabled }} disabled={disabled} onPress={onPress} style={{ opacity: disabled ? 0.45 : 1, minHeight: Math.max(44, hit), minWidth: Math.max(44, hit), paddingHorizontal: 10, borderRadius: 8, borderWidth: 1, borderColor: on ? palette.accent : palette.line, backgroundColor: on ? palette.accent : palette.card, justifyContent: "center" }}><Text style={{ color: on ? palette.accentInk : palette.ink, fontWeight: "600", fontSize: 12 }}>{on && radio ? "✓ " : ""}{label}</Text></Pressable>;

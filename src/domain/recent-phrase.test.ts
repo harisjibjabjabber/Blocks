@@ -293,3 +293,20 @@ describe("basic recent-phrase cut, not validated capture", () => {
     expect(cut.deferred.join(" ")).toMatch(/cannot reconstruct/);
   });
 });
+
+
+describe("recent phrase prefix", () => {
+  it("does not let chord-pattern recognition pull an earlier idea back across a clear rest", () => {
+    let sequence = 0;
+    const events = [0, 500, 1000, 5000, 5500, 6000].flatMap((atMs, i) => {
+      const pitches = i < 3 ? [48, 52, 55] : [60, 64, 67];
+      return [...pitches.map(note => ev({ sequence: ++sequence, atMs, note })),
+        ...pitches.map(note => ev({ sequence: ++sequence, atMs: atMs + 400, note, kind: "note-off", velocity: 0 }))];
+    });
+    const before = structuredClone(events);
+    const cut = recentPhraseCut(events, options());
+    expect(cut.selection.start).toBe(5_000_000n);
+    expect(eventsInSelection(events, cut.selection).filter(e => e.kind === "note-on").map(e => e.note)).toEqual([60, 64, 67, 60, 64, 67, 60, 64, 67]);
+    expect(events).toEqual(before);
+  });
+});

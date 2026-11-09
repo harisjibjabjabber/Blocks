@@ -672,7 +672,10 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     }
   }
 
-  const passage = harmonicStart(fingerStacks(events));
+  // A later pattern pass must not undo an already-supported rest boundary
+  // and pull an abandoned idea back into the new phrase.
+  const latestRestStart = breaks.length ? clusters[breaks[breaks.length - 1]] : first;
+  const passage = harmonicStart(fingerStacks(events.filter(event => event.scheduleElapsed >= latestRestStart)));
   if (passage && passage.throughEnd) {
     selection = { start: passage.start, end: last };
     status = "recent";
@@ -685,17 +688,17 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     if (walked !== null) {
       const walkStart = clusters[walked];
       const released = attacksReleased(events, walkStart, last);
-      if (walked > 0 && walkStart < selection.start) {
+      if (walked > 0 && walkStart >= latestRestStart && walkStart < selection.start) {
         selection = { start: walkStart, end: last };
         status = "recent";
         how = "The recent attacks repeat a short gap and a long gap measured from the tail. Earlier gaps do not match those two. Basic cut, not finished Capture.";
         priorPhrase = boundsFrom(events, first, walkStart - 1n);
-      } else if (walked > 0 && selection.start === first && status === "ambiguous") {
+      } else if (walked > 0 && walkStart >= latestRestStart && selection.start === first && status === "ambiguous") {
         selection = { start: walkStart, end: last };
         status = "recent";
         how = "The recent attacks repeat a short gap and a long gap measured from the tail. Earlier gaps do not match those two. Basic cut, not finished Capture.";
         priorPhrase = boundsFrom(events, first, walkStart - 1n);
-      } else if (walked === 0 && released && selection.start !== first) {
+      } else if (walked === 0 && latestRestStart === first && released && selection.start !== first) {
         selection = { start: first, end: last };
         status = "recent";
         how = "The take repeats one measured spacing and the notes were released, so the window stays the whole ribbon. Basic cut, not finished Capture.";

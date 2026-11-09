@@ -9,6 +9,7 @@ import { inferPulse, type InferenceReport } from "../domain/inference";
 import { capturePerformance, defaultOverlay, loopWindow, type Performance, type PhraseOverlay } from "../domain/phrase";
 import { beatForCut, createProject, projectFromJson, projectToJson, type Project } from "../domain/project";
 import { eventsInSelection, recentPhraseCut, withCaptureRange, type RecentPhraseCut } from "../domain/recent-phrase";
+import { preferCaptureBars } from "../domain/capture-bars";
 import { recordedTake } from "../domain/explicit-recording";
 import { rangeForBars, tempoForBars, type FixedBars } from "./loop-assist";
 import { routeLearnedControl, type ControlMap, type LearnTarget } from "../domain/learn";
@@ -258,7 +259,12 @@ export default function App() {
 
   const take = takes.find((item) => item.id === selected) ?? null;
   const looping = take ? loopingIds.includes(take.id) : false;
-  useEffect(() => { if (room && take) engine.setAuditionInstrument(take.sound.instrumentId, take.sound.envelope); }, [room, take?.id, take?.sound]);
+  useEffect(() => {
+    if (!take || (!room && !rangeMode)) return;
+    engine.setLiveInstrument(take.sound.instrumentId, take.sound.envelope);
+    setNextSound({ ...take.sound, envelope: { ...take.sound.envelope } });
+    if (room) engine.setAuditionInstrument(take.sound.instrumentId, take.sound.envelope);
+  }, [room, rangeMode, take?.id, take?.sound]);
   const newest = ribbon.length ? ribbon[ribbon.length - 1].scheduleElapsed : 0n;
   const age = ribbon.length ? newest - ribbon[0].scheduleElapsed : 0n;
   const automaticCut = useMemo(() => recentPhraseCut(ribbon, {
@@ -372,7 +378,12 @@ export default function App() {
     if (!explicitRecording && chosenRange && chosenRange.start < events[0].scheduleElapsed) {
       setCaptureRange(null); setCaptureView(null); setMessage("That range has left the live history. Choose a new range."); return;
     }
-    const cut = chosenRange ? withCaptureRange(events, automatic, chosenRange) : automatic;
+    let cut = chosenRange ? withCaptureRange(events, automatic, chosenRange) : automatic;
+    let report = inferPulse(eventsInSelection(events, cut.selection), ticksPerSecond);
+    if (!chosenRange && !explicitRecording) {
+      cut = preferCaptureBars(events, cut, takes.length ? liveGrid.bpm : report.bpm, loopBars, editorGridSettings.beatsPerBar, ticksPerSecond);
+      report = inferPulse(eventsInSelection(events, cut.selection), ticksPerSecond);
+    }
     const performance = capturePerformance(events);
     const overlay = {
       ...defaultOverlay(events),
@@ -383,8 +394,6 @@ export default function App() {
       quantiseStrength: 0,
       playback: { mode: "original" as const },
     };
-    const selected = eventsInSelection(events, cut.selection);
-    const report = inferPulse(selected.length > 0 ? selected : events, ticksPerSecond);
     // The first performance establishes the sketch tempo. An older saved sketch's
     // tempo must not suppress this reading; later layers follow the first layer.
     const predictedBpm = report.pulse === "estimated" && report.bpm !== null && Number.isFinite(report.bpm) && report.bpm > 0 ? report.bpm : null;
@@ -746,11 +755,12 @@ export default function App() {
   const targetTake = takes.find(item => item.id === soundTarget);
   const shownSound = targetTake?.sound ?? nextSound;
   const closeSound = () => { engine.stopAudition(); setSoundPreview(false); setSoundTarget(undefined); };
-  const openSound = (id: string | null) => { setSoundTarget(id); setSoundPreview(false); engine.stopAudition(); setLayerMenu(null); };
+  const openSound = (id: string | null) => { const sound = takes.find(item => item.id === id)?.sound ?? nextSound; engine.setLiveInstrument(sound.instrumentId, sound.envelope); setNextSound({ ...sound, envelope: { ...sound.envelope } }); setSoundTarget(id); setSoundPreview(false); engine.stopAudition(); setLayerMenu(null); };
   const changeSound = (sound: SoundSettings) => {
-    const resolved = targetTake ? engine.setLayerInstrument(targetTake.id, sound.instrumentId, sound.envelope) : engine.setLiveInstrument(sound.instrumentId, sound.envelope);
+    const resolved = engine.setLiveInstrument(sound.instrumentId, sound.envelope);
+    if (targetTake) engine.setLayerInstrument(targetTake.id, resolved, sound.envelope);
     const next = { instrumentId: resolved, envelope: clampEnvelope(sound.envelope, resolved) };
-    if (!targetTake) setNextSound(next);
+    setNextSound(next);
     engine.setAuditionInstrument(next.instrumentId, next.envelope);
     if (soundPreview && shownSound.instrumentId !== next.instrumentId) [60, 64, 67].forEach(note => engine.audition(note, true));
     if (targetTake) {

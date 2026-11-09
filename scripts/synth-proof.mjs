@@ -34,6 +34,17 @@ async function check(name, run) { await run(); report.checks.push({ name, passed
 let chosenPad, firstNotes, firstEP, secondNotes, secondSound;
 try {
   await b.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await b.send('Page.addScriptToEvaluateOnNewDocument', { source: `
+    window.__soundProbe = { oscillators: [], gains: [] };
+    const start = OscillatorNode.prototype.start;
+    OscillatorNode.prototype.start = function(...args) { window.__soundProbe.oscillators.push(this.type); return start.apply(this,args); };
+    const createGain = BaseAudioContext.prototype.createGain;
+    BaseAudioContext.prototype.createGain = function(...args) {
+      const gain = createGain.apply(this,args), calls = []; window.__soundProbe.gains.push(calls);
+      for (const method of ['setValueAtTime','exponentialRampToValueAtTime']) { const original = gain.gain[method]; gain.gain[method] = function(value,time) { calls.push({method,value,time}); return original.call(this,value,time); }; }
+      return gain;
+    };
+  ` });
   await b.navigate(url); await delay(350); report.scripts = await b.evaluate('Array.from(document.scripts,s=>s.src).filter(Boolean)');
   await check('Choose sound exposes both synths and Warm Pad applies its envelope defaults', async () => {
     await button('Choose sound'); const options = await b.evaluate(`Array.from(document.querySelector('[aria-label="Synth preset"]').options,o=>({value:o.value,label:o.textContent}))`); assert.deepEqual(options, [{ value: EP, label: 'Warm EP' }, { value: PAD, label: 'Warm Pad' }]);
@@ -58,7 +69,7 @@ try {
     await button('Sound for selected layer'); assert.deepEqual(await sound(), firstEP); await screenshot('layer-one-ep-custom-envelope'); await button('Close sound settings');
   });
   await check('next-capture sound sets a second Draw without modifying the first layer sound', async () => {
-    await button('Back to Play'); await button('Sound for next capture'); assert.deepEqual(await sound(), chosenPad, 'editing Layer 1 must not replace the next-capture sound'); await select(PAD); await button('Close sound settings'); await button('Next capture'); await button('Draw MIDI'); await button('Sound for selected layer'); assert.deepEqual(await sound(), { preset: PAD, envelope: padEnvelope }); await button('Close sound settings'); await drawNote(); secondNotes = await state(); assert.equal(secondNotes.notes.length, 1);
+    await button('Back to Play'); await button('Sound for next capture'); assert.deepEqual(await sound(), firstEP, 'live input follows the edited layer sound'); await select(PAD); await button('Close sound settings'); await button('Next capture'); await button('Draw MIDI'); await button('Sound for selected layer'); assert.deepEqual(await sound(), { preset: PAD, envelope: padEnvelope }); await button('Close sound settings'); await drawNote(); secondNotes = await state(); assert.equal(secondNotes.notes.length, 1);
     await button('Back to Play'); assert.equal(await layerCount(), 2); await button('Sound for layer 1'); assert.deepEqual(await sound(), firstEP); await button('Close sound settings'); await button('Sound for layer 2'); assert.deepEqual(await sound(), { preset: PAD, envelope: padEnvelope }); await button('Close sound settings');
   });
   await check('selected-layer editor sound changes are isolated and survive layer switching', async () => {
@@ -67,7 +78,21 @@ try {
     await click('[aria-label^="Layer 2, "]'); assert.deepEqual(await state(), secondNotes); await button('Sound for selected layer'); assert.deepEqual(await sound(), secondSound); await screenshot('layer-two-pad-custom-envelope'); await button('Close sound settings');
   });
   await check('layer previews and playback leave the fresh capture tape empty', async () => {
-    await button('Play'); await delay(200); await button('Sound for selected layer'); await button('Preview sound'); await delay(200); await button('Close sound settings'); assert.deepEqual(await state(), secondNotes); await button('Stop'); await button('Back to Play'); await button('Sound for next capture'); assert.deepEqual(await sound(), { preset: PAD, envelope: padEnvelope }, 'Layer 2 envelope edits must not alter the next-capture sound'); await button('Close sound settings'); await button('Next capture'); assert.deepEqual((await state()).notes, []); await button('Capture'); assert.equal(await layerCount(), 2); assert.deepEqual((await state()).notes, []); await screenshot('preview-keeps-next-tape-empty');
+    await button('Play'); await delay(200); await button('Sound for selected layer'); await button('Preview sound'); await delay(200); await button('Close sound settings'); assert.deepEqual(await state(), secondNotes); await button('Stop'); await button('Back to Play'); await button('Sound for next capture'); assert.deepEqual(await sound(), secondSound, 'live input follows the selected layer envelope'); await button('Close sound settings'); await button('Next capture'); assert.deepEqual((await state()).notes, []); await button('Capture'); assert.equal(await layerCount(), 2); assert.deepEqual((await state()).notes, []); await screenshot('preview-keeps-next-tape-empty');
+  });
+  await check('live keys use selected Pad ADSR without an extra EP voice', async () => {
+    await button('Sound for layer 2'); await focusDial('attackMs'); await key('End'); await focusDial('releaseMs'); await key('End'); await button('Close sound settings');
+    await b.evaluate('window.__soundProbe = {oscillators:[],gains:[]}');
+    const r = await rect('[data-key="60"]'), x = r.x+r.w/2, y = r.y+r.h*.8;
+    await mouse('mousePressed',x,y); await delay(180); await mouse('mouseReleased',x,y); await delay(80);
+    const audio = await b.evaluate('window.__soundProbe');
+    assert.deepEqual(audio.oscillators.sort(), ['sawtooth','sine','triangle']);
+    const amp = audio.gains.find(calls => calls.filter(c=>c.method==='exponentialRampToValueAtTime').length>=3); assert.ok(amp);
+    const ramps = amp.filter(c=>c.method==='exponentialRampToValueAtTime');
+    assert.ok(Math.abs(ramps[0].time-amp[0].time-3)<1e-6, 'live attack3000ms');
+    const release = amp.filter(c=>c.method==='setValueAtTime').at(-1);
+    assert.ok(Math.abs(ramps.at(-1).time-release.time-5)<1e-6, 'live release5000ms');
+    assert.equal((await state()).notes.length,1); report.liveAudio=audio;
   });
   assert.deepEqual(b.exceptions, []); report.passed = true;
 } catch (error) {

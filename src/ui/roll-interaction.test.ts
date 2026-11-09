@@ -181,3 +181,14 @@ describe("keyboard uses the note pitch transform", () => {
     }
   });
 });
+
+
+it("keeps narrow edge grips separate and inside the plot", async () => {
+  const { rangeGripPositions } = await import("./roll-interaction");
+  for (const [start, end] of [[0, 8], [280, 290], [100, 105]]) {
+    const grips = rangeGripPositions(start, end, 300);
+    expect(grips.start).toBeGreaterThanOrEqual(0);
+    expect(grips.end - grips.start).toBeGreaterThanOrEqual(48);
+    expect(grips.end + 48).toBeLessThanOrEqual(300);
+  }
+});

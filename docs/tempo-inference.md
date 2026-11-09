@@ -103,3 +103,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+
+## Soft capture-length preference
+
+Automatic Capture now uses the selected 4/8-bar target as a soft prior after phrase and tempo analysis. It preserves the existing proposed end, including the final rhythmic slot, and shortens an overlong prefix only when there are at least 8 attacks and a real attack within half a beat of the expected start. The earliest attack in that tolerance retains a nearby pickup. Free, explicit Record and manual ranges bypass this preference; unsupported candidates keep the existing proposal. This is not proof of intent, meter or drum phrasing. All earlier source notes remain recoverable. A detected rest also constrains subsequent chord-pattern recognition, which previously could pull an abandoned prefix back into the selection.

@@ -158,3 +158,14 @@ export class RollTransaction {
     return this.next && !sameNotes(this.baseline, this.next) ? this.next : null;
   }
 }
+
+/** Keep both grips independently reachable when the loop is narrow or at an edge. */
+export function rangeGripPositions(startX: number, endX: number, width: number): { start: number; end: number } {
+  const clamp = (x: number) => Math.max(0, Math.min(width - 48, x - 24));
+  let start = clamp(startX), end = clamp(endX);
+  if (startX >= 0 && endX <= width && end - start < 48) {
+    start = Math.max(0, Math.min(width - 96, (startX + endX) / 2 - 48));
+    end = start + 48;
+  }
+  return { start, end };
+}

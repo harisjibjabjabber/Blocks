@@ -91,6 +91,30 @@ try {
     for (let i = 0; i < 12 && BigInt((await state()).bounds.start) > floor; i++) { await b.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowLeft', code: 'ArrowLeft', windowsVirtualKeyCode: 37 }); await b.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowLeft', code: 'ArrowLeft', windowsVirtualKeyCode: 37 }); await delay(50); }
     const keyboard = await state(); assert.equal(keyboard.bounds.start, String(floor), 'ArrowLeft must reach the retained history floor'); assert.equal(keyboard.bounds.end, target.time); assert.deepEqual(keyboard.notes, captured.notes); report.prefixRecovery = { captured, snappedEnd: target.time, recovered: keyboard }; await screenshot('late-phase-prefix-bar-recovery');
   });
+  await check('a narrow left-edge range stays grabbable after dragging outside the grid', async () => {
+    await b.navigate(url); await delay(350); await button('Draw MIDI'); await select('Snap division','off'); await boundary('end',125000n);
+    const before = await state(); assert.ok(BigInt(before.bounds.end)>0n && BigInt(before.bounds.end)<500000n, 'fixture is narrower than the two grip targets');
+    const reachable = await b.evaluate(`['start','end'].map(edge=>{const e=document.querySelector('[data-boundary-handle="'+edge+'"]'),r=e.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('[data-boundary-handle]')?.dataset.boundaryHandle})`);
+    assert.deepEqual(reachable,['start','end']);
+    const h = await rect('[data-boundary-handle="start"]'), plot = await rect('[data-roll]');
+    await mouse('mousePressed',h.x+h.w/2,h.y+h.h/2); await mouse('mouseMoved',plot.x-40,h.y+h.h/2); await delay(100);
+    assert.equal(await b.evaluate(`document.querySelector('[data-roll]').dataset.activeRange`),'start');
+    await mouse('mouseReleased',plot.x-40,h.y+h.h/2); await delay(80);
+    assert.equal((await state()).bounds.start,'0');
+    await boundary('start',50000n); const moved = await state();
+    assert.ok(BigInt(moved.bounds.start)>0n,'left handle can be re-grabbed and moved right'); assert.equal(moved.bounds.end,before.bounds.end);
+    report.edgeRegrab=moved; await screenshot('left-edge-regrab');
+  });
+  await check('automatic Capture prefers four bars near an attack while retaining the full source tape', async () => {
+    await b.navigate(url); await delay(350); await button('Draw MIDI'); await button('Back to Play'); await button('Next capture');
+    await phrase(Array.from({length:24},(_,i)=>[60,64,67,72][i%4]),400); const raw=await state();
+    await button('Capture'); const captured=await state();
+    assert.equal(captured.notes.length,24); assert.deepEqual(captured.notes,raw.notes);
+    assert.ok(BigInt(captured.bounds.start)>BigInt(raw.notes[0].start),'a leading excess is excluded from the suggested loop');
+    const length=Number(BigInt(captured.bounds.end)-BigInt(captured.bounds.start));
+    assert.ok(Math.abs(length-8000000)<300000,'the120BPM master gives a soft four-bar preference');
+    report.barPreference=captured;
+  });
   assert.deepEqual(b.exceptions, []); report.passed = true;
 } catch (error) {
   report.passed = false; report.failure = error.stack || String(error); process.exitCode = 1; console.error(report.failure);
