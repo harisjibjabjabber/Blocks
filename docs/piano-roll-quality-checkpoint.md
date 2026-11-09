@@ -1,29 +1,30 @@
-# Blocks build review — storyboard restoration
+# Blocks UI v1 review
 
-9 November 2026. Branch: `codex/piano-roll-quality`. Draft PR: https://github.com/harisjibjabjabber/Blocks/pull/1
+9 November 2026. Branch: codex/piano-roll-quality. [Draft PR](https://github.com/harisjibjabjabber/Blocks/pull/1).
 
-## What changed
+## Delivered
 
-The earlier editor introduced an unsupported layout and confusing controls. Its scoped UX approval was withdrawn after the user's rejection. This revision follows the handover's frame 18 layout: title and layer identity, settings bar, dominant roll, visible velocity lane, context controls and Draw/Select/Erase with compact outlined Capture. Desktop uses a layer/tool rail and inspector; narrow screens retain the bottom tools. The original Graphite/Paper palette and bundled Instrument Serif, Inter Tight and Geist Mono fonts are restored. Invented headline copy was removed from Play, which now uses the actual sketch name, layer cards and next-capture target.
+The handover storyboard remains the reference: Play/history and capture range in sections 0b/0c, and frame 18 for the editor. The original palette, typography and hierarchy remain; no invented headlines or harmony data were added.
 
-The user's requested amendments are real piano keys, clearer grid lines and a settings bar. Snap offers Off, Bar, straight 1/2 through 1/64, triplets and custom fractions such as 3/8 or 1/12. A complete tempo/meter grid is explicitly confirmed, with bar 1 at loop start. Move aligns to the grid by default; an optional mode preserves timing offset. Alt bypasses snap. Exact rational positions prevent triplet rounding drift. Changing settings never quantises existing notes; quantise remains a separate preview/apply action.
+- Front-page Start/End markers select the next capture. Full-height grab zones and 48px tabs use the visible snap grid. Preview and commit agree, arrow keys move by the selected division, and cancellation restores the range. Manual selection persists while playing; Auto range and Undo range are available.
+- BPM, meter and bars/beats are visible. Snap supports Off, Bar, straight divisions, triplets and custom fractions. Capture inherits exact manual bounds, including silence. Recording data stays intact. Grid phase remains stable when history expires.
+- Captures have real layer cards and minirolls, deletion and Undo. Layer IDs stay unique after deletion and recapture.
+- The editor opens with whole bars, piano keys and a visible velocity lane. Select supports double-click create/delete, drag move/resize, marquee and Shift selection. Draw also moves existing notes. B toggles Draw/Select. Touch double-tap selects a chord rather than deleting.
+- Group move/resize, clipboard, duplicate, selection actions and session Undo are implemented. Velocity supports Set all or proportional scaling; other layers appear as optional ghosts. Quantise has explicit strength/swing and preview/apply/cancel.
+- The playable bottom piano has black keys, octave controls, Major and Minor pentatonic modes and root selection. First touch starts audio without MIDI permission. Polyphony, slides, shared-key ownership and cancellation are handled.
+- Keyboard-open layouts fit the roll and range tabs above the keys. Phones use a compact header; routine connection details live in Settings while sound recovery remains available.
+- Short loops preserve their actual duration instead of a 400ms floor. Raw and edited playback preserve held-note/pedal context without changing recorded events. Moving the range start refreshes controller state.
 
-Single-note draw, move, resize, erase and velocity are reversible. The velocity lane now edits actual velocities. Audition remains isolated from captured MIDI, and edits update loop playback at the next seam. Original performance, controller events and silent tails are preserved.
+## Department review and validation
 
-## Review and evidence
+Product decisions preceded engineering. UI/UX exercised the running build independently and had authority to block. QA maintained independent browser checks; the coordinator integrated fixes.
 
-**Independent UI/UX: PASS for restored frame-18 layout and implemented single-note flow. Full storyboard functionality and release acceptance: CHANGES REQUIRED.** The coordinator cannot replace this gate with green automated tests.
+UX rejected both phone and desktop keyboard-open layouts when the dock obscured range controls. The header and plot sizing were corrected. Independent functional review verified proportional velocity, quantise apply/undo, other-layer visibility and capture deletion/restoration.
 
-The reviewer exercised the running product and rejected clipped velocity lanes, a truncated snap field, stale pitch fitting after resize, missing loop status, an oversized Capture control and an overfilled inspector. These were corrected and retested at 1440×900, 840×1000, 390×844 and 320×740, including both themes. The grid and velocity lane fit at rest; C4 remains visible after resize; no page-width overflow was observed. All three bundled fonts loaded. Browser interaction review covered grid immutability, quantise cancel/apply/undo, drawing/undo/redo and velocity-lane editing.
+Web types, 160 JavaScript tests across 20 files, and production build passed locally. Browser checks cover exact marker snapping and Capture inheritance, short-loop wrapping, cancellation, group editing, clipboard, keyboard lifecycle, responsive layout and loaded fonts. Final source revision and CI results are recorded below after verification.
 
-Independent code review also found hidden preview state during panel changes and desktop-to-phone transitions, stale custom-snap labels, Escape handling in focused fields, and view commands replayed on another layer. These were fixed and covered by production browser checks where applicable.
-
-Validation: web typecheck passed; 132 JavaScript tests across 19 files passed; production build succeeded with `/Blocks/` base. The expanded browser harness checks actual pointer editing, snap lattices, history and cancellation, velocity, audition isolation, recapture integrity, playback position, responsive layout and loaded fonts. It records source state, screenshots and uncaught exceptions. CI runs typecheck, the JavaScript and native host suites, production build and the browser harness; current results are attached to the PR. Windows does not have g++, so native verification comes from CI.
-
-The prior scoped implementation was already pushed in commit `4aa1b8f`; its CI passed all steps, including native tests. The current revision's result must be read from its own CI run, not inferred from that earlier success.
+CI also runs native host tests; Windows has no local g++. Browser tests use synthetic mouse/touch input, not physical-device or listening certification.
 
 ## Remaining scope
 
-This revision restores the visual hierarchy and implemented editing flow; it does not claim every storyboard behavior is complete. Chord/multiple-note selection, other-layer ghosts and below-range cues, richer selection actions, and adjustable quantise strength remain absent (current strength is honestly shown as 50%). Clipboard/full shortcut coverage, session undo, further accessibility and range gestures remain broader work.
-
-Physical touch/Fold, USB MIDI and pedal hardware, listening/latency and deployed-build audiovisual acceptance have not been certified. The separate capture-prefix defect remains open; synthetic fixtures are not a reproduction of the user's missing take. No merge to main or deployment was performed.
+Grouping remains the next separate step: layers stay separate and play/stop together. Physical phone/Fold, USB MIDI/pedal hardware, listening/latency and deployed audiovisual acceptance are unverified. The separate capture-prefix report needs the original missing-take reproduction; synthetic fixtures are not that reproduction. This is a draft review build; main and deployment remain unchanged.

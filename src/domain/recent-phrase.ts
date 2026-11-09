@@ -782,6 +782,36 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
   };
 }
 
+/** Apply an explicit capture range without re-running or rewriting the phrase finder.
+ * Empty time inside these bounds is retained; raw attacks/releases stay untouched. */
+export function withCaptureRange(events: readonly CapturedEvent[], proposal: RecentPhraseCut, bounds: CutBounds): RecentPhraseCut {
+  if (typeof bounds.start !== "bigint" || typeof bounds.end !== "bigint" || bounds.start < 0n || bounds.end <= bounds.start) {
+    throw new RangeError("Capture range must have non-negative start and positive duration.");
+  }
+  const ordered = events.slice().sort((a, b) => a.scheduleElapsed < b.scheduleElapsed ? -1 : a.scheduleElapsed > b.scheduleElapsed ? 1 : a.sequence < b.sequence ? -1 : a.sequence > b.sequence ? 1 : 0);
+  const selection = { start: bounds.start, end: bounds.end };
+  const heldNoteIds = heldNotes(ordered, selection.start);
+  const controllerSeed = seedControllers(ordered, selection.start);
+  // Keep history/playback limitations, but replace assertions tied to the old cut.
+  const deferred = proposal.deferred.filter(item => !item.startsWith("A note was already sounding at the cut.") && !item.startsWith("A note is still on at the end of the cut.") && !item.startsWith("Note-boundary expansion"));
+  if (heldNoteIds.length) deferred.push("A note was already sounding at the cut. Its original attack remains in raw history; playback can seed the hold without widening the chosen range.");
+  if (noteStillOpen(ordered, selection)) deferred.push("A note is still on at the end of the cut. No note-off was invented. Playback uses the release tail.");
+  return {
+    ...proposal,
+    selection,
+    loop: { ...selection },
+    periodTicks: null,
+    phaseOriginTicks: null,
+    periodConfidence: "fallback",
+    priorPhrase: null,
+    priorBar: null,
+    heldNoteIds,
+    controllerSeed,
+    deferred,
+    note: `Manual capture range. The chosen start and end also define the loop, including empty time. Raw events and timing were not edited. ${eventsBetween(ordered, selection.start, selection.end).length} events in the window, ${events.length} in raw history.`,
+  };
+}
+
 export function moveSelectionStart(
   events: readonly CapturedEvent[],
   selection: CutBounds,

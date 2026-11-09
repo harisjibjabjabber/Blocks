@@ -123,6 +123,26 @@ describe("working notes", () => {
     expect(note.end).toBe(900_000n);
   });
 
+  it("keeps edited pedal-held notes across a cut using edited pitch/velocity without resurrecting deletions", () => {
+    const input = [event("on", "note-on", 60, 90, 0n), event("down", "cc", 0, 0, 10_000n, 64, 127), event("off", "note-off", 60, 0, 50_000n), event("up", "cc", 0, 0, 300_000n, 64, 0)];
+    const before = structuredClone(input);
+    const edited = notesFromEvents(input).map(note => ({ ...note, pitch: 62, velocity: 48 }));
+    const notesBefore = structuredClone(edited);
+    const played = workingPlayback(input, edited, { start: 100_000n, end: 400_000n });
+    expect(played.filter(item => item.kind === "note-on" || item.kind === "note-off").map(item => [item.kind, item.note, item.velocity, item.scheduleElapsed])).toEqual([["note-on", 62, 48, 100_000n], ["note-off", 62, 0, 100_000n]]);
+    expect(played.find(item => item.id === "up")).toBe(input[3]);
+    expect(workingPlayback(input, [], { start: 100_000n, end: 400_000n }).some(item => item.kind === "note-on")).toBe(false);
+    expect(input).toEqual(before); expect(edited).toEqual(notesBefore);
+  });
+
+  it("does not sustain another channel or revive a note after a pedal lift and new press", () => {
+    const input = [event("on", "note-on", 60, 90, 0n), { ...event("other", "note-on", 64, 90, 0n), channel: 1 }, event("down", "cc", 0, 0, 10_000n, 64, 127), event("off", "note-off", 60, 0, 20_000n), { ...event("other-off", "note-off", 64, 0, 20_000n), channel: 1 }, event("up", "cc", 0, 0, 70_000n, 64, 0), event("down-again", "cc", 0, 0, 80_000n, 64, 127)];
+    const notes = notesFromEvents(input);
+    const held = workingPlayback(input, notes, { start: 30_000n, end: 60_000n });
+    expect(held.filter(item => item.kind === "note-on").map(item => item.channel)).toEqual([0]);
+    expect(workingPlayback(input, notes, { start: 100_000n, end: 200_000n })).toEqual([]);
+  });
+
   it("keeps expression bytes on the playback copy and excludes a note at the loop end", () => {
     const expression = [
       event("expression", "cc", 0, 0, 30_000n, 11, 90),

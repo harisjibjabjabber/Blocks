@@ -85,6 +85,55 @@ function note(): PlaybackEvent {
 }
 
 describe("web engine adapter", () => {
+  it("preserves a125ms loop and applies a shorter duration only at its seam", async () => {
+    vi.useFakeTimers();
+    try {
+      const context = new FakeContext(); context.setState("running"); context.currentTime = 10;
+      const engine = createWebEngine({ createContext: () => context as unknown as AudioContext });
+      engine.loopLayer("short", [note()], 1, 0.125, 0n);
+      context.currentTime = 10.04; await vi.advanceTimersByTimeAsync(10);
+      context.currentTime = 10.05 + 0.14;
+      expect(engine.transport("short").positionSeconds).toBeCloseTo(0.015);
+      await vi.advanceTimersByTimeAsync(10);
+      engine.updateLayer("short", [{ ...note(), note: 64 }], 1, 0.0625, 0n);
+      context.currentTime = 10.29; await vi.advanceTimersByTimeAsync(10);
+      expect(engine.transport("short").positionSeconds).toBeCloseTo(0.115);
+      context.currentTime = 10.305; await vi.advanceTimersByTimeAsync(10);
+      expect(engine.transport("short").positionSeconds).toBeCloseTo(0.005);
+      context.currentTime = 10.37;
+      expect(engine.transport("short").positionSeconds).toBeCloseTo(0.0075);
+      engine.stopReplay();
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("ignores invalid loop durations without replacing valid playback", () => {
+    const context = new FakeContext(); context.setState("running"); context.currentTime = 10;
+    const engine = createWebEngine({ createContext: () => context as unknown as AudioContext });
+    engine.loopLayer("valid", [note()], 1, 0.125, 0n);
+    for (const invalid of [0, -1, Infinity, NaN]) {
+      engine.loopLayer("invalid", [note()], 1, invalid, 0n);
+      engine.loopLayer("valid", [note()], 1, invalid, 0n);
+      engine.updateLayer("valid", [note()], 1, invalid, 0n);
+    }
+    context.currentTime = 10.19;
+    expect(engine.transport("invalid").state).toBe("stopped");
+    expect(engine.transport("valid").positionSeconds).toBeCloseTo(0.015);
+    engine.stopReplay();
+  });
+
+  it("touch keys resume audio without requesting MIDI and preserve played events", () => {
+    const context = new FakeContext();
+    const requestMidi = vi.fn();
+    const engine = createWebEngine({ createContext: () => context as unknown as AudioContext, requestMIDIAccess: requestMidi });
+    const events: IncomingEvent[] = [];
+    const stop = engine.subscribe(event => events.push(event));
+    engine.touch(61, 96, true); engine.touch(61, 0, false);
+    expect(context.state).toBe("running");
+    expect(requestMidi).not.toHaveBeenCalled();
+    expect(events.map(event => [event.kind, event.note, event.velocity])).toEqual([["note-on", 61, 96], ["note-off", 61, 0]]);
+    expect(context.oscillators.length).toBeGreaterThan(0);
+    stop(); engine.silence();
+  });
   it("schedules a held-note seam release at the boundary, not the lookahead tick", async () => {
     vi.useFakeTimers();
     try {

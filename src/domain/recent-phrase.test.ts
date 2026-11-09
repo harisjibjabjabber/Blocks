@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CapturedEvent } from "./capture";
-import { eventsInSelection, moveSelectionStart, recentPhraseCut, type RecentPhraseOptions } from "./recent-phrase";
+import { eventsInSelection, moveSelectionStart, recentPhraseCut, withCaptureRange, type RecentPhraseOptions } from "./recent-phrase";
 
 const TICKS = 1_000_000;
 
@@ -51,6 +51,63 @@ function options(extra?: Partial<RecentPhraseOptions>): RecentPhraseOptions {
 function ids(events: CapturedEvent[], selection: { start: bigint; end: bigint }): string[] {
   return eventsInSelection(events, selection).map((event) => event.id);
 }
+
+describe("explicit pre-capture range", () => {
+  it("uses the exact requested range including silence and drops inferred period claims", () => {
+    const events = [0, 500, 1000, 1500].flatMap((atMs, index) => [ev({ sequence: index * 2, atMs }), ev({ sequence: index * 2 + 1, atMs: atMs + 100, kind: "note-off", velocity: 0 })]);
+    const proposal = recentPhraseCut(events, options());
+    expect(proposal.periodConfidence).toBe("measured");
+    const before = structuredClone({ events, proposal });
+    const bounds = { start: 250_000n, end: 3_000_000n };
+    const cut = withCaptureRange(events, proposal, bounds);
+    expect(cut.selection).toEqual(bounds); expect(cut.loop).toEqual(bounds);
+    expect(cut.selection).not.toBe(bounds); expect(cut.loop).not.toBe(cut.selection);
+    expect(cut).toMatchObject({ periodTicks: null, phaseOriginTicks: null, periodConfidence: "fallback", priorPhrase: null, priorBar: null });
+    expect(cut.note).toContain("Manual capture range"); expect(cut.note).not.toMatch(/measured slot|spacing was too weak/i);
+    expect({ events, proposal }).toEqual(before);
+    expect(cut.deferred).not.toBe(proposal.deferred);
+  });
+
+  it("re-seeds held attacks and the latest per-channel controllers at the new start", () => {
+    const events = [
+      ev({ sequence: 1, atMs: 0, note: 48 }),
+      ev({ sequence: 2, atMs: 10, kind: "cc", controller: 64, value: 127 }),
+      ev({ sequence: 3, atMs: 20, kind: "cc", controller: 64, value: 0 }),
+      ev({ sequence: 4, atMs: 30, kind: "cc", controller: 64, value: 96, channel: 1 }),
+      ev({ sequence: 5, atMs: 100, note: 64 }),
+      ev({ sequence: 6, atMs: 200, kind: "note-off", note: 48, velocity: 0 }),
+      ev({ sequence: 7, atMs: 300, kind: "note-off", note: 64, velocity: 0 }),
+    ];
+    const proposal = recentPhraseCut(events, options());
+    const cut = withCaptureRange([...events].reverse(), proposal, { start: 100_000n, end: 250_000n });
+    expect(cut.heldNoteIds).toEqual(["e1"]); // Attack at the boundary stays an ordinary selected event.
+    expect(cut.controllerSeed).toEqual([
+      { channel: 0, controller: 64, value: 0, sourceId: "e3" },
+      { channel: 1, controller: 64, value: 96, sourceId: "e4" },
+    ]);
+    expect(eventsInSelection(events, cut.selection).map(event => event.id)).toEqual(["e5", "e6"]);
+    expect(cut.deferred.join(" ")).toMatch(/already sounding|No note-off was invented/);
+    const later = withCaptureRange(events, cut, { start: 400_000n, end: 500_000n });
+    expect(later.heldNoteIds).toEqual([]);
+    expect(later.deferred.join(" ")).not.toMatch(/already sounding at the cut|still on at the end/);
+  });
+
+  it("preserves truncation limitations without copying stale range explanations", () => {
+    const events = [ev({ sequence: 1, atMs: 0 }), ev({ sequence: 2, atMs: 200 })];
+    const proposal = recentPhraseCut(events, options({ historyMayBeTruncated: true }));
+    const cut = withCaptureRange(events, proposal, { start: 100_000n, end: 400_000n });
+    expect(cut.deferred.join(" ")).toMatch(/cannot reconstruct/);
+    expect(cut.deferred.join(" ")).not.toMatch(/Note-boundary expansion/);
+  });
+
+  it("rejects negative, empty and reversed ranges without mutating the proposal", () => {
+    const events = [ev({ sequence: 1, atMs: 0 })];
+    const proposal = recentPhraseCut(events, options());
+    const before = structuredClone(proposal);
+    for (const bounds of [{ start: -1n, end: 1n }, { start: 1n, end: 1n }, { start: 2n, end: 1n }]) expect(() => withCaptureRange(events, proposal, bounds)).toThrow(RangeError);
+    expect(proposal).toEqual(before);
+  });
+});
 
 describe("basic recent-phrase cut, not validated capture", () => {
   it("cuts long noodling then a distinct phrase, and leaves the raw times", () => {

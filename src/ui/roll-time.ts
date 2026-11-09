@@ -135,6 +135,27 @@ export function framePhrase(historyStart: bigint, loopStart: bigint, loopEnd: bi
   return { start, end };
 }
 
+/** Editor framing shows whole musical bars; it never changes the take or loop. */
+export function editorFrame(historyStart: bigint, loopStart: bigint, loopEnd: bigint, grid: KnownGrid, minimumBars = 2): TimeWindow {
+  const frame = framePhrase(historyStart, loopStart, loopEnd);
+  const bar = beatTicks(grid.bpm) * BigInt(grid.beatsPerBar);
+  if (bar <= 0n) return frame;
+  const needed = loopEnd > grid.phase ? loopEnd - grid.phase : bar;
+  const bars = (needed + bar - 1n) / bar;
+  return { start: frame.start, end: grid.phase + (bars > BigInt(minimumBars) ? bars : BigInt(minimumBars)) * bar };
+}
+
+/** Human-readable bar.beat, including pickups before bar one. */
+export function musicalPosition(time: bigint, grid: KnownGrid): string {
+  const beat = beatTicks(grid.bpm);
+  if (beat <= 0n) return "1.1";
+  const relative = time - grid.phase;
+  const index = relative / beat - (relative < 0n && relative % beat !== 0n ? 1n : 0n);
+  const meter = BigInt(grid.beatsPerBar);
+  const bar = index / meter - (index < 0n && index % meter !== 0n ? 1n : 0n);
+  return `${bar + 1n}.${index - bar * meter + 1n}`;
+}
+
 export function zoomWindow(window: TimeWindow, factor: number, anchor: bigint, minSpan: bigint, maxSpan: bigint): TimeWindow {
   const span = window.end - window.start;
   if (span <= 0n || !(factor > 0)) {

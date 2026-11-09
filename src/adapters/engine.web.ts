@@ -267,11 +267,12 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
   }
 
   function loopLayer(id: string, events: PlaybackEvent[], stretch: number, durationSec: number, originUs?: bigint) {
+    if (!Number.isFinite(durationSec) || durationSec <= 0) return;
     stopLayer(id);
     if (context.state !== "running" || (events.length === 0 && originUs === undefined)) {
       return;
     }
-    const duration = Math.max(0.4, durationSec);
+    const duration = durationSec;
     const joined = joinAtSeam(context.currentTime, transportEpoch, transportPeriod);
     if (transportEpoch === null) {
       transportEpoch = joined.epoch;
@@ -296,13 +297,14 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
   }
 
   function updateLayer(id: string, events: PlaybackEvent[], stretch: number, durationSec: number, originUs?: bigint) {
+    if (!Number.isFinite(durationSec) || durationSec <= 0) return;
     const slot = slots.find((item) => item.id === id);
     if (!slot) {
       loopLayer(id, events, stretch, durationSec, originUs);
       return;
     }
     // Repeated edits replace this pending copy. Preview never reaches the engine.
-    slot.pending = { events: events.slice(), stretch: stretch > 0 ? stretch : 1, duration: Math.max(0.4, durationSec), originUs: originUs ?? slot.originUs };
+    slot.pending = { events: events.slice(), stretch: stretch > 0 ? stretch : 1, duration: durationSec, originUs: originUs ?? slot.originUs };
   }
 
   function stopReplay() {
@@ -369,6 +371,9 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
       return () => listeners.delete(listener);
     },
     touch(note, velocity, down) {
+      // Touch keys unlock their own audio from the playing gesture; MIDI access
+      // remains a separate explicit action for people connecting a controller.
+      if (down && context.state === "suspended") void context.resume().catch(() => undefined);
       const status = down && velocity > 0 ? 0x90 : 0x80;
       const vel = down ? velocity : 0;
       const bytes = new Uint8Array([status, note, vel]);
@@ -385,7 +390,7 @@ export function createWebEngine(options: WebEngineOptions = {}): SketchEngine {
         eventTimeStampMs: now,
         lateToleranceSec: 0.04,
       });
-      if (!decision.drop && context.state === "running") {
+      if (!decision.drop && context.state !== "closed") {
         piano.play(decision.when, { ...incoming, velocity: vel, source: "touch" });
       }
     },

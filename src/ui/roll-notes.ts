@@ -4,8 +4,9 @@
  */
 
 import type { CapturedEvent } from "../domain/capture";
+import { loopEvents } from "../domain/loop-events";
 import type { KnownGrid } from "./roll-time";
-import { DEFAULT_SNAP, snapStep, snapTime, type SnapDivision } from "./snap";
+import { DEFAULT_SNAP, snapStep, snapTime, snapIndexAt, type SnapDivision } from "./snap";
 
 export interface RollNote {
   id: string;
@@ -115,7 +116,7 @@ export function nearestStep(time: bigint, grid: KnownGrid): bigint {
 }
 
 /** A preview. The notes array and the source events are not written. */
-export function quantisePreview(notes: readonly RollNote[], ids: readonly string[], grid: KnownGrid | null, division: SnapDivision = DEFAULT_SNAP): { id: string; start: bigint; end: bigint }[] {
+export function quantisePreview(notes: readonly RollNote[], ids: readonly string[], grid: KnownGrid | null, division: SnapDivision = DEFAULT_SNAP, strength = 50, swing = 0): { id: string; start: bigint; end: bigint }[] {
   if (snapStep(grid, division) === null) {
     return [];
   }
@@ -124,8 +125,10 @@ export function quantisePreview(notes: readonly RollNote[], ids: readonly string
     .filter((note) => chosen.size === 0 || chosen.has(note.id))
     .map((note) => {
       const length = note.end > note.start ? note.end - note.start : 1n;
-      const target = snapTime(note.start, grid, division);
-      const start = note.start + (target - note.start) / 2n;
+      let target = snapTime(note.start, grid, division);
+      const index = snapIndexAt(target, grid, division);
+      if (index !== null && index % 2n !== 0n) target += (snapStep(grid, division) ?? 0n) * BigInt(Math.round(Math.max(0, Math.min(50, swing)))) / 100n;
+      const start = note.start + (target - note.start) * BigInt(Math.round(Math.max(0, Math.min(100, strength)))) / 100n;
       return { id: note.id, start, end: start + length };
     });
 }
@@ -145,21 +148,19 @@ export function workingPlayback(source: readonly CapturedEvent[], notes: readonl
   const template = source[0];
   // Keep expression payloads and timestamps intact, including pitch/pressure
   // represented as `other`. Note edits replace only note messages.
-  const controllers = source.filter((event) => event.kind !== "note-on" && event.kind !== "note-off" && event.scheduleElapsed >= bounds.start && event.scheduleElapsed < bounds.end);
+  const controllers = source.filter((event) => event.kind !== "note-on" && event.kind !== "note-off");
   const sounded: CapturedEvent[] = [];
+  const boundaryReleases: CapturedEvent[] = [];
   for (const note of notes) {
-    if (note.end <= bounds.start || note.start >= bounds.end) {
-      continue;
-    }
-    const on = note.start < bounds.start ? bounds.start : note.start;
-    const off = note.end > bounds.end ? bounds.end : note.end;
-    if (off <= on) {
-      continue;
-    }
-    sounded.push(cloneEvent(template, note.id + ":on", "note-on", note.pitch, note.velocity, note.channel, on));
-    sounded.push(cloneEvent(template, note.id + ":off", "note-off", note.pitch, 0, note.channel, off));
+    if (note.end <= note.start || note.start >= bounds.end) continue;
+    sounded.push(cloneEvent(template, note.id + ":on", "note-on", note.pitch, note.velocity, note.channel, note.start));
+    sounded.push(cloneEvent(template, note.id + ":off", "note-off", note.pitch, 0, note.channel, note.end));
+    if (note.end > bounds.end) boundaryReleases.push(cloneEvent(template, note.id + ":off", "note-off", note.pitch, 0, note.channel, bounds.end));
   }
-  return [...controllers, ...sounded].sort((a, b) => (a.scheduleElapsed < b.scheduleElapsed ? -1 : a.scheduleElapsed > b.scheduleElapsed ? 1 : 0));
+  // Resolve sustain on the edited note history before clipping. A finger release
+  // before start can still sound under CC64; deleted notes never enter this copy.
+  const played = loopEvents([...controllers, ...sounded], bounds);
+  return [...played, ...boundaryReleases].sort((a, b) => (a.scheduleElapsed < b.scheduleElapsed ? -1 : a.scheduleElapsed > b.scheduleElapsed ? 1 : 0));
 }
 
 function cloneEvent(template: CapturedEvent, id: string, kind: CapturedEvent["kind"], note: number, velocity: number, channel: number, time: bigint): CapturedEvent {
