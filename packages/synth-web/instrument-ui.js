@@ -2,8 +2,14 @@ import {characterRecipe,motionRecipe,applyRecipe,readRecipe} from './recipes.js'
 import {factoryPatch} from './presets.js';
 import {timeFromUnit,timeToUnit} from './envelope-scale.js';
 import {envelopeGeometry} from './envelope-geometry.js';
+import {DEFAULT_PERFORMANCE,normalizePerformance,curlPhase,performanceSteps} from './performance-state.js';
+import {createPerformanceUI} from './performance-ui.js';
 // The instrument surface owns gestures, never voices or the audio clock.
-export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, onViewChange=()=>{} }) {
+export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, getPerformance, applyPerformance, onViewChange=()=>{} }) {
+  let localPerformance={...DEFAULT_PERFORMANCE};
+  getPerformance??=()=>localPerformance;
+  applyPerformance??=next=>{localPerformance={...next};};
+  const performance=()=>normalizePerformance(getPerformance());
   const $ = id => document.getElementById(id);
   const history = [];
   let module = 'tone', sauce = 'drive', envelopeTarget='amp', gesture = null, preset = 'velvet';
@@ -33,9 +39,10 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     return Number(value.toFixed(id === 14 ? 2 : 1)) + (id === 14 ? ' Hz' : id === 12 ? '×' : id === 3 ? '' : ' ct');
   };
   const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
-  const state = () => ({values: [...getValues()], preset});
+  const state = () => ({values: [...getValues()], performance:performance(), preset});
+  const restorePerformance=next=>{if(JSON.stringify(next)!==JSON.stringify(performance()))applyPerformance(next);};
   function commit(before) {
-    if (!same(before.values, getValues())) { history.push(before); if (history.length > 40) history.shift(); }
+    if (!same(before.values, getValues()) || JSON.stringify(before.performance)!==JSON.stringify(performance())) { history.push(before); if (history.length > 40) history.shift(); }
     $('undo').disabled = !history.length;
   }
   function apply(next, markCustom = true) {
@@ -47,7 +54,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   function cancel() {
     if (!gesture) return;
     const before = gesture.before;
-    gesture = null; preset = before.preset; apply(before.values, false);
+    gesture = null; preset = before.preset; restorePerformance(before.performance); apply(before.values, false);
   }
   function begin(e, type, data = {}) {
     if (gesture || (e.button !== undefined && e.button !== 0)) return false;
@@ -68,6 +75,8 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   const characterN = () => readRecipe(characterRecipe,getValues()).amount;
   const characterCustom = () => readRecipe(characterRecipe,getValues()).custom;
   const motionN=()=>readRecipe(motionRecipe,getValues()).amount;
+  const motionCustom=()=>readRecipe(motionRecipe,getValues()).custom;
+  function closeMotion(focus=false){$('motion-details').hidden=true;$('motion-details-toggle').setAttribute('aria-expanded','false');if(focus&&module==='character')$('motion-details-toggle').focus();}
   function changeKnob(id, n) {
     const next = [...getValues()];
     if(id==='character')character(clamp(n),next);
@@ -76,23 +85,24 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     apply(next);
   }
   const knobN = id => id === 'character' ? characterN() : id==='motion'?motionN():norm(Number(id));
-  function knob(id, name) {
-    const container=document.createElement('div'); container.className='macro';
-    const button=document.createElement('button'); button.className='dial'; button.dataset.knob=id;
+  function knob(id, name, mini=false) {
+    const container=document.createElement('div'); container.className=mini?'osc-level-control':'macro';
+    const button=document.createElement('button'); button.type='button';button.className=mini?'dial osc-mini-dial':'dial'; button.dataset.knob=id;
+    if(mini)button.dataset.osclevel=id;
     button.setAttribute('role','slider'); button.setAttribute('aria-label',name);
     button.setAttribute('aria-valuemin','0'); button.setAttribute('aria-valuemax','100');
     const face=document.createElement('span');face.className='dial-face';face.setAttribute('aria-hidden','true');
     const needle=document.createElement('span'); needle.className='dial-needle';face.append(needle);button.append(face);
-    const label=document.createElement('span'); label.className='macro-name'; label.textContent=name;
-    const value=document.createElement('output'); value.className='macro-value'; value.dataset.knobValue=id;
-    button.addEventListener('pointerdown', e => {e.preventDefault();begin(e,'knob',{id,base:knobN(id)});});
-    button.addEventListener('pointermove', e => {if(gesture?.type==='knob'&&gesture.pointer===e.pointerId)changeKnob(id,gesture.base+(gesture.y-e.clientY)/180);});
+    const label=document.createElement('span'); label.className=mini?'mini-mix-label':'macro-name'; label.textContent=mini?'Mix':name;
+    const value=document.createElement('output'); value.className=mini?'mix-value':'macro-value'; value.dataset.knobValue=id;
+    button.addEventListener('pointerdown', e => {e.preventDefault();begin(e,'knob',{id,base:knobN(id),fine:e.shiftKey});});
+    button.addEventListener('pointermove', e => {if(gesture?.type==='knob'&&gesture.pointer===e.pointerId)changeKnob(id,gesture.base+(gesture.y-e.clientY)/180*(gesture.fine?.1:1));});
     button.addEventListener('keydown', e => {
       if(gesture || !['ArrowUp','ArrowRight','ArrowDown','ArrowLeft','Home','End'].includes(e.key))return;
-      e.preventDefault();const before=state(); const step=e.shiftKey?.1:.01;
+      e.preventDefault();const before=state(); const step=e.shiftKey?.001:.01;
       changeKnob(id,e.key==='Home'?0:e.key==='End'?1:knobN(id)+(['ArrowUp','ArrowRight'].includes(e.key)?step:-step));commit(before);
     });
-    bindCompletion(button);container.append(button,label,value);return container;
+    bindCompletion(button);if(mini){button.prepend(label);button.append(value);container.append(button);}else container.append(button,label,value);return container;
   }
   const macros={tone:[[11,'Cutoff'],[23,'Filter mix'],['character','Character']],envelope:[['character','Character']],character:[['character','Character'],['motion','Motion']],drop:[[15,'Amount'],[16,'Fall time'],['character','Character']]};
   if(parameters[18]) {macros.character.push([18,'Fullness']);}
@@ -102,18 +112,23 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     cancel(); module=next;
     document.querySelector('.instrument').dataset.module=module;
     document.querySelector('.instrument').dataset.envelope=envelopeTarget;
+    document.querySelector('.instrument').dataset.sauce=sauce;
     closeOsc(false);
+    closeMotion(false);$('motion-details-toggle').hidden=module!=='character';
     $('waveforms').hidden=module!=='tone'||!parameters[19];
     $('scope-wrapper').hidden=module!=='tone';
     $('sauce-tabs').hidden=module!=='drop';
     $('envelope-tabs').hidden=module!=='envelope';
+    const isPerformance=module==='drop'&&sauce==='arp';
+    $('performance-panel').hidden=!isPerformance;$('shape-surface').hidden=isPerformance;
+    $('macros').hidden=isPerformance;$('module-description').hidden=isPerformance;
     for(const b of document.querySelectorAll('[data-envelope]'))if(b.tagName==='BUTTON')b.setAttribute('aria-pressed',String(b.dataset.envelope===envelopeTarget));
     for(const b of document.querySelectorAll('[data-sauce]'))b.setAttribute('aria-pressed',String(b.dataset.sauce===sauce));
     svg.setAttribute('preserveAspectRatio',module==='tone'?'none':'xMidYMid meet');
     for(const b of document.querySelectorAll('#module-tabs [data-module]')) {const active=b.dataset.module===module;b.setAttribute('aria-pressed',String(active));b.classList.toggle('selected',active);}
     $('module-title').textContent=module==='envelope'?(envelopeTarget==='amp'?'Amplitude envelope':'Filter envelope'):module==='drop'&&sauce==='drive'?'Drive':titles[module]; $('module-description').textContent=module==='drop'&&sauce==='drive'?'Mixer warmth · turn up for more edge':descriptions[module];
     const selected=module==='envelope'&&envelopeTarget==='filter'?[[24,'Filter amount'],[11,'Base cutoff'],['character','Character']]:module==='drop'&&sauce==='drive'?[[12,'Drive'],['character','Character']]:macros[module];
-    $('macros').replaceChildren(...selected.map(([id,name])=>knob(String(id),name)));
+    $('macros').replaceChildren(...(isPerformance?[]:selected.map(([id,name])=>knob(String(id),name))));
     update();
   }
   // Precision is generated from the same descriptors used by DSP and presets.
@@ -130,7 +145,6 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   }
   details.append(bank);$('parameters').replaceChildren(details);
   let oscOpener=null,oscPanel=null;
-  const rememberedLevels=new Map();
   const popover=document.createElement('div');popover.id='wave-popover';popover.className='osc-popover';popover.hidden=true;popover.setAttribute('role','group');
   function closeOsc(focus=false){popover.hidden=true;if(oscOpener){oscOpener.setAttribute('aria-expanded','false');if(focus)oscOpener.focus();}oscPanel=null;}
   function openOsc(kind,id,opener){
@@ -144,22 +158,13 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
         button.addEventListener('click',()=>{const before=state(),next=[...getValues()];next[id]=wave;apply(next);commit(before);closeOsc(true);});options.append(button);
       }
       popover.append(options);options.querySelector('button[aria-pressed=true]')?.focus();
-    }else{
-      popover.setAttribute('aria-label','Oscillator '+(id===21?1:2)+' mix');
-      const row=document.createElement('label');row.className='osc-level-row';const text=document.createElement('span');text.textContent='Osc '+(id===21?1:2)+' mix';
-      const input=document.createElement('input');input.type='range';input.min=0;input.max=100;input.step=1;input.value=Math.round(getValues()[id]*100);input.dataset.levelRange=id;input.setAttribute('aria-label',text.textContent);
-      input.addEventListener('pointerdown',e=>{if(!begin(e,'osc-level',{id}))e.preventDefault();});
-      input.addEventListener('input',()=>{if(gesture&&!(gesture.type==='osc-level'&&gesture.id===id))return;const before=state(),next=[...getValues()];next[id]=Number(input.value)/100;apply(next);if(!gesture)commit(before);});bindCompletion(input);
-      const mute=document.createElement('button');mute.type='button';mute.className='osc-mute';mute.textContent=getValues()[id]===0?'Unmute':'Mute';
-      mute.addEventListener('click',()=>{const before=state(),next=[...getValues()];next[id]=next[id]>0?0:rememberedLevels.get(id)||.5;apply(next);commit(before);});
-      row.append(text,input);popover.append(row,mute);input.focus();
     }
   }
   for(const id of [19,20]){
     const level=id===19?21:22,number=id===19?1:2,row=document.createElement('div');row.className='oscillator-row';
     const wave=document.createElement('button');wave.type='button';wave.className='wave-select-button';wave.dataset.waveosc=id;wave.setAttribute('aria-haspopup','true');wave.setAttribute('aria-controls','wave-popover');wave.setAttribute('aria-expanded','false');
     const label=document.createElement('span');label.className='osc-label';label.textContent='Osc '+number;const name=document.createElement('span');name.className='wave-name';wave.append(label,name);wave.addEventListener('click',()=>openOsc('wave',id,wave));
-    const mix=document.createElement('button');mix.type='button';mix.className='osc-level-button';mix.dataset.osclevel=level;mix.setAttribute('aria-controls','wave-popover');mix.setAttribute('aria-expanded','false');const mixLabel=document.createElement('span');mixLabel.className='mix-label';mixLabel.textContent='Mix';const value=document.createElement('span');value.className='mix-value';mix.append(mixLabel,value);mix.addEventListener('click',()=>openOsc('level',level,mix));
+    const mix=knob(String(level),'Oscillator '+number+' mix',true);
     row.append(wave,mix);$('waveforms').append(row);
   }
   $('waveforms').append(popover);
@@ -231,7 +236,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
       node('ellipse',{cx:x,cy:y,rx:radius*1.9,ry:radius,fill:'none',class:'plot-line'});
       node('path',{d:`M${x-150} ${y}H${x+150}`,class:'plot-grid'});
       hit({'data-handle':'character','aria-valuenow':n*100,'aria-valuetext':Math.round(n*100)+'%'},'Character amount',x+radius*1.9,y);
-      node('text',{x:210,y:201,class:'plot-label','text-anchor':'middle'},'Drift '+format(13)+' + settling '+format(32)+' · '+format(14));
+      node('text',{x:210,y:201,class:'plot-label','text-anchor':'middle'},'Tone colour · drive '+format(12));
     }
   }
   function position(e) {return new DOMPoint(e.clientX,e.clientY).matrixTransform(svg.getScreenCTM().inverse());}
@@ -275,32 +280,40 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   $('volume-range').addEventListener('pointerdown',e=>{if(!begin(e,'volume'))e.preventDefault();});
   $('volume-range').addEventListener('input',()=>{if(gesture&&gesture.type!=='volume')return;const before=state(),next=[...getValues()];next[0]=Number($('volume-range').value)/100;apply(next);if(!gesture)commit(before);});
   bindCompletion($('volume-range'));
-  document.addEventListener('pointerdown',e=>{if(!e.target.closest('#volume-panel,#volume-toggle')){$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}if(!e.target.closest('#waveforms'))closeOsc(false);});
-  window.addEventListener('keydown',e=>{if(e.key==='Escape'){cancel();closeOsc(true);$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}});window.addEventListener('blur',cancel);
-  $('undo').addEventListener('click',()=>{cancel();const before=history.pop();if(before){preset=before.preset;apply(before.values,false);}$('undo').disabled=!history.length;});
-  function loadPatch(next,name='custom') {cancel();closeOsc(false);const before=state();releaseVoices();preset=name;apply(next,false);commit(before);}
+  document.addEventListener('pointerdown',e=>{if(!e.target.closest('#volume-panel,#volume-toggle')){$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}if(!e.target.closest('#waveforms'))closeOsc(false);if(!gesture&&!e.target.closest('#motion-details,#motion-details-toggle,.keyboard-section'))closeMotion(false);});
+  window.addEventListener('keydown',e=>{if(e.key==='Escape'){const editing=!!gesture;cancel();closeOsc(true);if(!editing)closeMotion(true);$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}});window.addEventListener('blur',cancel);
+  $('undo').addEventListener('click',()=>{cancel();const before=history.pop();if(before){preset=before.preset;restorePerformance(before.performance);apply(before.values,false);}$('undo').disabled=!history.length;});
+  function loadPatch(next,name='custom',settings=DEFAULT_PERFORMANCE) {cancel();closeOsc(false);const before=state();releaseVoices();preset=name;applyPerformance(normalizePerformance(settings));apply(next,false);commit(before);}
   if(!$('presets').querySelector('[value="custom"]')){const option=document.createElement('option');option.value='custom';option.textContent='Custom patch';option.disabled=true;$('presets').append(option);}
   $('presets').addEventListener('change',e=>loadPatch(factoryPatch(e.target.value,parameters),e.target.value));
   $('init').addEventListener('click',()=>loadPatch(parameters.map(p=>p.default)));
   for(const button of document.querySelectorAll('#module-tabs [data-module]'))button.addEventListener('click',()=>select(button.dataset.module));
   for(const button of document.querySelectorAll('[data-sauce]'))button.addEventListener('click',()=>{sauce=button.dataset.sauce;select('drop');});
   for(const button of document.querySelectorAll('#envelope-tabs [data-envelope]'))button.addEventListener('click',()=>{envelopeTarget=button.dataset.envelope;select('envelope');});
+  function changePerformance(patch,commitNow=true){if(gesture&&(gesture.type!=='performance'||commitNow))return;const before=state();applyPerformance(normalizePerformance({...performance(),...patch}));preset='custom';update();if(commitNow)commit(before);}
+  const performanceUI=createPerformanceUI({container:$('performance-panel'),getPerformance:performance,change:changePerformance,begin,getGesture:()=>gesture,bindCompletion});
+  $('mono-toggle').addEventListener('click',()=>changePerformance({mono:!performance().mono}));
+  $('motion-controls').replaceChildren(...[[14,'Speed'],[32,'Attack settling'],[33,'Settle time'],[34,'Velocity']].map(([id,name])=>knob(String(id),name)));
+  $('motion-details-toggle').addEventListener('click',()=>{if(gesture)return;const open=$('motion-details').hidden;$('motion-details').hidden=!open;$('motion-details-toggle').setAttribute('aria-expanded',String(open));if(open)$('motion-controls').querySelector('[data-knob]').focus();});
+  $('motion-details-close').addEventListener('click',()=>{if(!gesture)closeMotion(true);});
   window.addEventListener('resize',()=>{cancel();update();});
   function update() {
     for(const p of parameters){const input=document.querySelector(`[data-param="${p.id}"]`);input.value=p.mapping===2?getValues()[p.id]:Math.round((timingIds.includes(p.id)?timeUnit: norm)(p.id)*1000);input.setAttribute('aria-valuetext',format(p.id));document.querySelector(`[data-value="${p.id}"]`).textContent=format(p.id);}
     for(const chooser of document.querySelectorAll('[data-waveosc]')){const id=Number(chooser.dataset.waveosc),number=id===19?1:2;chooser.querySelector('.wave-name').textContent=format(id);chooser.setAttribute('aria-label','Oscillator '+number+' waveform '+format(id));}
-    for(const button of document.querySelectorAll('[data-osclevel]')){const id=Number(button.dataset.osclevel),level=getValues()[id];button.querySelector('.mix-value').textContent=Math.round(level*100)+'%';button.setAttribute('aria-label','Oscillator '+(id===21?1:2)+' mix '+Math.round(level*100)+'%');if(level>0)rememberedLevels.set(id,level);}
-    if(oscPanel?.kind==='level'){const input=popover.querySelector('input');if(input)input.value=Math.round(getValues()[oscPanel.id]*100);const mute=popover.querySelector('.osc-mute');if(mute)mute.textContent=getValues()[oscPanel.id]===0?'Unmute':'Mute';}
 
     $('volume-range').value=Math.round(getValues()[0]*100);$('volume-value').textContent=Math.round(getValues()[0]*100)+'%';$('volume-toggle').setAttribute('aria-label','Volume '+Math.round(getValues()[0]*100)+'%');
-    for(const dial of document.querySelectorAll('[data-knob]')){const id=dial.dataset.knob,n=knobN(id),text=id==='character'?(characterCustom()?'Custom · ':'')+Math.round(n*100)+'%':id==='motion'?Number(getValues()[13].toFixed(1))+' + '+Number(getValues()[32].toFixed(1))+' ct':format(Number(id));dial.style.setProperty('--rotation',(-135+n*270)+'deg');dial.setAttribute('aria-valuenow',String(Math.round(n*100)));dial.setAttribute('aria-valuetext',text);document.querySelector(`[data-knob-value="${id}"]`).textContent=text;}
+    for(const dial of document.querySelectorAll('[data-knob]')){const id=dial.dataset.knob,n=knobN(id),text=id==='character'?(characterCustom()?'Custom · ':'')+Math.round(n*100)+'%':id==='motion'?(motionCustom()?'Custom. ':'')+'Drift '+format(13)+', attack settling '+format(32):format(Number(id));dial.style.setProperty('--rotation',(-135+n*270)+'deg');dial.setAttribute('aria-valuenow',String(Math.round(n*100)));dial.setAttribute('aria-valuetext',text);const output=document.querySelector(`[data-knob-value="${id}"]`);if(id==='motion'){output.classList.add('motion-value');const drift=document.createElement('span'),hit=document.createElement('span');drift.textContent='Drift '+format(13);hit.textContent='Hit '+format(32);output.replaceChildren(drift,hit);dial.closest('.macro').querySelector('.macro-name').textContent=motionCustom()?'Motion · Custom':'Motion';}else output.textContent=text;}
     $('presets').value=preset;
     $('value-summary').textContent=module==='tone'?format(11)+' · filter '+format(23):module==='envelope'?(envelopeTarget==='filter'?format(24):'New notes'):module==='drop'?(sauce==='drive'?format(12):'+'+format(15)):characterCustom()?'Custom':Math.round(characterN()*100)+'%';
     if(module==='envelope'&&envelopeTarget==='filter')$('module-description').textContent=getValues()[24]===0?'Raise Filter amount to add movement':'Each note has its own filter envelope';
+    const p=performance();$('mono-toggle').setAttribute('aria-pressed',String(p.mono));
+    const count=performanceSteps(p);
+    const preview=p.mode==='strum'?Array.from({length:4},(_,i)=>i/3*p.strum/100):Array.from({length:count},(_,i)=>curlPhase(i/count,p.curl));
+    performanceUI.update(preview);
     draw();
     onViewChange();
   }
   // Factory selection changes the patch, not the captured performance.
   applyValues(factoryPatch('velvet',parameters)); select('tone');
-  return {update,loadPatch,cancel};
+  return {update,updatePerformance:update,setPerformancePending:performanceUI.setPending,loadPatch,cancel};
 }

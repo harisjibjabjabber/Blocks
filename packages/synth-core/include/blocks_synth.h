@@ -36,6 +36,19 @@ typedef struct bs_event {
   uint32_t sample_offset, type, channel, key, parameter_id; float value;
 } bs_event;
 typedef struct bs_patch { uint32_t version; float values[BS_PARAMETER_COUNT]; } bs_patch;
+/* Optional performance state is separate from the35-parameter tone patch.
+ * 48bytes: seven uint32 fields then five floats. No host clock/timer required. */
+#define BS_PERFORMANCE_VERSION 1u
+typedef enum bs_performance_mode { BS_PERFORMANCE_OFF=0, BS_ARP=1, BS_STRUM=2 } bs_performance_mode;
+typedef enum bs_note_order { BS_ORDER_UP=0, BS_ORDER_DOWN=1, BS_ORDER_AS_PLAYED=2, BS_ORDER_RANDOM=3 } bs_note_order;
+typedef struct bs_performance_config {
+ uint32_t version,mode,order,division,triplet,seed,mono;
+ float bpm,curl,gate,strum_ms,randomness;
+} bs_performance_config;
+void bs_default_performance(bs_performance_config *config);
+int bs_set_performance(bs_synth *synth,const bs_performance_config *config);
+int bs_get_performance(const bs_synth *synth,bs_performance_config *config);
+uint32_t bs_performance_pending(const bs_synth *synth);
 uint32_t bs_abi_version(void);
 uint32_t bs_parameter_count(void);
 const bs_parameter_descriptor *bs_parameter_info(uint32_t id);

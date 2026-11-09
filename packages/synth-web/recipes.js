@@ -1,16 +1,14 @@
 // Host-side macros only write existing physical parameters. No separate DSP state.
 export const motionRecipe = Object.freeze({
-  id: 'motion', version: 1,
+  id: 'motion', version: 3,
   targets: Object.freeze([
-    Object.freeze({id:13,minimum:0,maximum:40,points:Object.freeze([[0,0],[.6,4.8],[1,40]].map(Object.freeze))}),
-    Object.freeze({id:32,minimum:0,maximum:8,points:Object.freeze([[0,0],[.6,1.2],[1,8]].map(Object.freeze))}),
+    Object.freeze({id:13,minimum:0,maximum:120,points:Object.freeze([[0,0],[.6,4.8],[.85,40],[1,120]].map(Object.freeze))}),
+    Object.freeze({id:32,minimum:0,maximum:60,points:Object.freeze([[0,0],[.6,1.2],[.85,12],[1,60]].map(Object.freeze))}),
     Object.freeze({id:33,minimum:.18,maximum:.18}),
     Object.freeze({id:34,minimum:0,maximum:.85}),
   ]),
 });
-export const characterRecipe=Object.freeze({id:'character',version:3,targets:Object.freeze([
- ...motionRecipe.targets,Object.freeze({id:12,minimum:1,maximum:2.2}),Object.freeze({id:14,minimum:.1,maximum:.6}),
-])});
+export const characterRecipe=Object.freeze({id:'character',version:5,targets:Object.freeze([Object.freeze({id:12,minimum:1,maximum:2.2})])});
 const clamp = value => Math.max(0, Math.min(1, value));
 function mapped(target,n){
  if(!target.points)return target.minimum+n*(target.maximum-target.minimum);

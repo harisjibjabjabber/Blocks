@@ -6,7 +6,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 if(!process.env.EMSDK) throw Error('Set EMSDK to Emscripten 7.0.0.');
 const out=resolve(process.env.SYNTH_CORE_EVIDENCE||resolve(root,'../synth-core-evidence'));
 mkdirSync(out,{recursive:true});
-for(const [source,name,extra] of [['core_tests.cpp','core-tests',[]],['render_wav.cpp','render-wav',['-sNODERAWFS=1']]]) {
+for(const [source,name,extra] of [['core_tests.cpp','core-tests',[]],['performance_tests.cpp','performance-tests',[]],['render_wav.cpp','render-wav',['-sNODERAWFS=1']]]) {
   const target=resolve(out,name+'.mjs');
   const result=spawnSync(process.env.PYTHON||'python',[
     resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),

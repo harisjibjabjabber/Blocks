@@ -1,6 +1,7 @@
 #include "blocks_synth.h"
 #include "fullness.h"
 #include "waveforms.h"
+#include "performance.h"
 #include <limits>
 #include <algorithm>
 #include <array>
@@ -24,7 +25,7 @@ constexpr bs_parameter_descriptor descriptors[] = {
  {BS_RELEASE_BEND,"Release bend","octaves",-2,2,0,BS_LINEAR},
  {BS_CUTOFF,"Low-pass cutoff","Hz",20,20000,6000,BS_LOGARITHMIC},
  {BS_DRIVE,"Drive","gain",1,12,1,BS_LOGARITHMIC},
- {BS_DRIFT_CENTS,"Pitch drift amount","cents",0,40,0,BS_LINEAR},
+ {BS_DRIFT_CENTS,"Pitch drift amount","cents",0,120,0,BS_LINEAR},
  {BS_DRIFT_HZ,"Pitch drift speed","Hz",.05f,10,.5f,BS_LOGARITHMIC},
  {BS_PITCH_DROP_CENTS,"Pitch drop amount","cents",0,2400,0,BS_LINEAR},
  {BS_PITCH_DROP_TIME,"Pitch drop time","seconds",.001f,4,.12f,BS_LOGARITHMIC},
@@ -43,12 +44,13 @@ constexpr bs_parameter_descriptor descriptors[] = {
  {BS_FILTER_ATTACK_BEND,"Filter attack bend","octaves",-2,2,0,BS_LINEAR},
  {BS_FILTER_DECAY_BEND,"Filter decay bend","octaves",-2,2,0,BS_LINEAR},
  {BS_FILTER_RELEASE_BEND,"Filter release bend","octaves",-2,2,0,BS_LINEAR},
- {BS_SETTLING_CENTS,"Pitch settling","cents",0,20,0,BS_LINEAR},
+ {BS_SETTLING_CENTS,"Pitch settling","cents",0,80,0,BS_LINEAR},
  {BS_SETTLING_TIME,"Pitch settling time","seconds",.02f,1,.18f,BS_LOGARITHMIC},
  {BS_VELOCITY_MOVEMENT,"Velocity movement","ratio",0,1,0,BS_LINEAR}
 };
 static_assert(sizeof(bs_event)==24 && offsetof(bs_event,value)==20,"ABI event layout");
 static_assert(sizeof(bs_patch)==144,"ABI patch layout");
+static_assert(sizeof(bs_performance_config)==48&&offsetof(bs_performance_config,bpm)==28,"performance layout");
 double clamp(double x,double lo,double hi) { return std::max(lo,std::min(hi,x)); }
 double bend(double progress,double curve) { return std::pow(clamp(progress,0,1),std::exp2(curve)); }
 // Original implementation of the standard polynomial band-limited step correction.
@@ -127,13 +129,23 @@ struct bs_synth {
  std::array<bool,16> pedals{};
  std::array<Weights,2> waveWeights{{Weights{{0,0,1,0,0}},Weights{{0,0,0,1,0}}}};
  uint64_t sequence=0;
+ blocks_detail::Performance performance;
  void canonicalMix(){const double total=double(parameters[BS_OSC1_LEVEL])+parameters[BS_OSC2_LEVEL];parameters[BS_OSC_MIX]=total>0?float(parameters[BS_OSC2_LEVEL]/total):.5f;}
- bs_synth() { for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) parameters[i]=float(smooth[i]=descriptors[i].default_value);canonicalMix(); }
- void reset() { for(unsigned osc=0;osc<2;++osc) {waveWeights[osc]={};waveWeights[osc][unsigned(parameters[BS_OSC1_WAVE+osc])]=1;} voices={}; tails={}; onOrdinals={}; offOrdinals={}; pedals={}; sequence=0; for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; }
- void panic() {voices={};tails={};onOrdinals={};offOrdinals={};pedals={};}
- void on(uint32_t channel,uint32_t key,float velocity) {
+ bs_synth() { for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) parameters[i]=float(smooth[i]=descriptors[i].default_value);canonicalMix();performance.bind({this,[](void*context,uint32_t channel,uint32_t key,float velocity,bool mono){auto*s=static_cast<bs_synth*>(context);if(mono)for(auto&v:s->voices)if(v.active)s->retire(v);s->voiceOn(channel,key,velocity);},[](void*context,uint32_t channel,uint32_t key){static_cast<bs_synth*>(context)->voiceOff(channel,key);}}); }
+ void reset() { for(unsigned osc=0;osc<2;++osc) {waveWeights[osc]={};waveWeights[osc][unsigned(parameters[BS_OSC1_WAVE+osc])]=1;} voices={}; tails={}; onOrdinals={}; offOrdinals={}; pedals={}; sequence=0;performance.prepare(rate); for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; }
+ void panic() {voices={};tails={};onOrdinals={};offOrdinals={};pedals={};performance.clear();}
+ void retire(Voice&v){
+  Voice*tail=nullptr;for(auto&candidate:tails)if(!candidate.active){tail=&candidate;break;}
+  if(!tail)tail=&*std::min_element(tails.begin(),tails.end(),[](const Voice&a,const Voice&b){return a.level*a.velocity*a.tailRemaining<b.level*b.velocity*b.tailRemaining;});
+  *tail=v;tail->tailRemaining=uint32_t(std::ceil(.003*rate));tail->held=false;v.active=false;
+ }
+ void on(uint32_t channel,uint32_t key,float velocity){if(performance.enabled())performance.on(channel,key,velocity);else voiceOn(channel,key,velocity);}
+ void off(uint32_t channel,uint32_t key){if(performance.enabled())performance.off(channel,key);else voiceOff(channel,key);}
+ void pedal(uint32_t channel,bool down){if(performance.enabled())performance.pedal(channel,down);else voicePedal(channel,down);}
+ int setPerformance(const bs_performance_config&config){if(!blocks_detail::Performance::valid(config))return 0;const auto&before=performance.config();if(before.mode!=config.mode||before.mono!=config.mono)panic();performance.configure(config);return 1;}
+ void voiceOn(uint32_t channel,uint32_t key,float velocity) {
   if(channel>=16 || key>127 || !std::isfinite(velocity)) return;
-  if(velocity<=0) { off(channel,key); return; }
+  if(velocity<=0) { voiceOff(channel,key); return; }
   if(onOrdinals[channel][key]==std::numeric_limits<uint64_t>::max()||sequence==std::numeric_limits<uint64_t>::max()) {panic();sequence=0;}
   const uint64_t ordinal=++onOrdinals[channel][key];
   Voice *v=nullptr;
@@ -145,11 +157,7 @@ struct bs_synth {
     if(ar<2&&a.level*a.velocity!=b.level*b.velocity)return a.level*a.velocity<b.level*b.velocity;
     return a.order<b.order;
    });
-   // Fixed 3ms snapshots keep a stolen oscillator/filter continuous. If all 16
-   // tails are occupied, replace the quietest remaining weighted tail.
-   Voice *tail=nullptr;for(auto &candidate:tails)if(!candidate.active){tail=&candidate;break;}
-   if(!tail)tail=&*std::min_element(tails.begin(),tails.end(),[](const Voice&a,const Voice&b){return a.level*a.velocity*a.tailRemaining<b.level*b.velocity*b.tailRemaining;});
-   *tail=*v;tail->tailRemaining=uint32_t(std::ceil(.003*rate));tail->held=false;
+   retire(*v);
   }
   *v=Voice{}; v->active=v->held=true; v->channel=channel; v->key=key; v->order=++sequence; v->ordinal=ordinal;
   v->frequency=440*std::exp2((double(key)-69)/12); v->velocity=clamp(velocity,0,1);
@@ -170,14 +178,14 @@ struct bs_synth {
    v->rateScale=1+.2*random_signed(movementRng);
   }
  }
- void off(uint32_t channel,uint32_t key) {
+ void voiceOff(uint32_t channel,uint32_t key) {
   if(channel>=16||key>=128||offOrdinals[channel][key]>=onOrdinals[channel][key])return;
   const uint64_t ordinal=++offOrdinals[channel][key];
   for(auto &v:voices)if(v.active&&v.held&&v.channel==channel&&v.key==key&&v.ordinal==ordinal) {
    v.held=false;if(pedals[channel])v.pedal=true;else release(v);break;
   }
  }
- void pedal(uint32_t channel,bool down) {
+ void voicePedal(uint32_t channel,bool down) {
   if(channel>=16) return; pedals[channel]=down;
   if(!down) for(auto &v:voices) if(v.active&&v.channel==channel&&v.pedal&&!v.held) release(v);
  }
@@ -192,6 +200,7 @@ struct bs_synth {
   return 1;
  }
  void sample(float &left,float &right) {
+  performance.tick();
   for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i)if(i!=BS_OSC1_WAVE&&i!=BS_OSC2_WAVE) smooth[i]+=smoothing*(parameters[i]-smooth[i]);
   for(unsigned osc=0;osc<2;++osc) {
    const unsigned target=unsigned(parameters[BS_OSC1_WAVE+osc]);double sum=0;
@@ -236,6 +245,10 @@ struct bs_synth {
 };
 
 extern "C" {
+void bs_default_performance(bs_performance_config*config){if(config)*config=blocks_detail::defaultPerformance();}
+int bs_set_performance(bs_synth*synth,const bs_performance_config*config){return synth&&config?synth->setPerformance(*config):0;}
+int bs_get_performance(const bs_synth*synth,bs_performance_config*config){if(!synth||!config)return 0;*config=synth->performance.config();return 1;}
+uint32_t bs_performance_pending(const bs_synth*synth){return synth&&synth->performance.pending()?1:0;}
 uint32_t bs_abi_version(void) { return BS_ABI_VERSION; }
 uint32_t bs_parameter_count(void) { return BS_PARAMETER_COUNT; }
 const bs_parameter_descriptor *bs_parameter_info(uint32_t id) { return id<BS_PARAMETER_COUNT?&descriptors[id]:nullptr; }
