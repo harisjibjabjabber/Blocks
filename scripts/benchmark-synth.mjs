@@ -14,6 +14,7 @@ const compile=spawnSync(process.env.PYTHON||'python',[
 ],{stdio:'inherit'});
 if(compile.error)throw compile.error;if(compile.status)process.exit(compile.status);
 await(await import(pathToFileURL(target).href)).default({arguments:[json]});
+if(process.exitCode)throw Error('Core benchmark failed');
 const report=JSON.parse(readFileSync(json,'utf8'));
 report.runtime={node:process.version,platform:process.platform,arch:process.arch,compiler:'Emscripten 7.0.0 C++17 -O2'};
 writeFileSync(json,JSON.stringify(report,null,2)+'\n');

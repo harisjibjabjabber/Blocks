@@ -1,5 +1,6 @@
 #include "blocks_synth.h"
-#include "fullness.h"
+#include "sauce.h"
+#include "motion_response.h"
 #include "waveforms.h"
 #include "performance.h"
 #include <limits>
@@ -46,10 +47,15 @@ constexpr bs_parameter_descriptor descriptors[] = {
  {BS_FILTER_RELEASE_BEND,"Filter release bend","octaves",-2,2,0,BS_LINEAR},
  {BS_SETTLING_CENTS,"Pitch settling","cents",0,80,0,BS_LINEAR},
  {BS_SETTLING_TIME,"Pitch settling time","seconds",.02f,1,.18f,BS_LOGARITHMIC},
- {BS_VELOCITY_MOVEMENT,"Velocity movement","ratio",0,1,0,BS_LINEAR}
+ {BS_VELOCITY_MOVEMENT,"Velocity movement","ratio",0,1,0,BS_LINEAR},
+ {BS_ENVELOPE_RESPONSE,"Envelope response","ratio",0,1,1,BS_LINEAR},
+ {BS_DRIVE_ENABLED,"Drive enabled","switch",0,1,1,BS_DISCRETE},
+ {BS_PITCH_DROP_ENABLED,"Pitch drop enabled","switch",0,1,1,BS_DISCRETE},
+ {BS_SAUCE_ORDER,"Audio block order","order",0,1,0,BS_DISCRETE},
+ {BS_FULLNESS_ENABLED,"Fullness enabled","switch",0,1,1,BS_DISCRETE}
 };
 static_assert(sizeof(bs_event)==24 && offsetof(bs_event,value)==20,"ABI event layout");
-static_assert(sizeof(bs_patch)==144,"ABI patch layout");
+static_assert(sizeof(bs_patch)==164,"ABI patch layout");
 static_assert(sizeof(bs_performance_config)==48&&offsetof(bs_performance_config,bpm)==28,"performance layout");
 double clamp(double x,double lo,double hi) { return std::max(lo,std::min(hi,x)); }
 double bend(double progress,double curve) { return std::pow(clamp(progress,0,1),std::exp2(curve)); }
@@ -97,7 +103,8 @@ struct Voice {
  double drop=0,dropTime=.1,dropBend=0,drift=0,driftTarget=0,driftAge=0;
  double settling=0,settlingTime=.18,movementScale=1,rateScale=1;
  FilterEnvelope filterEnvelope;
- blocks_detail::FullnessPath fullness;
+ blocks_detail::SauceRack sauce;
+ double motionShortness=0,settlingLimit=0;
 };
 void release(Voice &voice) {
  if(voice.stage==Stage::release) return;
@@ -168,7 +175,8 @@ struct bs_synth {
   v->attackBend=parameters[BS_ATTACK_BEND]; v->decayBend=parameters[BS_DECAY_BEND]; v->releaseBend=parameters[BS_RELEASE_BEND];
   v->drop=parameters[BS_PITCH_DROP_CENTS]; v->dropTime=parameters[BS_PITCH_DROP_TIME]; v->dropBend=parameters[BS_PITCH_DROP_BEND];
   auto &fe=v->filterEnvelope;fe.attack=parameters[BS_FILTER_ATTACK];fe.decay=parameters[BS_FILTER_DECAY];fe.sustain=parameters[BS_FILTER_SUSTAIN];fe.release=parameters[BS_FILTER_RELEASE];fe.attackBend=parameters[BS_FILTER_ATTACK_BEND];fe.decayBend=parameters[BS_FILTER_DECAY_BEND];fe.releaseBend=parameters[BS_FILTER_RELEASE_BEND];
-  v->settlingTime=parameters[BS_SETTLING_TIME];
+  v->settlingTime=parameters[BS_SETTLING_TIME];v->settlingLimit=parameters[BS_SETTLING_CENTS];
+  if(parameters[BS_ENVELOPE_RESPONSE]>0&&(parameters[BS_DRIFT_CENTS]>29.8f||v->settlingLimit>8.9))v->motionShortness=blocks_detail::motionShortness(v->attack,v->decay,v->sustain,v->release,v->attackBend,v->decayBend,v->releaseBend);
   if(parameters[BS_SETTLING_CENTS]>0||parameters[BS_VELOCITY_MOVEMENT]>0){
    // Separate stream: never consume the legacy drift RNG. Rates/velocity are
    // note snapshots; drift amount and nominal speed remain live parameters.
@@ -211,7 +219,7 @@ struct bs_synth {
   if(parameters[BS_FULLNESS]==0 && smooth[BS_FULLNESS]<1e-12) smooth[BS_FULLNESS]=0;
   const double cutoff=std::min(smooth[BS_CUTOFF],rate*.45), filterAlpha=1-std::exp(-2*pi*cutoff*dt);
   const double driftSpeed=smooth[BS_DRIFT_HZ], driftAlpha=1-std::exp(-2*pi*driftSpeed*dt);
-  const double fullness=smooth[BS_FULLNESS];
+  const double fullness=smooth[BS_FULLNESS],bodyAlpha=1-std::exp(-2*pi*180*dt);
   const double level1=smooth[BS_OSC1_LEVEL],level2=smooth[BS_OSC2_LEVEL],w=smooth[BS_PULSE_WIDTH];
   double l=0,r=0;
   for(unsigned voiceIndex=0;voiceIndex<2*BS_MAX_VOICES;++voiceIndex) {
@@ -219,24 +227,25 @@ struct bs_synth {
    const double voiceDriftSpeed=driftSpeed*v.rateScale,voiceDriftAlpha=v.rateScale==1?driftAlpha:1-std::exp(-2*pi*voiceDriftSpeed*dt);
    v.driftAge+=dt; if(v.driftAge>=1/voiceDriftSpeed) { v.driftAge-=1/voiceDriftSpeed; v.driftTarget=random_signed(v.rng); }
    v.drift+=voiceDriftAlpha*(v.driftTarget-v.drift);
-   const double drop=v.drop*(1-bend(v.age/v.dropTime,v.dropBend));
-   const double settling=v.settling!=0?v.settling*std::exp(-4.605170185988092*v.age/v.settlingTime):0;
-   const double frequency=v.frequency*std::exp2((v.drift*smooth[BS_DRIFT_CENTS]*v.movementScale+settling+drop)/1200);
+   const double drop=v.drop*(1-bend(v.age/v.dropTime,v.dropBend))*smooth[BS_PITCH_DROP_ENABLED];
+   const double response=smooth[BS_ENVELOPE_RESPONSE];
+   const double budget=blocks_detail::settlingAllowance(v.settlingLimit,v.motionShortness),scale=v.settlingLimit>0?budget/v.settlingLimit:1;
+   const double settlingTime=response>0?v.settlingTime+response*(std::min(v.settlingTime,.06+.12*v.motionShortness)-v.settlingTime):v.settlingTime;
+   const double settling=v.settling!=0?v.settling*(response>0?1+response*(scale-1):1)*std::exp(-4.605170185988092*v.age/settlingTime):0;
+   const double driftDepth=response>0?smooth[BS_DRIFT_CENTS]+response*(blocks_detail::responsiveDrift(smooth[BS_DRIFT_CENTS],v.motionShortness,v.age)-smooth[BS_DRIFT_CENTS]):smooth[BS_DRIFT_CENTS];
+   const double frequency=v.frequency*std::exp2((v.drift*driftDepth*v.movementScale+settling+drop)/1200);
    const double step1=clamp(frequency*dt,1e-9,.45),step2=clamp(frequency*std::exp2(smooth[BS_OSC2_DETUNE]/1200)*dt,1e-9,.45);
    const double saw1=saw(v.phase1,step1),pulse2=pulse(v.phase2,step2,smooth[BS_PULSE_WIDTH]);
    const double raw=legacyWaves?level1*saw1+level2*pulse2:level1*oscillator(waveWeights[0],v.phase1,step1,w)+level2*oscillator(waveWeights[1],v.phase2,step2,w);
    v.phase1+=step1; v.phase1-=std::floor(v.phase1); v.phase2+=step2; v.phase2-=std::floor(v.phase2);
-   // Keep residual history warm while bypassed. The zero branch retains the
-   // legacy dry input and arithmetic exactly; no gain compensation or wet mix.
-   const double residual=v.fullness.process(raw,dcPole);
-   const double enriched=fullness>0?raw+fullness*residual:raw;
+   const double enriched=raw;
    const double filterEnv=v.filterEnvelope.sample(dt);
    const double voiceAlpha=smooth[BS_FILTER_AMOUNT]==0?filterAlpha:1-std::exp(-2*pi*clamp(smooth[BS_CUTOFF]*std::exp2(smooth[BS_FILTER_AMOUNT]*filterEnv/12),20,rate*.45)*dt);
    v.filter+=voiceAlpha*(enriched-v.filter); if(std::abs(v.filter)<1e-20) v.filter=0;
    double amplitude=envelope(v,dt)*v.velocity;
    if(voiceIndex>=BS_MAX_VOICES) {amplitude*=double(v.tailRemaining)/std::ceil(.003*rate);if(--v.tailRemaining==0)v.active=false;}
    const double filtered=smooth[BS_FILTER_MIX]==1?v.filter:enriched+(v.filter-enriched)*smooth[BS_FILTER_MIX];
-   const double dry=std::tanh(filtered*smooth[BS_DRIVE]);
+   const double dry=v.sauce.process(filtered,smooth[BS_DRIVE],fullness,smooth[BS_SAUCE_ORDER],smooth[BS_DRIVE_ENABLED],smooth[BS_FULLNESS_ENABLED],dcPole,bodyAlpha);
    const double value=dry*amplitude*.25;
    l+=value*v.panLeft; r+=value*v.panRight; v.age+=dt;
   }
@@ -285,13 +294,14 @@ int bs_get_patch(const bs_synth *synth,bs_patch *patch) {
 }
 int bs_set_patch(bs_synth *synth,const bs_patch *patch) {
  if(!synth||!patch||(patch->version<1||patch->version>BS_ABI_VERSION)) return 0;
- const uint32_t count=patch->version==1?18u:patch->version==2?19u:patch->version==3?21u:BS_PARAMETER_COUNT;
+ const uint32_t count=patch->version==1?18u:patch->version==2?19u:patch->version==3?21u:patch->version==4?35u:BS_PARAMETER_COUNT;
  for(uint32_t i=0;i<count;++i)if(!std::isfinite(patch->values[i]))return 0;
  // Build all canonical targets before changing any current parameter. V4's
  // independent levels win over an inconsistent compatibility Mix field.
  std::array<float,BS_PARAMETER_COUNT> next{};
  for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i){const double value=clamp(i<count?patch->values[i]:descriptors[i].default_value,descriptors[i].minimum,descriptors[i].maximum);next[i]=float(descriptors[i].mapping==BS_DISCRETE?std::round(value):value);}
  if(patch->version<4){next[BS_OSC1_LEVEL]=1-next[BS_OSC_MIX];next[BS_OSC2_LEVEL]=next[BS_OSC_MIX];}
+ if(patch->version<5)next[BS_ENVELOPE_RESPONSE]=0;
  synth->parameters=next;synth->canonicalMix();
  return 1;
 }

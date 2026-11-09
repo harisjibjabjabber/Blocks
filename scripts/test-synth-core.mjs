@@ -6,7 +6,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 if(!process.env.EMSDK) throw Error('Set EMSDK to Emscripten 7.0.0.');
 const out=resolve(process.env.SYNTH_CORE_EVIDENCE||resolve(root,'../synth-core-evidence'));
 mkdirSync(out,{recursive:true});
-for(const [source,name,extra] of [['core_tests.cpp','core-tests',[]],['performance_tests.cpp','performance-tests',[]],['render_wav.cpp','render-wav',['-sNODERAWFS=1']]]) {
+for(const [source,name,extra] of [['core_tests.cpp','core-tests',[]],['performance_tests.cpp','performance-tests',[]],['motion_response_tests.cpp','motion-response-tests',[]],['sauce_tests.cpp','sauce-tests',[]],['fullness_body_tests.cpp','fullness-body-tests',[]],['render_wav.cpp','render-wav',['-sNODERAWFS=1']]]) {
   const target=resolve(out,name+'.mjs');
   const result=spawnSync(process.env.PYTHON||'python',[
     resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),
@@ -18,5 +18,9 @@ for(const [source,name,extra] of [['core_tests.cpp','core-tests',[]],['performan
   if(result.error) throw result.error;
   if(result.status) process.exit(result.status);
   const run=(await import(pathToFileURL(target).href)).default;
-  await run({arguments:name==='render-wav'?[resolve(out,'wasm.wav')]:[]});
+  let exitStatus=0;
+  await run({arguments:name==='render-wav'?[resolve(out,'wasm.wav')]:[],onExit:status=>{exitStatus=status;}});
+  // Emscripten resolves the module factory even when main calls exit(1).
+  // Check now: loading another module can overwrite Node's process.exitCode.
+  if(exitStatus!==0||process.exitCode)process.exit(exitStatus||process.exitCode);
 }

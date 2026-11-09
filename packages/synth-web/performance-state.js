@@ -1,7 +1,7 @@
 // Host-facing performance state is separate from the portable tone patch.
 export const DEFAULT_PERFORMANCE=Object.freeze({version:1,mode:'off',mono:false,bpm:120,division:'1/8',curl:0,gate:.7,order:'up',strum:35,humanize:.25,seed:0xC0FFEE});
 const modes=['off','arp','strum'],orders=['up','down','played','random'];
-const divisions={'1/4':[4,0],'1/8':[8,0],'1/16':[16,0],'1/8T':[8,1],'1/16T':[16,1]};
+const divisions={'1/4':[4,0],'1/8':[8,0],'1/16':[16,0],'1/32':[32,0],'1/64':[64,0],'1/8T':[8,1],'1/16T':[16,1]};
 export function normalizePerformance(input=DEFAULT_PERFORMANCE){
  if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Invalid performance settings');
  const next={...DEFAULT_PERFORMANCE,...input};

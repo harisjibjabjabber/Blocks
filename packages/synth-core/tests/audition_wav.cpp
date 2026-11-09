@@ -19,7 +19,7 @@ constexpr const char *renderTarget="portable C++ core compiled to WebAssembly";
 #else
 constexpr const char *renderTarget="portable C++ core compiled natively";
 #endif
-// ABI4 fixtures consume the shared host factory patches without duplicating recipes.
+// ABI5 fixtures consume the shared host factory patches without duplicating recipes.
 constexpr uint32_t osc1=BS_OSC1_WAVE, osc2=BS_OSC2_WAVE;
 struct Clip { std::string id,title,description; std::array<float,BS_PARAMETER_COUNT> patch; std::vector<bs_event> events; };
 uint32_t at(double seconds) { return uint32_t(std::llround(seconds*rate)); }
@@ -89,7 +89,7 @@ bool render(Clip &c,const std::string &directory) {
 }
 int main(int argc,char **argv) {
  if(argc!=3){std::cerr<<"Usage: audition-wav output-directory factory-values.txt|--describe\n";return 1;}
- if(bs_abi_version()!=4||bs_parameter_count()!=35){std::cerr<<"This fixture requires ABI4/count35.\n";return 2;}
+ if(bs_abi_version()!=5||bs_parameter_count()!=40){std::cerr<<"This fixture requires ABI5/count40.\n";return 2;}
  if(std::string(argv[2])=="--describe"){
   std::ofstream out(std::string(argv[1])+"/descriptors.json");out<<std::setprecision(10)<<"[";
   for(unsigned id=0;id<BS_PARAMETER_COUNT;++id){const auto*p=bs_parameter_info(id);if(id)out<<',';out<<"{\"id\":"<<id<<",\"default\":"<<p->default_value<<",\"min\":"<<p->minimum<<",\"max\":"<<p->maximum<<",\"mapping\":"<<p->mapping<<'}';}out<<"]\n";return out?0:2;

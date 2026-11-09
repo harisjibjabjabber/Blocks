@@ -4,8 +4,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* Original Blocks DSP spike. ABI 4. Physical-unit parameters, not MIDI CCs. */
-#define BS_ABI_VERSION 4u
+/* Original Blocks DSP spike. ABI 5. Physical-unit parameters, not MIDI CCs. */
+#define BS_ABI_VERSION 5u
 #define BS_MAX_VOICES 16u
 typedef struct bs_synth bs_synth;
 typedef enum bs_parameter_id {
@@ -18,7 +18,9 @@ typedef enum bs_parameter_id {
   BS_OSC1_LEVEL=21, BS_OSC2_LEVEL=22, BS_FILTER_MIX=23, BS_FILTER_AMOUNT=24,
   BS_FILTER_ATTACK=25, BS_FILTER_DECAY=26, BS_FILTER_SUSTAIN=27, BS_FILTER_RELEASE=28,
   BS_FILTER_ATTACK_BEND=29, BS_FILTER_DECAY_BEND=30, BS_FILTER_RELEASE_BEND=31,
-  BS_SETTLING_CENTS=32, BS_SETTLING_TIME=33, BS_VELOCITY_MOVEMENT=34, BS_PARAMETER_COUNT=35
+  BS_SETTLING_CENTS=32, BS_SETTLING_TIME=33, BS_VELOCITY_MOVEMENT=34,
+  BS_ENVELOPE_RESPONSE=35, BS_DRIVE_ENABLED=36, BS_PITCH_DROP_ENABLED=37,
+  BS_SAUCE_ORDER=38, BS_FULLNESS_ENABLED=39, BS_PARAMETER_COUNT=40
 } bs_parameter_id;
 typedef enum bs_mapping { BS_LINEAR=0, BS_LOGARITHMIC=1, BS_DISCRETE=2 } bs_mapping;
 typedef enum bs_waveform { BS_SINE=0, BS_TRIANGLE=1, BS_SAW=2, BS_PULSE=3, BS_SQUARE=4 } bs_waveform;
@@ -36,8 +38,13 @@ typedef struct bs_event {
   uint32_t sample_offset, type, channel, key, parameter_id; float value;
 } bs_event;
 typedef struct bs_patch { uint32_t version; float values[BS_PARAMETER_COUNT]; } bs_patch;
-/* Optional performance state is separate from the35-parameter tone patch.
- * 48bytes: seven uint32 fields then five floats. No host clock/timer required. */
+/* Optional performance state is separate from the40-parameter tone patch.
+ * 48bytes: seven uint32 fields then five floats. No host clock/timer required.
+ * Divisions4/8/16 allow triplets;32/64 are straight only.
+ * Arp chord edits restart immediately, then group further edits for20ms
+ * from that first restart. Empty-to-new always restarts. Pending settings apply
+ * at an actual restart or the next bar seam.
+ * Same-sample input events precede the first generated attack. */
 #define BS_PERFORMANCE_VERSION 1u
 typedef enum bs_performance_mode { BS_PERFORMANCE_OFF=0, BS_ARP=1, BS_STRUM=2 } bs_performance_mode;
 typedef enum bs_note_order { BS_ORDER_UP=0, BS_ORDER_DOWN=1, BS_ORDER_AS_PLAYED=2, BS_ORDER_RANDOM=3 } bs_note_order;
@@ -65,10 +72,11 @@ void bs_reset(bs_synth *synth); /* reset voices, pedal and deterministic RNG seq
 int bs_set_parameter(bs_synth *synth, uint32_t id, float physical);
 float bs_get_parameter(const bs_synth *synth, uint32_t id);
 int bs_get_patch(const bs_synth *synth, bs_patch *patch);
-/* v4 writes/reads35 values; v1(18), v2(19), v3(21) prefixes migrate.
- * Legacy Mix maps to oscillator levels; v4 levels are authoritative and Mix
+/* v5 writes/reads40 values; v1(18), v2(19), v3(21), v4(35) prefixes migrate.
+ * Legacy patches bypass envelope response (0); Drive/Pitch Drop/Fullness remain enabled (1), order is Drive then Fullness (0).
+ * Legacy Mix maps to oscillator levels; v4/v5 levels are authoritative and Mix
  * is exported as level2/(level1+level2), or .5 when both are zero.
- * Unknown versions/nonfinite input: atomic reject. Getter always v4. */
+ * Unknown versions/nonfinite input: atomic reject. Getter always v5. */
 int bs_set_patch(bs_synth *synth, const bs_patch *patch);
 void bs_note_on(bs_synth *synth, uint32_t channel, uint32_t key, float velocity);
 void bs_note_off(bs_synth *synth, uint32_t channel, uint32_t key);

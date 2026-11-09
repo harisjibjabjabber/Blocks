@@ -39,7 +39,7 @@ bool run(bs_synth*s,unsigned voices,bool dense,bool measured,Result&result) {
 }
 }
 int main(int argc,char**argv) {
- if(argc!=2||bs_abi_version()!=4||bs_parameter_count()!=35){std::cerr<<"Usage: benchmark_core output.json (ABI4 required)\n";return 1;}
+ if(argc!=2||bs_abi_version()!=5||bs_parameter_count()!=40){std::cerr<<"Usage: benchmark_core output.json (ABI5 required)\n";return 1;}
  std::ofstream out(argv[1]);if(!out)return 2;
  out<<std::setprecision(10)<<"{\n\"kind\":\"Offline core timing, not a phone or audio-device benchmark\",\n\"abiVersion\":"<<bs_abi_version()<<",\n\"sampleRate\":"<<rate<<",\n\"blockFrames\":"<<block<<",\n\"audioBlockBudgetMs\":"<<1000.0*block/rate<<",\n\"cases\":[\n";
  bool first=true;
@@ -62,14 +62,14 @@ int main(int argc,char**argv) {
  // Saturated held-note pools exercise the new scheduler separately from tone.
  for(unsigned mode=0;mode<3;++mode){
   bs_synth*s=bs_create();if(!s||!bs_prepare(s,rate))return 6;
-  bs_performance_config config{};bs_default_performance(&config);config.mode=mode==0?BS_PERFORMANCE_OFF:mode==1?BS_ARP:BS_STRUM;config.mono=mode==0;config.bpm=240;config.division=16;config.triplet=1;config.curl=.8f;config.strum_ms=100;config.randomness=1;
+  bs_performance_config config{};bs_default_performance(&config);config.mode=mode==0?BS_PERFORMANCE_OFF:mode==1?BS_ARP:BS_STRUM;config.mono=mode==0;config.bpm=240;config.division=64;config.triplet=0;config.curl=.8f;config.strum_ms=100;config.randomness=1;
   if(!bs_set_performance(s,&config))return 7;
   for(unsigned key=0;key<128;++key)bs_note_on(s,0,key,.65f);
   Result result;if(!run(s,128,true,false,result))return 8;
   for(unsigned repeat=0;repeat<3;++repeat)if(!run(s,128,true,true,result))return 8;
   bs_panic(s);bs_destroy(s);
   const double maximum=*std::max_element(result.blocks.begin(),result.blocks.end());
-  out<<",\n{\"performanceMode\":\""<<(mode==0?"mono":mode==1?"arp":"strum")<<"\",\"heldNotePool\":128,\"bpm\":240,\"division\":\"1/16T\",\"curl\":0.8,\"denseRetriggers\":true,\"measuredAudioSeconds\":3,\"renderMsPerAudioSecond\":"<<result.sum/3<<",\"blockMsP50\":"<<quantile(result.blocks,.5)<<",\"blockMsP95\":"<<quantile(result.blocks,.95)<<",\"blockMsP99\":"<<quantile(result.blocks,.99)<<",\"blockMsMax\":"<<maximum<<",\"peak\":"<<result.peak<<'}';
+  out<<",\n{\"performanceMode\":\""<<(mode==0?"mono":mode==1?"arp":"strum")<<"\",\"heldNotePool\":128,\"bpm\":240,\"division\":\"1/64\",\"curl\":0.8,\"denseRetriggers\":true,\"measuredAudioSeconds\":3,\"renderMsPerAudioSecond\":"<<result.sum/3<<",\"blockMsP50\":"<<quantile(result.blocks,.5)<<",\"blockMsP95\":"<<quantile(result.blocks,.95)<<",\"blockMsP99\":"<<quantile(result.blocks,.99)<<",\"blockMsMax\":"<<maximum<<",\"peak\":"<<result.peak<<'}';
  }
  out<<"\n],\n\"limits\":\"One warmed desktop/Node run; no hard CI timing threshold. Includes bs_render event handling and bounded steal tails, excludes host messaging/copies, device latency, UI, and thermal effects. Fixed 128-frame blocks; OS scheduling can affect maxima.\"\n}\n";
  return out?0:5;

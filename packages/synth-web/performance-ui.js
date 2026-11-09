@@ -2,12 +2,9 @@
 export function createPerformanceUI({container, getPerformance, change, begin, getGesture, bindCompletion}) {
   container.className='performance-panel';
   container.innerHTML=`
-    <div class="performance-modes" role="group" aria-label="Performance mode">
-      <button type="button" data-performance-mode="off">Off</button><button type="button" data-performance-mode="arp">Arp</button><button type="button" data-performance-mode="strum">Strum</button>
-    </div>
     <div class="performance-row performance-rhythm">
       <div class="performance-tempo" role="group" aria-label="Tempo"><button type="button" id="performance-bpm-down" aria-label="Decrease performance tempo">−</button><output id="performance-bpm" aria-label="Tempo"></output><button type="button" id="performance-bpm-up" aria-label="Increase performance tempo">+</button></div>
-      <label class="performance-select"><span>Division</span><select id="performance-division" aria-label="Arpeggiator division"><option>1/4</option><option>1/8</option><option>1/16</option><option>1/8T</option><option>1/16T</option></select></label>
+      <label class="performance-select"><span>Division</span><select id="performance-division" aria-label="Arpeggiator division"><option>1/4</option><option>1/8</option><option>1/16</option><option>1/32</option><option>1/64</option><option>1/8T</option><option>1/16T</option></select></label>
     </div>
     <div class="performance-row">
       <label class="performance-select"><span>Order</span><select id="performance-order" aria-label="Note order"><option value="up">Up</option><option value="down">Down</option><option value="played">Played</option><option value="random">Random</option></select></label>
@@ -20,7 +17,6 @@ export function createPerformanceUI({container, getPerformance, change, begin, g
     <p class="performance-hint"><span id="performance-context">4 beats</span><span id="performance-status" role="status"></span></p>`;
   const $=selector=>container.querySelector(selector);
   const scale=key=>key==='strum'?1:100;
-  for(const button of container.querySelectorAll('[data-performance-mode]'))button.addEventListener('click',()=>change({mode:button.dataset.performanceMode}));
   $('#performance-bpm-down').addEventListener('click',()=>change({bpm:getPerformance().bpm-1}));
   $('#performance-bpm-up').addEventListener('click',()=>change({bpm:getPerformance().bpm+1}));
   for(const key of ['division','order'])$('#performance-'+key).addEventListener('change',e=>change({[key]:e.target.value}));
@@ -30,9 +26,10 @@ export function createPerformanceUI({container, getPerformance, change, begin, g
     input.addEventListener('input',()=>{const active=getGesture();if(active&&(active.type!=='performance'||active.key!==key))return;change({[key]:Number(input.value)/scale(key)},!active);});
     bindCompletion(input);
   }
-  function update(previewOffsets) {
-    const p=getPerformance(),strum=p.mode==='strum';
-    for(const button of container.querySelectorAll('[data-performance-mode]'))button.setAttribute('aria-pressed',String(button.dataset.performanceMode===p.mode));
+  let viewMode='arp',pending=false;
+  const pendingText=()=>{$('#performance-status').textContent=pending&&getPerformance().mode===viewMode?' · Changes next bar':'';};
+  function update(previewOffsets,selectedView='arp') {
+    viewMode=selectedView;const p=getPerformance(),strum=viewMode==='strum';pendingText();
     $('#performance-bpm').textContent=Math.round(p.bpm)+' BPM';
     $('#performance-bpm-down').disabled=p.bpm<=40;$('#performance-bpm-up').disabled=p.bpm>=240;
     $('#performance-division').value=p.division;$('#performance-order').value=p.order;
@@ -42,9 +39,9 @@ export function createPerformanceUI({container, getPerformance, change, begin, g
     $('#performance-context').textContent=strum?'Spread across held notes':'4 beats';
     // Offsets are supplied by the scheduler's shared pure timing helper.
     const svg=$('#performance-preview');svg.replaceChildren();
-    if(previewOffsets){for(const phase of previewOffsets){const dot=document.createElementNS('http://www.w3.org/2000/svg','ellipse');dot.setAttribute('cx',String(4+Math.max(0,Math.min(1,phase))*292));dot.setAttribute('cy','10');dot.setAttribute('rx',String(2.5*300/(svg.clientWidth||300)));dot.setAttribute('ry','2.5');svg.append(dot);}}
+    if(previewOffsets){const width=svg.clientWidth||300,radius=Math.min(2.5,Math.max(.7,width/Math.max(1,previewOffsets.length)*.32));for(const phase of previewOffsets){const dot=document.createElementNS('http://www.w3.org/2000/svg','ellipse');dot.setAttribute('cx',String(4+Math.max(0,Math.min(1,phase))*292));dot.setAttribute('cy','10');dot.setAttribute('rx',String(radius*300/width));dot.setAttribute('ry',String(radius));svg.append(dot);}}
     $('#performance-preview-label').textContent=strum?'Illustrative strum':'Timing preview';
   }
-  const setPending=pending=>{$('#performance-status').textContent=pending?' · Changes next bar':'';};
+  const setPending=value=>{pending=Boolean(value);pendingText();};
   return {update,setPending};
 }

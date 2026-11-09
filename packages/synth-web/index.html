@@ -33,11 +33,11 @@
       <button type="button" data-module="character" aria-pressed="false">Character</button>
       <button type="button" data-module="drop" aria-pressed="false">Sauce</button>
     </nav>
-    <section class="sound-editor" aria-label="Sound editing">
+    <div id="sauce-rack" hidden></div>
+    <section id="sound-editor" class="sound-editor" aria-label="Sound editing">
       <div class="visual-panel">
         <div class="surface-heading"><div id="envelope-tabs" role="group" aria-label="Envelope destination" hidden><button type="button" data-envelope="amp" aria-pressed="true">Amp</button><button type="button" data-envelope="filter" aria-pressed="false">Filter</button></div><button id="motion-details-toggle" type="button" aria-expanded="false" aria-controls="motion-details" hidden>Motion details <span aria-hidden="true">⌄</span></button><h2 id="module-title">Oscillator + filter</h2><output id="value-summary" aria-live="off"></output></div>
         <div id="waveforms" aria-label="Oscillator waveforms" hidden></div>
-        <div id="sauce-tabs" role="group" aria-label="Sauce effect" hidden><button type="button" data-sauce="drive" aria-pressed="true">Drive</button><button type="button" data-sauce="drop" aria-pressed="false">Pitch Drop</button><button type="button" data-sauce="arp" aria-pressed="false">Arp</button></div>
         <div id="scope-wrapper" hidden><div class="waveform-caption"><span>Waveform</span><span id="scope-label">Preview</span></div><canvas id="scope" aria-label="Synth waveform preview"></canvas></div>
         <div id="shape-surface" aria-label="Interactive sound graph"></div>
         <div id="performance-panel" hidden></div>

@@ -37,7 +37,7 @@ int main(int argc,char**argv){try{
  for(const auto&profile:profiles)for(unsigned key:{60u,69u,72u})for(float velocity:{.25f,.72f,1.f}){
   bs_synth*s=bs_create();if(!s||!bs_prepare(s,rate))throw std::runtime_error("Prepare failed");
   std::array<float,BS_PARAMETER_COUNT>p{};for(unsigned i=0;i<p.size();++i)p[i]=bs_parameter_info(i)->default_value;
-  p[BS_GAIN]=.3f;p[BS_OSC1_WAVE]=p[BS_OSC2_WAVE]=BS_SINE;p[BS_OSC_MIX]=0;p[BS_OSC1_LEVEL]=1;p[BS_OSC2_LEVEL]=0;p[BS_OSC2_DETUNE]=0;p[BS_ATTACK]=.001f;p[BS_DECAY]=.01f;p[BS_SUSTAIN_LEVEL]=1;p[BS_RELEASE]=.1f;p[BS_DRIVE]=1;p[BS_FULLNESS]=0;p[BS_FILTER_MIX]=0;p[BS_FILTER_AMOUNT]=0;p[BS_PITCH_DROP_CENTS]=0;p[BS_DRIFT_CENTS]=profile.drift;p[BS_DRIFT_HZ]=profile.speed;p[BS_SETTLING_CENTS]=profile.settling;p[BS_SETTLING_TIME]=.18f;p[BS_VELOCITY_MOVEMENT]=profile.sensitivity;
+  p[BS_GAIN]=.3f;p[BS_OSC1_WAVE]=p[BS_OSC2_WAVE]=BS_SINE;p[BS_OSC_MIX]=0;p[BS_OSC1_LEVEL]=1;p[BS_OSC2_LEVEL]=0;p[BS_OSC2_DETUNE]=0;p[BS_ATTACK]=.001f;p[BS_DECAY]=.01f;p[BS_SUSTAIN_LEVEL]=1;p[BS_RELEASE]=.1f;p[BS_DRIVE]=1;p[BS_FULLNESS]=0;p[BS_FILTER_MIX]=0;p[BS_FILTER_AMOUNT]=0;p[BS_PITCH_DROP_CENTS]=0;p[BS_DRIFT_CENTS]=profile.drift;p[BS_DRIFT_HZ]=profile.speed;p[BS_SETTLING_CENTS]=profile.settling;p[BS_SETTLING_TIME]=.18f;p[BS_VELOCITY_MOVEMENT]=profile.sensitivity;if(p.size()>35)p[35]=0; // Compare raw manual controls, not the envelope-adaptive budget.
   for(unsigned i=0;i<p.size();++i)if(!bs_set_parameter(s,i,p[i]))throw std::runtime_error("Set parameter failed");bs_reset(s);bs_patch actual{};bs_get_patch(s,&actual);
   const std::array<bs_event,2>events={{{0,BS_NOTE_ON,0,key,0,velocity},{rate*38/10,BS_NOTE_OFF,0,key,0,0}}};
   std::vector<float>left(frames),right(frames);std::vector<bs_event>local;local.reserve(2);

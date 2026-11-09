@@ -51,7 +51,7 @@ std::array<float,BS_PARAMETER_COUNT> patch(const Case&c,float drive){
 }
 int main(int argc,char**argv){try{
  if(argc!=2)throw std::runtime_error("Usage: drive-diagnostic existing-output-directory");
- if(bs_abi_version()!=4||bs_parameter_count()!=35)throw std::runtime_error("Requires the final ABI4/35-parameter core; do not use interim renders");
+ if(!((bs_abi_version()==4&&bs_parameter_count()==35)||(bs_abi_version()==5&&bs_parameter_count()==40)))throw std::runtime_error("Requires a coherent ABI4/35 or ABI5/40 core");
  analysisSelfTest();
  std::vector<Case>cases={{"single-saw",BS_SAW,false,.5f,0},{"single-square",BS_SQUARE,false,.5f,0},{"single-pulse50",BS_PULSE,false,.5f,0},{"single-pulse6592",BS_PULSE,false,.6592f,0}};
  for(float detune:{0.f,4.8f,20.f})for(unsigned kind=0;kind<3;++kind)cases.push_back({"dual-"+std::string(kind==0?"square":kind==1?"pulse50":"pulse6592")+"-"+std::to_string(detune),kind==0?unsigned(BS_SQUARE):unsigned(BS_PULSE),true,kind==2?.6592f:.5f,detune});
@@ -59,7 +59,7 @@ int main(int argc,char**argv){try{
  bool first=true;unsigned count=0;
  for(unsigned phrase=0;phrase<2;++phrase){std::vector<unsigned>keys=phrase?std::vector<unsigned>{48,55,60,64}:std::vector<unsigned>{36};std::vector<float>clipL,clipR;
  for(const auto&c:cases)for(float drive:{1.f,2.f,4.f,8.f,12.f}){
-  auto p=patch(c,drive);bs_synth*s=bs_create();if(!s||!bs_prepare(s,rate))throw std::runtime_error("Core prepare failed");for(unsigned i=0;i<p.size();++i)if(!bs_set_parameter(s,i,p[i]))throw std::runtime_error("Parameter rejected");bs_reset(s);bs_patch actual{};bs_get_patch(s,&actual);
+  auto p=patch(c,drive);if(p.size()>35)p[35]=0;bs_synth*s=bs_create();if(!s||!bs_prepare(s,rate))throw std::runtime_error("Core prepare failed");for(unsigned i=0;i<p.size();++i)if(!bs_set_parameter(s,i,p[i]))throw std::runtime_error("Parameter rejected");bs_reset(s);bs_patch actual{};bs_get_patch(s,&actual);
   std::vector<bs_event>events;for(unsigned key:keys)events.push_back({rate/5,BS_NOTE_ON,0,key,0,.72f});for(unsigned key:keys)events.push_back({rate*19/2,BS_NOTE_OFF,0,key,0,0});
   std::vector<float>l(frames),r(frames);std::vector<bs_event>local;local.reserve(events.size());for(unsigned start=0;start<frames;start+=block){unsigned n=std::min(block,frames-start);local.clear();for(auto e:events)if(e.sample_offset>=start&&e.sample_offset<start+n){e.sample_offset-=start;local.push_back(e);}if(bs_render(s,l.data()+start,r.data()+start,n,local.data(),unsigned(local.size())))throw std::runtime_error("Render event error");}unsigned voices=bs_active_voices(s);bs_destroy(s);
   auto m=measure(l,r,keys,c.detune,c.dual);if(m.clipped||voices)throw std::runtime_error("Clipped/uncleared case");

@@ -1,11 +1,12 @@
 // Host-side macros only write existing physical parameters. No separate DSP state.
 export const motionRecipe = Object.freeze({
-  id: 'motion', version: 3,
+  id: 'motion', version: 4,
   targets: Object.freeze([
     Object.freeze({id:13,minimum:0,maximum:120,points:Object.freeze([[0,0],[.6,4.8],[.85,40],[1,120]].map(Object.freeze))}),
     Object.freeze({id:32,minimum:0,maximum:60,points:Object.freeze([[0,0],[.6,1.2],[.85,12],[1,60]].map(Object.freeze))}),
     Object.freeze({id:33,minimum:.18,maximum:.18}),
     Object.freeze({id:34,minimum:0,maximum:.85}),
+    Object.freeze({id:35,minimum:1,maximum:1}),
   ]),
 });
 export const characterRecipe=Object.freeze({id:'character',version:5,targets:Object.freeze([Object.freeze({id:12,minimum:1,maximum:2.2})])});

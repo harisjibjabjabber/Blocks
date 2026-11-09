@@ -4,6 +4,7 @@ import {timeFromUnit,timeToUnit} from './envelope-scale.js';
 import {envelopeGeometry} from './envelope-geometry.js';
 import {DEFAULT_PERFORMANCE,normalizePerformance,curlPhase,performanceSteps} from './performance-state.js';
 import {createPerformanceUI} from './performance-ui.js';
+import {createSauceRack} from './sauce-rack-ui.js';
 // The instrument surface owns gestures, never voices or the audio clock.
 export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, getPerformance, applyPerformance, onViewChange=()=>{} }) {
   let localPerformance={...DEFAULT_PERFORMANCE};
@@ -12,9 +13,10 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   const performance=()=>normalizePerformance(getPerformance());
   const $ = id => document.getElementById(id);
   const history = [];
-  let module = 'tone', sauce = 'drive', envelopeTarget='amp', gesture = null, preset = 'velvet';
+  let module = 'tone', sauce = null, envelopeTarget='amp', gesture = null, preset = 'velvet';
   const svgNS = 'http://www.w3.org/2000/svg';
   const waveNames = ['Sine','Triangle','Saw','Pulse','Square'];
+  const sauceTitles={drive:'Drive',drop:'Pitch Drop',fullness:'Fullness',arp:'Arpeggiator',strum:'Strum'};
   const timingIds=[4,5,7,25,26,28];
   const envelopeSpec=()=>envelopeTarget==='filter'?{attack:25,decay:26,sustain:27,release:28,bends:{attack:29,decay:30,release:31}}:{attack:4,decay:5,sustain:6,release:7,bends:{attack:8,decay:9,release:10}};
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
@@ -30,10 +32,12 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     return p.mapping===2?Math.round(value):value;
   };
   const format = (id, value = getValues()[id]) => {
+    if([36,37,39].includes(id))return value>=.5?'On':'Off';
+    if(id===38)return value>=.5?'Fullness → Drive':'Drive → Fullness';
     if (id===19||id===20) return waveNames[Math.round(value)]||'Unknown';
     if ([...timingIds,16,33].includes(id)) return value < 1 ? Math.round(value * 1000) + ' ms' : value.toFixed(2) + ' s';
     if (id === 11) return value < 1000 ? Math.round(value) + ' Hz' : (value / 1000).toFixed(1) + ' kHz';
-    if ([0,1,6,18,21,22,23,27,34].includes(id)) return Math.round(value * 100) + '%';
+    if ([0,1,6,18,21,22,23,27,34,35].includes(id)) return Math.round(value * 100) + '%';
     if(id===24)return (value>0?'+':'')+Number(value.toFixed(1))+' st';
     if ([8,9,10,17,29,30,31].includes(id)) return Math.abs(value) < .01 ? 'Linear' : (value > 0 ? '+' : '') + value.toFixed(2);
     return Number(value.toFixed(id === 14 ? 2 : 1)) + (id === 14 ? ' Hz' : id === 12 ? '×' : id === 3 ? '' : ' ct');
@@ -107,27 +111,28 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   const macros={tone:[[11,'Cutoff'],[23,'Filter mix'],['character','Character']],envelope:[['character','Character']],character:[['character','Character'],['motion','Motion']],drop:[[15,'Amount'],[16,'Fall time'],['character','Character']]};
   if(parameters[18]) {macros.character.push([18,'Fullness']);}
   const titles={tone:'Oscillator + filter',envelope:'Amplitude envelope',character:'Character',drop:'Pitch Drop'};
-  const descriptions={tone:'Across: cutoff · up/down: filter mix',envelope:'Drag points or stage labels · bend curves for shape',character:'Motion range is open for calibration · settling reacts to new notes',drop:'Per-note pitch fall · drag the curve to bend · new notes'};
+  const descriptions={tone:'Across: cutoff · up/down: filter mix',envelope:'Drag points or stage labels · bend curves for shape',character:'Movement follows the amplitude envelope',drop:'Per-note pitch fall · drag the curve to bend · new notes'};
   function select(next) {
     cancel(); module=next;
     document.querySelector('.instrument').dataset.module=module;
     document.querySelector('.instrument').dataset.envelope=envelopeTarget;
-    document.querySelector('.instrument').dataset.sauce=sauce;
+    document.querySelector('.instrument').dataset.sauce=sauce||'none';
     closeOsc(false);
     closeMotion(false);$('motion-details-toggle').hidden=module!=='character';
     $('waveforms').hidden=module!=='tone'||!parameters[19];
     $('scope-wrapper').hidden=module!=='tone';
-    $('sauce-tabs').hidden=module!=='drop';
+    $('sauce-rack').hidden=module!=='drop';
+    $('sound-editor').hidden=module==='drop'&&!sauce;
+    $('sound-editor').setAttribute('aria-label',module==='drop'&&sauce?sauceTitles[sauce]+' settings':'Sound editing');
     $('envelope-tabs').hidden=module!=='envelope';
-    const isPerformance=module==='drop'&&sauce==='arp';
-    $('performance-panel').hidden=!isPerformance;$('shape-surface').hidden=isPerformance;
-    $('macros').hidden=isPerformance;$('module-description').hidden=isPerformance;
+    const isPerformance=module==='drop'&&['arp','strum'].includes(sauce);
+    $('performance-panel').hidden=!isPerformance;$('shape-surface').hidden=isPerformance||module==='drop'&&sauce==='fullness';
+    $('macros').hidden=isPerformance;$('module-description').hidden=module==='drop';
     for(const b of document.querySelectorAll('[data-envelope]'))if(b.tagName==='BUTTON')b.setAttribute('aria-pressed',String(b.dataset.envelope===envelopeTarget));
-    for(const b of document.querySelectorAll('[data-sauce]'))b.setAttribute('aria-pressed',String(b.dataset.sauce===sauce));
     svg.setAttribute('preserveAspectRatio',module==='tone'?'none':'xMidYMid meet');
     for(const b of document.querySelectorAll('#module-tabs [data-module]')) {const active=b.dataset.module===module;b.setAttribute('aria-pressed',String(active));b.classList.toggle('selected',active);}
-    $('module-title').textContent=module==='envelope'?(envelopeTarget==='amp'?'Amplitude envelope':'Filter envelope'):module==='drop'&&sauce==='drive'?'Drive':titles[module]; $('module-description').textContent=module==='drop'&&sauce==='drive'?'Mixer warmth · turn up for more edge':descriptions[module];
-    const selected=module==='envelope'&&envelopeTarget==='filter'?[[24,'Filter amount'],[11,'Base cutoff'],['character','Character']]:module==='drop'&&sauce==='drive'?[[12,'Drive'],['character','Character']]:macros[module];
+    $('module-title').textContent=module==='envelope'?(envelopeTarget==='amp'?'Amplitude envelope':'Filter envelope'):module==='drop'?(sauceTitles[sauce]||'Sauce'):titles[module]; $('module-description').textContent=module==='drop'&&sauce==='drive'?'Mixer warmth · turn up for more edge':descriptions[module];
+    const selected=module==='envelope'&&envelopeTarget==='filter'?[[24,'Filter amount'],[11,'Base cutoff'],['character','Character']]:module==='drop'?(sauce==='drive'?[[12,'Drive']]:sauce==='fullness'?[[18,'Fullness']]:sauce==='drop'?[[15,'Amount'],[16,'Fall time']]:[]):macros[module];
     $('macros').replaceChildren(...(isPerformance?[]:selected.map(([id,name])=>knob(String(id),name))));
     update();
   }
@@ -191,7 +196,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   function draw(){
     const box=svg.getBoundingClientRect();if(!box.width||!box.height)return;
     const height=module==='envelope'?420*box.height/box.width:210;
-    svg.setAttribute('viewBox',`0 0 420 ${height}`);svg.replaceChildren();node('title',{},module==='envelope'?(envelopeTarget==='filter'?'Filter envelope':'Amplitude envelope'):titles[module]);interactionPoints=[];interactionBends=[];
+    svg.setAttribute('viewBox',`0 0 420 ${height}`);svg.replaceChildren();node('title',{},module==='envelope'?(envelopeTarget==='filter'?'Filter envelope':'Amplitude envelope'):module==='drop'?(sauceTitles[sauce]||'Sauce'):titles[module]);interactionPoints=[];interactionBends=[];
     const g=module==='envelope'?geometry():null;yTop=g?g.yTop:29;yBottom=g?g.yBottom:169;
     for(const y of [yTop,(yTop+yBottom)/2,yBottom])node('path',{d:`M18 ${y}H402`,class:'plot-grid'});
     if(module==='envelope'){
@@ -288,11 +293,17 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   $('presets').addEventListener('change',e=>loadPatch(factoryPatch(e.target.value,parameters),e.target.value));
   $('init').addEventListener('click',()=>loadPatch(parameters.map(p=>p.default)));
   for(const button of document.querySelectorAll('#module-tabs [data-module]'))button.addEventListener('click',()=>select(button.dataset.module));
-  for(const button of document.querySelectorAll('[data-sauce]'))button.addEventListener('click',()=>{sauce=button.dataset.sauce;select('drop');});
   for(const button of document.querySelectorAll('#envelope-tabs [data-envelope]'))button.addEventListener('click',()=>{envelopeTarget=button.dataset.envelope;select('envelope');});
   function changePerformance(patch,commitNow=true){if(gesture&&(gesture.type!=='performance'||commitNow))return;const before=state();applyPerformance(normalizePerformance({...performance(),...patch}));preset='custom';update();if(commitNow)commit(before);}
   const performanceUI=createPerformanceUI({container:$('performance-panel'),getPerformance:performance,change:changePerformance,begin,getGesture:()=>gesture,bindCompletion});
   $('mono-toggle').addEventListener('click',()=>changePerformance({mono:!performance().mono}));
+  function toggleSauce(component){
+    if(gesture)return;
+    if(component==='arp'||component==='strum'){changePerformance({mode:performance().mode===component?'off':component});return;}
+    const id={drive:36,drop:37,fullness:39}[component];if(!parameters[id])return;
+    const before=state(),next=[...getValues()];next[id]=getValues()[id]>=.5?0:1;apply(next);commit(before);
+  }
+  const rackUI=createSauceRack({container:$('sauce-rack'),onOpen:component=>{sauce=sauce===component?null:component;select('drop');},onToggle:toggleSauce,onSwap:()=>{if(gesture||!parameters[38])return;const before=state(),next=[...getValues()];next[38]=getValues()[38]>=.5?0:1;apply(next);commit(before);}});
   $('motion-controls').replaceChildren(...[[14,'Speed'],[32,'Attack settling'],[33,'Settle time'],[34,'Velocity']].map(([id,name])=>knob(String(id),name)));
   $('motion-details-toggle').addEventListener('click',()=>{if(gesture)return;const open=$('motion-details').hidden;$('motion-details').hidden=!open;$('motion-details-toggle').setAttribute('aria-expanded',String(open));if(open)$('motion-controls').querySelector('[data-knob]').focus();});
   $('motion-details-close').addEventListener('click',()=>{if(!gesture)closeMotion(true);});
@@ -302,14 +313,16 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     for(const chooser of document.querySelectorAll('[data-waveosc]')){const id=Number(chooser.dataset.waveosc),number=id===19?1:2;chooser.querySelector('.wave-name').textContent=format(id);chooser.setAttribute('aria-label','Oscillator '+number+' waveform '+format(id));}
 
     $('volume-range').value=Math.round(getValues()[0]*100);$('volume-value').textContent=Math.round(getValues()[0]*100)+'%';$('volume-toggle').setAttribute('aria-label','Volume '+Math.round(getValues()[0]*100)+'%');
-    for(const dial of document.querySelectorAll('[data-knob]')){const id=dial.dataset.knob,n=knobN(id),text=id==='character'?(characterCustom()?'Custom · ':'')+Math.round(n*100)+'%':id==='motion'?(motionCustom()?'Custom. ':'')+'Drift '+format(13)+', attack settling '+format(32):format(Number(id));dial.style.setProperty('--rotation',(-135+n*270)+'deg');dial.setAttribute('aria-valuenow',String(Math.round(n*100)));dial.setAttribute('aria-valuetext',text);const output=document.querySelector(`[data-knob-value="${id}"]`);if(id==='motion'){output.classList.add('motion-value');const drift=document.createElement('span'),hit=document.createElement('span');drift.textContent='Drift '+format(13);hit.textContent='Hit '+format(32);output.replaceChildren(drift,hit);dial.closest('.macro').querySelector('.macro-name').textContent=motionCustom()?'Motion · Custom':'Motion';}else output.textContent=text;}
+    for(const dial of document.querySelectorAll('[data-knob]')){const id=dial.dataset.knob,n=knobN(id),text=id==='character'?(characterCustom()?'Custom · ':'')+Math.round(n*100)+'%':id==='motion'?(motionCustom()?'Custom. ':'')+'Drift up to '+format(13)+', attack settling up to '+format(32):format(Number(id));dial.style.setProperty('--rotation',(-135+n*270)+'deg');dial.setAttribute('aria-valuenow',String(Math.round(n*100)));dial.setAttribute('aria-valuetext',text);const output=document.querySelector(`[data-knob-value="${id}"]`);if(id==='motion'){output.classList.add('motion-value');const drift=document.createElement('span'),hit=document.createElement('span');drift.textContent='Drift '+format(13);hit.textContent='Hit '+format(32);output.replaceChildren(drift,hit);dial.closest('.macro').querySelector('.macro-name').textContent=motionCustom()?'Motion · Custom':'Motion';}else output.textContent=text;}
     $('presets').value=preset;
     $('value-summary').textContent=module==='tone'?format(11)+' · filter '+format(23):module==='envelope'?(envelopeTarget==='filter'?format(24):'New notes'):module==='drop'?(sauce==='drive'?format(12):'+'+format(15)):characterCustom()?'Custom':Math.round(characterN()*100)+'%';
     if(module==='envelope'&&envelopeTarget==='filter')$('module-description').textContent=getValues()[24]===0?'Raise Filter amount to add movement':'Each note has its own filter envelope';
+    if(module==='character')$('module-description').textContent=getValues()[35]>0?'Movement follows the amplitude envelope':'Envelope response off';
     const p=performance();$('mono-toggle').setAttribute('aria-pressed',String(p.mono));
     const count=performanceSteps(p);
-    const preview=p.mode==='strum'?Array.from({length:4},(_,i)=>i/3*p.strum/100):Array.from({length:count},(_,i)=>curlPhase(i/count,p.curl));
-    performanceUI.update(preview);
+    const preview=sauce==='strum'?Array.from({length:4},(_,i)=>i/3*p.strum/100):Array.from({length:count},(_,i)=>curlPhase(i/count,p.curl));
+    rackUI.update({selected:sauce,enabled:{drive:getValues()[36]>=.5,drop:getValues()[37]>=.5,fullness:getValues()[39]>=.5,arp:p.mode==='arp',strum:p.mode==='strum'},audioOrder:Math.round(getValues()[38]||0),supported:Boolean(parameters[39])});
+    performanceUI.update(preview,sauce==='strum'?'strum':'arp');
     draw();
     onViewChange();
   }

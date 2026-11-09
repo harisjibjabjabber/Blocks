@@ -17,6 +17,7 @@ async function key(name) { await b.send('Input.dispatchKeyEvent', { type: 'keyDo
 async function values() { return b.evaluate(`Array.from(document.querySelectorAll('input[data-param]'),e=>({id:Number(e.dataset.param),value:Number(e.value)})).sort((a,b)=>a.id-b.id).map(e=>e.value)`); }
 async function undoDisabled() { return b.evaluate(`document.getElementById('undo').disabled`); }
 async function module(name) { await click(`#module-tabs [data-module="${name}"]`); }
+async function sauce(name){await module('drop');if(await b.evaluate(`document.querySelector('[data-sauce-open="${name}"]').getAttribute('aria-expanded')!=='true'`))await click(`[data-sauce-open="${name}"]`);}
 async function drag(selector, dx, dy, cancel = false) {
   const r = await rect(selector), x = r.x + r.w / 2, y = r.y + r.h / 2;
   assert.ok(r.w > 0 && r.h > 0, selector + ' must be visible');
@@ -37,12 +38,12 @@ try {
   // Explicit test instrumentation; application module private state is never read.
   await b.send('Page.addScriptToEvaluateOnNewDocument', { source: `const Context=window.AudioContext;window.AudioContext=class extends Context{createAnalyser(){const a=super.createAnalyser();window.__proofAnalyser=a;return a;}};const makeURL=URL.createObjectURL.bind(URL);URL.createObjectURL=blob=>{if(blob.type==='application/json')blob.text().then(text=>window.__proofExport=text);return makeURL(blob);};` });
   await b.send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath:out});
-  await size(1440); await b.navigate(url); await waitFor(`document.querySelectorAll('input[data-param]').length===35`);
+  await size(1440); await b.navigate(url); await waitFor(`document.querySelectorAll('input[data-param]').length===40`);
   report.scripts = await b.evaluate(`Array.from(document.scripts,s=>s.src)`);
   await check('standalone modules expose descriptor controls before audio starts', async () => {
     assert.equal(await b.evaluate(`document.getElementById('status').textContent`), 'Sound stopped'); assert.ok(report.scripts.every(s => !s.includes('/assets/index-') && !s.includes('react')));
     assert.deepEqual(await b.evaluate(`Array.from(document.querySelectorAll('#module-tabs [data-module]'),e=>e.dataset.module)`), ['tone', 'envelope', 'character', 'drop']);
-    const initial=await values(); assert.equal(initial.length, 35); assert.ok(initial.every(n => Number.isFinite(n) && n >= 0 && n <= 1000)); assert.equal(await b.evaluate(`document.getElementById('error').textContent`), '');
+    const initial=await values(); assert.equal(initial.length, 40); assert.ok(initial.every(n => Number.isFinite(n) && n >= 0 && n <= 1000)); assert.equal(await b.evaluate(`document.getElementById('error').textContent`), '');
     for (const name of ['envelope', 'character', 'drop', 'tone']) { await module(name); assert.deepEqual(await values(), initial); }
     await click('.patch-files > summary');await click('#init');defaults=await values();assert.notDeepEqual(defaults,initial);await click('#undo');assert.deepEqual(await values(),initial);await click('#init');
   });
@@ -72,7 +73,7 @@ try {
   });
   await check('top-right Volume and visible Sauce Drive each edit the existing patch with one Undo',async()=>{
     const before=await values(),undoBefore=await undoDisabled();await click('#volume-toggle');assert.equal(await b.evaluate(`document.getElementById('volume-panel').hidden`),false);await b.evaluate(`document.getElementById('volume-range').focus()`);await key('ArrowRight');assert.notEqual((await values())[0],before[0]);await key('Escape');assert.equal(await b.evaluate(`document.getElementById('volume-panel').hidden`),true);await click('#undo');assert.deepEqual(await values(),before);assert.equal(await undoDisabled(),undoBefore);
-    await module('drop');await click('[data-sauce="drive"]');await drag('[data-knob="12"]',0,-25);assert.notEqual((await values())[12],before[12]);await click('#undo');assert.deepEqual(await values(),before);await module('tone');
+    await sauce('drive');await drag('[data-knob="12"]',0,-25);assert.notEqual((await values())[12],before[12]);await click('#undo');assert.deepEqual(await values(),before);await module('tone');
   });
   await check('oscillator preview is visible beneath the selectors before audio starts',async()=>{
     const osc=await rect('#waveforms'),scope=await rect('#scope');assert(scope.y>=osc.y+osc.h&&scope.w>200&&scope.h>=25);assert.match(await b.evaluate(`document.getElementById('scope-label').textContent`),/Preview/);assert.ok(await b.evaluate(`(()=>{const c=document.getElementById('scope'),v=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=3;i<v.length;i+=4)if(v[i])n++;return n>100;})()`));
@@ -112,7 +113,7 @@ try {
     await module('character'); const before = await values(), beforeUndo = await undoDisabled(); await drag('[data-knob="character"]', 0, -30); const changed = await values(); for (const id of [12]) assert.notEqual(changed[id], before[id]); for (let i = 0; i < before.length; i++) if (i!==12) assert.equal(changed[i], before[i]); await click('#undo'); assert.deepEqual(await values(), before); assert.equal(await undoDisabled(), beforeUndo);
   });
   await check('Motion changes only movement, stays finite and is independently undoable',async()=>{
-    await module('character');const before=await values(),undoBefore=await undoDisabled();await drag('[data-knob="motion"]',0,-45);const changed=await values();for(const id of [13,32,34])assert.notEqual(changed[id],before[id]);for(let i=0;i<changed.length;i++)if(![13,32,33,34].includes(i))assert.equal(changed[i],before[i]);assert.doesNotMatch(await b.evaluate(`document.querySelector('[data-knob="motion"]').getAttribute('aria-valuetext')`),/NaN/);await click('#undo');nearValues(await values(),before);assert.equal(await undoDisabled(),undoBefore);
+    await module('character');const before=await values(),undoBefore=await undoDisabled();await drag('[data-knob="motion"]',0,-45);const changed=await values();for(const id of [13,32,34])assert.notEqual(changed[id],before[id]);for(let i=0;i<changed.length;i++)if(![13,32,33,34,35].includes(i))assert.equal(changed[i],before[i]);assert.doesNotMatch(await b.evaluate(`document.querySelector('[data-knob="motion"]').getAttribute('aria-valuetext')`),/NaN/);await click('#undo');nearValues(await values(),before);assert.equal(await undoDisabled(),undoBefore);
   });
   await check('Motion details separate Speed and note attacks from Character with exact Undo',async()=>{
     const original=await values();await b.evaluate(`document.querySelector('[data-knob="motion"]').focus()`);await key('Home');const base=await values();
@@ -130,16 +131,16 @@ try {
     await click('#parameters summary');
   });
   await check('Pitch Drop amount and time knobs edit their own parameters', async () => {
-    await module('drop');await click('[data-sauce="drop"]'); for (const id of [15, 16]) { const before = await values(); await drag(`[data-knob="${id}"]`, 0, -25); const changed = await values(); assert.notEqual(changed[id], before[id]); for (let i = 0; i < before.length; i++) if (i !== id) assert.equal(changed[i], before[i]); await click('#undo'); assert.deepEqual(await values(), before); }
+    await sauce('drop'); for (const id of [15, 16]) { const before = await values(); await drag(`[data-knob="${id}"]`, 0, -25); const changed = await values(); assert.notEqual(changed[id], before[id]); for (let i = 0; i < before.length; i++) if (i !== id) assert.equal(changed[i], before[i]); await click('#undo'); assert.deepEqual(await values(), before); }
   });
   await check('presets apply complete bounded patches with one Undo; Init restores defaults', async () => {
     for (const name of ['velvet', 'glass', 'low']) { const before = await values(), beforeUndo = await undoDisabled(); await preset(name); const changed = await values(); assert.notDeepEqual(changed, before); assert.ok(changed.every(n => Number.isFinite(n) && n >= 0 && n <= 1000)); await click('#undo'); assert.deepEqual(await values(), before); assert.equal(await undoDisabled(), beforeUndo); }
     await preset('glass'); await click('#init'); assert.deepEqual(await values(), defaults);
   });
-  await check('JSON v1/v2/v3 import defaults and canonical levels; v4 round-trip rejects invalid patches atomically',async()=>{
-    await preset('velvet');const before=await values(),patch=await exportPatch();assert.equal(patch.version,4);assert.equal(patch.values.length,35);
-    for(const[version,count]of [[1,18],[2,19],[3,21]]){
-      await importPatch({...patch,version,values:patch.values.slice(0,count)},'legacy-v'+version);const migrated=await values();nearValues(migrated.slice(0,count),before.slice(0,count));if(version===1)assert.equal(migrated[18],0);if(version<3)assert.deepEqual(migrated.slice(19,21),[2,3]);assert.ok(Math.abs(migrated[21]-Math.round((1-patch.values[1])*1000))<=1);assert.ok(Math.abs(migrated[22]-Math.round(patch.values[1]*1000))<=1);nearValues(migrated.slice(23),defaults.slice(23));assert.equal(await b.evaluate(`document.getElementById('error').textContent`),'');await click('#undo');nearValues(await values(),before);
+  await check('JSON v1-v4 migration and v5 roundtrip preserve explicit manual response and reject invalid state',async()=>{
+    await preset('velvet');const before=await values(),patch=await exportPatch();assert.equal(patch.version,5);assert.equal(patch.values.length,40);
+    for(const[version,count]of [[1,18],[2,19],[3,21],[4,35]]){
+      await importPatch({...patch,version,values:patch.values.slice(0,count)},'legacy-v'+version);const migrated=await values();nearValues(migrated.slice(0,count),before.slice(0,count));if(version===1)assert.equal(migrated[18],0);if(version<3)assert.deepEqual(migrated.slice(19,21),[2,3]);assert.ok(Math.abs(migrated[21]-Math.round((1-patch.values[1])*1000))<=1);assert.ok(Math.abs(migrated[22]-Math.round(patch.values[1]*1000))<=1);if(version<4)nearValues(migrated.slice(23,35),defaults.slice(23,35));assert.equal(migrated[35],0);assert.deepEqual(migrated.slice(36),[1,1,0,1]);assert.equal(await b.evaluate(`document.getElementById('error').textContent`),'');await click('#undo');nearValues(await values(),before);
     }
     await click('#init');const init=await values();await importPatch(patch,'current-v4');nearValues(await values(),before);await click('#undo');nearValues(await values(),init);
     const undoBefore=await undoDisabled();await importPatch({...patch,version:999},'invalid-version');nearValues(await values(),init);assert.equal(await undoDisabled(),undoBefore);assert.match(await b.evaluate(`document.getElementById('error').textContent`),/invalid|unsupported/i);
@@ -147,14 +148,23 @@ try {
   });
   await check('Mono and performance controls edit only saved performance state with one-step Undo',async()=>{
     await click('#init');const before=await values();await click('#mono-toggle');assert.equal(await b.evaluate(`document.getElementById('mono-toggle').getAttribute('aria-pressed')`),'true');nearValues(await values(),before);await click('#undo');assert.equal(await b.evaluate(`document.getElementById('mono-toggle').getAttribute('aria-pressed')`),'false');
-    await module('drop');await click('[data-sauce="arp"]');assert.equal(await b.evaluate(`document.getElementById('performance-panel').hidden`),false);
-    await click('[data-performance-mode="arp"]');assert.equal((await exportPatch()).performance.mode,'arp');await click('#undo');assert.equal((await exportPatch()).performance.mode,'off');
-    await click('[data-performance-mode="arp"]');const arp=(await exportPatch()).performance;
+    await sauce('arp');assert.equal(await b.evaluate(`document.getElementById('performance-panel').hidden`),false);
+    await click('[data-sauce-power="arp"]');assert.equal((await exportPatch()).performance.mode,'arp');await click('#undo');assert.equal((await exportPatch()).performance.mode,'off');
+    await click('[data-sauce-power="arp"]');const arp=(await exportPatch()).performance;
     await b.evaluate(`document.querySelector('[data-performance="curl"]').focus()`);await key('ArrowRight');assert((await exportPatch()).performance.curl>0);nearValues(await values(),before);await click('#undo');assert.deepEqual((await exportPatch()).performance,arp);
     await click('#performance-bpm-up');assert.equal((await exportPatch()).performance.bpm,121);await click('#undo');assert.equal((await exportPatch()).performance.bpm,120);
     const saved=await exportPatch();await click('#init');assert.equal((await exportPatch()).performance.mode,'off');await importPatch(saved,'performance-arp');assert.deepEqual((await exportPatch()).performance,saved.performance);
     const stable=await exportPatch();await importPatch({...saved,performance:{...saved.performance,mode:'bad-mode'},values:saved.values.map((v,i)=>i===0?.9:v)},'invalid-performance');nearValues(await values(),before);assert.deepEqual((await exportPatch()).performance,stable.performance);assert.match(await b.evaluate(`document.getElementById('error').textContent`),/performance/i);
     await click('#init');await module('tone');
+  });
+  await check('Sauce rack powers preserve amounts, editors do not enable effects, and audio order is undoable',async()=>{
+    await click('#init');await module('drop');const original=await values(),off=(await exportPatch()).performance.mode;
+    for(const [name,id,amount] of [['drive',36,12],['drop',37,15],['fullness',39,18]]){
+      await sauce(name);assert.equal((await exportPatch()).performance.mode,off);const before=await values();await click(`[data-sauce-power="${name}"]`);const after=await values();assert.equal(after[id],0);assert.equal(after[amount],before[amount]);for(let i=0;i<after.length;i++)if(i!==id)assert.equal(after[i],before[i]);await click('#undo');nearValues(await values(),before);
+    }
+    const flow=await b.evaluate(`document.getElementById('sauce-audio-flow').textContent`);await click('#sauce-audio-swap');assert.equal((await values())[38],1);assert.notEqual(await b.evaluate(`document.getElementById('sauce-audio-flow').textContent`),flow);await click('#undo');nearValues(await values(),original);
+    await sauce('arp');for(const [division,count]of [['1/32',32],['1/64',64]]){await b.evaluate(`(()=>{const e=document.getElementById('performance-division');e.value='${division}';e.dispatchEvent(new Event('change',{bubbles:true}));})()`);assert.equal((await exportPatch()).performance.division,division);assert.equal(await b.evaluate(`document.querySelectorAll('#performance-preview ellipse').length`),count);await click('#undo');}
+    await click('[data-sauce-power="arp"]');await sauce('strum');assert.equal((await exportPatch()).performance.mode,'arp');await click('[data-sauce-power="strum"]');assert.equal((await exportPatch()).performance.mode,'strum');assert.equal(await b.evaluate(`document.querySelector('[data-sauce-power="arp"]').getAttribute('aria-checked')`),'false');await click('#init');await module('tone');
   });
   await check('Start retains edited parameters and initializes the actual WASM AudioWorklet', async () => {
     await module('tone'); await drag('[data-knob="11"]', 0, -15); const before = await values(); await click('#start'); await waitFor(`document.getElementById('status').textContent.startsWith('Sound running')`); assert.deepEqual(await values(), before); assert.equal(await b.evaluate(`document.getElementById('error').textContent`), ''); await click('#init'); await delay(120);
@@ -170,7 +180,7 @@ try {
   });
   await check('Arp and Strum process held chord input through the actual core and stop without queued notes',async()=>{
     for(const mode of ['arp','strum']){
-      await module('drop');await click('[data-sauce="arp"]');await click(`[data-performance-mode="${mode}"]`);
+      await sauce(mode);await click(`[data-sauce-power="${mode}"]`);
       const points=[];for(const [i,pitch]of [60,64,67].entries()){const r=await rect(`[data-pitch="${pitch}"]`);points.push(point(i+1,r.x+r.w/2,r.y+r.h-20));}
       await b.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:3});await touch('touchStart',points);await delay(850);const signal=await meter();assert(signal.finite&&signal.peak<=1&&signal.rms>.0001,mode+' audible');assert.equal(await b.evaluate(`document.querySelectorAll('.key.active').length`),3);
       await touch('touchEnd',[]);await delay(1000);assert.ok((await meter()).rms<.0001,mode+' releases');await delay(400);assert.ok((await meter()).rms<.0001,mode+' has no queued resurrection');await b.send('Emulation.setTouchEmulationEnabled',{enabled:false});await click('#init');
@@ -216,7 +226,7 @@ try {
     await b.evaluate(`window.__proofAnalyser.fftSize=8192`);
     const harmonics=()=>b.evaluate(`(()=>{const a=window.__proofAnalyser,v=new Float32Array(a.fftSize),rate=a.context.sampleRate;a.getFloatTimeDomainData(v);const amplitude=f=>{let real=0,imaginary=0,weight=0;for(let i=0;i<v.length;i++){const w=.5-.5*Math.cos(2*Math.PI*i/(v.length-1)),angle=2*Math.PI*f*i/rate;real+=v[i]*w*Math.cos(angle);imaginary-=v[i]*w*Math.sin(angle);weight+=w;}return 2*Math.hypot(real,imaginary)/weight;};return{fundamentalAmplitude:amplitude(261.625565),secondAmplitude:amplitude(523.25113)};})()`);
     await b.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:2});await touch('touchStart',[p]);await delay(700);const before=await harmonics(),dry=await meter();await b.evaluate(`document.querySelector('[data-knob="18"]').focus()`);await key('End');await delay(900);const after=await harmonics(),fat=await meter();
-    assert.equal((await values())[18],1000);assert.ok(fat.finite&&fat.peak<=1&&fat.rms>.001);assert.ok(after.secondAmplitude>before.secondAmplitude*2&&after.secondAmplitude>.0001);const ratio=after.fundamentalAmplitude/before.fundamentalAmplitude;assert.ok(ratio>.84&&ratio<1.19,JSON.stringify({before,after}));assert.ok(fat.rms/dry.rms>.84&&fat.rms/dry.rms<1.19);report.fullness={before,after,dry,fat};
+    assert.equal((await values())[18],1000);assert.ok(fat.finite&&fat.peak<=1&&fat.rms>.001);assert.ok(after.secondAmplitude>before.secondAmplitude*2&&after.secondAmplitude>.0001);const ratio=after.fundamentalAmplitude/before.fundamentalAmplitude;assert.ok(ratio>.99&&ratio<2,JSON.stringify({before,after}));assert.ok(fat.rms/dry.rms>.99&&fat.rms/dry.rms<2);report.fullness={before,after,dry,fat};
     await touch('touchEnd',[]);await b.send('Emulation.setTouchEmulationEnabled',{enabled:false});await click('#undo');nearValues(await values(),beforeValues);await click('#init');await module('tone');
   });
   await check('preset changes release touch ownership and Stop silences before resume', async () => {
