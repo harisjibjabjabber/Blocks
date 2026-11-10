@@ -11,8 +11,10 @@ typedef struct bs_synth bs_synth;
  * Detune0..50 cents is the symmetric maximum offset; spread0..1 pans copies.
  * Detune/spread are live5ms-smoothed. Count1 follows the original mono path
  * exactly, ignoring detune/spread. Defaults1/0/0. Invalid inputs reject whole.
- * Copies start at equal phase, weight1/count; no random seed or extra note
- * ownership. Two filter/effects paths per multi-copy note, shared envelopes.
+ * Center lane starts at zero phase; outer lanes use deterministic seeded
+ * starts, independent of the existing pitch-motion RNG. At >=2ct copies use
+ * weight1/count. Below2ct smoothed body weighting protects zero-detune notes.
+ * No extra MIDI ownership. Two filter/effects paths share note envelopes.
  * Getter returns requested settings; reset/prepare preserve and snap targets. */
 typedef struct bs_voicing_config {uint32_t version,count;float detune_cents,spread;} bs_voicing_config;
 void bs_default_voicing(bs_voicing_config *config);

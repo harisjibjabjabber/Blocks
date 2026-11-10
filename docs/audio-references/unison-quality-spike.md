@@ -1,12 +1,12 @@
 # Unison and oscillator quality spike
 
-10 November 2026. The user rejected the current Unison sound as nasal/phasey. Technical tests and desktop timing do not constitute musical approval. Live Unison DSP is frozen while research and isolated oscillator comparisons continue. Neutral Init/reset/Output/Delay work is retained; this phase is not marked ready.
+10 November 2026. The user rejected the original Unison sound as nasal/phasey, then selected phase profile C after repeated listening: its pluck was smoother than B's subtle bounce. The prototype now carries that phase policy plus tested low-detune body protection; the oscillator-generation replacement remains isolated. Technical tests and desktop timing do not constitute blanket musical approval. Neutral Init/reset/Output/Delay work is retained.
 
 ## Target and code audit
 
 Lush, thick, raw and gently unstable, with a convincing fundamental. More treble or loudness alone is not the target. Unison adds closely spaced partials and beating; nonlinear colour can add further overtones.
 
-The current generator is already hybrid: PolyBLEP saw/pulse/square, a 2048-point sine table and bandlimited mipmapped triangle tables. Current Unison restarts every lane at zero, uses symmetric linear cents offsets, shares note-level drift across copies, maps low/high pitch monotonically left/right and weights copies by 1/N. At C4, four copies with 25-cent maximum offsets have adjacent spacings about 2.50/2.52/2.54 Hz. Coherent, recurring interference is a strong hypothesis to audition, not a diagnosis of the exact user patch. The gain rule also loses power as copies decorrelate; changing gain changes downstream saturation and must be tested independently.
+The current generator is already hybrid: PolyBLEP saw/pulse/square, a 2048-point sine table and bandlimited mipmapped triangle tables. The initially audited Unison restarted every lane at zero, used symmetric linear cents offsets, shared note-level drift across copies, mapped low/high pitch monotonically left/right and weighted copies by 1/N. At C4, four copies with 25-cent maximum offsets have adjacent spacings about 2.50/2.52/2.54 Hz. Coherent, recurring interference was therefore a strong hypothesis to audition, not a diagnosis of the exact user patch. The gain rule also loses power as copies decorrelate; changing gain changes downstream saturation and must be tested independently.
 
 ## Primary references
 
@@ -38,7 +38,15 @@ Metric choice matters. Full-Nyquist total waveform error favors 2x/FIR, while a 
 
 Isolated 32-oscillator desktop WASM cost is roughly 2.2x saw/2.7x pulse for the table candidate and 5.7x/4.8x for the straightforward 2x/FIR candidate. The latter also needs seven output samples of latency aligned across every waveform/oscillator/dry path before integration. Source peaks and nonlinear-stage headroom require separate checks. The table is therefore the leading source candidate, not an accepted musical replacement. Cleaner source generation does not establish the requested lushness.
 
-## Proposed implementation sequence
+## Phase audition decision and guarded implementation
+
+The offline A/B/C study held Count3, +/-10 cents, Spread0.6, C3, patch/events, source, pan and gain rules fixed. A restarted all phases; B independently seeded all phases; C fixed the center phase and seeded the outer lanes. The user first judged B/C similar, then repeatedly preferred C: B had a subtle pluck bounce while C was smooth. These seeded starts are not continuous free-running oscillators. The study and exact hashes are in workspace `work/unison-phase-study`.
+
+Unchanged C cannot safely cover every setting: actual zero-detune sine cases nearly cancelled (Count2/3/4 approximately -58/-30/-40 dB versus Count1). Fixed center phase is not fixed center amplitude. The prototype therefore blends in a dominant center below2 cents using the existing smoothed detune: guard=1-smoothstep(detune/2), anchor weight1/N toward0.75, other weights1/N toward0.25/(N-1), and anchor pan toward center. Scalar weights sum1; per-channel pre-protection gain is not guaranteed unity (one coherent case can rise about0.86dB). No phase convergence, pitch bend, hidden gain normalization or added latency is used.
+
+At >=2 cents the listened C arithmetic is unchanged. Four independent PCM comparisons show Count1 and the exact C10 pluck/sustain examples remain byte-identical. Eight focused Unison groups include120 zero-detune cases, live detune transitions, boundary continuity, ownership/release and no render allocations. Tested minimum settled RMS was0.5015 of Count1; live10-to-zero minimum0.5057, rather than near-silence. These fixtures establish the safeguard, not universal loudness or complete analog-character approval. Workspace evidence: `work/unison-C-guard`.
+
+## Remaining implementation sequence
 
 1. Preserve the current prototype and a controlled dry listening fixture. Isolate coherent restart, seeded independent phase starts and properly specified free-running phase; hold tuning, gain and pan constant. Randomizing at note-on is not literally continuous idle phase.
 2. Compare balanced center/layer Blend and alternating stereo placement separately. Use fixed-gain and gain-matched clips. Changing 1/N to 1/sqrt(N) can raise coherent peaks, so normalization is not a drop-in cure.
