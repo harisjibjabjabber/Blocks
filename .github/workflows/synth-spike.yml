@@ -46,10 +46,12 @@ jobs:
       - name: Reproducible audio auditions and core timing
         env:
           SYNTH_AUDITIONS: ${{ runner.temp }}/synth-auditions
+          SYNTH_FILTER_AUDITIONS_DIR: ${{ runner.temp }}/synth-filter-auditions
           SYNTH_BENCHMARK_DIR: ${{ runner.temp }}/synth-evidence
           PYTHON: python3
         run: |
           node scripts/render-synth-auditions.mjs
+          node scripts/render-filter-auditions.mjs
           node scripts/benchmark-synth.mjs
       - name: Actual browser audio
         env:
@@ -70,6 +72,8 @@ jobs:
             ${{ runner.temp }}/synth-evidence/*.json
             ${{ runner.temp }}/synth-auditions/*.wav
             ${{ runner.temp }}/synth-auditions/*.json
+            ${{ runner.temp }}/synth-filter-auditions/*.wav
+            ${{ runner.temp }}/synth-filter-auditions/*.json
             ${{ runner.temp }}/synth-browser
             ${{ runner.temp }}/synth-install
             packages/synth-web/build

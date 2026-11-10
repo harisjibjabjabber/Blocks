@@ -52,7 +52,7 @@ static double aliasRatio(std::vector<std::complex<double>> data,unsigned fundame
  return aliased/wanted;
 }
 int main() {
- CHECK(bs_abi_version()==6 && bs_parameter_count()==42);
+ CHECK(bs_abi_version()==7 && bs_parameter_count()==44);
  {
   Synth s; CHECK(!bs_prepare(s.p,0)); CHECK(!bs_prepare(s.p,std::numeric_limits<double>::infinity())); CHECK(bs_prepare(s.p,44100));
   for(unsigned i=0;i<BS_PARAMETER_COUNT;++i) {
@@ -64,10 +64,10 @@ int main() {
   }
   CHECK(!bs_parameter_info(99)); CHECK(!bs_set_parameter(s.p,99,1));
   bs_patch patch{},after{}; CHECK(bs_get_patch(s.p,&patch)); patch.version=999; CHECK(!bs_set_patch(s.p,&patch)); patch.version=2; patch.values[7]=std::numeric_limits<float>::infinity(); CHECK(!bs_set_patch(s.p,&patch)); CHECK(bs_get_patch(s.p,&after)); CHECK(after.values[7]==bs_parameter_info(7)->maximum);
-  patch=after; patch.version=1; patch.values[BS_FULLNESS]=std::numeric_limits<float>::quiet_NaN(); CHECK(bs_set_patch(s.p,&patch)); CHECK(bs_get_parameter(s.p,BS_FULLNESS)==0); CHECK(bs_get_patch(s.p,&after)); CHECK(after.version==6);
+  patch=after; patch.version=1; patch.values[BS_FULLNESS]=std::numeric_limits<float>::quiet_NaN(); CHECK(bs_set_patch(s.p,&patch)); CHECK(bs_get_parameter(s.p,BS_FULLNESS)==0); CHECK(bs_get_patch(s.p,&after)); CHECK(after.version==7);
   for(unsigned i=0;i<18;++i) CHECK(after.values[i]==patch.values[i]);
-  CHECK(sizeof(bs_patch)==172);
-  patch=after;patch.version=4;for(unsigned i=35;i<BS_PARAMETER_COUNT;++i)patch.values[i]=std::numeric_limits<float>::quiet_NaN();CHECK(bs_set_patch(s.p,&patch));CHECK(bs_get_patch(s.p,&after));CHECK(after.version==6);CHECK(after.values[BS_ENVELOPE_RESPONSE]==0&&after.values[BS_DRIVE_ENABLED]==1&&after.values[BS_PITCH_DROP_ENABLED]==1&&after.values[BS_SAUCE_ORDER]==0&&after.values[BS_FULLNESS_ENABLED]==1);for(unsigned i=0;i<35;++i)CHECK(after.values[i]==patch.values[i]);
+  CHECK(sizeof(bs_patch)==180);
+  patch=after;patch.version=4;for(unsigned i=35;i<BS_PARAMETER_COUNT;++i)patch.values[i]=std::numeric_limits<float>::quiet_NaN();CHECK(bs_set_patch(s.p,&patch));CHECK(bs_get_patch(s.p,&after));CHECK(after.version==7);CHECK(after.values[BS_ENVELOPE_RESPONSE]==0&&after.values[BS_DRIVE_ENABLED]==1&&after.values[BS_PITCH_DROP_ENABLED]==1&&after.values[BS_SAUCE_ORDER]==0&&after.values[BS_FULLNESS_ENABLED]==1);for(unsigned i=0;i<35;++i)CHECK(after.values[i]==patch.values[i]);
   patch=after;patch.values[BS_ENVELOPE_RESPONSE]=.6f;patch.values[BS_DRIVE_ENABLED]=0;patch.values[BS_PITCH_DROP_ENABLED]=0;patch.values[BS_SAUCE_ORDER]=1;patch.values[BS_FULLNESS_ENABLED]=0;CHECK(bs_set_patch(s.p,&patch));CHECK(bs_get_patch(s.p,&after));CHECK(std::memcmp(&patch,&after,sizeof patch)==0);patch.values[BS_FULLNESS_ENABLED]=std::numeric_limits<float>::quiet_NaN();CHECK(!bs_set_patch(s.p,&patch));bs_patch retained{};CHECK(bs_get_patch(s.p,&retained));CHECK(std::memcmp(&retained,&after,sizeof after)==0);
   patch=after; patch.values[BS_FULLNESS]=.55f; CHECK(bs_set_patch(s.p,&patch)); CHECK(bs_get_patch(s.p,&after)); CHECK(std::memcmp(&patch,&after,sizeof patch)==0);
  }

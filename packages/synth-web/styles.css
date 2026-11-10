@@ -317,3 +317,22 @@ body:has(.sauce-audio-cards[data-drop-valid=false]) .sauce-drag-ghost{opacity:.4
 .rack-card .performance-hint:has([data-performance-ref=performance-status]:not(:empty)){display:block}
 #lfo-panel>[data-lfo-ref=lfo-routes]{max-height:230px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
 @media(max-width:699px){#lfo-panel>[data-lfo-ref=lfo-routes]{max-height:98px}}
+/* Filter mode shares the existing control budget; the graph keeps cutoff/mix gestures. */
+.instrument[data-module=tone] #macros{position:relative}
+#filter-mode-toggle{width:56px;height:56px;min-height:56px;padding:0 8px;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-size:11px;gap:5px}
+#filter-mode-toggle:after{content:"⌄";color:var(--quiet);font-size:10px}
+#filter-mode-toggle[aria-expanded=true]{border-color:var(--accent)}
+#filter-mode-value{font-size:9px;white-space:nowrap}
+#filter-mode-options{position:absolute;bottom:calc(100% + 6px);left:0;right:0;z-index:9;display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--panel);box-shadow:0 8px 24px #0007}
+#filter-mode-options[hidden]{display:none}
+#filter-mode-options button{min-width:0;min-height:60px;padding:8px;flex-direction:column;align-items:flex-start;gap:5px;background:var(--bg)}
+#filter-mode-options button strong{font-size:12px;font-weight:500;text-align:left}
+#filter-mode-options button span{font-size:9px;color:var(--muted);text-align:left;white-space:nowrap}
+#filter-mode-options button[aria-pressed=true]{border-color:var(--accent)}
+.filter-response-caption{display:none;position:absolute;top:0;left:0;right:0;justify-content:space-between;font:8px "Geist Mono",monospace;line-height:12px;color:var(--quiet);pointer-events:none}
+.instrument[data-module=tone] .filter-response-caption{display:flex}
+.instrument[data-module=tone] #shape-surface:after{content:attr(data-frequency-max)}
+@media(max-width:699px){.instrument[data-module=tone] #macros{gap:4px}.instrument[data-module=tone] .macro-name{font-size:10px;white-space:nowrap}.instrument[data-module=tone] .macro-value{font-size:9px}}
+@media(max-width:699px) and (max-height:780px){#filter-mode-toggle{width:50px;height:50px;min-height:50px}}
+@media(min-width:700px){#filter-mode-toggle{width:64px;height:64px}.filter-mode-control{position:relative}#filter-mode-options{left:0;right:auto;bottom:auto;top:calc(100% + 4px);width:230px}}
+#filter-mode-options button span{font-size:10px}

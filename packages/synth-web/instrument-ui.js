@@ -2,6 +2,7 @@ import {characterRecipe,motionRecipe,applyRecipe,readRecipe} from './recipes.js'
 import {factoryPatch} from './presets.js';
 import {timeFromUnit,timeToUnit} from './envelope-scale.js';
 import {envelopeGeometry} from './envelope-geometry.js';
+import {filterResponse} from './filter-response.js';
 import {DEFAULT_PERFORMANCE,normalizePerformance,curlPhase,performanceSteps} from './performance-state.js';
 import {createPerformanceUI} from './performance-ui.js';
 import {createSauceRack} from './sauce-rack-ui.js';
@@ -10,7 +11,7 @@ import {createLfoUI} from './lfo-ui.js';
 import {DEFAULT_RACK,normalizeRack,legacyRack,newSauceBlock} from './sauce-state.js';
 import {DEFAULT_MODULATION,normalizeModulation,defaultLfo} from './modulation-state.js';
 // The instrument surface owns gestures, never voices or the audio clock.
-export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, getPerformance, applyPerformance, getRack, applyRack, getModulation, applyModulation, onViewChange=()=>{} }) {
+export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, getPerformance, applyPerformance, getRack, applyRack, getModulation, applyModulation, getSampleRate=()=>48000, onViewChange=()=>{} }) {
   let localPerformance={...DEFAULT_PERFORMANCE};
   getPerformance??=()=>localPerformance;
   applyPerformance??=next=>{localPerformance={...next};};
@@ -43,11 +44,12 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   };
   const format = (id, value = getValues()[id]) => {
     if([36,37,39,40].includes(id))return value>=.5?'On':'Off';
+    if(id===43)return Math.round(value)===1?'Resonant LP12':'Soft';
     if(id===38)return value>=.5?'Fullness → Drive':'Drive → Fullness';
     if (id===19||id===20) return waveNames[Math.round(value)]||'Unknown';
     if ([...timingIds,16,33,41].includes(id)) return value < 1 ? Math.round(value * 1000) + ' ms' : value.toFixed(2) + ' s';
     if (id === 11) return value < 1000 ? Math.round(value) + ' Hz' : (value / 1000).toFixed(1) + ' kHz';
-    if ([0,1,6,18,21,22,23,27,34,35].includes(id)) return Math.round(value * 100) + '%';
+    if ([0,1,6,18,21,22,23,27,34,35,42].includes(id)) return Math.round(value * 100) + '%';
     if(id===24)return (value>0?'+':'')+Number(value.toFixed(1))+' st';
     if ([8,9,10,17,29,30,31].includes(id)) return Math.abs(value) < .01 ? 'Linear' : (value > 0 ? '+' : '') + value.toFixed(2);
     return Number(value.toFixed(id === 14 ? 2 : 1)) + (id === 14 ? ' Hz' : id === 12 ? '×' : id === 3 ? '' : ' ct');
@@ -120,12 +122,23 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     });
     bindCompletion(button);if(mini){button.prepend(label);button.append(value);container.append(button);}else container.append(button,label,value);return container;
   }
-  const macros={tone:[[11,'Cutoff'],[23,'Filter mix'],['character','Character']],envelope:[['character','Character']],character:[['character','Character'],['motion','Pitch'],[14,'Speed']],drop:[[15,'Amount'],[16,'Fall time'],['character','Character']]};
+  function closeFilter(focus=false){const panel=$('filter-mode-options'),button=$('filter-mode-toggle'),wasOpen=panel&&!panel.hidden;if(panel)panel.hidden=true;button?.setAttribute('aria-expanded','false');if(focus&&wasOpen)button?.focus();}
+  function filterModeControl(){
+    const wrap=document.createElement('div');wrap.className='macro filter-mode-control';
+    const button=document.createElement('button');button.id='filter-mode-toggle';button.type='button';button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls','filter-mode-options');button.setAttribute('aria-haspopup','true');
+    const name=document.createElement('span');name.className='filter-mode-name';button.append(name);const label=document.createElement('span');label.className='macro-name';label.textContent='Mode';const value=document.createElement('output');value.className='macro-value';value.id='filter-mode-value';wrap.append(button,label,value);
+    const panel=document.createElement('div');panel.id='filter-mode-options';panel.hidden=true;panel.setAttribute('role','group');panel.setAttribute('aria-label','Filter mode');
+    for(const[mode,title,description]of[[0,'Soft','Gentle · 6 dB/oct'],[1,'Resonant LP12','Resonant · 12 dB/oct']]){const choice=document.createElement('button');choice.type='button';choice.dataset.filterMode=mode;const strong=document.createElement('strong');strong.textContent=title;const detail=document.createElement('span');detail.textContent=description;choice.append(strong,detail);choice.addEventListener('click',()=>{if(gesture)return;const before=state(),next=[...getValues()];next[43]=mode;apply(next);commit(before);closeFilter(true);});panel.append(choice);}
+    panel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeFilter(true);}});
+    button.addEventListener('click',()=>{if(gesture)return;const open=panel.hidden;closeOsc(false);closeMotion(false);closeGlide(false);panel.hidden=!open;button.setAttribute('aria-expanded',String(open));if(open)panel.querySelector('[aria-pressed=true]')?.focus();});
+    wrap.append(panel);return wrap;
+  }
+  const macros={tone:[[11,'Cutoff'],[42,'Resonance'],[23,'Filter mix']],envelope:[['character','Character']],character:[['character','Character'],['motion','Pitch'],[14,'Speed']],drop:[[15,'Amount'],[16,'Fall time'],['character','Character']]};
   if(parameters[18]) {macros.character.push([18,'Fullness']);}
   const titles={tone:'Oscillator + filter',envelope:'Amplitude envelope',character:'Character',drop:'Sauce',lfo:'LFO'};
   const descriptions={tone:'Across: cutoff · up/down: filter mix',envelope:'Drag points or stage labels · bend curves for shape',character:'Movement follows the amplitude envelope',drop:'Per-note pitch fall · drag the curve to bend · new notes'};
   function select(next) {
-    cancel();rackUI.cancel();closeGlide(false); module=next;
+    cancel();rackUI.cancel();closeGlide(false);closeFilter(false); module=next;
     document.querySelector('.instrument').dataset.module=module;
     document.querySelector('.instrument').dataset.envelope=envelopeTarget;
     document.querySelector('.instrument').dataset.sauce=sauce||'none';
@@ -146,7 +159,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     for(const b of document.querySelectorAll('#module-tabs [data-module]')) {const active=b.dataset.module===module;b.setAttribute('aria-pressed',String(active));b.classList.toggle('selected',active);}
     $('module-title').textContent=module==='envelope'?(envelopeTarget==='amp'?'Amplitude envelope':'Filter envelope'):module==='drop'?(sauceTitles[sauce]||'Sauce'):titles[module]; $('module-description').textContent=module==='drop'&&sauce==='drive'?'Mixer warmth · turn up for more edge':descriptions[module];
     const selected=module==='envelope'&&envelopeTarget==='filter'?[[24,'Filter amount'],[11,'Base cutoff'],['character','Character']]:module==='drop'?(sauce==='drive'?[[12,'Drive']]:sauce==='fullness'?[[18,'Fullness']]:sauce==='drop'?[[15,'Amount'],[16,'Fall time']]:[]):(macros[module]||[]);
-    $('macros').replaceChildren(...(isPerformance?[]:selected.map(([id,name])=>knob(String(id),name))));
+    $('macros').replaceChildren(...(module==='tone'&&parameters[43]?[filterModeControl()]:[]),...(isPerformance?[]:selected.filter(([id])=>typeof id!=='number'||parameters[id]).map(([id,name])=>knob(String(id),name))));
     update();
   }
   // Precision is generated from the same descriptors used by DSP and presets.
@@ -187,7 +200,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   }
   $('waveforms').append(popover);
   const svg=document.createElementNS(svgNS,'svg');svg.setAttribute('viewBox','0 0 420 210');svg.setAttribute('aria-label','Sound shape editor');
-  $('shape-surface').replaceChildren(svg);
+  $('shape-surface').replaceChildren(svg);const responseCaption=document.createElement('div');responseCaption.className='filter-response-caption';responseCaption.innerHTML='<span>Base response</span><span id="filter-preview-rate">48 kHz</span>';$('shape-surface').append(responseCaption);
   function node(tag,attrs={},text) {const el=document.createElementNS(svgNS,tag);for(const[k,v]of Object.entries(attrs))el.setAttribute(k,String(v));if(text)el.textContent=text;svg.append(el);return el;}
   let yTop=29,yBottom=169;
   let interactionPoints=[],interactionBends=[];
@@ -209,7 +222,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   function draw(){
     const box=svg.getBoundingClientRect();if(!box.width||!box.height)return;
     const height=module==='envelope'?420*box.height/box.width:210;
-    svg.setAttribute('viewBox',`0 0 420 ${height}`);svg.replaceChildren();node('title',{},module==='envelope'?(envelopeTarget==='filter'?'Filter envelope':'Amplitude envelope'):module==='drop'?(sauceTitles[sauce]||'Sauce'):titles[module]);interactionPoints=[];interactionBends=[];
+    svg.setAttribute('viewBox',`0 0 420 ${height}`);svg.setAttribute('aria-label',module==='envelope'?'Interactive envelope shape':'Sound shape editor');svg.replaceChildren();node('title',{},module==='envelope'?(envelopeTarget==='filter'?'Filter envelope':'Amplitude envelope'):module==='drop'?(sauceTitles[sauce]||'Sauce'):titles[module]);interactionPoints=[];interactionBends=[];
     const g=module==='envelope'?geometry():null;yTop=g?g.yTop:29;yBottom=g?g.yBottom:169;
     for(const y of [yTop,(yTop+yBottom)/2,yBottom])node('path',{d:`M18 ${y}H402`,class:'plot-grid'});
     if(module==='envelope'){
@@ -233,11 +246,14 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
         node('text',{x,y:g.footerTop+(height-g.footerTop)/2+4/scale,class:'plot-label','text-anchor':'middle',style:`font-size:${10/scale}px`},label+' '+format(id));
       }
     } else if(module==='tone') {
-      const cutoff=getValues()[11],filterMix=getValues()[23],rate=48000,alpha=1-Math.exp(-2*Math.PI*Math.min(cutoff,rate*.45)/rate),points=[];
-      for(let i=0;i<=96;i++){const f=20*1000**(i/96),w=2*Math.PI*f/rate,denominator=1+(1-alpha)**2-2*(1-alpha)*Math.cos(w),real=alpha*(1-(1-alpha)*Math.cos(w))/denominator,imag=-alpha*(1-alpha)*Math.sin(w)/denominator,mag=Math.hypot(1-filterMix+filterMix*real,filterMix*imag);points.push(`${i?'L':'M'}${18+i*4},${29+clamp(-20*Math.log10(mag)/60)*140}`);}
-      node('path',{d:points.join(' '),class:'plot-line'});
-      hit({'data-handle':'tone','aria-valuenow':norm(11)*100,'aria-valuetext':format(11)},'Cutoff and filter mix',18+norm(11)*384,169-norm(23)*140);
-      node('text',{x:18,y:201,class:'plot-label'},'20 Hz');node('text',{x:402,y:201,class:'plot-label','text-anchor':'end'},'20 kHz');
+      const v=getValues(),rate=getSampleRate()||48000,maxFrequency=Math.min(20000,rate*.49),points=[];
+      for(let i=0;i<=160;i++){const frequency=20*(maxFrequency/20)**(i/160),response=filterResponse({frequency,cutoff:v[11],resonance:v[42]||0,mode:Math.round(v[43]||0),mix:v[23],sampleRate:rate});points.push((i?'L':'M')+(18+i*384/160)+','+(29+(24-clamp(response.db,-60,24))/84*140));}
+      node('path',{d:'M18 69H402',class:'plot-grid','stroke-dasharray':'3 4'});
+      node('path',{d:points.join(' '),class:'plot-line','data-filter-response':'true'});
+      hit({'data-handle':'tone','aria-valuenow':norm(11)*100,'aria-valuetext':format(11)+', filter mix '+format(23)},'Cutoff and filter mix',18+norm(11)*384,169-norm(23)*140);
+      svg.setAttribute('aria-label','Base filter response, '+format(43,v[43]||0)+', '+Number((rate/1000).toFixed(1))+' kHz sample rate. Excludes envelope and LFO movement. Vertical range plus24 to minus60 decibels.');
+      $('shape-surface').dataset.frequencyMax=maxFrequency>=1000?Number((maxFrequency/1000).toFixed(1))+' kHz':Math.round(maxFrequency)+' Hz';
+      $('filter-preview-rate').textContent=Number((rate/1000).toFixed(1))+' kHz';
     } else if(module==='drop'&&sauce==='drive') {
       const drive=getValues()[12],points=[];
       for(let i=0;i<=96;i++){const x=-1+2*i/96;points.push(`${i?'L':'M'}${18+i*4},${99-Math.tanh(x*drive)*70}`);}
@@ -298,10 +314,10 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   $('volume-range').addEventListener('pointerdown',e=>{if(!begin(e,'volume'))e.preventDefault();});
   $('volume-range').addEventListener('input',()=>{if(gesture&&gesture.type!=='volume')return;const before=state(),next=[...getValues()];next[0]=Number($('volume-range').value)/100;apply(next);if(!gesture)commit(before);});
   bindCompletion($('volume-range'));
-  document.addEventListener('pointerdown',e=>{if(!e.target.closest('#volume-panel,#volume-toggle')){$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}if(!e.target.closest('#waveforms'))closeOsc(false);if(!gesture&&!e.target.closest('#motion-details,#motion-details-toggle,.keyboard-section'))closeMotion(false);if(!gesture&&!e.target.closest('.keyboard-section'))closeGlide(false);});
-  window.addEventListener('keydown',e=>{if(e.key==='Escape'){const editing=!!gesture;cancel();closeOsc(true);if(!editing){closeMotion(true);closeGlide(true);}$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}});window.addEventListener('blur',cancel);
+  document.addEventListener('pointerdown',e=>{if(!e.target.closest('#volume-panel,#volume-toggle')){$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}if(!e.target.closest('#waveforms'))closeOsc(false);if(!e.target.closest('#filter-mode-toggle,#filter-mode-options'))closeFilter(false);if(!gesture&&!e.target.closest('#motion-details,#motion-details-toggle,.keyboard-section'))closeMotion(false);if(!gesture&&!e.target.closest('.keyboard-section'))closeGlide(false);});
+  window.addEventListener('keydown',e=>{if(e.key==='Escape'){const editing=!!gesture;cancel();closeOsc(true);closeFilter(true);if(!editing){closeMotion(true);closeGlide(true);}$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}});window.addEventListener('blur',cancel);
   $('undo').addEventListener('click',()=>{cancel();rackUI.cancel();const before=history.pop();if(before)restore(before);$('undo').disabled=!history.length;});
-  function loadPatch(next,name='custom',settings=DEFAULT_PERFORMANCE,extras={}) {cancel();rackUI.cancel();closeOsc(false);lfoUI.close();const before=state();releaseVoices();preset=name;applyValues(next);applyPerformance(normalizePerformance(settings));applyRack(extras.rack?normalizeRack(extras.rack):legacyRack(next,settings));applyModulation(extras.modulation?normalizeModulation(extras.modulation):normalizeModulation());update();commit(before);}
+  function loadPatch(next,name='custom',settings=DEFAULT_PERFORMANCE,extras={}) {cancel();rackUI.cancel();closeOsc(false);closeFilter(false);lfoUI.close();const before=state();releaseVoices();preset=name;applyValues(next);applyPerformance(normalizePerformance(settings));applyRack(extras.rack?normalizeRack(extras.rack):legacyRack(next,settings));applyModulation(extras.modulation?normalizeModulation(extras.modulation):normalizeModulation());update();commit(before);}
   if(!$('presets').querySelector('[value="custom"]')){const option=document.createElement('option');option.value='custom';option.textContent='Custom patch';option.disabled=true;$('presets').append(option);}
   $('presets').addEventListener('change',e=>loadPatch(factoryPatch(e.target.value,parameters),e.target.value));
   $('init').addEventListener('click',()=>loadPatch(parameters.map(p=>p.default)));
@@ -334,6 +350,9 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
 
     $('volume-range').value=Math.round(getValues()[0]*100);$('volume-value').textContent=Math.round(getValues()[0]*100)+'%';$('volume-toggle').setAttribute('aria-label','Volume '+Math.round(getValues()[0]*100)+'%');
     for(const dial of document.querySelectorAll('[data-knob]')){const id=dial.dataset.knob,n=knobN(id),text=id==='character'?(characterCustom()?'Custom · ':'')+Math.round(n*100)+'%':id==='motion'?(motionCustom()?'Custom. ':'')+'Drift up to '+format(13)+', attack settling up to '+format(32):format(Number(id));dial.style.setProperty('--rotation',(-135+n*270)+'deg');dial.setAttribute('aria-valuenow',String(Math.round(n*100)));dial.setAttribute('aria-valuetext',text);const output=document.querySelector(`[data-knob-value="${id}"]`);if(id==='motion'){output.classList.add('motion-value');const drift=document.createElement('span'),hit=document.createElement('span');drift.textContent='≤ '+format(13);hit.textContent='Hit '+format(32);output.replaceChildren(drift,hit);dial.closest('.macro').querySelector('.macro-name').textContent=motionCustom()?'Pitch · Custom':'Pitch';}else output.textContent=text;}
+    const resonant=Math.round(getValues()[43]||0)===1,modeButton=$('filter-mode-toggle');
+    if(modeButton){modeButton.querySelector('.filter-mode-name').textContent=resonant?'LP12':'Soft';modeButton.setAttribute('aria-label','Filter mode, '+(resonant?'Resonant LP12':'Soft'));$('filter-mode-value').textContent=resonant?'12 dB/oct':'6 dB/oct';for(const option of document.querySelectorAll('[data-filter-mode]'))option.setAttribute('aria-pressed',String(Number(option.dataset.filterMode)===(resonant?1:0)));}
+    for(const control of document.querySelectorAll('[data-knob="42"],[data-param="42"]')){control.disabled=!resonant;control.title=resonant?'Resonance':'Choose Resonant LP12 to use resonance; stored amount is retained.';if(!resonant)control.setAttribute('aria-describedby','filter-resonance-help');else control.removeAttribute('aria-describedby');}
     $('presets').value=preset;
     $('value-summary').textContent=module==='tone'?format(11)+' · filter '+format(23):module==='envelope'?(envelopeTarget==='filter'?format(24):'New notes'):module==='drop'?(sauce==='drive'?format(12):'+'+format(15)):characterCustom()?'Custom':Math.round(characterN()*100)+'%';
     if(module==='envelope'&&envelopeTarget==='filter')$('module-description').textContent=getValues()[24]===0?'Raise Filter amount to add movement':'Each note has its own filter envelope';

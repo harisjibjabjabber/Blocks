@@ -51,7 +51,7 @@ std::array<float,BS_PARAMETER_COUNT> patch(const Case&c,float drive){
 }
 int main(int argc,char**argv){try{
  if(argc!=2)throw std::runtime_error("Usage: drive-diagnostic existing-output-directory");
- if(!((bs_abi_version()==4&&bs_parameter_count()==35)||(bs_abi_version()==5&&bs_parameter_count()==40)||(bs_abi_version()==6&&bs_parameter_count()==42)))throw std::runtime_error("Requires a coherent ABI4/35, ABI5/40 or ABI6/42 core");
+ if(!((bs_abi_version()==4&&bs_parameter_count()==35)||(bs_abi_version()==5&&bs_parameter_count()==40)||(bs_abi_version()==6&&bs_parameter_count()==42)||(bs_abi_version()==7&&bs_parameter_count()==44)))throw std::runtime_error("Requires a coherent ABI4/35, ABI5/40 ABI6/42 or ABI7/44 core");
  analysisSelfTest();
  std::vector<Case>cases={{"single-saw",BS_SAW,false,.5f,0},{"single-square",BS_SQUARE,false,.5f,0},{"single-pulse50",BS_PULSE,false,.5f,0},{"single-pulse6592",BS_PULSE,false,.6592f,0}};
  for(float detune:{0.f,4.8f,20.f})for(unsigned kind=0;kind<3;++kind)cases.push_back({"dual-"+std::string(kind==0?"square":kind==1?"pulse50":"pulse6592")+"-"+std::to_string(detune),kind==0?unsigned(BS_SQUARE):unsigned(BS_PULSE),true,kind==2?.6592f:.5f,detune});

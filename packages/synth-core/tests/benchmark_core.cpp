@@ -43,9 +43,9 @@ bool run(bs_synth*s,unsigned voices,bool dense,bool measured,Result&result,bs_sa
 }
 }
 int main(int argc,char**argv) {
- if(argc!=2||bs_abi_version()!=6||bs_parameter_count()!=42){std::cerr<<"Usage: benchmark_core output.json (ABI6 required)\n";return 1;}
+ if(argc!=2||bs_abi_version()!=7||bs_parameter_count()!=44){std::cerr<<"Usage: benchmark_core output.json (ABI7 required)\n";return 1;}
  std::ofstream out(argv[1]);if(!out)return 2;
- out<<std::setprecision(10)<<"{\n\"fixtureVersion\":2,\n\"kind\":\"Offline core timing, not a phone or audio-device benchmark\",\n\"abiVersion\":"<<bs_abi_version()<<",\n\"sampleRate\":"<<rate<<",\n\"blockFrames\":"<<block<<",\n\"audioBlockBudgetMs\":"<<1000.0*block/rate<<",\n\"cases\":[\n";
+ out<<std::setprecision(10)<<"{\n\"fixtureVersion\":3,\n\"kind\":\"Offline core timing, not a phone or audio-device benchmark\",\n\"abiVersion\":"<<bs_abi_version()<<",\n\"sampleRate\":"<<rate<<",\n\"blockFrames\":"<<block<<",\n\"audioBlockBudgetMs\":"<<1000.0*block/rate<<",\n\"cases\":[\n";
  bool first=true;
  for(unsigned feature=0;feature<2;++feature)for(unsigned pair=0;pair<3;++pair)for(float fullness:{0.f,.5f,1.f})for(unsigned voices:{1u,8u,16u})for(bool dense:{false,true}) {
   if(dense&&voices!=16)continue;
@@ -100,6 +100,23 @@ int main(int argc,char**argv) {
   bs_panic(s);bs_destroy(s);
   out<<",\n{\"stressCase\":\""<<stressNames[kind]<<"\",\"audioBlocks\":"<<audioBlocks<<",\"lfoSources\":"<<lfoSources<<",\"routesPerLfo\":"<<(lfoSources?8:0)<<",\"noteBlocks\":"<<noteBlocks<<",\"heldInputNotes\":"<<heldInputs<<",\"observedBlockEndVoices\":"<<result.observedVoices<<",\"silentOutput\":"<<(result.peak<1e-12?"true":"false")<<",\"denseRetriggers\":"<<(dense?"true":"false")<<",\"liveRackEdits\":"<<(edits?"true":"false")<<",\"measuredAudioSeconds\":3,\"renderMsPerAudioSecond\":"<<result.sum/3<<",\"blockMsP50\":"<<quantile(result.blocks,.5)<<",\"blockMsP95\":"<<quantile(result.blocks,.95)<<",\"blockMsP99\":"<<quantile(result.blocks,.99)<<",\"blockMsMax\":"<<*std::max_element(result.blocks.begin(),result.blocks.end())<<",\"configurationMsTotal\":"<<result.configMs<<",\"configurationChanges\":"<<result.configChanges<<",\"peak\":"<<result.peak<<'}';
  }
- out<<"\n],\n\"limits\":\"One warmed desktop/Node run; no hard CI timing threshold. Includes bs_render event handling and bounded steal tails, excludes host messaging/copies, device latency, UI, and thermal effects. Fixed 128-frame blocks; OS scheduling can affect maxima. Fixture2 retains45 existing cases and adds6 bounded rack/LFO/note cases; historical timings are comparable only for identical settings and runtime/source context. Configuration calls are timed separately, never folded into render percentiles. Live rack edits occur about every100ms at block boundaries; peaks/observed voices include warmup. Silent scheduler output is reported honestly through peak/observed voice fields, not treated as full-polyphony rendering.\"\n}\n";
+
+ // Fixture3 adds paired identical16voice loads; only FilterMode differs.
+ // Fixed resonance/cutoff, same initial state/events, no aggregate old/new mean.
+ for(unsigned kind=0;kind<3;++kind)for(unsigned mode=0;mode<2;++mode){
+  bs_synth*s=bs_create();if(!s||!bs_prepare(s,rate))return 14;
+  bs_set_parameter(s,BS_FILTER_MODE,float(mode));bs_set_parameter(s,BS_FILTER_RESONANCE,.75f);bs_set_parameter(s,BS_CUTOFF,1200);
+  bs_set_parameter(s,BS_ATTACK,.003f);bs_set_parameter(s,BS_RELEASE,.1f);bs_set_parameter(s,BS_SUSTAIN_LEVEL,.65f);
+  if(kind==1){bs_set_parameter(s,BS_FILTER_AMOUNT,36);bs_set_parameter(s,BS_FILTER_ATTACK,.02f);bs_set_parameter(s,BS_FILTER_DECAY,.3f);bs_set_parameter(s,BS_FILTER_SUSTAIN,.4f);}
+  bs_sauce_config rack{};bs_default_sauce(&rack);
+  if(kind==2){rack.count=16;for(unsigned i=0;i<16;++i)rack.blocks[i]={i+1,i%2?BS_SAUCE_FULLNESS:BS_SAUCE_DRIVE,0,1,i%2?.5f:2.f};if(!bs_set_sauce(s,&rack))return 15;}
+  bs_reset(s);for(unsigned key=0;key<16;++key)bs_note_on(s,0,48+key,.65f);
+  Result result;const bool dense=kind!=0;auto*edits=kind==2?&rack:nullptr;
+  if(!run(s,16,dense,false,result,edits))return 16;
+  for(unsigned repeat=0;repeat<3;++repeat)if(!run(s,16,dense,true,result,edits))return 16;
+  bs_panic(s);bs_destroy(s);
+  out<<",\n{\"filterComparison\":\""<<(kind==0?"held-eg0":kind==1?"dense-active-eg":"audio16-mixed-live-reorder")<<"\",\"filterMode\":"<<mode<<",\"resonance\":0.75,\"cutoffHz\":1200,\"voices\":16,\"observedBlockEndVoices\":"<<result.observedVoices<<",\"silentOutput\":"<<(result.peak<1e-12?"true":"false")<<",\"denseRetriggers\":"<<(dense?"true":"false")<<",\"measuredAudioSeconds\":3,\"renderMsPerAudioSecond\":"<<result.sum/3<<",\"blockMsP50\":"<<quantile(result.blocks,.5)<<",\"blockMsP95\":"<<quantile(result.blocks,.95)<<",\"blockMsP99\":"<<quantile(result.blocks,.99)<<",\"blockMsMax\":"<<*std::max_element(result.blocks.begin(),result.blocks.end())<<",\"configurationMsTotal\":"<<result.configMs<<",\"configurationChanges\":"<<result.configChanges<<",\"peak\":"<<result.peak<<'}';
+ }
+ out<<"\n],\n\"limits\":\"One warmed desktop/Node run; no hard CI timing threshold. Includes bs_render event handling and bounded steal tails, excludes host messaging/copies, device latency, UI, and thermal effects. Fixed 128-frame blocks; OS scheduling can affect maxima. Fixture3 retains51 existing cases and adds6 paired16voice filter cases; historical timings are comparable only for identical settings and runtime/source context. Configuration calls are timed separately, never folded into render percentiles. Live rack edits occur about every100ms at block boundaries; peaks/observed voices include warmup. Silent scheduler output is reported honestly through peak/observed voice fields, not treated as full-polyphony rendering.\"\n}\n";
  return out?0:5;
 }

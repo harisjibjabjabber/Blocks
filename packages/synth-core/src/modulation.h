@@ -6,7 +6,7 @@
 #include <cmath>
 #include <cstdint>
 namespace blocks_detail {
-inline bool modulationTarget(uint32_t id){switch(id){case 0:case 2:case 3:case 11:case 12:case 13:case 14:case 18:case 21:case 22:case 23:case 24:return true;default:return false;}}
+inline bool modulationTarget(uint32_t id){switch(id){case 0:case 2:case 3:case 11:case 12:case 13:case 14:case 18:case 21:case 22:case 23:case 24:case BS_FILTER_RESONANCE:return true;default:return false;}}
 inline bs_modulation_config defaultModulation(){bs_modulation_config c{};c.version=1;c.source_count=1;auto&s=c.sources[0];s.id=1;s.division=4;s.rate_hz=1;s.intensity=1;s.route_count=2;s.routes[0]={11,.3f};s.routes[1]={0,.2f};return c;}
 class Modulation {
  struct Clock{double phase=0;uint64_t cycle=0;};

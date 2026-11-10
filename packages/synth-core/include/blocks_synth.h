@@ -6,8 +6,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* Original Blocks DSP spike. ABI 6. Physical-unit parameters, not MIDI CCs. */
-#define BS_ABI_VERSION 6u
+/* Original Blocks DSP spike. ABI 7. Physical-unit parameters, not MIDI CCs. */
+#define BS_ABI_VERSION 7u
 #define BS_MAX_VOICES 16u
 typedef struct bs_synth bs_synth;
 typedef enum bs_parameter_id {
@@ -23,7 +23,7 @@ typedef enum bs_parameter_id {
   BS_SETTLING_CENTS=32, BS_SETTLING_TIME=33, BS_VELOCITY_MOVEMENT=34,
   BS_ENVELOPE_RESPONSE=35, BS_DRIVE_ENABLED=36, BS_PITCH_DROP_ENABLED=37,
   BS_SAUCE_ORDER=38, BS_FULLNESS_ENABLED=39,
-  BS_GLIDE_ENABLED=40, BS_GLIDE_TIME=41, BS_PARAMETER_COUNT=42
+  BS_GLIDE_ENABLED=40, BS_GLIDE_TIME=41, BS_FILTER_RESONANCE=42, BS_FILTER_MODE=43, BS_PARAMETER_COUNT=44
 } bs_parameter_id;
 typedef enum bs_mapping { BS_LINEAR=0, BS_LOGARITHMIC=1, BS_DISCRETE=2 } bs_mapping;
 typedef enum bs_waveform { BS_SINE=0, BS_TRIANGLE=1, BS_SAW=2, BS_PULSE=3, BS_SQUARE=4 } bs_waveform;
@@ -41,7 +41,7 @@ typedef struct bs_event {
   uint32_t sample_offset, type, channel, key, parameter_id; float value;
 } bs_event;
 typedef struct bs_patch { uint32_t version; float values[BS_PARAMETER_COUNT]; } bs_patch;
-/* Optional performance state is separate from the42-parameter tone patch.
+/* Optional performance state is separate from the44-parameter tone patch.
  * 48bytes: seven uint32 fields then five floats. No host clock/timer required.
  * Divisions4/8/16 allow triplets;32/64 are straight only.
  * Arp chord edits restart immediately, then group further edits for20ms
@@ -80,12 +80,13 @@ void bs_reset(bs_synth *synth); /* reset voices, pedal and deterministic RNG seq
 int bs_set_parameter(bs_synth *synth, uint32_t id, float physical);
 float bs_get_parameter(const bs_synth *synth, uint32_t id);
 int bs_get_patch(const bs_synth *synth, bs_patch *patch);
-/* v6 writes/reads42 values; v1(18), v2(19), v3(21), v4(35), v5(40) prefixes migrate.
- * All legacy versions receive Glide disabled and time .08seconds.
+/* v7 writes/reads44 values; v1(18), v2(19), v3(21), v4(35), v5(40), v6(42) prefixes migrate.
+ * Resonance42 defaults0; FilterMode43 defaults0 (legacy one-pole),1 selects resonant LP12.
+ * Versions1-5 receive Glide disabled and time .08seconds.
  * Versions1-4 bypass envelope response (0); Drive/Pitch Drop/Fullness remain enabled (1), order is Drive then Fullness (0).
- * Legacy Mix maps to oscillator levels; v4/v5 levels are authoritative and Mix
+ * Legacy Mix maps to oscillator levels; v4-v7 levels are authoritative and Mix
  * is exported as level2/(level1+level2), or .5 when both are zero.
- * Unknown versions/nonfinite input: atomic reject. Getter always v6. */
+ * Unknown versions/nonfinite input: atomic reject. Getter always v7. */
 int bs_set_patch(bs_synth *synth, const bs_patch *patch);
 void bs_note_on(bs_synth *synth, uint32_t channel, uint32_t key, float velocity);
 void bs_note_off(bs_synth *synth, uint32_t channel, uint32_t key);

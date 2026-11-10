@@ -1,4 +1,4 @@
-export const MOD_TARGETS=Object.freeze([0,2,3,11,12,13,14,18,21,22,23,24]);
+export const MOD_TARGETS=Object.freeze([0,2,3,11,12,13,14,18,21,22,23,24,42]);
 export const LFO_WAVES=Object.freeze(['sine','triangle','saw','square','random']);
 export const MOD_DIVISIONS=Object.freeze({'1/1':[1,0],'1/2':[2,0],'1/4':[4,0],'1/8':[8,0],'1/16':[16,0],'1/32':[32,0],'1/64':[64,0],'1/8T':[8,1],'1/16T':[16,1]});
 export function defaultLfo(id=1){return{id,enabled:false,waveform:'sine',rate:1,synced:false,division:'1/4',intensity:1,routes:[{parameter:11,depth:.3},{parameter:0,depth:.2}]};}

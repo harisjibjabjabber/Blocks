@@ -89,7 +89,7 @@ bool render(Clip &c,const std::string &directory) {
 }
 int main(int argc,char **argv) {
  if(argc!=3){std::cerr<<"Usage: audition-wav output-directory factory-values.txt|--describe\n";return 1;}
- if(bs_abi_version()!=6||bs_parameter_count()!=42){std::cerr<<"This fixture requires ABI6/count42.\n";return 2;}
+ if(bs_abi_version()!=7||bs_parameter_count()!=44){std::cerr<<"This fixture requires ABI7/count44.\n";return 2;}
  if(std::string(argv[2])=="--describe"){
   std::ofstream out(std::string(argv[1])+"/descriptors.json");out<<std::setprecision(10)<<"[";
   for(unsigned id=0;id<BS_PARAMETER_COUNT;++id){const auto*p=bs_parameter_info(id);if(id)out<<',';out<<"{\"id\":"<<id<<",\"default\":"<<p->default_value<<",\"min\":"<<p->minimum<<",\"max\":"<<p->maximum<<",\"mapping\":"<<p->mapping<<'}';}out<<"]\n";return out?0:2;

@@ -18,8 +18,8 @@ async function fixture(){
     bs_set_performance:(_s,p)=>{const v=new DataView(memory.buffer),next={};performanceFields.forEach((key,i)=>next[key]=i<7?v.getUint32(p+i*4,true):v.getFloat32(p+i*4,true));performanceCalls.push({config:next,bytes:Array.from(new Uint8Array(memory.buffer,p,48))});performance=next;return 1;},
     bs_performance_pending:()=>performance.curl!==0?1:0,
     bs_create:()=>1,bs_prepare:()=>1,malloc:bytes=>{const p=next;next+=bytes;return p;},
-    bs_parameter_count:()=>42,bs_parameter_info:()=>0,bs_get_parameter:()=>0,bs_abi_version:()=>6,
-    bs_set_patch:(_s,p)=>{const view=new DataView(memory.buffer),version=view.getUint32(p,true),n=version===1?18:version===2?19:version===3?21:version===4?35:version===5?40:42;patchCalls.push({version,values:Array.from({length:n},(_,i)=>view.getFloat32(p+4+i*4,true))});return 1;},
+    bs_parameter_count:()=>44,bs_parameter_info:()=>0,bs_get_parameter:()=>0,bs_abi_version:()=>7,
+    bs_set_patch:(_s,p)=>{const view=new DataView(memory.buffer),version=view.getUint32(p,true),n=version===1?18:version===2?19:version===3?21:version===4?35:version===5?40:version===6?42:44;patchCalls.push({version,values:Array.from({length:n},(_,i)=>view.getFloat32(p+4+i*4,true))});return 1;},
     bs_active_voices:()=>3,bs_render:(_s,l,r,frames,eventPointer,eventCount)=>{renderCalls++;const view=new DataView(memory.buffer);for(let i=0;i<eventCount;i++){const p=eventPointer+i*24;renderedEvents.push({offset:view.getUint32(p,true),id:view.getUint32(p+16,true),value:view.getFloat32(p+20,true)});}for(let i=0;i<frames;i++){floats[l/4+i]=samples[0][i]??0;floats[r/4+i]=samples[1][i]??0;}return 0;}};
   const context=vm.createContext({AudioWorkletProcessor:class{constructor(){this.port={postMessage:value=>messages.push(value)};}},
     WebAssembly:{instantiate:async()=>({instance:{exports:api}})},sampleRate:48000,currentFrame:0,
@@ -72,10 +72,10 @@ test('invalid or overflowing parameter batch preserves the existing queue comple
 });
 
 
-test('patch boundary delegates valid legacy prefixes and current42 values, rejects invalid state atomically',async()=>{
- const f=await fixture();for(const [version,count] of [[1,18],[2,19],[3,21],[4,35],[5,40],[6,42]]){f.message({kind:'patch',version,values:Array.from({length:count},(_,i)=>i/100)});assert.equal(f.patchCalls.at(-1).version,version);assert.equal(f.patchCalls.at(-1).values.length,count);}
- for(const message of [{kind:'patch',version:3,values:Array(35).fill(0)},{kind:'patch',version:4,values:Array(21).fill(0)},{kind:'patch',version:99,values:Array(35).fill(0)},{kind:'patch',version:4,values:[...Array(34).fill(0),NaN]},{kind:'patch',version:5,values:[...Array(39).fill(0),NaN]},{kind:'patch',version:5,values:Array(35).fill(0)},{kind:'patch',version:6,values:[...Array(41).fill(0),NaN]},{kind:'patch',version:6,values:Array(40).fill(0)}])f.message(message);
- assert.equal(f.patchCalls.length,6);assert.equal(f.messages.filter(m=>m.kind==='error').length,8);assert.equal(f.messages.filter(m=>m.kind==='patch').length,6);
+test('patch boundary delegates valid legacy prefixes and current44 values, rejects invalid state atomically',async()=>{
+ const f=await fixture();for(const [version,count] of [[1,18],[2,19],[3,21],[4,35],[5,40],[6,42],[7,44]]){f.message({kind:'patch',version,values:Array.from({length:count},(_,i)=>i/100)});assert.equal(f.patchCalls.at(-1).version,version);assert.equal(f.patchCalls.at(-1).values.length,count);}
+ for(const message of [{kind:'patch',version:3,values:Array(35).fill(0)},{kind:'patch',version:4,values:Array(21).fill(0)},{kind:'patch',version:99,values:Array(35).fill(0)},{kind:'patch',version:4,values:[...Array(34).fill(0),NaN]},{kind:'patch',version:5,values:[...Array(39).fill(0),NaN]},{kind:'patch',version:5,values:Array(35).fill(0)},{kind:'patch',version:6,values:[...Array(41).fill(0),NaN]},{kind:'patch',version:6,values:Array(40).fill(0)},{kind:'patch',version:7,values:Array(42).fill(0)},{kind:'patch',version:7,values:[...Array(43).fill(0),NaN]}])f.message(message);
+ assert.equal(f.patchCalls.length,7);assert.equal(f.messages.filter(m=>m.kind==='error').length,10);assert.equal(f.messages.filter(m=>m.kind==='patch').length,7);
 });
 
 
@@ -113,4 +113,10 @@ test('note rack bridge encodes1224-byte cascading generators/Drop and preserves 
  const f=await fixture(),perf={version:1,mode:1,order:2,division:64,triplet:0,seed:123,mono:0,bpm:139,curl:.3,gate:.6,strum_ms:42,randomness:.7},config={version:1,blocks:[{id:3,type:0,primary:0,enabled:1,perf},{id:9,type:2,primary:1,enabled:1,drop_amount:700,drop_time:.4,drop_bend:-.7}]};f.message({kind:'event',type:0,key:60,channel:0,value:1});f.message({kind:'parameter-batch',values:[{id:11,value:500}]});f.message({kind:'notes',config});assert.equal(f.queued,1);const bytes=Uint8Array.from(f.rackCalls.notes[0]),v=new DataView(bytes.buffer);assert.equal(bytes.length,1224);assert.equal(v.getUint32(4,true),2);assert.equal(v.getUint32(24,true),1);assert.equal(v.getUint32(36,true),64);assert.equal(v.getFloat32(52,true),139);assert.equal(v.getUint32(84,true),9);assert.equal(v.getFloat32(148,true),700);assert.equal(v.getFloat32(152,true),Math.fround(.4));assert.equal(v.getFloat32(156,true),Math.fround(-.7));assert.equal(f.messages.findLast(m=>m.kind==='notes').config.blocks[0].perf.curl,Math.fround(.3));
  f.message({kind:'event',type:0,key:64,channel:0,value:1});const changed={...config,blocks:[{...config.blocks[0],perf:{...perf,bpm:144}},config.blocks[1]]};f.message({kind:'notes',config:changed});assert.equal(f.queued,2);assert.equal(f.rackCalls.notes.length,2);
  const bad=[{...config.blocks[0],primary:1},{...config.blocks[0],perf:{...perf,mono:1}},{...config.blocks[0],perf:{...perf,mode:2}},{...config.blocks[1],drop_amount:NaN},{...config.blocks[1],drop_time:0},{...config.blocks[1],drop_bend:3}];for(const block of bad)f.message({kind:'notes',config:{version:1,blocks:[block]}});assert.equal(f.rackCalls.notes.length,2);assert.equal(f.queued,2);assert.equal(f.messages.filter(m=>m.kind==='error').length,bad.length);
+});
+
+test('Resonance is a continuous modulation route; filter mode is rejected atomically',async()=>{
+ const f=await fixture(),source={id:1,enabled:1,waveform:0,synced:0,division:4,triplet:0,rate_hz:1,intensity:.5,routes:[{parameter_id:42,depth:.6}]};
+ f.message({kind:'modulation',config:{version:1,sources:[source]}});assert.equal(f.rackCalls.modulation.length,1);
+ f.message({kind:'modulation',config:{version:1,sources:[{...source,routes:[{parameter_id:43,depth:.6}]}]}});assert.equal(f.rackCalls.modulation.length,1);assert.equal(f.messages.at(-1).kind,'error');
 });
