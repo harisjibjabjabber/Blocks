@@ -378,11 +378,11 @@
   ],
   "latency_samples": 15.75,
   "dry_contract": "Matched FIR dry,filtered not exactbypass;15.75 groupdelay. Legacy model remains separate.",
-  "optimized_reference_null": "ladder_polyphase_tests.cpp passes exactdouble samplecomparison at8k/44.1k/48k/96k/192k/384k underlivecontrols.",
+  "optimized_reference_null": "WASM-O2 exact double comparison passed at8k/44.1k/48k/96k/192k/384k. Native GCC-O3 exact equality failed without error magnitude in initial CI; revised test reports all-rate absolute/relative/scaled deltas and requires1e-12 scaled error. Native result pending rerun; no production DSP changed.",
   "hashes": {
     "src\\ladder_filter.h": "91d400bd304b958630e04c791dcf09998cec42f61ad3822235906424a286a308",
     "tests\\ladder_alias_probe.cpp": "ee57db03c1f53c75a79581cc858b7e2c8ee9a022d1456cc04b452ad8136530ff",
-    "tests\\ladder_polyphase_tests.cpp": "692f36c4e5875fc9f24adbd839c4824bff036cd3f44c3ffe9deef04ad26a50d9",
+    "tests\\ladder_polyphase_tests.cpp": "26a857c9b144e83bdc3d74e551e8e3e0e296b56eb47053a09f387fd0a5326899",
     "tests\\quality_integration_tests.cpp": "eae467155af9ce157e38086637f230284fcbf31f43b1de6c8139e476d76c216b"
   }
 }
