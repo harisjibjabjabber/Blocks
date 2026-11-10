@@ -92,6 +92,16 @@ Sources support Sine, Triangle, Saw, Square and smooth deterministic Random, fre
 
 Bipolar depth * intensity * waveform offsets sum in normalized space, then a5ms per-target smoother controls effective live values. Linear targets add range * offset; logarithmic targets multiply by `exp(log(max/min)*offset)`, bounded to their descriptor ranges. Saved physical values remain untouched. Offset tails settle to an explicit zero for exact disabled baseline output. Six focused groups include actual audio, state preservation, disabled exactness, sample/block invariance and phase preservation. Host/UI acceptance is separate.
 
+## Opt-in Unison voicing
+
+`blocks_voicing.h` adds16-byte configuration `{version,count,detune_cents,spread}` with default1/1/0/0. `bs_default_voicing`, `bs_set_voicing`, and `bs_get_voicing` keep tone ABI7/count44 unchanged. Count is1-4, detune0-50 cents, spread0-1; nonfinite/out-of-range values reject atomically. Count is captured on each accepted NoteOn (including generated notes), while detune and spread change with a5ms time constant. Existing notes keep their copy count. Reset/prepare retain configuration and snap the continuous controls.
+
+Count1 executes the original mono oscillator/filter/effects path exactly and ignores Unison detune/spread. Higher counts start equal-phase copies with symmetric pitch offsets spanning plus/minus the detune amount. Count2 offsets are[-1,+1], Count3[-1,0,+1], Count4[-1,-1/3,+1/3,+1], multiplied by the configured cents. Pitch/ADSR/velocity/pedal/Mono/Glide ownership remains one note; copies do not consume additional polyphony slots or introduce separate envelopes.
+
+Each copy has fixed1/count amplitude weighting and a symmetric equal-power pan multiplied bysqrt(2), so spread0 centers it at unit gain before weighting. This avoids coherent-count gain boost; detuned copies can be quieter and are not loudness-compensated. Stereo sums then use two independent filter and Sauce histories per multi-copy note. The amplitude/filter envelopes and coefficients are shared, followed by the existing note pan, output Width and Delay. There are no fake stereo delays or independent per-copy effects chains. Copy phases and release/steal tails are deterministic; changing spread does not reset oscillators.
+
+Five groups in `unison_tests.cpp` cover schema/default isolation, exact Count1 and count snapshots, mathematical symmetry/gain, four measured frequency components, real stereo/mono collapse, both filters, live controls/effects changes, voice stealing/pedal/release/panic, block invariance and zero render allocation. `unison_benchmark.cpp` measures paired Count1/4 with16 held notes in neutral/Soft moderate/LP12 moderate configurations. Four copies add oscillator work and a second filter/effects path; bounded capacity is not a real-time or phone-performance guarantee.
+
 ## Stereo output width
 
 The additive `bs_set_stereo_width` / `bs_get_stereo_width` API stores a separate bus setting, default1, without changing tone ABI7/count44. Setter values must be finite and in[0,2]; invalid values leave the target untouched. Event type `BS_STEREO_WIDTH` (5) uses the existing24-byte event's `value` for sample-offset automation. The getter returns the target. Hosts serialize this optional field separately and default missing values to1.

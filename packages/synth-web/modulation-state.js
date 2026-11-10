@@ -22,7 +22,7 @@ export function sampleLfoPoints(points,phase){
  let lo=0,hi=points.length-1;while(hi-lo>1){const middle=(lo+hi)>>1;if(phase<points[middle].x)hi=middle;else lo=middle;}
  const a=points[lo],b=points[hi],t=(phase-a.x)/(b.x-a.x),q=t+a.bend*t*(1-t);return a.y+(b.y-a.y)*q;
 }
-export function defaultLfo(id=1){return{id,enabled:false,waveform:'sine',rate:1,synced:true,division:'1/4',intensity:1,retrigger:false,points:shapeForWave(),routes:[{parameter:11,depth:.3},{parameter:0,depth:.2}]};}
+export function defaultLfo(id=1){return{id,enabled:false,waveform:'sine',rate:1,synced:true,division:'1/4',intensity:1,retrigger:false,points:shapeForWave(),routes:[{parameter:11,depth:0},{parameter:0,depth:0}]};}
 export const DEFAULT_MODULATION=Object.freeze({version:3,sources:[defaultLfo()]});
 const bounded=(x,min,max)=>{if(!Number.isFinite(x))throw Error('Invalid modulation value');return Math.max(min,Math.min(max,x));};
 export function normalizeModulation(input=DEFAULT_MODULATION){
@@ -49,7 +49,7 @@ export function randomLfoPoints(count=30,random=()=>{const word=new Uint32Array(
 }
 
 export const routeTargetKey=r=>`${r.kind??'tone'}:${r.targetId??0}:${r.parameter}`;
-export const defaultRouteDepth=r=>(r.kind??'tone')!=='tone'?0:r.parameter===11?.3:r.parameter===0?.2:0;
+export const defaultRouteDepth=()=>0;
 export function modulationDestinations(parameters,rack,modulation){
  const destinations=MOD_TARGETS.map(parameter=>({kind:'tone',targetId:0,parameter,label:'Tone · '+(parameter===0?'Sound level':parameters[parameter]?.name??'Parameter '+parameter)}));
  const counts={};for(const block of rack.audio){const number=counts[block.type]=(counts[block.type]??0)+1;destinations.push({kind:'sauce',targetId:block.id,parameter:0,label:(block.type==='drive'?'Drive':'Fullness')+' '+number+' · Amount'});}

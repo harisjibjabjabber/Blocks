@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include "blocks_sauce.h"
 #include "blocks_modulation.h"
+#include "blocks_voicing.h"
+#include "blocks_delay.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -65,10 +67,10 @@ uint32_t bs_parameter_count(void);
 const bs_parameter_descriptor *bs_parameter_info(uint32_t id);
 float bs_normalized_to_physical(uint32_t id, float normalized);
 float bs_physical_to_normalized(uint32_t id, float physical);
-bs_synth *bs_create(void); /* Allocation only here. Starts prepared at 48kHz. */
+bs_synth *bs_create(void); /* Allocates engine and delay memory. Starts prepared at48kHz. */
 void bs_destroy(bs_synth *synth);
 /* prepare/reset/patch calls are host-control operations: never concurrently render.
- * prepare accepts 8k..384kHz, resets voices, retains parameters. Invalid rates fail. */
+ * prepare accepts8k..384kHz, allocates delay memory, resets voices/tails, retains settings. Invalid rates/allocation fail atomically. */
 int bs_prepare(bs_synth *synth, double sample_rate);
 void bs_reset(bs_synth *synth); /* reset voices, pedal and deterministic RNG sequence */
 /* Setting legacy Mix sets levels to1-Mix/Mix. Setting either level updates

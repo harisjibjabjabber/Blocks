@@ -7,6 +7,7 @@
   <title>Blocks — Synth</title>
   <link rel="stylesheet" href="./styles.css">
 <link rel="stylesheet" href="dial-reset.css">
+<link rel="stylesheet" href="output-ui.css">
 </head>
 <body>
   <main class="instrument" aria-label="Blocks synthesizer">
@@ -36,11 +37,13 @@
       <button type="button" data-module="lfo" aria-pressed="false">LFO</button>
     </nav>
     <div id="sauce-rack" hidden></div>
+    <section id="sauce-output" hidden aria-label="Sauce output effects"></section>
     <section id="sound-editor" class="sound-editor" aria-label="Sound editing">
       <div class="visual-panel">
         <div class="surface-heading"><div id="envelope-tabs" role="group" aria-label="Envelope destination" hidden><button type="button" data-envelope="amp" aria-pressed="true">Amp</button><button type="button" data-envelope="filter" aria-pressed="false">Filter</button></div><button id="motion-details-toggle" type="button" aria-expanded="false" aria-controls="motion-details" hidden>Pitch details <span aria-hidden="true">⌄</span></button><h2 id="module-title">Oscillator + filter</h2><output id="value-summary" aria-live="off"></output></div>
         <div id="waveforms" aria-label="Oscillator waveforms" hidden></div>
         <div id="scope-wrapper" hidden><div class="waveform-caption"><span>Waveform</span><span id="scope-label">Preview</span></div><canvas id="scope" aria-label="Synth waveform preview"></canvas></div>
+        <div id="voicing-panel" hidden></div>
         <div id="shape-surface" aria-label="Interactive sound graph"></div>
         <div id="performance-panel" hidden></div>
         <div id="lfo-panel" hidden></div>

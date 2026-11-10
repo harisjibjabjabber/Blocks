@@ -7,7 +7,7 @@ import {curlPhase,performanceSteps} from './performance-state.js';
 export function createRackEditor({item,body,extra,getNode,changeNode,parameters,getTempo,changeTempo,getPhase,getDestinations,begin,getGesture,bindCompletion}) {
   const dials=[],options={begin,getGesture,bindCompletion};
   function dial(field,label,min,max,format,extraOptions={},target=body){
-    const defaults={drive:{amount:2},fullness:{amount:.5},drop:{amount:120,time:.12,bend:0},lfo:{intensity:1}};
+    const defaults={drive:{amount:1},fullness:{amount:0},drop:{amount:0,time:.12,bend:0},lfo:{intensity:1}};
     const control=configDial({...options,key:item.key+':'+field,label,min,max,defaultValue:defaults[item.type]?.[field]??0,getValue:()=>getNode()?.[field]??min,change:(value,commit)=>changeNode({[field]:value},commit),format,...extraOptions});target.append(control.element);dials.push(control);return control;
   }
   let performanceUI,lfoUI,contour,curve;

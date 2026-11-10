@@ -7,7 +7,7 @@ test('repeatable rack blocks are independent and serialize both processing lanes
  for(const type of ['drive','drive','fullness'])rack.audio.push(newSauceBlock(rack,type));
  for(const type of ['arp','arp','strum','drop','drop'])rack.notes.push(newSauceBlock(rack,type));
  rack.audio[1].amount=8;rack.notes[1].performance.division='1/64';rack.notes[4].amount=1200;
- const copy=structuredClone(rack),normalized=normalizeRack(rack);assert.deepEqual(rack,copy);assert.equal(normalized.audio[0].amount,2);assert.equal(normalized.audio[1].amount,8);assert.equal(normalized.notes[0].performance.division,'1/8');
+ const copy=structuredClone(rack),normalized=normalizeRack(rack);assert.deepEqual(rack,copy);assert.equal(normalized.audio[0].amount,1);assert.equal(normalized.audio[1].amount,8);assert.equal(normalized.notes[0].performance.division,'1/8');
  assert.deepEqual(toCoreSauce(rack).blocks.map(b=>b.id),rack.audio.map(b=>b.id));assert.equal(toCoreNotes(rack).blocks[1].perf.division,64);assert.equal(toCoreNotes(rack).blocks[4].drop_amount,1200);
  for(const bad of [{...rack,version:2},{...rack,audio:Array(17).fill(rack.audio[0])},{...rack,notes:[...rack.notes,rack.notes[0]]}])assert.throws(()=>normalizeRack(bad));
 });

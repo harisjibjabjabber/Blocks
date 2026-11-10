@@ -2,7 +2,19 @@
 
 Date: 10 November 2026. Status: ABI7/44 filter phase technically validated; targeted exact-sound rack-edit optimization is implemented with measured tradeoffs. Physical-device and listening acceptance remain outstanding.
 
-## Current authorized pass: touch defaults, reset gestures and Stereo Width
+## Current Phase 6: neutral Init, direct reset, Unison and Delay
+
+The user rejected the current Unison listening result as nasal/phasey. It remains a prototype with a failed musical-quality gate, despite technical/UX evidence. The [Unison/oscillator quality spike](audio-references/unison-quality-spike.md) governs further sound changes; live Unison DSP is frozen while isolated oscillator candidates are measured. This phase's full regression/CI remains pending. New Init/reset policy is deliberately neutral: Cutoff20kHz, oscillator1 level1, oscillator2 level0, detune0 and every LFO destination depth0. Added Drive starts powered off at1x, Fullness0 and Pitch Drop0. Native legacy defaults and explicit saved/factory patches remain unchanged. Native OS double-click, including slower recognized pairs, resets dials once; quick pointer-pair/native-event overlap is deduplicated. The earlier default table below is historical and superseded by this policy.
+
+**Unison:** Count1–4, symmetric Detune0–50 cents, genuine stereo Spread0–1,1/N copy weight. Count changes apply to new notes; continuous Detune/Spread smooth over5ms. Note ownership, pitch motion and envelopes stay shared; multi-copy notes have two filter/Sauce paths rather than four full effects chains. Additive16-byte Voicing state is separate from tone ABI7/44. Count1 preserves the original audio exactly.
+
+**Output tools:** Width moves from Volume to visible Sauce Output cards, followed by Regular/Ping-pong Delay. Fixed post-insert processing is explicit; these cards have no misleading drag grips. The Keyboard disclosure makes phone audition available without leaving Sauce. Delay has free/synced timing, Feedback, Mix and Damping; defaults Off/Mix0/Feedback0/Damping20k.40-byte native state is separate from the tone patch. Prepared buffers,20ms delay-time crossfades,5ms continuous smoothing and O(1) panic/reset tail clearing are tested.
+
+**Two stereo tools:** lightweight Width is built. A later multiband stereo imager, inspired by the category of Ozone-style tools, will have designed crossover bands/per-band width and correlation/mono-compatibility checks. It is separate from the lightweight Width; no multiband implementation is implied now.
+
+**Evidence and limits:**115 core groups,58 Node tests,24 focused browser checks and52 Output/Voicing UX checks plus15 native-reset checks pass locally. The actual Delay tail and Stop/resume lifecycle are verified. Fixed16-note desktop WASM Unison measurements have Count4 p99 medians0.482/0.552/0.582ms (neutral/Soft/LP12) and worst maximum0.731ms. Processing per audio second increases roughly46–48% versus Count1. These are bounded fixtures, not phone or maximum-rack certification. The earlier dense16-effect live-reorder limit remains open. Subjective listening, USB MIDI hardware, thermal/latency and physical-phone checks remain separate gates.
+
+## Historical Phase 5: touch defaults, reset gestures and Stereo Width
 
 The drawable-LFO/global-arrangement implementation has passed its scoped technical and browser checks. This pass improves direct interaction and adds a deliberately narrow Stereo Width stage; it does not implement the Rotating grit bass backlog or the broader Space catalogue. Acceptance of this pass remains pending its own implementation and evidence review.
 
