@@ -6,8 +6,9 @@ extern "C" {
 #endif
 typedef struct bs_synth bs_synth;
 #define BS_VOICING_VERSION 1u
+#define BS_MAX_UNISON 7u
 /* Additive16-byte state, separate from tone ABI7/count44.
- * Count1..4 is captured on each accepted NoteOn (including generated notes).
+ * Count1..7 is captured on each accepted NoteOn (including generated notes).
  * Detune0..50 cents is the symmetric maximum offset; spread0..1 pans copies.
  * Detune/spread are live5ms-smoothed. Count1 follows the original mono path
  * exactly, ignoring detune/spread. Defaults1/0/0. Invalid inputs reject whole.

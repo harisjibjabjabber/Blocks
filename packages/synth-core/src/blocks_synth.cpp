@@ -107,7 +107,7 @@ struct FilterEnvelope {
 };
 struct DropRecipe {double amount=0,time=.12,bend=0;bool primary=false;};
 struct Voice {
- unsigned unisonCount=1;std::array<double,4>unisonPhase1{},unisonPhase2{};
+ unsigned unisonCount=1;std::array<double,BS_MAX_UNISON>unisonPhase1{},unisonPhase2{};
  double rightFilter=0;blocks_detail::ResonantFilter rightResonant;blocks_detail::AudioRack rightSauce;
  bool active=false,held=false,pedal=false; uint32_t channel=0,key=0,rng=1; uint64_t order=0,ordinal=0; uint32_t tailRemaining=0;
  Stage stage=Stage::attack; double phase1=0,phase2=0,age=0,stageAge=0,level=0,releaseLevel=0;
