@@ -12,6 +12,9 @@ class Modulation {
  struct Clock{double phase=0;uint64_t cycle=0;};
  bs_modulation_config config_=defaultModulation();
  std::array<Clock,BS_MAX_LFOS> clocks_{};
+ // UI order is not arithmetic order: floating-point reduction is associative
+ // only approximately. Canonical IDs make reordering an exact sonic no-op.
+ std::array<uint32_t,BS_MAX_LFOS> executionOrder_{};
  std::array<bool,BS_PARAMETER_COUNT> targets_{};
  static uint32_t hash(uint32_t x){x^=x>>16;x*=0x7feb352du;x^=x>>15;x*=0x846ca68bu;return x^(x>>16);}
  static double random(uint32_t id,uint64_t cycle){return double(hash(id^hash(uint32_t(cycle))^hash(uint32_t(cycle>>32)^0xa511e9b3u)))/4294967295.*2-1;}
@@ -29,14 +32,17 @@ public:
    for(uint32_t j=0;j<s.route_count;++j){const auto&r=s.routes[j];if(!modulationTarget(r.parameter_id)||!std::isfinite(r.depth)||r.depth< -1||r.depth>1)return false;for(uint32_t k=0;k<j;++k)if(r.parameter_id==s.routes[k].parameter_id)return false;}
   }return true;
  }
- bool configure(const bs_modulation_config&c){if(!valid(c))return false;std::array<Clock,BS_MAX_LFOS> next{};for(uint32_t i=0;i<c.source_count;++i)for(uint32_t j=0;j<config_.source_count;++j)if(c.sources[i].id==config_.sources[j].id)next[i]=clocks_[j];config_=c;clocks_=next;updateTargets();return true;}
+ bool configure(const bs_modulation_config&c){if(!valid(c))return false;std::array<Clock,BS_MAX_LFOS> next{};for(uint32_t i=0;i<c.source_count;++i)for(uint32_t j=0;j<config_.source_count;++j)if(c.sources[i].id==config_.sources[j].id)next[i]=clocks_[j];config_=c;clocks_=next;
+  // Bounded insertion sort during configure, never in the sample loop.
+  for(uint32_t i=0;i<c.source_count;++i){executionOrder_[i]=i;uint32_t j=i;while(j&&c.sources[executionOrder_[j-1]].id>c.sources[executionOrder_[j]].id){const auto previous=executionOrder_[j-1];executionOrder_[j-1]=executionOrder_[j];executionOrder_[j]=previous;--j;}}
+  updateTargets();return true;}
  const bs_modulation_config&config()const{return config_;}
  const std::array<bool,BS_PARAMETER_COUNT>&targets()const{return targets_;}
  void reset(){clocks_={};}
  std::array<double,BS_PARAMETER_COUNT> tick(double sampleRate,double bpm){
   std::array<double,BS_PARAMETER_COUNT> offsets{};
   if(!std::isfinite(sampleRate)||sampleRate<8000||sampleRate>384000||!std::isfinite(bpm)||bpm<40||bpm>240)return offsets;
-  for(uint32_t i=0;i<config_.source_count;++i){const auto&s=config_.sources[i];auto&c=clocks_[i];if(s.enabled&&s.intensity!=0){const double value=waveform(s,c)*s.intensity;for(uint32_t j=0;j<s.route_count;++j)offsets[s.routes[j].parameter_id]+=value*s.routes[j].depth;}
+  for(uint32_t position=0;position<config_.source_count;++position){const uint32_t i=executionOrder_[position];const auto&s=config_.sources[i];auto&c=clocks_[i];if(s.enabled&&s.intensity!=0){const double value=waveform(s,c)*s.intensity;for(uint32_t j=0;j<s.route_count;++j)offsets[s.routes[j].parameter_id]+=value*s.routes[j].depth;}
    const double hz=s.synced?(bpm/60)*(double(s.division)/4)*(s.triplet?1.5:1):s.rate_hz;
    c.phase+=hz/sampleRate;const double cycles=std::floor(c.phase);c.phase-=cycles;c.cycle+=uint64_t(cycles);
   }return offsets;

@@ -1,4 +1,5 @@
 #include "../src/modulation.h"
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -7,6 +8,9 @@
 #define CHECK(x) do{if(!(x)){std::fprintf(stderr,"FAIL %d: %s\n",__LINE__,#x);std::exit(1);}}while(false)
 using blocks_detail::Modulation;
 static bs_modulation_config enabled(uint32_t wave=0){auto c=blocks_detail::defaultModulation();c.sources[0].enabled=1;c.sources[0].waveform=wave;c.sources[0].routes[0].depth=1;return c;}
+static void exactOffsets(const std::array<double,BS_PARAMETER_COUNT>&expected,const std::array<double,BS_PARAMETER_COUNT>&actual,unsigned permutation,unsigned frame){
+ for(unsigned id=0;id<BS_PARAMETER_COUNT;++id)if(expected[id]!=actual[id]){std::fprintf(stderr,"LFO reorder mismatch permutation=%u frame=%u target=%u expected=%a actual=%a delta=%.17g\n",permutation,frame,id,expected[id],actual[id],actual[id]-expected[id]);CHECK(expected[id]==actual[id]);}
+}
 static void advance(Modulation&m,int frames){for(int i=0;i<frames;++i)m.tick(48000,120);}
 static std::vector<float> render(bs_synth*s,unsigned frames,unsigned block){std::vector<float>l(frames),r(frames);for(unsigned start=0;start<frames;start+=block){const unsigned n=std::min(block,frames-start);CHECK(bs_render(s,l.data()+start,r.data()+start,n,nullptr,0)==0);}for(float v:l)CHECK(std::isfinite(v)&&std::abs(v)<=1);return l;}
 static bs_synth* synth(){auto*s=bs_create();CHECK(s);CHECK(bs_set_parameter(s,BS_GAIN,.4f));CHECK(bs_set_parameter(s,BS_SUSTAIN_LEVEL,1));bs_reset(s);return s;}
@@ -29,9 +33,19 @@ int main(){
   Modulation continuous,muted;auto c=enabled();CHECK(continuous.configure(c));auto off=c;off.sources[0].enabled=0;CHECK(muted.configure(off));advance(continuous,17003);advance(muted,17003);CHECK(muted.configure(c));for(int i=0;i<1000;++i)CHECK(continuous.tick(48000,120)==muted.tick(48000,120));
   // Changing rate uses existing phase; only subsequent phase increments differ.
   auto faster=c;faster.sources[0].rate_hz=20;CHECK(muted.configure(faster));CHECK(continuous.tick(48000,120)==muted.tick(48000,120));
-  Modulation a,b;c.source_count=2;c.sources[1]=c.sources[0];c.sources[1].id=99;c.sources[1].rate_hz=3;CHECK(a.configure(c)&&b.configure(c));advance(a,3981);advance(b,3981);std::swap(c.sources[0],c.sources[1]);CHECK(b.configure(c));for(int i=0;i<2000;++i)CHECK(a.tick(48000,120)==b.tick(48000,120));
+  Modulation a,b;c.source_count=2;c.sources[1]=c.sources[0];c.sources[1].id=99;c.sources[1].rate_hz=3;CHECK(a.configure(c)&&b.configure(c));advance(a,3981);advance(b,3981);std::swap(c.sources[0],c.sources[1]);CHECK(b.configure(c));for(unsigned i=0;i<2000;++i)exactOffsets(a.tick(48000,120),b.tick(48000,120),0,i);
  }
  std::puts("PASS LFO free-running disabled clocks, rate edit phase continuity and stable ID reordering");
+ {
+  Modulation reference,reordered;auto base=enabled();base.source_count=4;
+  const unsigned ids[]={101,0,77,8};const float rates[]={.35f,1.125f,3.75f,19.f},depths[]={.731f,-.973f,.213f,-.417f};
+  for(unsigned i=0;i<4;++i){base.sources[i]=base.sources[0];auto&s=base.sources[i];s.id=ids[i];s.rate_hz=rates[i];s.waveform=i==3?BS_LFO_SMOOTH_RANDOM:i;s.intensity=.37f+float(i)*.19f;s.route_count=3;s.routes[0]={BS_CUTOFF,depths[i]};s.routes[1]={BS_GAIN,depths[3-i]};s.routes[2]={BS_FILTER_RESONANCE,depths[(i+1)%4]};}
+  CHECK(reference.configure(base)&&reordered.configure(base));advance(reference,17003);advance(reordered,17003);
+  std::array<unsigned,4> order{{0,1,2,3}};unsigned permutations=0;
+  do{auto c=base;for(unsigned i=0;i<4;++i)c.sources[i]=base.sources[order[i]];CHECK(reordered.configure(c));CHECK(std::memcmp(&c,&reordered.config(),sizeof c)==0);for(unsigned frame=0;frame<1000;++frame)exactOffsets(reference.tick(48000,120),reordered.tick(48000,120),permutations,frame);++permutations;}while(std::next_permutation(order.begin(),order.end()));
+  CHECK(permutations==24);
+ }
+ std::puts("PASS all24 LFO source permutations retain exact signed shared-target sums and UI order");
  {
   Modulation m;auto c=enabled();c.sources[0].synced=1;c.sources[0].division=8;c.sources[0].triplet=1;CHECK(m.configure(c));advance(m,2000);CHECK(std::abs(m.tick(48000,120)[11]-1)<1e-9); //6Hz at120BPM
   for(uint32_t wave=0;wave<=4;++wave){c=enabled(wave);c.sources[0].rate_hz=20;CHECK(m.configure(c));m.reset();double previous=m.tick(48000,120)[11];for(int i=0;i<96000;++i){const double v=m.tick(48000,120)[11];CHECK(std::isfinite(v)&&std::abs(v)<=1.0000000001);if(wave==4)CHECK(std::abs(v-previous)<.002);previous=v;}}
