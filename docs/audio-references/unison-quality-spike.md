@@ -28,13 +28,23 @@ Keep a modular virtual-analog source layer. Choose implementations by wanted-har
 
 The bounded source comparison is current PolyBLEP versus an oversampled analytic candidate and a carefully bandlimited table candidate. Keep sine/triangle controls. Test steady notes and moving pitch/PWM, with exact Fourier references for stationary tones and a converged high-rate reference for modulation. Measure wanted harmonic loss as well as unwanted energy: a duller source must not win simply by filtering more highs. Nonlinear Drive can add new aliases after source generation, so measure source and driven paths separately. Defer a production MinBLEP/sync engine until that capability earns its complexity.
 
+## Isolated refactor and measured source result
+
+The reviewable [oscillator-source package](../../packages/synth-core/experimental/oscillator-quality/README.md) now contains an opt-in source interface, original table/FIR generation, renderer, analyzer, tests, summaries and source hashes. It is not imported into the live engine. Generated raw data is excluded from Git.
+
+The completed comparison covers 1,578 coherent static renders and four moving pitch/PWM scenarios. Saw median non-harmonic energy is approximately -41.4 dBc for the current PolyBLEP, -58.7 for 2x/FIR and -129.7 for the table candidate in these fixtures. Wanted high-band retention improves too; the result is not simply a darker low-pass. These numerical floors are not human audibility thresholds.
+
+Metric choice matters. Full-Nyquist total waveform error favors 2x/FIR, while a common 0-20 kHz comparison favors the table candidate across all four dynamic cases. Total dynamic error includes phase/timbre/PWM differences and reference uncertainty, not only aliasing. One measured margin is below reference convergence and must not be treated as precise. See the package for both rankings and all caveats.
+
+Isolated 32-oscillator desktop WASM cost is roughly 2.2x saw/2.7x pulse for the table candidate and 5.7x/4.8x for the straightforward 2x/FIR candidate. The latter also needs seven output samples of latency aligned across every waveform/oscillator/dry path before integration. Source peaks and nonlinear-stage headroom require separate checks. The table is therefore the leading source candidate, not an accepted musical replacement. Cleaner source generation does not establish the requested lushness.
+
 ## Proposed implementation sequence
 
 1. Preserve the current prototype and a controlled dry listening fixture. Isolate coherent restart, seeded independent phase starts and properly specified free-running phase; hold tuning, gain and pan constant. Randomizing at note-on is not literally continuous idle phase.
 2. Compare balanced center/layer Blend and alternating stereo placement separately. Use fixed-gain and gain-matched clips. Changing 1/N to 1/sqrt(N) can raise coherent peaks, so normalization is not a drop-in cure.
 3. Compare linear versus gently shaped/irregular but centered detune. Add small independent lane motion only after the phase/mix result is preferred. Preserve deliberate note-level Pitch/Hit controls separately from micro-variation.
 4. Refactor source generation behind an isolated interface and publish measured candidate comparisons. Preserve the live legacy path while evaluating. Add analog waveform/tolerance profiles only where evidence and listening support them.
-5. Prefer an efficient oscillator bank for the first mobile design; audition a small full-voice stack if independent filter/envelope variation justifies the extra work. Existing two-channel processing is not itself evidence of a defect.
+5. Compare the preferred oscillator bank with a small two-voice stack if independent filter/envelope variation could supply the missing body. Neither architecture is predetermined by a mobile budget: decide from matched listening and measured cost. Existing two-channel processing is not itself evidence of a defect.
 6. Replace the live Unison only after listening preference. Retain a repeatable-attack option for bass/plucks and independent control over amount/speed. Keep the UI compact until the sound design settles.
 
 Acceptance includes C1/C3/C5, repeated plucks, eight-second sustains and chords, counts 2/3/4, stereo and mono, fundamental retention, attack variability, envelope troughs, DC/peaks/aliasing, ownership, allocation-free rendering and measured CPU. Zero-detune cancellation needs an explicit check: phase randomization can make that case worse. Count 1 stays exact. Initial listening uses a small matched set rather than hundreds of clips. Existing maximum-rack and physical-phone limits remain open.
