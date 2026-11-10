@@ -8,12 +8,16 @@ Cutoff and Resonance smooth; mode changes crossfade over10ms. The legacy pole co
 
 ## Verification
 
-- 77 C++/WASM groups pass, including7 focused filter groups:162 complex-response measurements had maximum relative error1.32e-12; Q8 low-cutoff impulse late/early energy was7.07e-11; a low-level440Hz fixture measured cutoff gain7.973. Fast modulation across six sample rates remained finite, peak0.2663, without render allocations.
+- 78 C++/WASM groups pass, including7 focused filter groups:162 complex-response measurements had maximum relative error1.32e-12; Q8 low-cutoff impulse late/early energy was7.07e-11; a low-level440Hz fixture measured cutoff gain7.973. Fast modulation across six sample rates remained finite, peak0.2663, without render allocations.
 - 39 Node tests pass, including five independent response-model tests;37 integrated browser checks and28 scoped UI/UX checks pass with zero observed runtime exceptions. Mode/Resonance changes, retained disabled values, saved patches, LFO routing, Undo, cancellation, held notes and release are covered.
 - The legacy3-second WAV is byte-identical to the immutable7691e66 baseline, SHA256 `713e2a56e6a5efbded6e9554e01e75326b9f1838d80dec503c606f6f388d9eee`. All five factory audition WAVs also match their ABI6 predecessors byte-for-byte.
 - Four new fixed-gain comparison WAVs cover Soft and Resonant held chords and plucks. They are not normalized, and each ends with zero active voices. The manifest records exact patches, events, source hashes and audio hashes. These files are for later listening, not listening approval.
 
 Local evidence folders beside the repository are `synth-filter-evidence`, `synth-filter-browser`, `standalone-touch-evidence`, `synth-filter-factory-auditions`, `synth-filter-auditions` and `synth-filter-benchmark`. CI uploads current filter/factory audio manifests and browser evidence.
+
+## Deterministic LFO source order
+
+Native CI exposed an exact source-reorder consistency failure. An immutable pre-fix reproduction also demonstrated a one-ULP shared-target sum difference. Source contributions now execute in stable ID order, computed during configuration; UI order and ID-mapped clocks remain intact. All24 permutations with signed shared-target depths pass exact equality. The test tolerance was not relaxed. No particular compiler contraction mechanism is claimed.
 
 ## Processing cost
 
@@ -21,9 +25,9 @@ One Windows x64/Node22.23.4/Emscripten7.0.0 run at48kHz and128-frame blocks meas
 
 | Paired16-voice workload | Soft p99 block | Resonant p99 block | Soft / Resonant milliseconds per audio second |
 |---|---:|---:|---:|
-| Held notes without filter envelope |0.2807ms|0.2889ms|97.07 /104.37|
-| Dense retriggers with active envelope |0.8847ms|1.0273ms|177.03 /204.33|
-|16 mixed effects with live reorder |3.3751ms|3.4413ms|Both exceed the2.6667ms block budget|
+| Held notes without filter envelope |0.3277ms|0.5464ms|98.38 /112.22|
+| Dense retriggers with active envelope |0.8866ms|1.0509ms|182.39 /210.21|
+|16 mixed effects with live reorder |3.3911ms|3.4717ms|Both exceed the2.6667ms block budget|
 
 The heaviest topology can glitch in either mode. Other measured workloads fitting this desktop budget do not establish a supported phone budget. Keep this limit visible before expanding unison and costly effects. The benchmark retains exact source hashes and reports configuration costs separately from render percentiles.
 
