@@ -12,7 +12,7 @@ const paths=[...files(resolve(root,'packages/synth-core/src')),...files(resolve(
 const sha=path=>createHash('sha256').update(readFileSync(path)).digest('hex');
 const hashes=()=>paths.map(path=>({path:path.slice(root.length+1).replaceAll('\\','/'),sha256:sha(path)}));
 const sourceHashes=hashes(),target=resolve(out,'filter-auditions.mjs');
-const compile=spawnSync(process.env.PYTHON||'python',[resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),resolve(root,'packages/synth-core/src/blocks_synth.cpp'),resolve(root,'packages/synth-core/tests/filter_auditions.cpp'),'-I'+resolve(root,'packages/synth-core/include'),'-std=c++17','-O2','-Wall','-Wextra','-Wpedantic','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-o',target],{stdio:'inherit'});
+const compile=spawnSync(process.env.PYTHON||'python',[resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),resolve(root,'packages/synth-core/src/blocks_synth.cpp'),resolve(root,'packages/synth-core/tests/filter_auditions.cpp'),'-I'+resolve(root,'packages/synth-core/include'),'-std=c++17','-O2','-Wall','-Wextra','-Wpedantic','-sSTACK_SIZE=1048576','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-o',target],{stdio:'inherit'});
 if(compile.error)throw compile.error;if(compile.status)process.exit(compile.status);
 let status=0;await(await import(pathToFileURL(target).href)).default({arguments:[out],onExit:value=>status=value});if(status||process.exitCode)process.exit(status||process.exitCode);
 if(JSON.stringify(sourceHashes)!==JSON.stringify(hashes()))throw Error('Source changed during render');

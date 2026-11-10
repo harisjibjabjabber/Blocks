@@ -52,7 +52,7 @@ export const routeTargetKey=r=>`${r.kind??'tone'}:${r.targetId??0}:${r.parameter
 export const defaultRouteDepth=()=>0;
 export function modulationDestinations(parameters,rack,modulation){
  const destinations=MOD_TARGETS.map(parameter=>({kind:'tone',targetId:0,parameter,label:'Tone · '+(parameter===0?'Sound level':parameters[parameter]?.name??'Parameter '+parameter)}));
- const counts={};for(const block of rack.audio){const number=counts[block.type]=(counts[block.type]??0)+1;destinations.push({kind:'sauce',targetId:block.id,parameter:0,label:(block.type==='drive'?'Drive':'Fullness')+' '+number+' · Amount'});}
+ const counts={};for(const block of rack.audio){const number=counts[block.type]=(counts[block.type]??0)+1;destinations.push({kind:'sauce',targetId:block.id,parameter:0,label:({drive:'Drive',fullness:'Fullness',harmonics:'Harmonics'}[block.type])+' '+number+' · '+(block.type==='harmonics'?'Drive':'Amount')});}
  for(const source of modulation.sources)for(const[parameter,label]of[[0,'Rate'],[1,'Intensity']])destinations.push({kind:'lfo',targetId:source.id,parameter,label:'LFO '+source.id+' · '+label});
  return destinations.map(r=>({...r,key:routeTargetKey(r)}));
 }

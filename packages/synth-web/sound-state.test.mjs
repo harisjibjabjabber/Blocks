@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {normalizeSound,DEFAULT_SOUND,LEGACY_SOUND,soundForImportedPatch,toCoreSound} from './sound-state.js';
+test('new Init Studio and missing imported profile Legacy are deliberately different',()=>{assert.deepEqual(normalizeSound(),DEFAULT_SOUND);assert.deepEqual(soundForImportedPatch({}),LEGACY_SOUND);assert.deepEqual(soundForImportedPatch({sound:DEFAULT_SOUND}),DEFAULT_SOUND);});
+test('sound config maps native fields without mutating input',()=>{const s={version:1,oscillator:'studio',filterModel:'ladder',filterDrive:3.2};assert.deepEqual(toCoreSound(s),{version:1,oscillator:1,filter_model:1,filter_drive:3.2});assert.deepEqual(normalizeSound(JSON.parse(JSON.stringify(s))),s);});
+test('invalid sound configs are rejected before import changes tone',()=>{for(const patch of [{version:2},{oscillator:'quality'},{filterModel:'moog'},{filterDrive:0},{filterDrive:13},{filterDrive:NaN}])assert.throws(()=>normalizeSound({...DEFAULT_SOUND,...patch}));assert.throws(()=>soundForImportedPatch({sound:null}));});

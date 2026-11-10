@@ -34,6 +34,7 @@ jobs:
           "$RUNNER_TEMP/native/blocks_synth_render" "$RUNNER_TEMP/synth-evidence/native.wav"
           "$RUNNER_TEMP/native/blocks_synth_benchmark" "$RUNNER_TEMP/synth-evidence/native-benchmark.json"
           "$RUNNER_TEMP/native/blocks_synth_unison_benchmark" > "$RUNNER_TEMP/synth-evidence/native-unison-benchmark.txt"
+          "$RUNNER_TEMP/native/blocks_synth_sound_quality_benchmark" > "$RUNNER_TEMP/synth-evidence/native-sound-quality-benchmark.txt"
       - name: Exact native rack compatibility
         run: node scripts/compare-rack-audio.mjs --before=.comparison-baseline/packages/synth-core --backend=native --out="$RUNNER_TEMP/rack-native"
       - name: Install official Emscripten toolchain
@@ -74,6 +75,7 @@ jobs:
           done
           node scripts/synth-standalone-proof.mjs
           node scripts/synth-gesture-proof.mjs
+          node scripts/synth-sound-proof.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

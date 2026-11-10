@@ -4,6 +4,9 @@
 #include "motion_response.h"
 #include "free_drift.h"
 #include "resonant_filter.h"
+#include "blocks_sound.h"
+#include "ladder_filter.h"
+#include "wave_source.h"
 #include "waveforms.h"
 #include "performance.h"
 #include "modulation.h"
@@ -107,6 +110,8 @@ struct FilterEnvelope {
 };
 struct DropRecipe {double amount=0,time=.12,bend=0;bool primary=false;};
 struct Voice {
+ blocks_detail::LadderFilter ladder,rightLadder;
+ blocks_detail::LadderCoefficients ladderCoefficients;
  unsigned unisonCount=1;std::array<double,BS_MAX_UNISON>unisonPhase1{},unisonPhase2{};
  double rightFilter=0;blocks_detail::ResonantFilter rightResonant;blocks_detail::AudioRack rightSauce;
  bool active=false,held=false,pedal=false; uint32_t channel=0,key=0,rng=1; uint64_t order=0,ordinal=0; uint32_t tailRemaining=0;
@@ -143,6 +148,10 @@ double envelope(Voice &v,double dt) {
 }
 
 struct bs_synth {
+ bs_harmonics_config harmonicsConfig=blocks_detail::defaultHarmonics();
+ bs_sound_config soundConfig{BS_SOUND_VERSION,BS_SOURCE_LEGACY,BS_FILTER_EXISTING,1};
+ double sourceBlend=0,ladderBlend=0,ladderDrive=1;
+ blocks_detail::LadderCoefficients ladderCoefficients;
  double rate=48000,dt=1.0/48000,smoothing=1-std::exp(-1.0/(.005*48000)),dcPole=std::exp(-2*pi*10/48000);
  std::array<float,BS_PARAMETER_COUNT> parameters{};
  std::array<double,BS_PARAMETER_COUNT> smooth{},modulationSmooth{},modulationLogSpan{};
@@ -163,6 +172,9 @@ struct bs_synth {
  float stereoWidth=1;double stereoWidthSmooth=1;
  blocks_detail::ResonantCoefficients resonantCoefficients;
  void canonicalMix(){const double total=double(parameters[BS_OSC1_LEVEL])+parameters[BS_OSC2_LEVEL];parameters[BS_OSC_MIX]=total>0?float(parameters[BS_OSC2_LEVEL]/total):.5f;}
+ int setHarmonics(const bs_harmonics_config&c){if(!blocks_detail::AudioRack::valid(c))return 0;harmonicsConfig=c;for(auto*collection:{&voices,&tails})for(auto&v:*collection)if(v.active){v.sauce.setHarmonics(c);if(v.unisonCount>1)v.rightSauce.setHarmonics(c);}return 1;}
+ int setSound(const bs_sound_config&c){if(c.version!=BS_SOUND_VERSION||c.oscillator>BS_SOURCE_STUDIO||c.filter_model>BS_FILTER_LADDER||!std::isfinite(c.filter_drive)||c.filter_drive<1||c.filter_drive>12)return 0;soundConfig=c;return 1;}
+ double source(const Weights&weights,double phase,double step,double width){const double studio=blocks_detail::StudioOscillator::mix(weights,phase,step,width);if(sourceBlend==1)return studio;const double legacy=oscillator(weights,phase,step,width);return legacy+(studio-legacy)*sourceBlend;}
  bs_synth() {
   for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i)parameters[i]=float(smooth[i]=descriptors[i].default_value);canonicalMix();
   for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i)if(descriptors[i].mapping==BS_LOGARITHMIC)modulationLogSpan[i]=std::log(double(descriptors[i].maximum)/descriptors[i].minimum);
@@ -175,7 +187,7 @@ struct bs_synth {
  int setNotes(const bs_notes_config&config){if(!blocks_detail::NoteRack::valid(config))return 0;bool topology=!notesExplicit||config.count!=noteRack.config().count;for(unsigned i=0;i<config.count&&!topology;++i){const auto&a=config.blocks[i];const auto&b=noteRack.config().blocks[i];topology=a.id!=b.id||a.type!=b.type||a.enabled!=b.enabled;}if(topology)performance.clear();if(!notesExplicit){clearOutputs();notesExplicit=true;auto legacy=requestedPerformance;legacy.mono=0;performance.configure(legacy);auto mono=blocks_detail::defaultPerformance();mono.mono=requestedPerformance.mono;finalMono.configure(mono);}return noteRack.configure(config,rate);}
  int setSauce(const bs_sauce_config&config){if(!blocks_detail::AudioRack::valid(config))return 0;sauceConfig=config;int drive=-1,fullness=-1;for(unsigned i=0;i<config.count;++i)if(config.blocks[i].primary){if(config.blocks[i].type==BS_SAUCE_DRIVE)drive=int(i);else fullness=int(i);}if(drive>=0&&fullness>=0)parameters[BS_SAUCE_ORDER]=drive<fullness?0:1;for(auto&v:voices)if(v.active){v.sauce.configure(config,rate,false,true);if(v.unisonCount>1)v.rightSauce.configure(config,rate,false,true);}for(auto&v:tails)if(v.active){v.sauce.configure(config,rate,false,true);if(v.unisonCount>1)v.rightSauce.configure(config,rate,false,true);}return 1;}
  void reorderPrimary(bool reverse){auto next=sauceConfig;int drive=-1,fullness=-1;for(unsigned i=0;i<next.count;++i)if(next.blocks[i].primary){if(next.blocks[i].type==BS_SAUCE_DRIVE)drive=int(i);else fullness=int(i);}if(drive>=0&&fullness>=0&&((drive>fullness)!=reverse)){std::swap(next.blocks[unsigned(drive)],next.blocks[unsigned(fullness)]);setSauce(next);}}
- void reset() { delay.clear();unison.reset();stereoWidthSmooth=stereoWidth; for(unsigned osc=0;osc<2;++osc) {waveWeights[osc]={};waveWeights[osc][unsigned(parameters[BS_OSC1_WAVE+osc])]=1;} for(auto&v:voices)v=Voice{};for(auto&v:tails)v=Voice{}; onOrdinals={}; offOrdinals={}; pedals={}; sequence=0;driftPhase=0;filterBlend=parameters[BS_FILTER_MODE];modulation.reset();modulationSmooth={};performance.prepare(rate);noteRack.prepare(rate);finalMono.prepare(rate); for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; }
+ void reset() { sourceBlend=soundConfig.oscillator;ladderBlend=soundConfig.filter_model;ladderDrive=soundConfig.filter_drive;delay.clear();unison.reset();stereoWidthSmooth=stereoWidth; for(unsigned osc=0;osc<2;++osc) {waveWeights[osc]={};waveWeights[osc][unsigned(parameters[BS_OSC1_WAVE+osc])]=1;} for(auto&v:voices)v=Voice{};for(auto&v:tails)v=Voice{}; onOrdinals={}; offOrdinals={}; pedals={}; sequence=0;driftPhase=0;filterBlend=parameters[BS_FILTER_MODE];modulation.reset();modulationSmooth={};performance.prepare(rate);noteRack.prepare(rate);finalMono.prepare(rate); for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; }
  void panic() {performance.clear();noteRack.clear();clearOutputs();}
  void retire(Voice&v){
   Voice*tail=nullptr;for(auto&candidate:tails)if(!candidate.active){tail=&candidate;break;}
@@ -202,7 +214,7 @@ struct bs_synth {
    });
    retire(*v);
   }
-  *v=Voice{};v->unisonCount=unison.config().count;v->sauce.configure(sauceConfig,rate,true,true);if(v->unisonCount>1)v->rightSauce.configure(sauceConfig,rate,true,true); v->active=v->held=true; v->channel=channel; v->key=key; v->order=++sequence; v->ordinal=ordinal;
+  *v=Voice{};v->unisonCount=unison.config().count;v->sauce.setHarmonics(harmonicsConfig,true);v->rightSauce.setHarmonics(harmonicsConfig,true);v->sauce.configure(sauceConfig,rate,true,true);if(v->unisonCount>1)v->rightSauce.configure(sauceConfig,rate,true,true); v->active=v->held=true; v->channel=channel; v->key=key; v->order=++sequence; v->ordinal=ordinal;
   blocks_detail::Unison::startPhases(sequence,key,channel,v->unisonCount,v->unisonPhase1,v->unisonPhase2);
   v->frequency=440*std::exp2((double(key)-69)/12);v->lastFrequency=v->frequency;v->glideStartFrequency=previousFrequency;v->glideDuration=glideDuration; v->velocity=clamp(velocity,0,1);
   const double pan=.5+.15*(double(key%7)/3-1); v->panLeft=std::sqrt(1-pan); v->panRight=std::sqrt(pan);
@@ -249,6 +261,9 @@ struct bs_synth {
  }
  void sample(float &left,float &right) {
   unison.tick(smoothing);
+  const auto linearFade=[](double x,double target,double step){return x<target?std::min(target,x+step):std::max(target,x-step);};
+  sourceBlend=linearFade(sourceBlend,soundConfig.oscillator,dt/.005);ladderBlend=linearFade(ladderBlend,soundConfig.filter_model,dt/.01);
+  ladderDrive+=(soundConfig.filter_drive-ladderDrive)*smoothing;
   stereoWidthSmooth+=(double(stereoWidth)-stereoWidthSmooth)*smoothing;
   if(std::abs(stereoWidthSmooth-stereoWidth)<1e-12)stereoWidthSmooth=stereoWidth;
   performance.tick();if(notesExplicit){noteRack.tick();finalMono.tick();}
@@ -283,6 +298,7 @@ struct bs_synth {
   const bool resonantActive=filterBlend>0;
   const double damping=resonantActive?1/blocks_detail::ResonantCoefficients::q(effective[BS_FILTER_RESONANCE]):1;
   if(resonantActive)resonantCoefficients.set(cutoff,damping,rate);
+  if(ladderBlend>0)ladderCoefficients.set(cutoff,effective[BS_FILTER_RESONANCE],rate);
   const double driftSpeed=effective[BS_DRIFT_HZ],motionPhase=driftPhase;driftPhase+=driftSpeed*dt;
   const double fullness=effective[BS_FULLNESS],bodyAlpha=1-std::exp(-2*pi*180*dt);
   const double level1=effective[BS_OSC1_LEVEL],level2=effective[BS_OSC2_LEVEL],w=effective[BS_PULSE_WIDTH];
@@ -303,12 +319,14 @@ struct bs_synth {
    if(v.unisonCount==1){
     const double step1=clamp(frequency*dt,1e-9,.45),step2=clamp(frequency*std::exp2(effective[BS_OSC2_DETUNE]/1200)*dt,1e-9,.45);
     const double saw1=saw(v.phase1,step1),pulse2=pulse(v.phase2,step2,effective[BS_PULSE_WIDTH]);
-    raw=legacyWaves?level1*saw1+level2*pulse2:level1*oscillator(waveWeights[0],v.phase1,step1,w)+level2*oscillator(waveWeights[1],v.phase2,step2,w);
+    if(sourceBlend==0)raw=legacyWaves?level1*saw1+level2*pulse2:level1*oscillator(waveWeights[0],v.phase1,step1,w)+level2*oscillator(waveWeights[1],v.phase2,step2,w);
+    if(sourceBlend>0)raw=level1*source(waveWeights[0],v.phase1,step1,w)+level2*source(waveWeights[1],v.phase2,step2,w);
     v.phase1+=step1;v.phase1-=std::floor(v.phase1);v.phase2+=step2;v.phase2-=std::floor(v.phase2);
    }else{
     const double oscillator2Ratio=std::exp2(effective[BS_OSC2_DETUNE]/1200);
     for(unsigned copy=0;copy<v.unisonCount;++copy){const auto&u=unison.copies[v.unisonCount][copy];auto&p1=v.unisonPhase1[copy];auto&p2=v.unisonPhase2[copy];const double step1=clamp(frequency*u.ratio*dt,1e-9,.45),step2=clamp(frequency*u.ratio*oscillator2Ratio*dt,1e-9,.45);
-     const double value=legacyWaves?level1*saw(p1,step1)+level2*pulse(p2,step2,w):level1*oscillator(waveWeights[0],p1,step1,w)+level2*oscillator(waveWeights[1],p2,step2,w);
+     double value=0;if(sourceBlend==0)value=legacyWaves?level1*saw(p1,step1)+level2*pulse(p2,step2,w):level1*oscillator(waveWeights[0],p1,step1,w)+level2*oscillator(waveWeights[1],p2,step2,w);
+     if(sourceBlend>0)value=level1*source(waveWeights[0],p1,step1,w)+level2*source(waveWeights[1],p2,step2,w);
      raw+=value*u.left;rawRight+=value*u.right;p1+=step1;p1-=std::floor(p1);p2+=step2;p2-=std::floor(p2);
     }
    }
@@ -325,17 +343,23 @@ struct bs_synth {
    }else v.resonant.clear();
    double amplitude=envelope(v,dt)*v.velocity;
    if(voiceIndex>=BS_MAX_VOICES) {amplitude*=double(v.tailRemaining)/std::ceil(.003*rate);if(--v.tailRemaining==0)v.active=false;}
-   const double filtered=effective[BS_FILTER_MIX]==1?tone:enriched+(tone-enriched)*effective[BS_FILTER_MIX];
-   const double dry=v.sauce.process(filtered,effective[BS_DRIVE],fullness,effective[BS_DRIVE_ENABLED],effective[BS_FULLNESS_ENABLED],dcPole,bodyAlpha,effective[BS_SAUCE_ORDER],sauceModulationPtr);
+   double filtered=effective[BS_FILTER_MIX]==1?tone:enriched+(tone-enriched)*effective[BS_FILTER_MIX];
+   if(ladderBlend>0){const auto*c=&ladderCoefficients;if(effective[BS_FILTER_AMOUNT]!=0){v.ladderCoefficients.set(clamp(effective[BS_CUTOFF]*std::exp2(effective[BS_FILTER_AMOUNT]*filterEnv/12),20,rate*.45),effective[BS_FILTER_RESONANCE],rate);c=&v.ladderCoefficients;}const double lp=v.ladder.process(enriched,*c,ladderDrive,effective[BS_FILTER_MIX]);filtered=ladderBlend==1?lp:filtered+(lp-filtered)*ladderBlend;}else v.ladder.clear();
+   double rightFiltered=0;
+   if(v.unisonCount>1){
+    v.rightFilter+=voiceAlpha*(rawRight-v.rightFilter);if(std::abs(v.rightFilter)<1e-20)v.rightFilter=0;
+    double rightTone=v.rightFilter;
+    if(resonantActive){const auto*coefficients=effective[BS_FILTER_AMOUNT]!=0?&v.resonant.coefficients:&resonantCoefficients;const double lp=v.rightResonant.process(rawRight,*coefficients);rightTone=filterBlend==1?lp:v.rightFilter+(lp-v.rightFilter)*filterBlend;}else v.rightResonant.clear();
+    rightFiltered=effective[BS_FILTER_MIX]==1?rightTone:rawRight+(rightTone-rawRight)*effective[BS_FILTER_MIX];
+    if(ladderBlend>0){const auto*c=effective[BS_FILTER_AMOUNT]!=0?&v.ladderCoefficients:&ladderCoefficients;const double lp=v.rightLadder.process(rawRight,*c,ladderDrive,effective[BS_FILTER_MIX]);rightFiltered=ladderBlend==1?lp:rightFiltered+(lp-rightFiltered)*ladderBlend;}else v.rightLadder.clear();
+   }
+   const double linkedMagnitude=v.unisonCount>1?std::sqrt(.5*(filtered*filtered+rightFiltered*rightFiltered)):std::abs(filtered);
+   const double dry=v.sauce.process(filtered,effective[BS_DRIVE],fullness,effective[BS_DRIVE_ENABLED],effective[BS_FULLNESS_ENABLED],dcPole,bodyAlpha,effective[BS_SAUCE_ORDER],sauceModulationPtr,linkedMagnitude);
    const double value=dry*amplitude*.25;
    l+=value*v.panLeft;
    if(v.unisonCount==1)r+=value*v.panRight;
    else{
-    v.rightFilter+=voiceAlpha*(rawRight-v.rightFilter);if(std::abs(v.rightFilter)<1e-20)v.rightFilter=0;
-    double rightTone=v.rightFilter;
-    if(resonantActive){const auto*coefficients=effective[BS_FILTER_AMOUNT]!=0?&v.resonant.coefficients:&resonantCoefficients;const double lp=v.rightResonant.process(rawRight,*coefficients);rightTone=filterBlend==1?lp:v.rightFilter+(lp-v.rightFilter)*filterBlend;}else v.rightResonant.clear();
-    const double rightFiltered=effective[BS_FILTER_MIX]==1?rightTone:rawRight+(rightTone-rawRight)*effective[BS_FILTER_MIX];
-    const double rightDry=v.rightSauce.process(rightFiltered,effective[BS_DRIVE],fullness,effective[BS_DRIVE_ENABLED],effective[BS_FULLNESS_ENABLED],dcPole,bodyAlpha,effective[BS_SAUCE_ORDER],sauceModulationPtr);
+    const double rightDry=v.rightSauce.process(rightFiltered,effective[BS_DRIVE],fullness,effective[BS_DRIVE_ENABLED],effective[BS_FULLNESS_ENABLED],dcPole,bodyAlpha,effective[BS_SAUCE_ORDER],sauceModulationPtr,linkedMagnitude);
     r+=rightDry*amplitude*.25*v.panRight;
    }
    v.age+=dt;
@@ -347,6 +371,12 @@ struct bs_synth {
 };
 
 extern "C" {
+void bs_default_harmonics(bs_harmonics_config*c){if(c)*c=blocks_detail::defaultHarmonics();}
+int bs_set_harmonics(bs_synth*s,const bs_harmonics_config*c){return s&&c?s->setHarmonics(*c):0;}
+int bs_get_harmonics(const bs_synth*s,bs_harmonics_config*c){if(!s||!c)return 0;*c=s->harmonicsConfig;return 1;}
+void bs_default_sound(bs_sound_config*c){if(c)*c={BS_SOUND_VERSION,BS_SOURCE_LEGACY,BS_FILTER_EXISTING,1};}
+int bs_set_sound(bs_synth*s,const bs_sound_config*c){return s&&c?s->setSound(*c):0;}
+int bs_get_sound(const bs_synth*s,bs_sound_config*c){if(!s||!c)return 0;*c=s->soundConfig;return 1;}
 void bs_default_delay(bs_delay_config*config){if(config)*config=blocks_detail::StereoDelay::defaults();}
 int bs_set_delay(bs_synth*synth,const bs_delay_config*config){return synth&&config&&synth->delay.configure(*config)?1:0;}
 int bs_get_delay(const bs_synth*synth,bs_delay_config*config){if(!synth||!config)return 0;*config=synth->delay.config();return 1;}

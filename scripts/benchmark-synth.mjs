@@ -20,7 +20,7 @@ const sourceHashes=hashes();
 const compile=spawnSync(process.env.PYTHON||'python',[
   resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),resolve(core,'src/blocks_synth.cpp'),
   fixture,'-I'+resolve(core,'include'),'-std=c++17','-O2',
-  '-Wall','-Wextra','-Wpedantic','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-o',target,
+  '-Wall','-Wextra','-Wpedantic','-sSTACK_SIZE=1048576','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-o',target,
 ],{stdio:'inherit'});
 if(compile.error)throw compile.error;if(compile.status)process.exit(compile.status);
 await(await import(pathToFileURL(target).href)).default({arguments:[json]});

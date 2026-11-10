@@ -1,0 +1,189 @@
+{
+  "format": "blocks-synth-patch",
+  "version": 7,
+  "values": [
+    0.18,
+    0.25,
+    0,
+    0.5,
+    0.006,
+    0.28,
+    0.66,
+    0.18,
+    0,
+    0,
+    0,
+    380,
+    1,
+    1.8,
+    0.35,
+    0,
+    0.12,
+    0,
+    0,
+    2,
+    1,
+    0.75,
+    0.25,
+    1,
+    16,
+    0.002,
+    0.24,
+    0.1,
+    0.16,
+    0,
+    0,
+    0,
+    2,
+    0.12,
+    0.1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0.08,
+    0.18,
+    0
+  ],
+  "performance": {
+    "version": 1,
+    "mode": "off",
+    "mono": false,
+    "bpm": 100,
+    "division": "1/8",
+    "curl": 0,
+    "gate": 0.7,
+    "order": "up",
+    "strum": 35,
+    "humanize": 0.25,
+    "seed": 12648430
+  },
+  "rack": {
+    "version": 1,
+    "audio": [
+      {
+        "id": 1,
+        "type": "harmonics",
+        "primary": false,
+        "enabled": true,
+        "amount": 1.8,
+        "model": "soft",
+        "tone": -0.12,
+        "dynamics": 0.35,
+        "mix": 0.4,
+        "outputDb": -2.2
+      }
+    ],
+    "notes": [],
+    "order": [
+      "audio:1"
+    ]
+  },
+  "modulation": {
+    "version": 3,
+    "sources": [
+      {
+        "id": 1,
+        "enabled": false,
+        "waveform": "sine",
+        "rate": 1,
+        "synced": true,
+        "division": "1/4",
+        "intensity": 1,
+        "retrigger": false,
+        "points": [
+          {
+            "x": 0,
+            "y": 0,
+            "bend": 0
+          },
+          {
+            "x": 0.125,
+            "y": 0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 0.25,
+            "y": 1,
+            "bend": 0
+          },
+          {
+            "x": 0.375,
+            "y": 0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 0.5,
+            "y": 0,
+            "bend": 0
+          },
+          {
+            "x": 0.625,
+            "y": -0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 0.75,
+            "y": -1,
+            "bend": 0
+          },
+          {
+            "x": 0.875,
+            "y": -0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "bend": 0
+          }
+        ],
+        "routes": [
+          {
+            "kind": "tone",
+            "targetId": 0,
+            "parameter": 11,
+            "depth": 0
+          },
+          {
+            "kind": "tone",
+            "targetId": 0,
+            "parameter": 0,
+            "depth": 0
+          }
+        ]
+      }
+    ]
+  },
+  "stereoWidth": 1,
+  "voicing": {
+    "version": 1,
+    "count": 1,
+    "detune": 0,
+    "spread": 0
+  },
+  "delay": {
+    "version": 1,
+    "enabled": false,
+    "mode": "regular",
+    "synced": false,
+    "division": "1/8",
+    "time": 0.25,
+    "feedback": 0,
+    "wet": 0,
+    "damping": 20000
+  },
+  "sound": {
+    "version": 1,
+    "oscillator": "studio",
+    "filterModel": "ladder",
+    "filterDrive": 1.4
+  },
+  "macroVersions": {
+    "character": 5,
+    "motion": 5
+  },
+  "name": "Studio warm bass"
+}

@@ -17,7 +17,7 @@ const sourceHashes=()=>paths.map(path=>({path:path.slice(root.length+1).replaceA
 const before=sourceHashes();
 const target=resolve(out,'drive-diagnostic.mjs');
 const sources=readdirSync(resolve(core,'src')).filter(n=>n.endsWith('.cpp')).map(n=>resolve(core,'src',n));
-const compiled=spawnSync(process.env.PYTHON||'python',[resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),...sources,fixture,'-I'+resolve(core,'include'),'-std=c++17','-O2','-Wall','-Wextra','-Wpedantic','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-sALLOW_MEMORY_GROWTH=1','-o',target],{cwd:root,stdio:'inherit'});
+const compiled=spawnSync(process.env.PYTHON||'python',[resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),...sources,fixture,'-I'+resolve(core,'include'),'-std=c++17','-O2','-Wall','-Wextra','-Wpedantic','-sSTACK_SIZE=1048576','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-sALLOW_MEMORY_GROWTH=1','-o',target],{cwd:root,stdio:'inherit'});
 if(compiled.error)throw compiled.error;if(compiled.status)process.exit(compiled.status);
 if(process.argv.includes('--compile-only')){console.log('Diagnostic host compiles; no audio/evidence rendered.');process.exit(0);}
 const started=performance.now();

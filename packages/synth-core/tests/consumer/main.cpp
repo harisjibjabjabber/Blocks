@@ -4,10 +4,14 @@
 #include <blocks_synth.h>
 #include <blocks_voicing.h>
 #include <blocks_delay.h>
+#include <blocks_sound.h>
+#include <blocks_harmonics.h>
 int main() {
   bs_synth* synth=bs_create();
   if(!synth) return 1;
   bs_sauce_config sauce{},sauceRead{};
+  bs_sound_config sound{},soundRead{};bs_harmonics_config harmonics{},harmonicsRead{};
+  bs_default_sound(&sound);bs_default_harmonics(&harmonics);
   bs_voicing_config voicing{},voicingRead{};bs_delay_config delay{},delayRead{};
   bs_default_voicing(&voicing);bs_default_delay(&delay);
   bs_notes_config notes{},notesRead{};
@@ -18,6 +22,8 @@ int main() {
   bs_default_modulation_v3(&modulationV3);bs_default_sauce(&sauce);bs_default_notes(&notes);
   bs_default_modulation(&modulation);bs_default_modulation_v2(&modulationV2);bs_default_performance(&performance);
   const bool configured=bs_set_voicing(synth,&voicing)&&bs_get_voicing(synth,&voicingRead)
+    &&bs_set_sound(synth,&sound)&&bs_get_sound(synth,&soundRead)
+    &&bs_set_harmonics(synth,&harmonics)&&bs_get_harmonics(synth,&harmonicsRead)
     &&bs_set_delay(synth,&delay)&&bs_get_delay(synth,&delayRead)&&bs_set_sauce(synth,&sauce)&&bs_get_sauce(synth,&sauceRead)
     &&bs_set_notes(synth,&notes)&&bs_get_notes(synth,&notesRead)
     &&bs_set_modulation(synth,&modulation)&&bs_get_modulation(synth,&modulationRead)
@@ -26,7 +32,7 @@ int main() {
     &&bs_set_modulation_v3(synth,&modulationV3)&&bs_get_modulation_v3(synth,&modulationV3Read)
     &&bs_set_stereo_width(synth,1)&&bs_get_stereo_width(synth)==1
     &&bs_set_performance(synth,&performance)&&bs_get_performance(synth,&performanceRead);
-  if(!configured||sauceRead.version!=BS_SAUCE_VERSION||notesRead.version!=BS_NOTES_VERSION
+  if(!configured||soundRead.version!=BS_SOUND_VERSION||harmonicsRead.version!=BS_HARMONICS_VERSION||sauceRead.version!=BS_SAUCE_VERSION||notesRead.version!=BS_NOTES_VERSION
     ||modulationV3Read.version!=BS_MODULATION_V3_VERSION||modulationRead.version!=BS_MODULATION_VERSION||modulationV2Read.version!=BS_MODULATION_V2_VERSION||performanceRead.version!=BS_PERFORMANCE_VERSION
     ||bs_notes_pending_mask(synth)!=0){bs_destroy(synth);return 2;}
   float left[128]{},right[128]{};

@@ -1,5 +1,7 @@
 # Unison and oscillator quality spike
 
+Phase7 update: the production [Studio source](../../packages/synth-core/docs/oscillator-source.md) now integrates a new, separately measured Fourier bank behind explicit sound state. The isolated package and measurements below document the earlier comparison; they are not the exact production bank. Legacy remains available and is the interpretation of old imported files. The selected C phase policy is unchanged. See the [current signal-path phase](analog-signal-path-spike.md) for filter/Harmonics implementation and acceptance.
+
 10 November 2026. The user rejected the original Unison sound as nasal/phasey, then selected phase profile C after repeated listening: its pluck was smoother than B's subtle bounce. The prototype now carries that phase policy plus tested low-detune body protection; the oscillator-generation replacement remains isolated. Technical tests and desktop timing do not constitute blanket musical approval. Neutral Init/reset/Output/Delay work is retained.
 
 ## Target and code audit

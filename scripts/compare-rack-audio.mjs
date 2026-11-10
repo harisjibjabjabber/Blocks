@@ -16,7 +16,7 @@ for(const [name,core]of Object.entries(cores)){
  const target=resolve(out,name+(backend==='wasm'?'.mjs':process.platform==='win32'?'.exe':'')),audio=resolve(out,name+'.f32');
  const common=[resolve(core,'src/blocks_synth.cpp'),fixture,'-I'+resolve(core,'include'),'-std=c++17',backend==='wasm'?'-O2':'-O3','-Wall','-Wextra','-Wpedantic'];
  const command=backend==='wasm'?process.env.PYTHON||'python':process.env.CXX||'c++';
- const args=backend==='wasm'?[resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),...common,'-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-o',target]:[...common,'-o',target];
+ const args=backend==='wasm'?[resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),...common,'-sSTACK_SIZE=1048576','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-o',target]:[...common,'-o',target];
  const compiled=spawnSync(command,args,{stdio:'inherit',cwd:root});if(compiled.error)throw compiled.error;if(compiled.status)process.exit(compiled.status);
  if(backend==='wasm'){let status=0;await(await import(pathToFileURL(target).href)).default({arguments:[audio],onExit:value=>status=value});if(status||process.exitCode)process.exit(status||process.exitCode);}else{const run=spawnSync(target,[audio],{stdio:'inherit',cwd:root});if(run.error)throw run.error;if(run.status)process.exit(run.status);}
  variants[name]={audio,sha256:sha(audio),manifest:JSON.parse(readFileSync(audio+'.json','utf8'))};

@@ -12,7 +12,7 @@ const files=dir=>readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory(
 const paths=[...files(resolve(core,'src')),...files(resolve(core,'include')),fixture,fileURLToPath(import.meta.url)];
 const hash=p=>createHash('sha256').update(readFileSync(p)).digest('hex'),hashes=()=>paths.map(p=>({path:relative(root,p).replaceAll('\\','/'),sha256:hash(p)}));
 const before=hashes(),sources=readdirSync(resolve(core,'src')).filter(n=>n.endsWith('.cpp')).map(n=>resolve(core,'src',n));
-const compile=spawnSync(process.env.PYTHON||'python',[resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),...sources,fixture,'-I'+resolve(core,'include'),'-std=c++17','-O2','-Wall','-Wextra','-Wpedantic','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-sALLOW_MEMORY_GROWTH=1','-o',target],{stdio:'inherit'});
+const compile=spawnSync(process.env.PYTHON||'python',[resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),...sources,fixture,'-I'+resolve(core,'include'),'-std=c++17','-O2','-Wall','-Wextra','-Wpedantic','-sSTACK_SIZE=1048576','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-sALLOW_MEMORY_GROWTH=1','-o',target],{stdio:'inherit'});
 if(compile.error)throw compile.error;if(compile.status)process.exit(compile.status);
 let status=0;await(await import(pathToFileURL(target).href)).default({arguments:[resolve(out,'measurements.json')],onExit:code=>status=code});if(status||process.exitCode)process.exit(status||process.exitCode);
 if(JSON.stringify(before)!==JSON.stringify(hashes()))throw Error('Sources changed during measurement; use a frozen core snapshot.');

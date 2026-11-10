@@ -14,7 +14,7 @@ mkdirSync(out,{recursive:true});
 const core=resolve(root,'packages/synth-core');
 const sources=readdirSync(resolve(core,'src')).filter(name=>name.endsWith('.cpp')).map(name=>resolve(core,'src',name));
 const fixture=resolve(core,'tests/audition_wav.cpp'),target=resolve(out,'audition-wav.mjs');
-const compileArgs=[compiler,...sources,fixture,'-I'+resolve(core,'include'),'-std=c++17','-O2','-Wall','-Wextra','-Wpedantic','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-o',target];
+const compileArgs=[compiler,...sources,fixture,'-I'+resolve(core,'include'),'-std=c++17','-O2','-Wall','-Wextra','-Wpedantic','-sSTACK_SIZE=1048576','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-o',target];
 const compiled=spawnSync(process.env.PYTHON||'python',compileArgs,{stdio:'inherit',cwd:root});
 if(compiled.error)throw compiled.error;if(compiled.status)process.exit(compiled.status);
 const run=(await import(pathToFileURL(target).href)).default;

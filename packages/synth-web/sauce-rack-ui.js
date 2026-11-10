@@ -3,15 +3,15 @@ import {rackVisualOrder} from './sauce-state.js';
 export function createSauceRack({container,createEditor,onToggle,onAdd,onRemove,onReorder,canDrag=()=>true}) {
   container.className='sauce-workspace';
   const cards=new Map(),blocked=new Set();let current=[],drag=null,previousFocus=null;
-  const names={drive:'Drive',fullness:'Fullness',arp:'Arp',strum:'Strum',drop:'Pitch Drop',lfo:'LFO'};
+  const names={drive:'Drive',fullness:'Fullness',harmonics:'Harmonics',arp:'Arp',strum:'Strum',drop:'Pitch Drop',lfo:'LFO'};
   const grid=document.createElement('div');grid.className='rack-grid';grid.setAttribute('aria-label','Sauce blocks');
   const add=document.createElement('button');add.type='button';add.id='sauce-add';add.textContent='+ Add';add.setAttribute('aria-haspopup','dialog');
   const picker=document.createElement('dialog');picker.id='sauce-picker';picker.setAttribute('aria-labelledby','sauce-picker-title');
   picker.innerHTML='<div class="rack-picker-heading"><h2 id="sauce-picker-title">Add Sauce</h2><button type="button" data-picker-close aria-label="Close Add Sauce">\u00d7</button></div><div class="rack-picker-options"></div><p class="rack-picker-capacity"></p>';
   const options=picker.querySelector('.rack-picker-options');
-  for(const type of ['drive','fullness','arp','strum','drop','lfo']){
+  for(const type of ['drive','fullness','harmonics','arp','strum','drop','lfo']){
     const b=document.createElement('button');b.type='button';b.dataset.rackAdd=type;
-    const title=document.createElement('strong');title.textContent=names[type];const tag=document.createElement('span');tag.textContent=['drive','fullness'].includes(type)?'Audio':type==='lfo'?'Control':'Notes';b.append(title,tag);
+    const title=document.createElement('strong');title.textContent=names[type];const tag=document.createElement('span');tag.textContent=['drive','fullness','harmonics'].includes(type)?'Audio':type==='lfo'?'Control':'Notes';b.append(title,tag);
     b.addEventListener('click',()=>{closePicker();onAdd(type);});options.append(b);
   }
   function closePicker(){picker.close();add.setAttribute('aria-expanded','false');add.focus();}
@@ -63,7 +63,7 @@ export function createSauceRack({container,createEditor,onToggle,onAdd,onRemove,
     for(const[key,entry]of cards)if(!current.some(i=>i.key===key)){entry.editor.destroy?.();entry.card.remove();cards.delete(key);}
     for(const item of current){if(!cards.has(item.key))cards.set(item.key,make(item));const entry=cards.get(item.key),index=current.findIndex(i=>i.key===item.key);entry.power.textContent=item.enabled?'On':'Off';entry.power.setAttribute('aria-checked',String(item.enabled));entry.card.dataset.enabled=String(item.enabled);entry.earlier.disabled=index===0;entry.later.disabled=index===current.length-1;entry.grip.disabled=current.length<2;entry.editor.update();}
     if(!drag){const focused=document.activeElement;current.forEach((item,index)=>{const card=cards.get(item.key).card;if(grid.children[index]!==card)grid.insertBefore(card,grid.children[index]||null);});if(focused&&grid.contains(focused)&&document.activeElement!==focused)focused.focus({preventScroll:true});}
-    previewOrder();for(const b of options.children){const type=b.dataset.rackAdd;b.disabled=type==='lfo'?modulation.sources.length>=4:['drive','fullness'].includes(type)?rack.audio.length>=16:rack.notes.length>=16;}
+    previewOrder();for(const b of options.children){const type=b.dataset.rackAdd;b.disabled=type==='lfo'?modulation.sources.length>=4:['drive','fullness','harmonics'].includes(type)?rack.audio.length>=16:rack.notes.length>=16;}
     picker.querySelector('.rack-picker-capacity').textContent=`Audio ${rack.audio.length}/16 \u00b7 Notes ${rack.notes.length}/16 \u00b7 LFO ${modulation.sources.length}/4`;
   }
   return{update,cancel:cancelDrag,closePicker,updatePhases:()=>{for(const entry of cards.values())entry.editor.updatePhase?.();},setPending:mask=>{current.filter(i=>i.lane==='notes').forEach((item,index)=>cards.get(item.key)?.editor.setPending?.(Boolean(mask&(1<<index))));}};

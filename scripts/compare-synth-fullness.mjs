@@ -14,7 +14,7 @@ const fixture=resolve(root,'packages/synth-core/tests/fullness_comparison.cpp');
 const paths=[...files(resolve(core,'src')),...files(resolve(core,'include')),fixture,fileURLToPath(import.meta.url)];
 const hashes=()=>paths.map(p=>({path:relative(root,p).replaceAll('\\','/'),sha256:sha(p)}));
 const before=hashes();
-function compile(sources,target){const r=spawnSync(process.env.PYTHON||'python',[resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),...sources,'-I'+resolve(core,'include'),'-std=c++17','-O2','-Wall','-Wextra','-Wpedantic','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-sALLOW_MEMORY_GROWTH=1','-o',target],{cwd:root,stdio:'inherit'});if(r.error)throw r.error;if(r.status)process.exit(r.status);}
+function compile(sources,target){const r=spawnSync(process.env.PYTHON||'python',[resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),...sources,'-I'+resolve(core,'include'),'-std=c++17','-O2','-Wall','-Wextra','-Wpedantic','-sSTACK_SIZE=1048576','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-sALLOW_MEMORY_GROWTH=1','-o',target],{cwd:root,stdio:'inherit'});if(r.error)throw r.error;if(r.status)process.exit(r.status);}
 if(process.argv.includes('--unit')){
  const target=resolve(out,'fullness-body-tests.mjs');compile([resolve(root,'packages/synth-core/tests/fullness_body_tests.cpp')],target);await(await import(pathToFileURL(target).href)).default({arguments:[]});if(process.exitCode)throw Error('Body unit tests failed');if(process.argv.includes('--unit-only'))process.exit(0);
 }

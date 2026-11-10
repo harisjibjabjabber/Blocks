@@ -7,10 +7,11 @@ extern "C" {
 #define BS_SAUCE_VERSION 1u
 #define BS_SAUCE_CAPACITY 16u
 typedef struct bs_synth bs_synth;
-typedef enum bs_sauce_type {BS_SAUCE_DRIVE=0,BS_SAUCE_FULLNESS=1} bs_sauce_type;
+typedef enum bs_sauce_type {BS_SAUCE_DRIVE=0,BS_SAUCE_FULLNESS=1,BS_SAUCE_HARMONICS=2} bs_sauce_type;
 /*20bytes, five32-bit fields. IDs must be unique/nonzero. Primary binds the
  * existing tone amount/enable parameters; at most one primary of each type.
- * Independent Drive amount1..12; Fullness0..1. Enable is0/1. */
+ * Independent Drive/Harmonics amount1..12; Fullness0..1. Enable is0/1.
+ * Harmonics must not be primary; settings use the additive harmonics API. */
 typedef struct bs_sauce_block {uint32_t id,type,primary,enabled;float amount;} bs_sauce_block;
 /*328bytes. Empty bypasses this custom rack; the synth keeps its base colour controls. Unused array entries are ignored. */
 typedef struct bs_sauce_config {uint32_t version,count;bs_sauce_block blocks[BS_SAUCE_CAPACITY];} bs_sauce_config;
