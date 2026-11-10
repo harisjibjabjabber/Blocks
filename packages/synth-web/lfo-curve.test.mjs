@@ -17,8 +17,8 @@ test('point drag pins endpoint times, permits discontinuous endpoint levels and 
 });
 test('inserted phase uses native-safe grid, has finite capacity and does not mutate input',()=>{
   const initial=[{x:0,y:0,bend:.2},{x:1,y:1,bend:0}];let points=initial;
-  for(let i=1;i<=14;i++){points=insertCurvePoint(points,i/15,.3);assert(points);normalizeLfoPoints(points);}
-  assert.equal(points.length,16);assert.equal(insertCurvePoint(points,.42,0),null);assert.equal(initial.length,2);assert(points.every(p=>p.x*1024===Math.round(p.x*1024)));
+  for(let i=1;i<=30;i++){points=insertCurvePoint(points,i/31,.3);assert(points);normalizeLfoPoints(points);}
+  assert.equal(points.length,32);assert.equal(insertCurvePoint(points,.42,0),null);assert.equal(initial.length,2);assert(points.every(p=>p.x*1024===Math.round(p.x*1024)));
   assert.equal(insertCurvePoint(initial,POINT_GAP/3,0),null);
 });
 test('shared timing dial orders straight and triplet divisions by actual duration',()=>{

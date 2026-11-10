@@ -8,12 +8,12 @@ const source=await readFile(new URL('./processor.js',import.meta.url),'utf8');
 
 async function fixture(){
   const memory={buffer:new ArrayBuffer(65536)},floats=new Float32Array(memory.buffer),messages=[];
-  let registered,next=1024,samples=[[],[]],renderCalls=0;const renderedEvents=[],patchCalls=[],performanceCalls=[];
+  let width=1;let registered,next=1024,samples=[[],[]],renderCalls=0;const renderedEvents=[],patchCalls=[],performanceCalls=[];
   const performanceFields=['version','mode','order','division','triplet','seed','mono','bpm','curl','gate','strum_ms','randomness'];
   let performance={version:1,mode:0,order:0,division:8,triplet:0,seed:0xc0ffee,mono:0,bpm:120,curl:0,gate:.7,strum_ms:35,randomness:.25};
   const rackCalls={sauce:[],modulation:[],notes:[]},rackApi={};
-  for(const [kind,size]of[['sauce',328],['modulation',1208],['notes',1224]]){let bytes=new Uint8Array(size);new DataView(bytes.buffer).setUint32(0,kind==='modulation'?2:1,true);const suffix=kind==='modulation'?'_v2':'';rackApi['bs_get_'+kind+suffix]=(_s,p)=>{new Uint8Array(memory.buffer,p,size).set(bytes);return 1;};rackApi['bs_set_'+kind+suffix]=(_s,p)=>{bytes=Uint8Array.from(new Uint8Array(memory.buffer,p,size));rackCalls[kind].push(Array.from(bytes));return 1;};}
-  const api={memory,...rackApi,
+  for(const [kind,size]of[['sauce',328],['modulation',2232],['notes',1224]]){let bytes=new Uint8Array(size);new DataView(bytes.buffer).setUint32(0,kind==='modulation'?3:1,true);const suffix=kind==='modulation'?'_v3':'';rackApi['bs_get_'+kind+suffix]=(_s,p)=>{new Uint8Array(memory.buffer,p,size).set(bytes);return 1;};rackApi['bs_set_'+kind+suffix]=(_s,p)=>{bytes=Uint8Array.from(new Uint8Array(memory.buffer,p,size));rackCalls[kind].push(Array.from(bytes));return 1;};}
+  const api={memory,...rackApi,bs_set_stereo_width:(_s,value)=>{width=value;return 1;},bs_get_stereo_width:()=>width,
     bs_get_performance:(_s,p)=>{const v=new DataView(memory.buffer);performanceFields.forEach((key,i)=>i<7?v.setUint32(p+i*4,performance[key],true):v.setFloat32(p+i*4,performance[key],true));return 1;},
     bs_set_performance:(_s,p)=>{const v=new DataView(memory.buffer),next={};performanceFields.forEach((key,i)=>next[key]=i<7?v.getUint32(p+i*4,true):v.getFloat32(p+i*4,true));performanceCalls.push({config:next,bytes:Array.from(new Uint8Array(memory.buffer,p,48))});performance=next;return 1;},
     bs_performance_pending:()=>performance.curl!==0?1:0,
@@ -27,7 +27,7 @@ async function fixture(){
   vm.runInContext(source,context,{filename:'processor.js'});
   const processor=new registered({processorOptions:{wasm:new Uint8Array()}});
   await new Promise(resolve=>setImmediate(resolve));assert.equal(processor.ready,true);
-  return {messages,renderedEvents,patchCalls,performanceCalls,rackCalls,message:m=>processor.message(m),get queued(){return processor.count;},get renderCalls(){return renderCalls;},block(left=[],right=[],channels=2){
+  return {get width(){return width;},messages,renderedEvents,patchCalls,performanceCalls,rackCalls,message:m=>processor.message(m),get queued(){return processor.count;},get renderCalls(){return renderCalls;},block(left=[],right=[],channels=2){
     samples=[left,right];const outputs=Array.from({length:channels},()=>new Float32Array(4));
     assert.equal(processor.process([], [outputs]),true);context.currentFrame+=4;return outputs;
   },statuses(){return messages.filter(m=>m.kind==='status');}};
@@ -104,8 +104,8 @@ test('audio rack bridge preserves328-byte layout and duplicates; invalid whole g
  const invalid=[{...config,version:2},{...config,blocks:Array(17).fill(config.blocks[0])},{...config,blocks:[config.blocks[0],config.blocks[0]]},{...config,blocks:[config.blocks[0],{...config.blocks[1],primary:1}]},{...config,blocks:[{...config.blocks[0],amount:NaN}]},{...config,blocks:[{...config.blocks[0],amount:0}]},{...config,blocks:[{...config.blocks[0],enabled:true}]}];for(const c of invalid)f.message({kind:'sauce',config:c});assert.equal(f.rackCalls.sauce.length,1);assert.equal(f.queued,1);assert.equal(f.messages.filter(m=>m.kind==='error').length,invalid.length);
 });
 
-test('legacy modulation messages migrate to1208-byte sources/routes and rejects invalid routing atomically',async()=>{
- const f=await fixture(),source={id:4294967295,enabled:1,waveform:4,synced:1,division:16,triplet:1,rate_hz:2.5,intensity:.7,routes:[{parameter_id:11,depth:-.3},{parameter_id:0,depth:.2}]},config={version:1,sources:[source,{...source,id:2,division:64,triplet:0}]};f.message({kind:'modulation',config});assert.equal(f.rackCalls.modulation.length,1);const bytes=Uint8Array.from(f.rackCalls.modulation[0]),v=new DataView(bytes.buffer);assert.equal(bytes.length,1208);assert.equal(v.getUint32(4,true),2);assert.equal(v.getUint32(8,true),4294967295);assert.equal(v.getFloat32(32,true),2.5);assert.equal(v.getFloat32(36,true),Math.fround(.7));assert.equal(v.getUint32(40,true),2);assert.equal(v.getUint32(44,true),11);assert.equal(v.getFloat32(48,true),Math.fround(-.3));assert.equal(v.getUint32(308,true),2);assert.equal(f.messages.findLast(m=>m.kind==='modulation').config.sources[1].division,64);
+test('legacy modulation messages migrate to2232-byte sources/routes and rejects invalid routing atomically',async()=>{
+ const f=await fixture(),source={id:4294967295,enabled:1,waveform:4,synced:1,division:16,triplet:1,rate_hz:2.5,intensity:.7,routes:[{parameter_id:11,depth:-.3},{parameter_id:0,depth:.2}]},config={version:1,sources:[source,{...source,id:2,division:64,triplet:0}]};f.message({kind:'modulation',config});assert.equal(f.rackCalls.modulation.length,1);const bytes=Uint8Array.from(f.rackCalls.modulation[0]),v=new DataView(bytes.buffer);assert.equal(bytes.length,2232);assert.equal(v.getUint32(4,true),2);assert.equal(v.getUint32(8,true),4294967295);assert.equal(v.getFloat32(32,true),2.5);assert.equal(v.getFloat32(36,true),Math.fround(.7));assert.equal(v.getUint32(40,true),2);assert.equal(v.getUint32(52,true),11);assert.equal(v.getFloat32(56,true),Math.fround(-.3));assert.equal(v.getUint32(564,true),2);assert.equal(f.messages.findLast(m=>m.kind==='modulation').config.sources[1].division,64);
  const invalid=[{...source,id:-1},{...source,waveform:5},{...source,rate_hz:Infinity},{...source,intensity:1.01},{...source,division:64,triplet:1},{...source,routes:[{parameter_id:40,depth:.5}]},{...source,routes:[{parameter_id:11,depth:.5},{parameter_id:11,depth:.2}]},{...source,routes:Array(9).fill({parameter_id:11,depth:.2})}];for(const s of invalid)f.message({kind:'modulation',config:{version:1,sources:[s]}});f.message({kind:'modulation',config:{version:1,sources:[source,source]}});f.message({kind:'modulation',config:{version:1,sources:Array(5).fill(source)}});assert.equal(f.rackCalls.modulation.length,1);assert.equal(f.messages.filter(m=>m.kind==='error').length,invalid.length+2);
 });
 
@@ -124,9 +124,20 @@ test('Resonance is a continuous modulation route; filter mode is rejected atomic
 test('custom LFO bridge preserves retrigger/curve bytes and rejects every invalid shape atomically',async()=>{
  const f=await fixture(),source={id:1,enabled:1,waveform:5,synced:1,division:8,triplet:1,rate_hz:1.1,intensity:.7,retrigger:1,points:[{x:0,y:-1,bend:.8},{x:.4,y:.3,bend:-.5},{x:1,y:.7,bend:0}],routes:[{parameter_id:11,depth:.4}]};
  f.message({kind:'event',type:0,key:60,channel:0,value:1});f.message({kind:'modulation',config:{version:2,sources:[source]}});assert.equal(f.rackCalls.modulation.length,1);assert.equal(f.queued,1);
- const view=new DataView(Uint8Array.from(f.rackCalls.modulation[0]).buffer);assert.equal(view.byteLength,1208);assert.equal(view.getUint32(0,true),2);assert.equal(view.getUint32(108,true),1);assert.equal(view.getUint32(112,true),3);assert.equal(view.getFloat32(120,true),-1);assert.equal(view.getFloat32(124,true),Math.fround(.8));assert.equal(view.getFloat32(128,true),Math.fround(.4));assert.equal(view.getFloat32(136,true),-.5);
+ const view=new DataView(Uint8Array.from(f.rackCalls.modulation[0]).buffer);assert.equal(view.byteLength,2232);assert.equal(view.getUint32(0,true),3);assert.equal(view.getUint32(172,true),1);assert.equal(view.getUint32(176,true),3);assert.equal(view.getFloat32(184,true),-1);assert.equal(view.getFloat32(188,true),Math.fround(.8));assert.equal(view.getFloat32(192,true),Math.fround(.4));assert.equal(view.getFloat32(200,true),-.5);
  const returned=f.messages.findLast(m=>m.kind==='modulation').config.sources[0];assert.equal(returned.points.length,3);assert.equal(returned.retrigger,1);assert.equal(returned.points.at(-1).y,Math.fround(.7));
  const bad=[{...source,retrigger:2},{...source,points:[]},{...source,points:Array(17).fill(source.points[0])},{...source,points:[source.points[0],{x:0,y:1,bend:0},source.points[2]]},{...source,points:[{x:.1,y:0,bend:0},source.points[2]]},{...source,points:[source.points[0],{x:1,y:2,bend:0}]},{...source,points:[source.points[0],{x:1,y:0,bend:NaN}]}];
  for(const s of bad)f.message({kind:'modulation',config:{version:2,sources:[s]}});assert.equal(f.rackCalls.modulation.length,1);assert.equal(f.queued,1);assert.equal(f.messages.filter(m=>m.kind==='error').length,bad.length);
  for(let i=0;i<24;i++)f.block();assert.deepEqual(JSON.parse(JSON.stringify(f.statuses().at(-1).lfoPhases)),[{id:1,phase:.25}]);
+});
+
+test('width validates direct configuration and sample-offset event before altering state or queue',async()=>{
+ const f=await fixture();assert.equal(f.width,1);f.message({kind:'stereo-width',value:1.6});assert.equal(f.width,1.6);
+ for(const value of[-1,2.1,NaN,Infinity]){f.message({kind:'stereo-width',value});f.message({kind:'event',type:5,value});}assert.equal(f.width,1.6);assert.equal(f.queued,0);
+ f.message({kind:'event',type:5,value:.4,frame:2});assert.equal(f.queued,1);f.block();assert.equal(f.renderedEvents.at(-1).offset,2);assert.equal(f.renderedEvents.at(-1).value,Math.fround(.4));
+});
+test('v3 carries32 custom points and distinguishes all typed destination identities atomically',async()=>{
+ const f=await fixture(),points=Array.from({length:32},(_,i)=>({x:i/31,y:Math.sin(i),bend:0})),source={id:1,enabled:1,waveform:5,synced:0,division:4,triplet:0,rate_hz:1,intensity:1,retrigger:0,points,routes:[{target_kind:0,target_id:0,parameter_id:11,depth:.2},{target_kind:1,target_id:7,parameter_id:0,depth:-.5},{target_kind:2,target_id:1,parameter_id:0,depth:.3},{target_kind:2,target_id:2,parameter_id:1,depth:.8}]};
+ f.message({kind:'modulation',config:{version:3,sources:[source]}});assert.equal(f.rackCalls.modulation.length,1);const returned=JSON.parse(JSON.stringify(f.messages.findLast(m=>m.kind==='modulation').config.sources[0]));assert.equal(returned.points.length,32);assert.deepEqual(returned.routes.map(r=>[r.target_kind,r.target_id,r.parameter_id]),[[0,0,11],[1,7,0],[2,1,0],[2,2,1]]);
+ const invalid=[{...source,routes:[{...source.routes[0],target_kind:9}]},{...source,routes:[{...source.routes[1],parameter_id:1}]},{...source,routes:[{...source.routes[2],parameter_id:2}]},{...source,routes:[source.routes[1],source.routes[1]]},{...source,points:[...points,points.at(-1)]}];for(const s of invalid)f.message({kind:'modulation',config:{version:3,sources:[s]}});assert.equal(f.rackCalls.modulation.length,1);
 });

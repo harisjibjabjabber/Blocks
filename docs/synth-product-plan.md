@@ -2,9 +2,38 @@
 
 Date: 10 November 2026. Status: ABI7/44 filter phase technically validated; targeted exact-sound rack-edit optimization is implemented with measured tradeoffs. Physical-device and listening acceptance remain outstanding.
 
-## Authorized next phase: drawable LFO and free Sauce arrangement
+## Current authorized pass: touch defaults, reset gestures and Stereo Width
 
-These user priorities supersede the earlier recommendation to build Stereo Width next. They are approved implementation contracts, not a completed feature or an accepted listening result. Tone ABI7 and its44 saved values remain unchanged.
+The drawable-LFO/global-arrangement implementation has passed its scoped technical and browser checks. This pass improves direct interaction and adds a deliberately narrow Stereo Width stage; it does not implement the Rotating grit bass backlog or the broader Space catalogue. Acceptance of this pass remains pending its own implementation and evidence review.
+
+**Touch behavior.** Double-tapping an existing interior LFO point deletes it in one Undo transaction; endpoints and the minimum two-point shape remain protected. A newly inserted point, a drag, a cancelled gesture or a second pointer must not accidentally qualify as the first tap of a delete. Keep the explicit Delete action for accessibility. Routes start expanded as requested, while the editor remains scrollable and the playing keyboard reachable. Sauce cards can be dragged from their non-control surfaces without jumping: preserve the initial pointer-to-card offset, wait for an intentional movement threshold, and exclude dials, buttons, selects, text fields, editable curves and disclosure controls. Existing reorder cancellation, edge scrolling and keyboard alternatives remain required.
+
+**New defaults versus saved patches.** Fresh host LFO sources start synced at1/4, retaining a separate free rate of1Hz. Existing v1/v2 saved sources retain their explicit Sync, free-rate and division values; migration must not silently enable Sync. The native v1 default remains compatible with existing free-running clients. Double-tap reset of the unified timing dial resets only its active domain, not Sync or the remembered inactive setting.
+
+Implemented reset values follow the source of each control rather than the last selected factory patch. Show a default-position marker and an accessible reset value; do not make reset depend on guessing a hidden factory state.
+
+| Dial family | Default/reset |
+|---|---|
+| Physical synth controls, including oscillator levels, envelopes and filter | Authoritative engine descriptor default for that parameter; do not duplicate a divergent host table |
+| Character and Pitch macros | Amount0, changing only the macro's owned parameters; Pitch does not reset Speed, Settle time or Velocity |
+| Independent Sauce Drive / Fullness |2x /50%, matching creation defaults |
+| Independent Drop |120 cents,120ms, linear bend0 |
+| LFO timing |1Hz when free;1/4 when synced; preserve the other value |
+| LFO Intensity and routes |100% intensity; Cutoff depth+30%, Sound level+20%; other route reset0 |
+| Arp / Strum dials | Curl0, Gate70%, Spread35ms, Humanize25% |
+| Stereo Width |1, exact neutral |
+
+Reset is a single reversible edit, with no history entry when already at default. It must work for the main synth knobs, mini oscillator dials, rack/LFO configuration dials and the separate performance dials. Track completed stationary taps, suppress duplicate synthetic mouse events, and clear tap eligibility on drag, cancellation, blur and multi-touch. Reset must neither invoke whole-card dragging nor release held notes merely because the UI changed. Keep keyboard minimum/maximum semantics distinct from resetting to default.
+
+**Random and expanded routing.** Choosing Random or New random creates a fresh30-point Custom shape using the browser random source;32 points maximum are supported. Its final level matches the first to close the loop. The stored points repeat deterministically and survive Undo/export/import; this does not reseed a new shape every cycle. Legacy Smooth Random remains available to old saved configurations. Add Parameter lists actual Tone, Sauce Drive/Fullness amounts and LFO Rate/Intensity targets by stable instance ID. LFO self/feedback routes use a prior-sample snapshot and bounded smoothing, avoiding graph-order dependence or recursive evaluation. Note-effect parameters remain deferred until their scheduling semantics are defined; do not expose inert targets. Removing an audio block or extra LFO prunes its destination routes in the same Undo transaction.
+
+**Stereo Width scope.** Add one smoothed control on the summed stereo output bus:0 folds to mono,1 preserves the existing output exactly, and values up to2 amplify existing Side relative to Mid. It is not mono-to-stereo generation, unison, an imager with crossovers, or a time/phase decorrelator. Saved old patches migrate to neutral1. Preserve identical-channel mono input at every width, channel-swap symmetry, and the original mono sum while operating within headroom. Document the exact placement relative to output protection: downstream clipping/limiting can change gain and mono-sum behavior, so tests must not claim invariance through nonlinear overload. No hidden overall gain increase or automatic compensation should obscure that tradeoff.
+
+Acceptance requires exact neutral legacy/factory comparisons, finite bounded extremes, smoothing and block-size invariance, migration/Undo round trips, actual stereo-versus-mono fixtures, output peak/headroom measurements and incremental CPU timing. Exercise all reset families and LFO delete on mouse and emulated touch while notes are held, including accidental double-tap prevention and card-drag control exclusions. Physical-phone and listening acceptance remain outstanding; the previous performance phase's measured tradeoffs and over-budget rack cases remain unchanged.
+
+## Historical Phase 4 contract: drawable LFO v2 and free Sauce arrangement
+
+These user priorities were implemented before the current touch/routing/Width continuation. The16-point/v2 limits below describe that historical checkpoint; current modulation v3 supports32 points, typed destinations and30-point Random generation as described above. The drawable-LFO phase preserves tone ABI7 and its44 saved values, with additive modulation state. Its technical evidence is not a listening-quality approval.
 
 - **Drawable LFO:** support up to16 points with strictly increasing horizontal positions, pinned horizontal endpoints at0 and1, independently editable endpoint heights in[-1,1], and a bounded quadratic segment bend in[-1,1]. Validate finite values, ordering and bounds atomically. Unequal endpoint heights intentionally permit a loop seam; retain the effective modulation smoothing instead of pretending the curve is continuous. Drawing, moving a point or bending a segment is one Undo transaction, with exact cancellation and touch/keyboard alternatives. Curve editing preserves source phase.
 - **Rate and Sync:** expose one Rate/Division dial. Free mode uses Hz; Sync uses the existing musical divisions and triplet rules. Preserve both the saved free rate and saved division when switching modes. Keep rate, intensity and routing distinct.
@@ -35,7 +64,7 @@ Acceptance requires an independent implementation/evidence audit:
 
 The independent audit accepts the final candidate as a targeted rack-edit optimization. Common-prefix transition work falls substantially, while some held Square/Pulse workloads consume more CPU; full reversal remains over budget. The detailed checkpoint below records all runs and the accepted tradeoffs. Both CI workflows passed at performance-phase commit a449cd8, including native exactness and full browser checks. The coordinator maintains the linked living roadmap.
 
-Earlier recommendation, now deferred behind the user's drawable-LFO/free-arrangement priorities: a small stereo Width stage on the summed stereo bus, with exact unity/default bypass and preserved mono downmix, before multiplying per-note work with unison. It must remain distinct from mono-to-stereo generation: ordinary width cannot create side content from a centered mono signal. Extra bands, Stereoize, reverb and unison remain separate later decisions. First validate the existing stereo foundation and fixed-gain comparison clips, then obtain listening/device evidence; no blanket phone-safe or sound-quality claim follows from desktop headroom.
+Earlier recommendation, now implemented in the current continuation: a small stereo Width stage on the summed stereo bus, with exact unity/default bypass and preserved mono downmix, before multiplying per-note work with unison. It must remain distinct from mono-to-stereo generation: ordinary width cannot create side content from a centered mono signal. Extra bands, Stereoize, reverb and unison remain separate later decisions. First validate the existing stereo foundation and fixed-gain comparison clips, then obtain listening/device evidence; no blanket phone-safe or sound-quality claim follows from desktop headroom.
 
 ## Completed technical phase: opt-in resonant Tone filter
 
@@ -334,7 +363,7 @@ This is a user-requested future capability, not an immediate implementation task
 2. Play the existing loop and move the control. Record timestamped parameter gestures for that layer; do not fabricate or rewrite MIDI notes.
 3. Open an editable lane: horizontal axis is bars/beats, vertical axis is the parameter's value. Reuse the piano roll's ruler, zoom and chosen rhythmic divisions, including triplets. Default snap is 1/4; recording retains expressive timing unless the user explicitly snaps it.
 4. Support points, free drawing, bendable segments, clear start/end, looping, bypass, clear and Undo. Show which parameter is being edited.
-5. Build on the implemented free-running/tempo-synced LFOs; future phase/trigger choices and custom repeating shapes should use the same curve editor.
+5. Build on the implemented free-running/tempo-synced LFOs; optional Retrigger and custom repeating shapes now use the same curve editor. Recorded parameter gestures remain later work.
 6. Keep recorded absolute automation distinct from relative modulation. Touching an automated control must have a clear temporary-override and resume policy; starting automation recording must not happen merely because the user adjusts a sound.
 
 All eligible sound parameters should be addressable. Continuous values such as cutoff use continuous interpolation; discrete values such as oscillator mode or unison count use meaningful stepped events. Browser actions, preset file operations and Undo are commands, not continuously modulatable sound parameters. Do not interpolate voice counts or allocate processors inside the real-time callback.
@@ -368,7 +397,7 @@ Store recipes and movement separately from immutable captured performances. Laye
 | Movement, later | Record/draw automation and custom-shape lanes beyond the current LFO tab | Musical phase, loop seams, Undo, override/resume and deterministic replay |
 | Sampler, later | Sample import/recording and curated instrument packs | Rights, loading/memory, quality and device acceptance |
 
-The initial scope above was research and mockup work. Subsequent instructions authorize the independent instrument and its Character/Fullness direction for online and future VST hosts. The implementation is [the portable C++ core](../packages/synth-core/README.md) and [separate browser instrument](../packages/synth-web/README.md). The completed ABI5/40 checkpoint included the earlier waveform/level/filter-envelope/movement work plus envelope response, component enables and real ordered Drive/Fullness stages. That checkpoint's scoped UI gates passed, while physical-phone and listening acceptance remain outstanding. This does not replace Blocks production audio or constitute a shipped VST. Resonance, unison, sampler, the broader effects catalogue and recorded/drawn Movement remain future work.
+The initial scope above was research and mockup work. Subsequent instructions authorize the independent instrument and its Character/Fullness direction for online and future VST hosts. The implementation is [the portable C++ core](../packages/synth-core/README.md) and [separate browser instrument](../packages/synth-web/README.md). The completed ABI5/40 checkpoint included the earlier waveform/level/filter-envelope/movement work plus envelope response, component enables and real ordered Drive/Fullness stages. That checkpoint's scoped UI gates passed, while physical-phone and listening acceptance remain outstanding. This does not replace Blocks production audio or constitute a shipped VST. Resonance and custom drawable LFOs have since been implemented. Unison, sampler, the broader effects catalogue and recorded parameter Movement remain future work.
 
 ## Research references
 

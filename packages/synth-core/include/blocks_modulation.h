@@ -10,6 +10,8 @@ typedef struct bs_synth bs_synth;
 #define BS_MAX_LFO_ROUTES 8u
 #define BS_MODULATION_V2_VERSION 2u
 #define BS_MAX_LFO_POINTS 16u
+#define BS_MODULATION_V3_VERSION 3u
+#define BS_MAX_LFO_POINTS_V3 32u
 typedef enum bs_lfo_waveform { BS_LFO_SINE=0, BS_LFO_TRIANGLE=1, BS_LFO_SAW=2, BS_LFO_SQUARE=3, BS_LFO_SMOOTH_RANDOM=4, BS_LFO_CUSTOM=5 } bs_lfo_waveform;
 /* Physical tone values remain saved independently. Depth is bipolar normalized
  * range displacement; the host/core applies the target's linear/log mapping. */
@@ -59,6 +61,33 @@ typedef struct bs_modulation_config_v2 {
 void bs_default_modulation_v2(bs_modulation_config_v2 *config);
 int bs_set_modulation_v2(bs_synth *synth,const bs_modulation_config_v2 *config);
 int bs_get_modulation_v2(const bs_synth *synth,bs_modulation_config_v2 *config);
+/* Additive v3: source556/config2232. routes@36 (8x16 bytes),
+ * retrigger164, point_count168, points172 (32x12 bytes). v1/v2 stay unchanged.
+ * target_kind0: tone, target_id0, parameter_id is a continuous tone ID.
+ * target_kind1: Sauce block stable ID, parameter_id0=amount.
+ * target_kind2: LFO stable ID, parameter_id0=rate,1=intensity.
+ * Missing target IDs are inert. Repeated identical targets are rejected.
+ * LFO feedback uses previous-sample output, stable-ID reduction,5ms smoothing;
+ * rate depth scales by exp2(4*offset), effectiveHz bounded .003125..1280
+ * including synced clocks; intensity adds offset and clamps0..1.
+ * Sauce Drive uses log-range displacement, Fullness linear. No note routes.
+ * Legacy getters reject non-tone routes or unrepresentable shapes atomically. */
+typedef struct bs_lfo_route_v3 { uint32_t target_kind,target_id,parameter_id;float depth; } bs_lfo_route_v3;
+typedef struct bs_lfo_source_v3 {
+ uint32_t id,enabled,waveform,synced,division,triplet;
+ float rate_hz,intensity;
+ uint32_t route_count;
+ bs_lfo_route_v3 routes[BS_MAX_LFO_ROUTES];
+ uint32_t retrigger,point_count;
+ bs_lfo_point points[BS_MAX_LFO_POINTS_V3];
+} bs_lfo_source_v3;
+typedef struct bs_modulation_config_v3 {
+ uint32_t version,source_count;
+ bs_lfo_source_v3 sources[BS_MAX_LFOS];
+} bs_modulation_config_v3;
+void bs_default_modulation_v3(bs_modulation_config_v3 *config);
+int bs_set_modulation_v3(bs_synth *synth,const bs_modulation_config_v3 *config);
+int bs_get_modulation_v3(const bs_synth *synth,bs_modulation_config_v3 *config);
 /* Phase used at the last rendered sample, [0,1); -1 for null/unknown ID.
  * Disabled sources still advance. Before first render/reset, phase is0. */
 double bs_get_modulation_phase(const bs_synth *synth,uint32_t source_id);

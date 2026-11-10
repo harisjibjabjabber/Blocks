@@ -1,3 +1,5 @@
+import {bindDoubleTap,markDialDefault} from './tap-gesture.js';
+import {DEFAULT_PERFORMANCE} from './performance-state.js';
 // Settings previews only; audio timing belongs to the scheduler.
 export function createPerformanceUI({container,getPerformance,change,begin,getGesture,bindCompletion,instance="main"}) {
   container.className='performance-panel';
@@ -21,7 +23,7 @@ export function createPerformanceUI({container,getPerformance,change,begin,getGe
     button.addEventListener('pointerdown',e=>{e.preventDefault();begin(e,'performance',{key:instance+':'+key,base:getPerformance()[key],fine:e.shiftKey});});
     button.addEventListener('pointermove',e=>{const g=getGesture();if(g?.type!=='performance'||g.pointer!==e.pointerId||g.key!==instance+':'+key)return;change({[key]:Math.max(min,Math.min(max,g.base+(g.y-e.clientY)/180*(max-min)*(g.fine?.1:1)))},false);});
     button.addEventListener('keydown',e=>{if(getGesture()||!['ArrowUp','ArrowRight','ArrowDown','ArrowLeft','Home','End'].includes(e.key))return;e.preventDefault();const step=(e.shiftKey?.1:1)/scale,current=getPerformance()[key],next=e.key==='Home'?min:e.key==='End'?max:current+(['ArrowUp','ArrowRight'].includes(e.key)?step:-step);change({[key]:Math.max(min,Math.min(max,next))});});
-    bindCompletion(button);wrap.append(button,title,value);$('.performance-mini-controls').append(wrap);
+    bindCompletion(button);bindDoubleTap(button,()=>{if(!getGesture())change({[key]:DEFAULT_PERFORMANCE[key]});});markDialDefault(button,(DEFAULT_PERFORMANCE[key]-min)/(max-min),format(key,DEFAULT_PERFORMANCE[key]));wrap.append(button,title,value);$('.performance-mini-controls').append(wrap);
   }
   $('#performance-bpm-down').addEventListener('click',()=>change({bpm:getPerformance().bpm-1}));$('#performance-bpm-up').addEventListener('click',()=>change({bpm:getPerformance().bpm+1}));
   for(const key of ['division','order'])$('#performance-'+key).addEventListener('change',e=>change({[key]:e.target.value}));

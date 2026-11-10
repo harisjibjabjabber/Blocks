@@ -1,4 +1,5 @@
-import {shapeForWave,quantizeLfoX} from './modulation-state.js';
+import {bindDoubleTap} from './tap-gesture.js';
+import {shapeForWave,quantizeLfoX,MAX_LFO_POINTS} from './modulation-state.js';
 export const POINT_GAP=1/1024;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function curveValue(points,x){
@@ -7,7 +8,7 @@ export function curveValue(points,x){
   return a.y+(b.y-a.y)*(t+a.bend*t*(1-t));
 }
 export function moveCurvePoint(points,index,x,y){const next=points.map(p=>({...p}));next[index].x=index===0?0:index===next.length-1?1:clamp(quantizeLfoX(x),next[index-1].x+POINT_GAP,next[index+1].x-POINT_GAP);next[index].y=clamp(y,-1,1);return next;}
-export function insertCurvePoint(points,x,y){x=quantizeLfoX(x);if(points.length>=16||points.some(p=>Math.abs(p.x-x)<POINT_GAP))return null;const next=points.map(p=>({...p}));next.push({x:clamp(x,POINT_GAP,1-POINT_GAP),y:clamp(y,-1,1),bend:0});next.sort((a,b)=>a.x-b.x);return next;}
+export function insertCurvePoint(points,x,y){x=quantizeLfoX(x);if(points.length>=MAX_LFO_POINTS||points.some(p=>Math.abs(p.x-x)<POINT_GAP))return null;const next=points.map(p=>({...p}));next.push({x:clamp(x,POINT_GAP,1-POINT_GAP),y:clamp(y,-1,1),bend:0});next.sort((a,b)=>a.x-b.x);return next;}
 
 export function createLfoCurve({container,getSource,changeSource,begin,getGesture,bindCompletion,instance,onSelection=()=>{}}){
   const ns='http://www.w3.org/2000/svg',key=instance+':curve';let selected=null,phase=null,lastWave='';
@@ -23,7 +24,7 @@ export function createLfoCurve({container,getSource,changeSource,begin,getGestur
     if(getGesture())return;e.preventDefault();const ps=points(),position=coords(e),target=targetAt(e,ps),index=target.point,segment=e.target.closest('[data-lfo-segment]');
     const part=target.segment!==null?'segment':index!==null?'point':segment?'segment':'add';
     if(!begin(e,'config',{key,part,index:part==='point'?index:target.segment??Number(segment?.dataset.lfoSegment),curveBefore:ps,fine:e.shiftKey,moved:false,start:position}))return;
-    if(part==='point'){select(index);render();}else if(part==='add'){const next=insertCurvePoint(ps,position.x,position.y);if(next){select(next.findIndex(p=>p.x===quantizeLfoX(position.x)));const g=getGesture();g.part='point';g.index=selected;g.curveBefore=next;change(next);}else helper.textContent='16 points maximum · select a point to delete';}
+    if(part==='point'){select(index);render();}else if(part==='add'){const next=insertCurvePoint(ps,position.x,position.y);if(next){select(next.findIndex(p=>p.x===quantizeLfoX(position.x)));const g=getGesture();g.part='point';g.index=selected;g.curveBefore=next;change(next);}else helper.textContent='32 points maximum · select a point to delete';}
   });
   svg.addEventListener('pointermove',e=>{
     const g=getGesture();if(g?.key!==key||g.pointer!==e.pointerId)return;const r=box(),factor=g.fine?.1:1;g.moved||=Math.hypot(e.clientX-g.x,e.clientY-g.y)>2;
@@ -38,7 +39,7 @@ export function createLfoCurve({container,getSource,changeSource,begin,getGestur
     else{if(!['ArrowUp','ArrowDown','Home','End'].includes(e.key))return;e.preventDefault();ps[index].bend=e.key==='Home'?-1:e.key==='End'?1:clamp(ps[index].bend+(e.key==='ArrowUp'?1:-1)*.05*fine,-1,1);change(ps,true);}
     svg.querySelector(point?`[data-lfo-point="${index}"]`:`[data-lfo-segment="${index}"]`)?.focus();
   });
-  bindCompletion(svg);
+  bindCompletion(svg);bindDoubleTap(svg,index=>{if(getGesture())return;select(index);removeSelected();},{key:e=>targetAt(e,points()).point});
   function removeSelected(){if(getGesture()||selected===null)return;const ps=points();if(selected===0||selected===ps.length-1)return;ps.splice(selected,1);select(null);change(ps,true);}
   function node(tag,attrs){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);svg.append(e);return e;}
   function render(){
@@ -54,7 +55,7 @@ export function createLfoCurve({container,getSource,changeSource,begin,getGestur
     if(ps[0].y!==ps.at(-1).y){const end=pixel(ps.at(-1)),start=pixel({x:1,y:ps[0].y});node('path',{d:`M${end.x} ${end.y}V${start.y}`,class:'lfo-wrap-line'});}
     ps.forEach((p,index)=>{const q=pixel(p);node('circle',{cx:q.x,cy:q.y,r:index===selected?5:3,class:'lfo-point-dot','data-selected':String(index===selected)});node('circle',{cx:clamp(q.x,22,r.width-22),cy:clamp(q.y,22,r.height-22),r:22,class:'lfo-point-hit','data-lfo-point':index,role:'slider',tabindex:0,'aria-label':'Point '+(index+1)+(index===0?' start':index===ps.length-1?' end':''),'aria-valuemin':-1,'aria-valuemax':1,'aria-valuenow':p.y,'aria-valuetext':Math.round(p.x*100)+'% phase, '+Math.round(p.y*100)+'% level'});});
     node('line',{'data-lfo-cursor':'true',class:'lfo-phase-cursor',y1:14,y2:r.height-14});setPhase(phase);
-    helper.textContent=s.waveform==='random'?'Random template · edit creates Custom':ps.length>=16?'16 points · select an interior point to delete':'Tap to add · drag points · bend segments';
+    helper.textContent=s.waveform==='random'?'Random template · edit creates Custom':ps.length>=MAX_LFO_POINTS?'32 points · select an interior point to delete':'Tap to add · drag points · bend segments';
     svg.setAttribute('aria-label',s.waveform==='random'?'Random template, not live random output. Cursor shows engine phase. Editing points or segments creates Custom.':'LFO shape. Tap to add, drag points, drag segments to bend.');select(selected);
   }
   function setPhase(value){phase=value;const cursor=svg.querySelector('[data-lfo-cursor]');if(!cursor)return;const valid=getSource()?.enabled&&Number.isFinite(value)&&value>=0&&value<1;cursor.style.display=valid?'':'none';if(valid){const x=pixel({x:value,y:0}).x;cursor.setAttribute('x1',x);cursor.setAttribute('x2',x);}}

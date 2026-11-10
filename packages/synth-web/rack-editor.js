@@ -4,10 +4,11 @@ import {createLfoUI} from './lfo-ui.js';
 import {createLfoTimingDial} from './lfo-timing.js';
 import {curlPhase,performanceSteps} from './performance-state.js';
 // Each block owns its controls. Closing another card cannot interrupt this instance.
-export function createRackEditor({item,body,extra,getNode,changeNode,parameters,getTempo,changeTempo,getPhase,begin,getGesture,bindCompletion}) {
+export function createRackEditor({item,body,extra,getNode,changeNode,parameters,getTempo,changeTempo,getPhase,getDestinations,begin,getGesture,bindCompletion}) {
   const dials=[],options={begin,getGesture,bindCompletion};
   function dial(field,label,min,max,format,extraOptions={},target=body){
-    const control=configDial({...options,key:item.key+':'+field,label,min,max,getValue:()=>getNode()?.[field]??min,change:(value,commit)=>changeNode({[field]:value},commit),format,...extraOptions});target.append(control.element);dials.push(control);return control;
+    const defaults={drive:{amount:2},fullness:{amount:.5},drop:{amount:120,time:.12,bend:0},lfo:{intensity:1}};
+    const control=configDial({...options,key:item.key+':'+field,label,min,max,defaultValue:defaults[item.type]?.[field]??0,getValue:()=>getNode()?.[field]??min,change:(value,commit)=>changeNode({[field]:value},commit),format,...extraOptions});target.append(control.element);dials.push(control);return control;
   }
   let performanceUI,lfoUI,contour,curve;
   const time=v=>v<1?Math.round(v*1000)+' ms':v.toFixed(2)+' s';
@@ -24,7 +25,7 @@ export function createRackEditor({item,body,extra,getNode,changeNode,parameters,
     const rate=createLfoTimingDial({...options,key:item.key+':rate',getSource:getNode,changeSource:changeNode});body.append(rate.element);dials.push(rate);
     dial('intensity','Intensity',0,1,v=>Math.round(v*100)+'%');
     const badge=document.createElement('span');badge.className='rack-route-badge';body.append(badge);
-    const panel=document.createElement('div');extra.append(panel);lfoUI=createLfoUI({container:panel,parameters,getSource:getNode,getTempo,getPhase,changeSource:changeNode,changeTempo,...options,instance:item.key});
+    const panel=document.createElement('div');extra.append(panel);lfoUI=createLfoUI({container:panel,parameters,getSource:getNode,getTempo,getPhase,getDestinations,changeSource:changeNode,changeTempo,...options,instance:item.key});
     // Rate and Intensity stay on the compact card; deeper view owns routing and sync.
     panel.querySelector('[data-lfo-ref=lfo-rate-slot]').hidden=true;panel.querySelector('[data-lfo-ref=lfo-intensity-slot]').hidden=true;
     curve=()=>{badge.textContent=getNode().routes.length+' routes'+(getNode().synced?' · '+getNode().division:'');};

@@ -31,7 +31,7 @@ typedef struct bs_parameter_descriptor {
   uint32_t id; const char *name; const char *unit;
   float minimum, maximum, default_value; uint32_t mapping;
 } bs_parameter_descriptor;
-typedef enum bs_event_type { BS_NOTE_ON=0, BS_NOTE_OFF=1, BS_PARAMETER=2, BS_PANIC=3, BS_PEDAL=4 } bs_event_type;
+typedef enum bs_event_type { BS_NOTE_ON=0, BS_NOTE_OFF=1, BS_PARAMETER=2, BS_PANIC=3, BS_PEDAL=4, BS_STEREO_WIDTH=5 } bs_event_type;
 /* Exactly 24 bytes: six 32-bit fields at offsets 0,4,8,12,16,20.
  * NoteOn value=velocity [0,1]; NoteOff consumes oldest channel/key NoteOn ordinal, including stolen notes (FIFO).
  * Pedal value>=.5 holds released notes on that channel. Panic silences immediately.
@@ -79,6 +79,14 @@ void bs_reset(bs_synth *synth); /* reset voices, pedal and deterministic RNG seq
  * complete with their captured time. Amp/filter envelopes still retrigger. */
 int bs_set_parameter(bs_synth *synth, uint32_t id, float physical);
 float bs_get_parameter(const bs_synth *synth, uint32_t id);
+/* Separate stereo bus state, not part of the tone patch. Range[0,2], default1.
+ * Rejects nonfinite/out-of-range values atomically. Getter is requested target.
+ * 5ms time-constant smoothing; reset/prepare snap to retained target, panic
+ * preserves it. Event BS_STEREO_WIDTH uses value for sample-offset automation.
+ * Width1 is exact bypass; width0 mono, width2 doubles existing Side BEFORE
+ * unchanged final tanh/gain protection. No stereo information is generated. */
+int bs_set_stereo_width(bs_synth *synth,float width);
+float bs_get_stereo_width(const bs_synth *synth); /* null returns neutral1 */
 int bs_get_patch(const bs_synth *synth, bs_patch *patch);
 /* v7 writes/reads44 values; v1(18), v2(19), v3(21), v4(35), v5(40), v6(42) prefixes migrate.
  * Resonance42 defaults0; FilterMode43 defaults0 (legacy one-pole),1 selects resonant LP12.

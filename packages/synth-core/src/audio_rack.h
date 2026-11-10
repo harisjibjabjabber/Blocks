@@ -9,7 +9,11 @@
 #include <cstddef>
 namespace blocks_detail {
 class AudioRack {
- struct State {FullnessPath fullness;double amount=0,enabled=0;};
+public:
+ struct Modulation {struct Offset{uint32_t id=0;double value=0;};std::array<Offset,32> offsets{};unsigned count=0;double at(uint32_t id)const{for(unsigned i=0;i<count;++i)if(offsets[i].id==id)return offsets[i].value;return 0;}};
+private:
+ const Modulation*modulation_=nullptr;
+ struct State {FullnessPath fullness;double amount=0,enabled=0,modulation=0;};
  struct Graph {bs_sauce_config config{};std::array<State,BS_SAUCE_CAPACITY> states{};SauceRack base;bool includeBase=false,primaryDrive=false,primaryFullness=false;};
  Graph active_{},old_{};bs_sauce_config requested_{};bool pending_=false,includeBase_=false;uint32_t position_=0,length_=0,sharedPrefix_=0;bool sharedBase_=false;double rate_=48000,smoothing_=1-std::exp(-1.0/240);
  static bool equal(const bs_sauce_config&a,const bs_sauce_config&b){if(a.version!=b.version||a.count!=b.count)return false;for(unsigned i=0;i<a.count;++i){const auto&x=a.blocks[i];const auto&y=b.blocks[i];if(x.id!=y.id||x.type!=y.type||x.primary!=y.primary||x.enabled!=y.enabled||x.amount!=y.amount)return false;}return true;}
@@ -35,6 +39,8 @@ class AudioRack {
   for(unsigned i=start;i<end;++i){const auto&b=g.config.blocks[i];auto&state=g.states[i];double amount,enabled;
    if(b.primary){amount=b.type==BS_SAUCE_DRIVE?driveAmount:fullnessAmount;enabled=b.type==BS_SAUCE_DRIVE?driveEnabled:fullnessEnabled;}
    else{state.amount+=smoothing_*(b.amount-state.amount);state.enabled+=smoothing_*(b.enabled-state.enabled);if(std::abs(state.amount-b.amount)<1e-12)state.amount=b.amount;if(std::abs(state.enabled-b.enabled)<1e-12)state.enabled=b.enabled;amount=state.amount;enabled=state.enabled;}
+   const double modTarget=modulation_?modulation_->at(b.id):0;
+   if(modTarget!=0||state.modulation!=0){state.modulation+=smoothing_*(modTarget-state.modulation);if(std::abs(state.modulation-modTarget)<1e-12)state.modulation=modTarget;if(state.modulation!=0)amount=b.type==BS_SAUCE_DRIVE?std::max(1.,std::min(12.,amount*std::exp(2.4849066497880004*std::max(-4.,std::min(4.,state.modulation))))):std::max(0.,std::min(1.,amount+state.modulation));}
    if(b.type==BS_SAUCE_DRIVE){if(enabled!=0){const double wet=std::tanh(input*amount);input=enabled==1?wet:input+enabled*(wet-input);}}
    else{const double depth=amount*enabled,residual=state.fullness.process(input,dcPole),colour=depth>0?input+depth*residual:input,body=state.fullness.body(colour,alpha);input=depth>0?colour+depth*body:colour;}
   }
@@ -52,7 +58,8 @@ public:
  bool configure(const bs_sauce_config&config,double rate,bool immediate=false,bool includeBase=false){if(!valid(config)||!std::isfinite(rate)||rate<8000||rate>384000)return false;rate_=rate;includeBase_=includeBase;smoothing_=1-std::exp(-1/(.005*rate));requested_=config;if(immediate){pending_=false;begin(config,true);}else if(length_){pending_=!equal(config,active_.config)||includeBase_!=active_.includeBase;}else if(!equal(config,active_.config)||includeBase_!=active_.includeBase)begin(config,false);return true;}
  const bs_sauce_config&config()const{return requested_;}
  bool transitioning()const{return length_!=0||pending_;}
- double process(double input,double driveAmount,double fullnessAmount,double driveEnabled,double fullnessEnabled,double dcPole,double alpha,double baseOrder=0){
+ double process(double input,double driveAmount,double fullnessAmount,double driveEnabled,double fullnessEnabled,double dcPole,double alpha,double baseOrder=0,const Modulation*modulation=nullptr){
+  modulation_=modulation;
   if(!length_)return graph(active_,input,driveAmount,fullnessAmount,driveEnabled,fullnessEnabled,dcPole,alpha,baseOrder);
   double current,prior;
   if(sharedBase_){

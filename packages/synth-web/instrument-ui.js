@@ -1,3 +1,6 @@
+import {configDial} from './config-dial.js';
+import {normalizeStereoWidth} from './stereo-state.js';
+import {bindDoubleTap,markDialDefault} from './tap-gesture.js';
 import {characterRecipe,motionRecipe,applyRecipe,readRecipe} from './recipes.js';
 import {factoryPatch} from './presets.js';
 import {timeFromUnit,timeToUnit} from './envelope-scale.js';
@@ -9,9 +12,9 @@ import {createSauceRack} from './sauce-rack-ui.js';
 import {createRackEditor} from './rack-editor.js';
 import {createLfoUI} from './lfo-ui.js';
 import {DEFAULT_RACK,normalizeRack,legacyRack,newSauceBlock,reorderRack,syncRackOrder} from './sauce-state.js';
-import {DEFAULT_MODULATION,normalizeModulation,defaultLfo} from './modulation-state.js';
+import {DEFAULT_MODULATION,normalizeModulation,defaultLfo,modulationDestinations} from './modulation-state.js';
 // The instrument surface owns gestures, never voices or the audio clock.
-export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, getPerformance, applyPerformance, getRack, applyRack, getModulation, applyModulation, getSampleRate=()=>48000, onViewChange=()=>{} }) {
+export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, getPerformance, applyPerformance, getRack, applyRack, getModulation, applyModulation, getStereoWidth=()=>1,applyStereoWidth=()=>{},getSampleRate=()=>48000, onViewChange=()=>{} }) {
   let localPerformance={...DEFAULT_PERFORMANCE};
   getPerformance??=()=>localPerformance;
   applyPerformance??=next=>{localPerformance={...next};};
@@ -56,10 +59,10 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     return Number(value.toFixed(id === 14 ? 2 : 1)) + (id === 14 ? ' Hz' : id === 12 ? '×' : id === 3 ? '' : ' ct');
   };
   const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
-  const state = () => ({values: [...getValues()], performance:performance(), rack:rack(), modulation:modulation(), preset});
+  const state = () => ({values: [...getValues()], performance:performance(), rack:rack(), modulation:modulation(),stereoWidth:getStereoWidth(), preset});
   const restorePerformance=next=>{if(JSON.stringify(next)!==JSON.stringify(performance()))applyPerformance(next);};
   function commit(before) {
-    if (!same(before.values, getValues()) || JSON.stringify(before.performance)!==JSON.stringify(performance()) || JSON.stringify(before.rack)!==JSON.stringify(rack()) || JSON.stringify(before.modulation)!==JSON.stringify(modulation())) { history.push(before); if (history.length > 40) history.shift(); }
+    if (before.stereoWidth!==getStereoWidth() || !same(before.values, getValues()) || JSON.stringify(before.performance)!==JSON.stringify(performance()) || JSON.stringify(before.rack)!==JSON.stringify(rack()) || JSON.stringify(before.modulation)!==JSON.stringify(modulation())) { history.push(before); if (history.length > 40) history.shift(); }
     $('undo').disabled = !history.length;
   }
   function apply(next, markCustom = true) {
@@ -73,7 +76,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     const before = gesture.before;
     gesture = null; restore(before);
   }
-  function restore(before){preset=before.preset;applyValues(before.values);restorePerformance(before.performance);applyRack(before.rack);applyModulation(before.modulation);update();}
+  function restore(before){preset=before.preset;applyValues(before.values);restorePerformance(before.performance);applyRack(before.rack);applyModulation(before.modulation);applyStereoWidth(before.stereoWidth??1);update();}
   function begin(e, type, data = {}) {
     if (gesture || (e.button !== undefined && e.button !== 0)) return false;
     gesture = {type, pointer: e.pointerId, before: state(), x: e.clientX, y: e.clientY, ...data};
@@ -121,7 +124,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
       e.preventDefault();const before=state(); const step=e.shiftKey?.001:.01;
       changeKnob(id,e.key==='Home'?0:e.key==='End'?1:knobN(id)+(['ArrowUp','ArrowRight'].includes(e.key)?step:-step));commit(before);
     });
-    bindCompletion(button);if(mini){button.prepend(label);button.append(value);container.append(button);}else container.append(button,label,value);return container;
+    bindCompletion(button);const def=id==='character'||id==='motion'?0:norm(Number(id),parameters[Number(id)].default);markDialDefault(button,def,id==='character'||id==='motion'?'0%':format(Number(id),parameters[Number(id)].default));bindDoubleTap(button,()=>{if(gesture)return;const before=state();changeKnob(id,def);commit(before);});if(mini){button.prepend(label);button.append(value);container.append(button);}else container.append(button,label,value);return container;
   }
   function closeFilter(focus=false){const panel=$('filter-mode-options'),button=$('filter-mode-toggle'),wasOpen=panel&&!panel.hidden;if(panel)panel.hidden=true;button?.setAttribute('aria-expanded','false');if(focus&&wasOpen)button?.focus();}
   function filterModeControl(){
@@ -318,7 +321,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   document.addEventListener('pointerdown',e=>{if(!e.target.closest('#volume-panel,#volume-toggle')){$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}if(!e.target.closest('#waveforms'))closeOsc(false);if(!e.target.closest('#filter-mode-toggle,#filter-mode-options'))closeFilter(false);if(!gesture&&!e.target.closest('#motion-details,#motion-details-toggle,.keyboard-section'))closeMotion(false);if(!gesture&&!e.target.closest('.keyboard-section'))closeGlide(false);});
   window.addEventListener('keydown',e=>{if(e.key==='Escape'){const editing=!!gesture;cancel();closeOsc(true);closeFilter(true);if(!editing){closeMotion(true);closeGlide(true);}$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}});window.addEventListener('blur',cancel);
   $('undo').addEventListener('click',()=>{cancel();rackUI.cancel();const before=history.pop();if(before)restore(before);$('undo').disabled=!history.length;});
-  function loadPatch(next,name='custom',settings=DEFAULT_PERFORMANCE,extras={}) {cancel();rackUI.cancel();closeOsc(false);closeFilter(false);lfoUI.close();const before=state();releaseVoices();preset=name;applyValues(next);applyPerformance(normalizePerformance(settings));applyRack(extras.rack?normalizeRack(extras.rack):legacyRack(next,settings));applyModulation(extras.modulation?normalizeModulation(extras.modulation):normalizeModulation());update();commit(before);}
+  function loadPatch(next,name='custom',settings=DEFAULT_PERFORMANCE,extras={}) {cancel();rackUI.cancel();closeOsc(false);closeFilter(false);lfoUI.close();const before=state();releaseVoices();preset=name;applyValues(next);applyPerformance(normalizePerformance(settings));applyRack(extras.rack?normalizeRack(extras.rack):legacyRack(next,settings));applyModulation(extras.modulation?normalizeModulation(extras.modulation):normalizeModulation());applyStereoWidth(normalizeStereoWidth(extras.stereoWidth));update();commit(before);}
   if(!$('presets').querySelector('[value="custom"]')){const option=document.createElement('option');option.value='custom';option.textContent='Custom patch';option.disabled=true;$('presets').append(option);}
   $('presets').addEventListener('change',e=>loadPatch(factoryPatch(e.target.value,parameters),e.target.value));
   $('init').addEventListener('click',()=>loadPatch(parameters.map(p=>p.default)));
@@ -329,11 +332,13 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   function changeConfig(action,commitNow=true){if(gesture&&(commitNow||!['config','performance'].includes(gesture.type)))return;const before=state();action();preset='custom';update();if(commitNow)commit(before);}
   function getNode(key){const[lane,id]=key.split(':');return lane==='lfo'?modulation().sources.find(n=>n.id===Number(id)):rack()[lane].find(n=>n.id===Number(id));}
   function changeNode(key,patch,commitNow=true){changeConfig(()=>{const[lane,id]=key.split(':');if(lane==='lfo'){const m=modulation();m.sources=m.sources.map(n=>n.id===Number(id)?{...n,...patch}:n);applyModulation(normalizeModulation(m));}else{const r=rack();r[lane]=r[lane].map(n=>n.id===Number(id)?{...n,...patch}:n);applyRack(normalizeRack(r));}},commitNow);}
-  const commonControls={parameters,begin,getGesture:()=>gesture,bindCompletion,getPhase:id=>modulationPhases.get(id)??null,getTempo:()=>performance().bpm,changeTempo:delta=>changePerformance({bpm:performance().bpm+delta})};
+  const commonControls={parameters,getDestinations:()=>modulationDestinations(parameters,rack(),modulation()),begin,getGesture:()=>gesture,bindCompletion,getPhase:id=>modulationPhases.get(id)??null,getTempo:()=>performance().bpm,changeTempo:delta=>changePerformance({bpm:performance().bpm+delta})};
+  const widthDial=configDial({...commonControls,key:'output:width',label:'Stereo Width',min:0,max:2,defaultValue:1,getValue:getStereoWidth,change:(value,commit)=>changeConfig(()=>applyStereoWidth(value),commit),format:value=>value===0?'Mono':Math.abs(value-1)<.001?'100% · Neutral':Math.round(value*100)+'%'});
+  widthDial.element.classList.add('output-width');$('volume-panel').append(widthDial.element);
   const rackUI=createSauceRack({container:$('sauce-rack'),canDrag:()=>!gesture,
     createEditor:(item,body,extra)=>createRackEditor({...commonControls,item,body,extra,getNode:()=>getNode(item.key),changeNode:(patch,commit)=>changeNode(item.key,patch,commit)}),
     onToggle:key=>changeNode(key,{enabled:!getNode(key).enabled}),
-    onRemove:key=>changeConfig(()=>{const[lane,id]=key.split(':');if(lane==='lfo'){const m=modulation();m.sources=m.sources.filter(n=>n.id!==Number(id));applyModulation(m);applyRack(syncRackOrder(rack(),m));}else{const r=rack();r[lane]=r[lane].filter(n=>n.id!==Number(id));applyRack(r);}}),
+    onRemove:key=>changeConfig(()=>{const[lane,id]=key.split(':');if(lane==='lfo'){const m=modulation();m.sources=m.sources.filter(n=>n.id!==Number(id));m.sources.forEach(source=>source.routes=source.routes.filter(route=>!(route.kind==='lfo'&&route.targetId===Number(id))));applyModulation(m);applyRack(syncRackOrder(rack(),m));}else{const r=rack();r[lane]=r[lane].filter(n=>n.id!==Number(id));applyRack(r);if(lane==='audio'){const m=modulation();m.sources.forEach(source=>source.routes=source.routes.filter(route=>!(route.kind==='sauce'&&route.targetId===Number(id))));applyModulation(m);}}}),
     onAdd:type=>changeConfig(()=>{if(type==='lfo'){const m=modulation();if(m.sources.length>=4)return;const id=Math.max(...m.sources.map(s=>s.id))+1;m.sources.push({...defaultLfo(id),enabled:true});applyModulation(m);applyRack(syncRackOrder(rack(),m));}else{const r=rack(),lane=['drive','fullness'].includes(type)?'audio':'notes';if(r[lane].length>=16)return;r[lane].push(newSauceBlock(r,type));applyRack(r);}}),
     onReorder:keys=>changeConfig(()=>applyRack(reorderRack(rack(),modulation(),keys)))
   });
@@ -346,6 +351,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   $('glide-time-toggle').addEventListener('click',()=>{if(gesture||!parameters[41])return;const open=$('glide-panel').hidden;$('glide-panel').hidden=!open;$('glide-time-toggle').setAttribute('aria-expanded',String(open));if(open){closeMotion(false);$('glide-panel').querySelector('[data-knob]').focus();}});
   window.addEventListener('resize',()=>{cancel();update();});
   function update() {
+    widthDial.update();
     for(const p of parameters){const input=document.querySelector(`[data-param="${p.id}"]`);input.value=p.mapping===2?getValues()[p.id]:Math.round((timingIds.includes(p.id)?timeUnit: norm)(p.id)*1000);input.setAttribute('aria-valuetext',format(p.id));document.querySelector(`[data-value="${p.id}"]`).textContent=format(p.id);}
     for(const chooser of document.querySelectorAll('[data-waveosc]')){const id=Number(chooser.dataset.waveosc),number=id===19?1:2;chooser.querySelector('.wave-name').textContent=format(id);chooser.setAttribute('aria-label','Oscillator '+number+' waveform '+format(id));}
 

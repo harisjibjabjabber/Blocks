@@ -154,6 +154,7 @@ struct bs_synth {
  blocks_detail::NoteRack noteRack;blocks_detail::Performance finalMono;
  bs_performance_config requestedPerformance=blocks_detail::defaultPerformance();bool notesExplicit=false;
  double driftPhase=0,filterBlend=0;
+ float stereoWidth=1;double stereoWidthSmooth=1;
  blocks_detail::ResonantCoefficients resonantCoefficients;
  void canonicalMix(){const double total=double(parameters[BS_OSC1_LEVEL])+parameters[BS_OSC2_LEVEL];parameters[BS_OSC_MIX]=total>0?float(parameters[BS_OSC2_LEVEL]/total):.5f;}
  bs_synth() {
@@ -168,7 +169,7 @@ struct bs_synth {
  int setNotes(const bs_notes_config&config){if(!blocks_detail::NoteRack::valid(config))return 0;bool topology=!notesExplicit||config.count!=noteRack.config().count;for(unsigned i=0;i<config.count&&!topology;++i){const auto&a=config.blocks[i];const auto&b=noteRack.config().blocks[i];topology=a.id!=b.id||a.type!=b.type||a.enabled!=b.enabled;}if(topology)performance.clear();if(!notesExplicit){clearOutputs();notesExplicit=true;auto legacy=requestedPerformance;legacy.mono=0;performance.configure(legacy);auto mono=blocks_detail::defaultPerformance();mono.mono=requestedPerformance.mono;finalMono.configure(mono);}return noteRack.configure(config,rate);}
  int setSauce(const bs_sauce_config&config){if(!blocks_detail::AudioRack::valid(config))return 0;sauceConfig=config;int drive=-1,fullness=-1;for(unsigned i=0;i<config.count;++i)if(config.blocks[i].primary){if(config.blocks[i].type==BS_SAUCE_DRIVE)drive=int(i);else fullness=int(i);}if(drive>=0&&fullness>=0)parameters[BS_SAUCE_ORDER]=drive<fullness?0:1;for(auto&v:voices)if(v.active)v.sauce.configure(config,rate,false,true);for(auto&v:tails)if(v.active)v.sauce.configure(config,rate,false,true);return 1;}
  void reorderPrimary(bool reverse){auto next=sauceConfig;int drive=-1,fullness=-1;for(unsigned i=0;i<next.count;++i)if(next.blocks[i].primary){if(next.blocks[i].type==BS_SAUCE_DRIVE)drive=int(i);else fullness=int(i);}if(drive>=0&&fullness>=0&&((drive>fullness)!=reverse)){std::swap(next.blocks[unsigned(drive)],next.blocks[unsigned(fullness)]);setSauce(next);}}
- void reset() { for(unsigned osc=0;osc<2;++osc) {waveWeights[osc]={};waveWeights[osc][unsigned(parameters[BS_OSC1_WAVE+osc])]=1;} for(auto&v:voices)v=Voice{};for(auto&v:tails)v=Voice{}; onOrdinals={}; offOrdinals={}; pedals={}; sequence=0;driftPhase=0;filterBlend=parameters[BS_FILTER_MODE];modulation.reset();modulationSmooth={};performance.prepare(rate);noteRack.prepare(rate);finalMono.prepare(rate); for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; }
+ void reset() { stereoWidthSmooth=stereoWidth; for(unsigned osc=0;osc<2;++osc) {waveWeights[osc]={};waveWeights[osc][unsigned(parameters[BS_OSC1_WAVE+osc])]=1;} for(auto&v:voices)v=Voice{};for(auto&v:tails)v=Voice{}; onOrdinals={}; offOrdinals={}; pedals={}; sequence=0;driftPhase=0;filterBlend=parameters[BS_FILTER_MODE];modulation.reset();modulationSmooth={};performance.prepare(rate);noteRack.prepare(rate);finalMono.prepare(rate); for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; }
  void panic() {performance.clear();noteRack.clear();clearOutputs();}
  void retire(Voice&v){
   Voice*tail=nullptr;for(auto&candidate:tails)if(!candidate.active){tail=&candidate;break;}
@@ -229,6 +230,7 @@ struct bs_synth {
   if(!down) for(auto &v:voices) if(v.active&&v.channel==channel&&v.pedal&&!v.held) release(v);
  }
  int event(const bs_event &e) {
+  if(e.type==BS_STEREO_WIDTH)return bs_set_stereo_width(this,e.value)?0:1;
   if(e.type==BS_PARAMETER) return bs_set_parameter(this,e.parameter_id,e.value)?0:1;
   if(e.type==BS_PANIC) { panic(); return 0; }
   if(e.channel>=16 || !std::isfinite(e.value)) return 1;
@@ -239,6 +241,8 @@ struct bs_synth {
   return 1;
  }
  void sample(float &left,float &right) {
+  stereoWidthSmooth+=(double(stereoWidth)-stereoWidthSmooth)*smoothing;
+  if(std::abs(stereoWidthSmooth-stereoWidth)<1e-12)stereoWidthSmooth=stereoWidth;
   performance.tick();if(notesExplicit){noteRack.tick();finalMono.tick();}
   // A same-sample NoteOff/panic can cancel an attack before it sounds. Only
   // fresh primary voices still held/sustained at this sample trigger the LFOs.
@@ -252,6 +256,10 @@ struct bs_synth {
   const bool legacyWaves=waveWeights[0][BS_SAW]==1 && waveWeights[1][BS_PULSE]==1;
   if(parameters[BS_FULLNESS]==0 && smooth[BS_FULLNESS]<1e-12) smooth[BS_FULLNESS]=0;
   const auto offsets=modulation.tick(rate,performance.tempo());
+  blocks_detail::AudioRack::Modulation sauceModulation;
+  sauceModulation.count=modulation.sauceCount_;
+  for(unsigned i=0;i<sauceModulation.count;++i)sauceModulation.offsets[i]={modulation.sauceOffsets_[i].id,modulation.sauceOffsets_[i].value};
+  const auto*sauceModulationPtr=sauceModulation.count?&sauceModulation:nullptr;
   auto effective=smooth;
   for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i){
    double&offset=modulationSmooth[i];offset+=smoothing*(offsets[i]-offset);
@@ -301,10 +309,11 @@ struct bs_synth {
    double amplitude=envelope(v,dt)*v.velocity;
    if(voiceIndex>=BS_MAX_VOICES) {amplitude*=double(v.tailRemaining)/std::ceil(.003*rate);if(--v.tailRemaining==0)v.active=false;}
    const double filtered=effective[BS_FILTER_MIX]==1?tone:enriched+(tone-enriched)*effective[BS_FILTER_MIX];
-   const double dry=v.sauce.process(filtered,effective[BS_DRIVE],fullness,effective[BS_DRIVE_ENABLED],effective[BS_FULLNESS_ENABLED],dcPole,bodyAlpha,effective[BS_SAUCE_ORDER]);
+   const double dry=v.sauce.process(filtered,effective[BS_DRIVE],fullness,effective[BS_DRIVE_ENABLED],effective[BS_FULLNESS_ENABLED],dcPole,bodyAlpha,effective[BS_SAUCE_ORDER],sauceModulationPtr);
    const double value=dry*amplitude*.25;
    l+=value*v.panLeft; r+=value*v.panRight; v.age+=dt;
   }
+  if(stereoWidthSmooth!=1){const double mid=.5*(l+r),side=.5*(l-r)*stereoWidthSmooth;l=mid+side;r=mid-side;}
   left=float(std::tanh(l)*effective[BS_GAIN]); right=float(std::tanh(r)*effective[BS_GAIN]);
  }
 };
@@ -322,7 +331,10 @@ int bs_set_modulation(bs_synth*synth,const bs_modulation_config*config){return s
 int bs_get_modulation(const bs_synth*synth,bs_modulation_config*config){return synth&&config&&synth->modulation.getLegacy(*config)?1:0;}
 void bs_default_modulation_v2(bs_modulation_config_v2*config){if(config)*config=blocks_detail::defaultModulationV2();}
 int bs_set_modulation_v2(bs_synth*synth,const bs_modulation_config_v2*config){return synth&&config&&synth->modulation.configure(*config)?1:0;}
-int bs_get_modulation_v2(const bs_synth*synth,bs_modulation_config_v2*config){if(!synth||!config)return 0;*config=synth->modulation.configV2();return 1;}
+int bs_get_modulation_v2(const bs_synth*synth,bs_modulation_config_v2*config){return synth&&config&&synth->modulation.getV2(*config)?1:0;}
+void bs_default_modulation_v3(bs_modulation_config_v3*config){if(config)*config=blocks_detail::defaultModulationV3();}
+int bs_set_modulation_v3(bs_synth*synth,const bs_modulation_config_v3*config){return synth&&config&&synth->modulation.configure(*config)?1:0;}
+int bs_get_modulation_v3(const bs_synth*synth,bs_modulation_config_v3*config){if(!synth||!config)return 0;*config=synth->modulation.configV3();return 1;}
 double bs_get_modulation_phase(const bs_synth*synth,uint32_t source_id){return synth?synth->modulation.phase(source_id):-1;}
 void bs_default_performance(bs_performance_config*config){if(config)*config=blocks_detail::defaultPerformance();}
 int bs_set_performance(bs_synth*synth,const bs_performance_config*config){return synth&&config?synth->setPerformance(*config):0;}
@@ -358,6 +370,8 @@ int bs_set_parameter(bs_synth *synth,uint32_t id,float physical) {
  else if(id==BS_SAUCE_ORDER)synth->reorderPrimary(synth->parameters[id]>=.5f);
  return 1;
 }
+int bs_set_stereo_width(bs_synth*synth,float width){if(!synth||!std::isfinite(width)||width<0||width>2)return 0;synth->stereoWidth=width;return 1;}
+float bs_get_stereo_width(const bs_synth*synth){return synth?synth->stereoWidth:1;}
 float bs_get_parameter(const bs_synth *synth,uint32_t id) { return synth&&id<BS_PARAMETER_COUNT?synth->parameters[id]:0; }
 int bs_get_patch(const bs_synth *synth,bs_patch *patch) {
  if(!synth||!patch) return 0; patch->version=BS_ABI_VERSION;

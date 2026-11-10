@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {normalizeStereoWidth} from './stereo-state.js';
+test('optional Width field migrates to neutral and rejects malformed imports before application',()=>{assert.equal(normalizeStereoWidth(),1);for(const value of[0,1,2])assert.equal(normalizeStereoWidth(value),value);for(const value of[null,'1',NaN,Infinity,-.1,2.1])assert.throws(()=>normalizeStereoWidth(value));});

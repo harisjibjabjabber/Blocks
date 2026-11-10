@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULT_RACK,normalizeRack,newSauceBlock,legacyRack,hydrateRack,toCoreSauce,toCoreNotes,rackVisualOrder,reorderRack,syncRackOrder} from './sauce-state.js';
-import {DEFAULT_MODULATION,normalizeModulation,toCoreModulation,defaultLfo,shapeForWave,normalizeLfoPoints,sampleLfoPoints} from './modulation-state.js';
+import {DEFAULT_MODULATION,normalizeModulation,toCoreModulation,defaultLfo,shapeForWave,normalizeLfoPoints,sampleLfoPoints,randomLfoPoints,modulationDestinations,routeTargetKey} from './modulation-state.js';
 test('repeatable rack blocks are independent and serialize both processing lanes in exact order',()=>{
  let rack=normalizeRack(DEFAULT_RACK);assert.deepEqual(rack.audio,[]);assert.deepEqual(rack.notes,[]);
  for(const type of ['drive','drive','fullness'])rack.audio.push(newSauceBlock(rack,type));
@@ -38,9 +38,9 @@ test('global rack order projects typed subsequences without changing cross-type 
  assert.throws(()=>reorderRack(r,m,['notes:1']));assert.throws(()=>normalizeRack({...r,order:['audio:2','audio:2']}));
 });
 test('modulation v1 migrates free clocks while v2 preserves drawn curves and retrigger atomically',()=>{
- const old=defaultLfo();delete old.points;delete old.retrigger;old.rate=3;old.division='1/8T';const migrated=normalizeModulation({version:1,sources:[old]});assert.equal(migrated.version,2);assert.equal(migrated.sources[0].retrigger,false);assert.equal(migrated.sources[0].rate,3);assert.equal(migrated.sources[0].division,'1/8T');assert.deepEqual(migrated.sources[0].points,shapeForWave());
+ const old=defaultLfo();delete old.points;delete old.retrigger;old.rate=3;old.division='1/8T';const migrated=normalizeModulation({version:1,sources:[old]});assert.equal(migrated.version,3);assert.equal(migrated.sources[0].retrigger,false);assert.equal(migrated.sources[0].rate,3);assert.equal(migrated.sources[0].division,'1/8T');assert.deepEqual(migrated.sources[0].points,shapeForWave());
  migrated.sources[0].waveform='custom';migrated.sources[0].retrigger=true;migrated.sources[0].points=[{x:0,y:-1,bend:1},{x:.5,y:.8,bend:-1},{x:1,y:1,bend:0}];const normalized=normalizeModulation(migrated);assert.deepEqual(normalizeModulation(JSON.parse(JSON.stringify(normalized))),normalized);assert.equal(toCoreModulation(normalized).sources[0].retrigger,1);assert.equal(toCoreModulation(normalized).sources[0].waveform,5);
- for(const points of [[],Array(17).fill({x:0,y:0,bend:0}),[{x:.1,y:0,bend:0},{x:1,y:0,bend:0}],[{x:0,y:0,bend:0},{x:0,y:1,bend:0},{x:1,y:0,bend:0}],[{x:0,y:-2,bend:0},{x:1,y:0,bend:0}]])assert.throws(()=>normalizeLfoPoints(points));
+ for(const points of [[],Array(33).fill({x:0,y:0,bend:0}),[{x:.1,y:0,bend:0},{x:1,y:0,bend:0}],[{x:0,y:0,bend:0},{x:0,y:1,bend:0},{x:1,y:0,bend:0}],[{x:0,y:-2,bend:0},{x:1,y:0,bend:0}]])assert.throws(()=>normalizeLfoPoints(points));
 });
 test('custom curve sampling keeps exact points and bounded monotone bent segments with independent wrap levels',()=>{
  for(const bend of [-1,-.5,0,.5,1]){const p=normalizeLfoPoints([{x:0,y:-1,bend},{x:.5,y:.7,bend:-bend},{x:1,y:.2,bend:0}]);assert.equal(sampleLfoPoints(p,0),-1);assert.equal(sampleLfoPoints(p,.5),p[1].y);assert.equal(sampleLfoPoints(p,1),p[2].y);let previous=-1;for(let i=0;i<=100;i++){const value=sampleLfoPoints(p,i/200);assert(value>=previous-1e-12&&value>=-1&&value<=1);previous=value;}}
@@ -48,4 +48,13 @@ test('custom curve sampling keeps exact points and bounded monotone bent segment
 
 test('Triangle editing template matches native polarity at quarter phases',()=>{
  const points=shapeForWave('triangle');for(const phase of [0,.25,.5,.75,1])assert.equal(sampleLfoPoints(points,phase),1-4*Math.abs(phase-.5));
+});
+
+test('new synced defaults preserve explicit legacy free clocks and random30point patterns persist',()=>{
+ assert.equal(defaultLfo().synced,true);for(const version of[1,2,3]){const source=defaultLfo();source.synced=false;if(version===1){delete source.points;delete source.retrigger;}assert.equal(normalizeModulation({version,sources:[source]}).sources[0].synced,false);}
+ let seed=1;const random=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296);const points=randomLfoPoints(30,random);assert.equal(points.length,30);assert.equal(points[0].y,points.at(-1).y);assert.notDeepEqual(points,randomLfoPoints(30,random));const m=normalizeModulation();m.sources[0].points=points;m.sources[0].waveform='custom';assert.deepEqual(normalizeModulation(JSON.parse(JSON.stringify(m))),m);
+});
+test('dynamic destinations key repeated blocks and LFO targets independently',()=>{
+ const m=normalizeModulation(),r=normalizeRack();r.audio.push(newSauceBlock(r,'drive'));r.audio.push(newSauceBlock(r,'drive'));m.sources.push(defaultLfo(2));const destinations=modulationDestinations([],r,m);assert(destinations.some(d=>d.label==='Drive 2 · Amount'));assert(destinations.some(d=>d.label==='LFO 2 · Rate'));
+ m.sources[0].routes=[{kind:'sauce',targetId:2,parameter:0,depth:.4},{kind:'lfo',targetId:1,parameter:0,depth:.3},{kind:'lfo',targetId:2,parameter:0,depth:-.2}];const saved=normalizeModulation(m);assert.equal(new Set(saved.sources[0].routes.map(routeTargetKey)).size,3);assert.deepEqual(toCoreModulation(saved).sources[0].routes.map(r=>r.target_kind),[1,2,2]);assert.throws(()=>normalizeModulation({...m,version:2}));
 });
