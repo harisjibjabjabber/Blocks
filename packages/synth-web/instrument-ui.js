@@ -150,6 +150,14 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   if(parameters[18]) {macros.character.push([18,'Fullness']);}
   const titles={tone:'Oscillator + filter',envelope:'Amplitude envelope',character:'Character',drop:'Sauce',lfo:'LFO'};
   const descriptions={tone:'Across: cutoff · up/down: filter mix',envelope:'Drag points or stage labels · bend curves for shape',character:'Movement follows the amplitude envelope',drop:'Per-note pitch fall · drag the curve to bend · new notes'};
+  const visualPanel=document.querySelector('#sound-editor > .visual-panel');
+  $('tone-oscillators').append($('waveforms'));
+  $('tone-shared').append($('voicing-panel'),$('scope-wrapper'));
+  function layoutTone(){
+    const tone=module==='tone';$('tone-layout').hidden=!tone;visualPanel.hidden=tone;
+    if(tone){$('tone-filter').append($('shape-surface'),$('macros'),$('module-description'));}
+    else{visualPanel.insertBefore($('shape-surface'),$('performance-panel'));visualPanel.append($('module-description'));$('sound-editor').append($('macros'));}
+  }
   function select(next) {
     cancel();rackUI.cancel();closeGlide(false);closeFilter(false); module=next;
     document.querySelector('.instrument').dataset.module=module;
@@ -173,7 +181,9 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     $('module-title').textContent=module==='envelope'?(envelopeTarget==='amp'?'Amplitude envelope':'Filter envelope'):module==='drop'?(sauceTitles[sauce]||'Sauce'):titles[module]; $('module-description').textContent=module==='drop'&&sauce==='drive'?'Mixer warmth · turn up for more edge':descriptions[module];
     const selected=module==='envelope'&&envelopeTarget==='filter'?[[24,'Filter amount'],[11,'Base cutoff'],['character','Character']]:module==='drop'?(sauce==='drive'?[[12,'Drive']]:sauce==='fullness'?[[18,'Fullness']]:sauce==='drop'?[[15,'Amount'],[16,'Fall time']]:[]):(macros[module]||[]);
     $('macros').replaceChildren(...(module==='tone'&&parameters[43]?[filterModeControl()]:[]),...(isPerformance?[]:selected.filter(([id])=>typeof id!=='number'||parameters[id]).map(([id,name])=>knob(String(id),name))));
+    $('tone-filter-mode').replaceChildren();if(module==='tone'&&parameters[43])$('tone-filter-mode').append($('macros').querySelector('.filter-mode-control'));
     filterDriveControl=null;if(module==='tone'){filterDriveControl=configDial({begin,getGesture:()=>gesture,bindCompletion,key:'sound:filterDrive',label:'Drive',min:1,max:12,defaultValue:1,getValue:()=>getSound().filterDrive,change:(filterDrive,commit)=>changeConfig(()=>applySound(normalizeSound({...getSound(),filterDrive})),commit),format:v=>Number(v.toFixed(1))+'\u00d7'});filterDriveControl.element.classList.add('sound-filter-drive');$('macros').append(filterDriveControl.element);}
+    layoutTone();
     update();
   }
   // Precision is generated from the same descriptors used by DSP and presets.
@@ -194,7 +204,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   function closeOsc(focus=false){popover.hidden=true;if(oscOpener){oscOpener.setAttribute('aria-expanded','false');if(focus)oscOpener.focus();}oscPanel=null;}
   function openOsc(kind,id,opener){
     if(gesture)return;if(!popover.hidden&&oscOpener===opener){closeOsc(true);return;}
-    closeOsc(false);oscOpener=opener;oscPanel={kind,id};opener.setAttribute('aria-expanded','true');popover.replaceChildren();popover.hidden=false;
+    closeOsc(false);oscOpener=opener;oscPanel={kind,id};opener.closest('.oscillator-panel').append(popover);opener.setAttribute('aria-expanded','true');popover.replaceChildren();popover.hidden=false;
     if(kind==='wave'){
       popover.setAttribute('aria-label','Oscillator '+(id===19?1:2)+' waveform');
       const options=document.createElement('div');options.className='wave-options';
@@ -210,7 +220,11 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     const wave=document.createElement('button');wave.type='button';wave.className='wave-select-button';wave.dataset.waveosc=id;wave.setAttribute('aria-haspopup','true');wave.setAttribute('aria-controls','wave-popover');wave.setAttribute('aria-expanded','false');
     const label=document.createElement('span');label.className='osc-label';label.textContent='Osc '+number;const name=document.createElement('span');name.className='wave-name';wave.append(label,name);wave.addEventListener('click',()=>openOsc('wave',id,wave));
     const mix=knob(String(level),'Oscillator '+number+' mix',true);
-    row.append(wave,mix);$('waveforms').append(row);
+    row.append(wave,mix);
+    const panel=document.createElement('section');panel.className='oscillator-panel';panel.dataset.oscillator=number;panel.setAttribute('aria-label','Oscillator '+number);
+    const preview=document.createElementNS(svgNS,'svg');preview.classList.add('oscillator-wave-preview');preview.dataset.oscPreview=id;preview.setAttribute('viewBox','0 0 320 112');preview.setAttribute('preserveAspectRatio','none');preview.setAttribute('role','img');
+    const caption=document.createElement('div');caption.className='oscillator-preview-caption';caption.textContent='Wave shape';
+    panel.append(row,preview,caption);$('waveforms').append(panel);
   }
   $('waveforms').append(popover);
   const svg=document.createElementNS(svgNS,'svg');svg.setAttribute('viewBox','0 0 420 210');svg.setAttribute('aria-label','Sound shape editor');
@@ -348,7 +362,9 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   const commonControls={parameters,getDestinations:()=>modulationDestinations(parameters,rack(),modulation()),begin,getGesture:()=>gesture,bindCompletion,getPhase:id=>modulationPhases.get(id)??null,getTempo:()=>performance().bpm,changeTempo:delta=>changePerformance({bpm:performance().bpm+delta})};
   const outputUI=createOutputUI({...commonControls,container:$('sauce-output'),getKeyboardVisible:()=>sauceKeyboard,onKeyboardToggle:()=>{sauceKeyboard=!sauceKeyboard;document.querySelector('.instrument').dataset.sauceKeyboard=String(sauceKeyboard);outputUI.update();},getWidth:getStereoWidth,changeWidth:(value,commit)=>changeConfig(()=>applyStereoWidth(value),commit),getDelay,changeDelay:(patch,commit)=>changeConfig(()=>applyDelay(normalizeDelay({...getDelay(),...patch})),commit)});
   const voicingUI=createVoicingUI({...commonControls,container:$('voicing-panel'),getVoicing,changeVoicing:(patch,commit)=>changeConfig(()=>applyVoicing(normalizeVoicing({...getVoicing(),...patch})),commit)});
-  const sourceCaption=$('voicing-panel').querySelector('.voicing-caption');sourceCaption.firstElementChild.remove();const sourceUI=createSourceUI({container:sourceCaption,getSound,getGesture:()=>gesture,changeSound:(patch,commit)=>changeConfig(()=>applySound(normalizeSound({...getSound(),...patch})),commit)});
+  const sourceUI=createSourceUI({container:$('tone-source'),getSound,getGesture:()=>gesture,changeSound:(patch,commit)=>changeConfig(()=>applySound(normalizeSound({...getSound(),...patch})),commit)});
+  $('voicing-panel').querySelector('.voicing-caption').firstElementChild.textContent='Shared unison';
+  $('scope-wrapper').querySelector('.waveform-caption').firstElementChild.textContent='Combined output';
   const rackUI=createSauceRack({container:$('sauce-rack'),canDrag:()=>!gesture,
     createEditor:(item,body,extra)=>createRackEditor({...commonControls,item,body,extra,getNode:()=>getNode(item.key),changeNode:(patch,commit)=>changeNode(item.key,patch,commit)}),
     onToggle:key=>changeNode(key,{enabled:!getNode(key).enabled}),
@@ -368,6 +384,12 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     outputUI.update();voicingUI.update();sourceUI.update();const ladder=getSound().filterModel==='ladder';document.querySelector('.instrument').dataset.filterModel=module==='tone'&&ladder?'ladder':'existing';if(filterDriveControl){filterDriveControl.element.hidden=!ladder;filterDriveControl.update();}
     for(const p of parameters){const input=document.querySelector(`[data-param="${p.id}"]`);input.value=p.mapping===2?getValues()[p.id]:Math.round((timingIds.includes(p.id)?timeUnit: norm)(p.id)*1000);input.setAttribute('aria-valuetext',format(p.id));document.querySelector(`[data-value="${p.id}"]`).textContent=format(p.id);}
     for(const chooser of document.querySelectorAll('[data-waveosc]')){const id=Number(chooser.dataset.waveosc),number=id===19?1:2;chooser.querySelector('.wave-name').textContent=format(id);chooser.setAttribute('aria-label','Oscillator '+number+' waveform '+format(id));}
+    for(const preview of document.querySelectorAll('[data-osc-preview]')){
+      const id=Number(preview.dataset.oscPreview),wave=Math.round(getValues()[id]),duty=getValues()[3],shape=t=>wave===0?Math.sin(t*Math.PI*2):wave===1?4*Math.abs(t-.5)-1:wave===2?2*t-1:t<(wave===4?.5:duty)?1:-1;
+      preview.setAttribute('aria-label','Oscillator '+(id===19?1:2)+' '+format(id)+' wave shape, illustrative');
+      const grid=document.createElementNS(svgNS,'path');grid.setAttribute('d','M8 56H312 M160 10V102');grid.setAttribute('class','oscillator-wave-grid');
+      const path=document.createElementNS(svgNS,'path');path.setAttribute('d',Array.from({length:257},(_,i)=>(i?'L':'M')+(8+i/256*304).toFixed(2)+' '+(56-shape(i/256)*38).toFixed(2)).join(' '));path.setAttribute('class','oscillator-wave-line');preview.replaceChildren(grid,path);
+    }
 
     $('volume-range').value=Math.round(getValues()[0]*100);$('volume-value').textContent=Math.round(getValues()[0]*100)+'%';$('volume-toggle').setAttribute('aria-label','Volume '+Math.round(getValues()[0]*100)+'%');
     for(const dial of document.querySelectorAll('[data-knob]')){const id=dial.dataset.knob,n=knobN(id),text=id==='character'?(characterCustom()?'Custom · ':'')+Math.round(n*100)+'%':id==='motion'?(motionCustom()?'Custom. ':'')+'Drift up to '+format(13)+', attack settling up to '+format(32):format(Number(id));dial.style.setProperty('--rotation',(-135+n*270)+'deg');dial.setAttribute('aria-valuenow',String(Math.round(n*100)));dial.setAttribute('aria-valuetext',text);const output=document.querySelector(`[data-knob-value="${id}"]`);if(id==='motion'){output.classList.add('motion-value');const drift=document.createElement('span'),hit=document.createElement('span');drift.textContent='≤ '+format(13);hit.textContent='Hit '+format(32);output.replaceChildren(drift,hit);dial.closest('.macro').querySelector('.macro-name').textContent=motionCustom()?'Pitch · Custom':'Pitch';}else output.textContent=text;}

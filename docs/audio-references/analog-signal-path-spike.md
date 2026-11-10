@@ -1,5 +1,7 @@
 # Analog signal-path phase — oscillator, filter and harmonic colour
 
+Superseded for the Ladder implementation by the [warm-filter correction](warm-filter-performance.md). The data below records the original distributed-stage phase; current Ladder topology, gain and integrated timing are documented separately. Studio source and Harmonics conclusions remain applicable.
+
 10 November 2026. Sound quality and desktop/VST portability now take priority over phone optimization. This phase integrates the previously isolated source research, an original nonlinear ladder and a separate Harmonics insert. No proprietary circuit/plugin reconstruction or subjective equivalence is claimed.
 
 ## Why these stages belong together

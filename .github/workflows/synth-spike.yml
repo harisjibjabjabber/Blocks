@@ -54,6 +54,7 @@ jobs:
           node scripts/test-synth-core.mjs
           node scripts/compare-synth-renders.mjs "$RUNNER_TEMP/synth-evidence/native.wav" "$RUNNER_TEMP/synth-evidence/wasm.wav"
           node scripts/build-synth.mjs
+          SYNTH_SOURCE_AUDIT="$RUNNER_TEMP/synth-evidence/source-switch-audit.json" node scripts/probe-source-switch.mjs
           node scripts/compare-rack-audio.mjs --before=.comparison-baseline/packages/synth-core --backend=wasm --out="$RUNNER_TEMP/rack-wasm"
       - name: Reproducible audio auditions and core timing
         env:
@@ -78,6 +79,7 @@ jobs:
           node scripts/synth-standalone-proof.mjs
           node scripts/synth-gesture-proof.mjs
           node scripts/synth-sound-proof.mjs
+          node scripts/synth-tone-layout-proof.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

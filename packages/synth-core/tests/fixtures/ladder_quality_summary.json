@@ -384,5 +384,6 @@
     "tests\\ladder_alias_probe.cpp": "ee57db03c1f53c75a79581cc858b7e2c8ee9a022d1456cc04b452ad8136530ff",
     "tests\\ladder_polyphase_tests.cpp": "26a857c9b144e83bdc3d74e551e8e3e0e296b56eb47053a09f387fd0a5326899",
     "tests\\quality_integration_tests.cpp": "eae467155af9ce157e38086637f230284fcbf31f43b1de6c8139e476d76c216b"
-  }
+  },
+  "status": "Historical distributed-nonlinearity Ladder evidence. Replaced by scalar-feedback production; current evidence in warm_filter_summary.json. Historical source hashes/alias measurements intentionally retained."
 }

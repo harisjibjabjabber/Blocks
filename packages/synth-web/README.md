@@ -1,5 +1,7 @@
 # Standalone browser instrument
 
+Current correction: [warm filter and Tone layout](../../docs/audio-references/warm-filter-performance.md). Ladder now uses scalar nonlinear feedback and raw Drive gain with the same8x reconstruction. Earlier distributed-model/timing descriptions below are historical. Tone separates Osc1/Osc2/filter cards and keeps Quality global.
+
 This independent instrument loads the portable C++ core as raw WebAssembly in an AudioWorklet, with no Blocks application code or UI framework. Phase7 adds Studio generation, an8x nonlinear Ladder LP24 and repeatable Harmonics inserts alongside the existing Tone, curved envelopes, Character, drawable LFOs, Unison1–7, Width and tempo Delay. Desktop sound quality now takes priority. It remains a prototype, not a shipped VST or a replacement for Blocks production audio.
 
 New Init selects Studio; named factories and imported files without explicit sound state retain Legacy. In Tone, the source chooser is beside Voicing; Ladder is in the existing filter Mode selector and reveals its Drive. Add Harmonics from Sauce: Soft/Asymmetric, Drive/Tone/Mix, with Dynamics and Output in Details. Dynamics reduces saturation on attacks. Mix0 retains matched filtering; power is true bypass. The [phase research/contract](../../docs/audio-references/analog-signal-path-spike.md) records measurements, processing latency and remaining listening/performance limitations.

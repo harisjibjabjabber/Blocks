@@ -4,18 +4,22 @@
 #include <algorithm>
 #include <cmath>
 namespace blocks_detail {
-// Original implementation: four nonlinear trapezoidal stages in an implicit
-// feedback loop. Each stage obeys y=s+g*(tanh(previous)-tanh(y)). Newton's
-// Jacobian is bidiagonal with one feedback corner; affine elimination solves
-// all four simultaneous updates without a delayed feedback sample.
+// Original implementation of a single nonlinear feedback element followed by
+// four linear trapezoidal one-pole stages. The scalar implicit feedback solve
+// follows the topology discussed by Zavalishin, The Art of VA Filter Design
+// v1.1.1 section4.6; no implementation code is copied. This simplified model
+// intentionally differs from a ladder with a nonlinearity in every stage.
 struct LadderCoefficients {
  double g=0,feedback=0,gain=1,cutoff=-1,rate=-1,resonance=-1;
+ double G=0,G4=0,K=0;
+ // Also used by the isolated1x reference when it overrides the internal g.
+ void refreshLinear(){G=g/(1+g);const double G2=G*G;G4=G2*G2;K=feedback*G4;}
  void set(double hz,double res,double sampleRate){
   hz=std::clamp(hz,20.,sampleRate*.45);res=std::clamp(res,0.,1.);
   if(hz==cutoff&&res==resonance&&sampleRate==rate)return;
   cutoff=hz;resonance=res;rate=sampleRate;
   g=std::tan(3.14159265358979323846*hz/(8*sampleRate));
-  feedback=3.8*res;gain=1+feedback;
+  feedback=3.8*res;gain=1+feedback;refreshLinear();
  }
 };
 struct LadderFilter {
@@ -50,45 +54,57 @@ struct LadderFilter {
  }
  double decimate(std::array<double,filterTaps>&history,unsigned&position,double x,bool evaluate){
   history[position]=x;double sum=0;
-  if(evaluate){unsigned j=position;const auto&h=taps();for(unsigned i=0;i<filterTaps;++i){sum+=h[i]*history[j];j=j?j-1:filterTaps-1;}}
+  if(evaluate){
+   const auto&h=taps();unsigned i=0;
+   // Two contiguous reverse spans preserve the original multiply/add order,
+   // with no per-tap ring-wrap branch inside either sum.
+   for(unsigned j=position+1;j>0;){sum+=h[i++]*history[--j];}
+   for(unsigned j=filterTaps;i<filterTaps;){sum+=h[i++]*history[--j];}
+  }
   position=position+1==filterTaps?0:position+1;return sum;
  }
+ template<bool measureResidual=false>
  double step(double input,const LadderCoefficients&c){
-  auto y=previous;
-  for(unsigned iteration=0;iteration<8;++iteration){
-   std::array<double,4>a{},b{};double p=input-c.feedback*y[3];auto prior=shape(p);
-   for(unsigned i=0;i<4;++i){const auto current=shape(y[i]);const double t=current.value,tp=prior.value,d=current.derivative,dp=prior.derivative;
-    const double denominator=1+c.g*d;
-    a[i]=(state[i]+c.g*(tp-dp*p-t+d*y[i]))/denominator;
-    b[i]=c.g*dp/denominator;p=y[i];prior=current;
-   }
-   double sum=a[3],product=b[3];for(int i=2;i>=0;--i){sum+=product*a[unsigned(i)];product*=b[unsigned(i)];}
-   double pnew=(input-c.feedback*sum)/(1+c.feedback*product);
-   std::array<double,4>next{};double delta=0;
-   for(unsigned i=0;i<4;++i){next[i]=a[i]+b[i]*pnew;delta=std::max(delta,std::abs(next[i]-y[i]));pnew=next[i];}
-   // A bounded update prevents Newton overshoot under large input/fast sweeps.
-   const double scale=delta>1?1/delta:1;
-   for(unsigned i=0;i<4;++i)y[i]+=(next[i]-y[i])*scale;
-   if(delta<1e-11)break;
-  }
-  double prior=shape(input-c.feedback*y[3]).value;
-  for(unsigned i=0;i<4;++i){const double current=shape(y[i]).value;worstResidual=std::max(worstResidual,std::abs(y[i]-state[i]-c.g*(prior-current)));prior=current;state[i]=2*y[i]-state[i];if(std::abs(state[i])<1e-20)state[i]=0;}
-  previous=y;return y[3];
+  const double G=c.G;
+  const double S=(1-G)*(state[3]+G*(state[2]+G*(state[1]+G*state[0])));
+  const double rhs=input-c.feedback*S,K=c.K;
+  // u + K*tanh(u) = rhs has derivative 1+K*tanh'(u) >= 1.
+  // At the supported8x rate/clamped cutoff, K<.0021. Starting at rhs
+  // is already within K of the unique root; four iterations bound work.
+  double u=rhs;
+  for(unsigned iteration=0;iteration<4;++iteration){const auto shaped=shape(u);const double residual=u+K*shaped.value-rhs,delta=residual/(1+K*shaped.derivative);u-=delta;if(std::abs(delta)<1e-13)break;}
+  double stage=shape(u).value;
+  if constexpr(measureResidual)worstResidual=std::max(worstResidual,std::abs(u+K*stage-rhs));
+  for(unsigned i=0;i<4;++i){const double y=G*stage+(1-G)*state[i];state[i]=2*y-state[i];if(std::abs(state[i])<1e-20)state[i]=0;previous[i]=y;stage=y;}
+  return stage;
  }
- double process(double input,const LadderCoefficients&c,double drive,double mix){
+ template<bool measureResidual=false>
+ double process(double input,const LadderCoefficients&c,double drive,double mix,double wetMakeup=1){return processImpl<measureResidual,false>(input,c,drive,mix,wetMakeup);}
+ template<bool measureResidual=false>
+ double processRaw(double input,const LadderCoefficients&c,double drive,double mix){return processImpl<measureResidual,true>(input,c,drive,mix,1);}
+ private:
+ template<bool measureResidual,bool rawWet>
+ double processImpl(double input,const LadderCoefficients&c,double drive,double mix,double wetMakeup){
   // Genuine8x interpolation/nonlinear solve/decimation. The dry reference
   // shares both FIRs, so Mix changes have matched phase and linear response.
   // Mix0 is filtered dry, not an exact undelayed bypass. Model0 stays legacy.
+  // Production always calls processRaw. Keep that FIR
+  // history in raw units, avoiding eight divisions and a final multiply.
+  // Callers must keep their normalization policy consistent per instance:
+  // with live Drive, normalizing before the FIR then applying current Drive
+  // afterwards is not identical to raw history (past gains differ).
   up[upPosition]=input;double wet=0,aligned=0;
   for(unsigned phase=0;phase<oversampling;++phase){const double x=interpolate(phase);
-   const double y=step(x*drive*c.gain,c)/drive;
+   double y=step<measureResidual>(x*drive*c.gain,c);if constexpr(!rawWet)y/=drive;
    const double w=decimate(down,downPosition,y,phase==0);
    const double d=decimate(dryDown,dryDownPosition,x,phase==0&&mix!=1);
    if(phase==0){wet=w;aligned=d;}
   }
   upPosition=(upPosition+1)&15u;
+  if(!rawWet&&wetMakeup!=1)wet*=wetMakeup;
   return mix==1?wet:aligned+(wet-aligned)*mix;
  }
+ public:
  void clear(){*this=LadderFilter{};}
 };
 }

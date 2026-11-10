@@ -110,6 +110,7 @@ struct FilterEnvelope {
 };
 struct DropRecipe {double amount=0,time=.12,bend=0;bool primary=false;};
 struct Voice {
+ bool ladderWarm=false;
  blocks_detail::LadderFilter ladder,rightLadder;
  blocks_detail::LadderCoefficients ladderCoefficients;
  unsigned unisonCount=1;std::array<double,BS_MAX_UNISON>unisonPhase1{},unisonPhase2{};
@@ -301,7 +302,7 @@ struct bs_synth {
   if(ladderBlend>0)ladderCoefficients.set(cutoff,effective[BS_FILTER_RESONANCE],rate);
   const double driftSpeed=effective[BS_DRIFT_HZ],motionPhase=driftPhase;driftPhase+=driftSpeed*dt;
   const double fullness=effective[BS_FULLNESS],bodyAlpha=1-std::exp(-2*pi*180*dt);
-  const double level1=effective[BS_OSC1_LEVEL],level2=effective[BS_OSC2_LEVEL],w=effective[BS_PULSE_WIDTH];
+  const double level1=effective[BS_OSC1_LEVEL],level2=effective[BS_OSC2_LEVEL],w=effective[BS_PULSE_WIDTH],oscillator2Ratio=std::exp2(effective[BS_OSC2_DETUNE]/1200);
   double l=0,r=0;
   for(unsigned voiceIndex=0;voiceIndex<2*BS_MAX_VOICES;++voiceIndex) {
    auto &v=voiceIndex<BS_MAX_VOICES?voices[voiceIndex]:tails[voiceIndex-BS_MAX_VOICES];if(!v.active)continue;
@@ -317,16 +318,15 @@ struct bs_synth {
    v.lastFrequency=frequency;
    double raw=0,rawRight=0;
    if(v.unisonCount==1){
-    const double step1=clamp(frequency*dt,1e-9,.45),step2=clamp(frequency*std::exp2(effective[BS_OSC2_DETUNE]/1200)*dt,1e-9,.45);
+    const double step1=clamp(frequency*dt,1e-9,.45),step2=clamp(frequency*oscillator2Ratio*dt,1e-9,.45);
     const double saw1=saw(v.phase1,step1),pulse2=pulse(v.phase2,step2,effective[BS_PULSE_WIDTH]);
     if(sourceBlend==0)raw=legacyWaves?level1*saw1+level2*pulse2:level1*oscillator(waveWeights[0],v.phase1,step1,w)+level2*oscillator(waveWeights[1],v.phase2,step2,w);
-    if(sourceBlend>0)raw=level1*source(waveWeights[0],v.phase1,step1,w)+level2*source(waveWeights[1],v.phase2,step2,w);
+    if(sourceBlend>0)raw=(level1==0?0:level1*source(waveWeights[0],v.phase1,step1,w))+(level2==0?0:level2*source(waveWeights[1],v.phase2,step2,w));
     v.phase1+=step1;v.phase1-=std::floor(v.phase1);v.phase2+=step2;v.phase2-=std::floor(v.phase2);
    }else{
-    const double oscillator2Ratio=std::exp2(effective[BS_OSC2_DETUNE]/1200);
     for(unsigned copy=0;copy<v.unisonCount;++copy){const auto&u=unison.copies[v.unisonCount][copy];auto&p1=v.unisonPhase1[copy];auto&p2=v.unisonPhase2[copy];const double step1=clamp(frequency*u.ratio*dt,1e-9,.45),step2=clamp(frequency*u.ratio*oscillator2Ratio*dt,1e-9,.45);
      double value=0;if(sourceBlend==0)value=legacyWaves?level1*saw(p1,step1)+level2*pulse(p2,step2,w):level1*oscillator(waveWeights[0],p1,step1,w)+level2*oscillator(waveWeights[1],p2,step2,w);
-     if(sourceBlend>0)value=level1*source(waveWeights[0],p1,step1,w)+level2*source(waveWeights[1],p2,step2,w);
+     if(sourceBlend>0)value=(level1==0?0:level1*source(waveWeights[0],p1,step1,w))+(level2==0?0:level2*source(waveWeights[1],p2,step2,w));
      raw+=value*u.left;rawRight+=value*u.right;p1+=step1;p1-=std::floor(p1);p2+=step2;p2-=std::floor(p2);
     }
    }
@@ -344,14 +344,14 @@ struct bs_synth {
    double amplitude=envelope(v,dt)*v.velocity;
    if(voiceIndex>=BS_MAX_VOICES) {amplitude*=double(v.tailRemaining)/std::ceil(.003*rate);if(--v.tailRemaining==0)v.active=false;}
    double filtered=effective[BS_FILTER_MIX]==1?tone:enriched+(tone-enriched)*effective[BS_FILTER_MIX];
-   if(ladderBlend>0){const auto*c=&ladderCoefficients;if(effective[BS_FILTER_AMOUNT]!=0){v.ladderCoefficients.set(clamp(effective[BS_CUTOFF]*std::exp2(effective[BS_FILTER_AMOUNT]*filterEnv/12),20,rate*.45),effective[BS_FILTER_RESONANCE],rate);c=&v.ladderCoefficients;}const double lp=v.ladder.process(enriched,*c,ladderDrive,effective[BS_FILTER_MIX]);filtered=ladderBlend==1?lp:filtered+(lp-filtered)*ladderBlend;}else v.ladder.clear();
+   if(ladderBlend>0){v.ladderWarm=true;const auto*c=&ladderCoefficients;if(effective[BS_FILTER_AMOUNT]!=0){v.ladderCoefficients.set(clamp(effective[BS_CUTOFF]*std::exp2(effective[BS_FILTER_AMOUNT]*filterEnv/12),20,rate*.45),effective[BS_FILTER_RESONANCE],rate);c=&v.ladderCoefficients;}const double lp=v.ladder.processRaw(enriched,*c,ladderDrive,effective[BS_FILTER_MIX]);filtered=ladderBlend==1?lp:filtered+(lp-filtered)*ladderBlend;}else if(v.ladderWarm){v.ladder.clear();v.rightLadder.clear();v.ladderWarm=false;}
    double rightFiltered=0;
    if(v.unisonCount>1){
     v.rightFilter+=voiceAlpha*(rawRight-v.rightFilter);if(std::abs(v.rightFilter)<1e-20)v.rightFilter=0;
     double rightTone=v.rightFilter;
     if(resonantActive){const auto*coefficients=effective[BS_FILTER_AMOUNT]!=0?&v.resonant.coefficients:&resonantCoefficients;const double lp=v.rightResonant.process(rawRight,*coefficients);rightTone=filterBlend==1?lp:v.rightFilter+(lp-v.rightFilter)*filterBlend;}else v.rightResonant.clear();
     rightFiltered=effective[BS_FILTER_MIX]==1?rightTone:rawRight+(rightTone-rawRight)*effective[BS_FILTER_MIX];
-    if(ladderBlend>0){const auto*c=effective[BS_FILTER_AMOUNT]!=0?&v.ladderCoefficients:&ladderCoefficients;const double lp=v.rightLadder.process(rawRight,*c,ladderDrive,effective[BS_FILTER_MIX]);rightFiltered=ladderBlend==1?lp:rightFiltered+(lp-rightFiltered)*ladderBlend;}else v.rightLadder.clear();
+    if(ladderBlend>0){const auto*c=effective[BS_FILTER_AMOUNT]!=0?&v.ladderCoefficients:&ladderCoefficients;const double lp=v.rightLadder.processRaw(rawRight,*c,ladderDrive,effective[BS_FILTER_MIX]);rightFiltered=ladderBlend==1?lp:rightFiltered+(lp-rightFiltered)*ladderBlend;}
    }
    const double linkedMagnitude=v.unisonCount>1?std::sqrt(.5*(filtered*filtered+rightFiltered*rightFiltered)):std::abs(filtered);
    const double dry=v.sauce.process(filtered,effective[BS_DRIVE],fullness,effective[BS_DRIVE_ENABLED],effective[BS_FULLNESS_ENABLED],dcPole,bodyAlpha,effective[BS_SAUCE_ORDER],sauceModulationPtr,linkedMagnitude);

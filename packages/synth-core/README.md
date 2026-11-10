@@ -1,5 +1,7 @@
 # Portable synth core - engineering spike
 
+Current correction: [warm filter and Tone layout](../../docs/audio-references/warm-filter-performance.md). Ladder now uses scalar nonlinear feedback and raw Drive gain with the same8x reconstruction. Earlier distributed-model/timing descriptions below are historical. Tone separates Osc1/Osc2/filter cards and keeps Quality global.
+
 Original C++17 DSP, independent of Blocks, UI frameworks, Web Audio and plugin SDKs. A C ABI is the host boundary: native hosts link the static library; the browser host compiles the same source to WebAssembly. This is not a finished VST plugin or an analogue circuit emulation.
 
 Implemented: 16-note polyphony, independent Mono with connected-note Glide, sample-clock Curl arp and one-shot Strum, cascaded note nodes and typed free-running LFOs; per-oscillator sine/triangle/saw/pulse/square selection and independent levels; detune and pulse width; curved amplitude and filter ADSRs; legacy one-pole, resonant LP12 and nonlinear8x Ladder LP24 with matched dry/wet; continuous keyed pitch drift and per-attack settling; soft drive; per-note Pitch Drop; bounded Fullness harmonic enrichment;1–7-copy Unison with C phase policy; Studio bandlimited Fourier sources; original Soft/Asymmetric Harmonics inserts; Width and tempo Delay. User-loaded wavetables, sampler, EQ, reverb and an automation editor remain future work.

@@ -20,7 +20,7 @@
         <div id="volume-panel" role="group" aria-label="Output volume" hidden><div class="volume-caption"><label for="volume-range">Output volume</label><output id="volume-value" for="volume-range">—</output></div><input id="volume-range" type="range" min="0" max="100" step="1" value="30" aria-label="Output volume"><div class="peak-row"><span id="peak-readout">Peak —</span><button id="peak-reset" type="button" aria-label="Clear peak indicator">Clear peak</button></div></div>
       </div>
     </header>
-    <section class="patch-heading" aria-label="Instrument patch">
+    <div class="patch-toolbar"><section class="patch-heading" aria-label="Instrument patch">
       <span class="eyebrow">SYNTH</span>
       <h1><label class="sr-only" for="presets">Preset</label><select id="presets" aria-label="Preset"><option value="velvet">Velvet Current</option><option value="glass">Glass Garden</option><option value="low">Low Tide</option></select></h1>
     </section>
@@ -28,6 +28,7 @@
       <button id="start" class="primary">Start sound</button>
       <button id="stop" disabled>Stop</button>
       <button id="midi" disabled>Connect MIDI</button>
+    </div>
     </div>
     <div class="signal-row"><span id="status" role="status">Sound stopped</span><span id="monitor">0 voices</span></div>
     <nav id="module-tabs" aria-label="Sound module">
@@ -40,6 +41,11 @@
     <div id="sauce-rack" hidden></div>
     <section id="sauce-output" hidden aria-label="Sauce output effects"></section>
     <section id="sound-editor" class="sound-editor" aria-label="Sound editing">
+      <div id="tone-layout" hidden>
+        <div class="tone-source-bar"><div id="tone-source"></div><span>Shared by both oscillators</span></div>
+        <div class="tone-cards"><div id="tone-oscillators"></div><section id="tone-filter" class="tone-filter-panel" aria-label="Shared filter"><div class="tone-filter-heading"><h2>Filter</h2><div id="tone-filter-mode"></div></div></section></div>
+        <div id="tone-shared" class="tone-shared"></div>
+      </div>
       <div class="visual-panel">
         <div class="surface-heading"><div id="envelope-tabs" role="group" aria-label="Envelope destination" hidden><button type="button" data-envelope="amp" aria-pressed="true">Amp</button><button type="button" data-envelope="filter" aria-pressed="false">Filter</button></div><button id="motion-details-toggle" type="button" aria-expanded="false" aria-controls="motion-details" hidden>Pitch details <span aria-hidden="true">⌄</span></button><h2 id="module-title">Oscillator + filter</h2><output id="value-summary" aria-live="off"></output></div>
         <div id="waveforms" aria-label="Oscillator waveforms" hidden></div>

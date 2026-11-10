@@ -7,6 +7,6 @@ export function createSourceUI({container,getSound,changeSound,getGesture}){
  for(const option of panel.children)option.addEventListener('click',()=>{if(getGesture())return;changeSound({oscillator:option.dataset.sourceProfile},true);close();button.focus();},{signal:life.signal});
  document.addEventListener('pointerdown',e=>{if(!wrap.contains(e.target))close();},{signal:life.signal});
  panel.addEventListener('keydown',e=>{if(e.key==='Escape'){close();button.focus();e.preventDefault();e.stopPropagation();}},{signal:life.signal});
- function update(){const s=getSound();button.textContent='Source \u00b7 '+(s.oscillator==='studio'?'Studio':'Legacy')+' \u2304';button.setAttribute('aria-label','Oscillator source profile, '+s.oscillator);for(const option of panel.children)option.setAttribute('aria-pressed',String(option.dataset.sourceProfile===s.oscillator));}
+ function update(){const s=getSound();button.textContent='Quality \u00b7 '+(s.oscillator==='studio'?'Studio':'Legacy')+' \u2304';button.setAttribute('aria-label','Oscillator source quality, '+s.oscillator);button.title='Shared oscillator quality. Studio reduces aliasing; the selected waveform stays the same.';for(const option of panel.children)option.setAttribute('aria-pressed',String(option.dataset.sourceProfile===s.oscillator));}
  return{update,close,destroy:()=>life.abort()};
 }

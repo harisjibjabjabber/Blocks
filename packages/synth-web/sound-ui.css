@@ -1,2 +1,84 @@
 .source-profile-control{position:relative;min-width:0}.source-profile-control>button{min-height:44px;padding:0 8px;font-size:10px;background:transparent;white-space:nowrap}.source-profile-options{position:absolute;top:48px;left:0;width:180px;padding:6px;z-index:40;background:#151a1f;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px #0007;display:grid;gap:4px}.source-profile-options[hidden]{display:none}.source-profile-options>button{min-height:44px;justify-content:flex-start;font-size:11px;background:transparent}.source-profile-options>button[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}.instrument[data-filter-model=ladder] #macros{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.sound-filter-drive{display:flex;flex-direction:column;align-items:center;min-width:0}.sound-filter-drive .config-control{min-width:0}.instrument[data-filter-model=ladder] #macros .macro{min-width:0}.instrument[data-filter-model=ladder] #macros .macro-name{font-size:9px}.instrument[data-filter-model=ladder] #macros .macro-value{font-size:9px}.harmonics-model{width:100%;min-height:44px;padding:0 10px;font-size:11px;background:transparent}.rack-card[data-rack-type=harmonics]{width:276px}.rack-card[data-rack-type=harmonics] .rack-card-controls{flex-wrap:wrap;gap:8px;padding-inline:8px}.harmonics-main-dials{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}.harmonics-main-dials>.config-control{min-width:0}.harmonics-model-options{display:grid;grid-template-columns:1fr 1fr;gap:4px;width:100%}.harmonics-model-options[hidden]{display:none}.harmonics-model-options button{min-height:44px;font-size:11px;background:transparent}.harmonics-model-options button[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}@media(max-width:699px){.rack-card[data-rack-type=harmonics]{width:100%}.instrument[data-filter-model=ladder] #macros .dial{width:44px;height:44px;min-width:44px;min-height:44px}.instrument[data-filter-model=ladder] #macros .filter-mode-control>button{min-width:44px;width:44px;padding:0 2px;font-size:10px}}
 .sound-filter-drive[hidden]{display:none}
+
+/* Tone has its own balanced card grid; it must never inherit the old macro rail. */
+.patch-toolbar{display:contents}
+.instrument[data-module=tone]{max-width:1440px}
+#tone-layout[hidden],.visual-panel[hidden]{display:none!important}
+.instrument[data-module=tone] #sound-editor{display:block;padding:0;min-width:0}
+.tone-source-bar{display:flex;align-items:center;gap:12px;min-height:48px;margin-bottom:12px;color:var(--muted);font-size:10px}
+.tone-source-bar .source-profile-control>button{font-size:11px;border-color:var(--line);padding-inline:12px}
+.tone-cards{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:stretch}
+#tone-oscillators{min-width:0}
+#tone-oscillators #waveforms{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin:0;min-width:0}
+.oscillator-panel,.tone-filter-panel{position:relative;min-width:0;border:1px solid var(--line);border-radius:12px;background:linear-gradient(150deg,#181d22,#11161b);padding:12px}
+.oscillator-panel .oscillator-row{grid-template-columns:minmax(0,1fr)44px;gap:12px;height:44px}
+.oscillator-panel .wave-select-button{border:0;border-radius:6px;padding:0 8px 0 0;background:transparent;min-width:0}
+.oscillator-panel .osc-label{font-size:10px;letter-spacing:.08em}
+.oscillator-panel .wave-name{font-size:15px}
+.oscillator-wave-preview{display:block;width:100%;height:80px;margin-top:12px;overflow:hidden}
+.oscillator-wave-grid{stroke:var(--line);stroke-width:1;fill:none;vector-effect:non-scaling-stroke}
+.oscillator-wave-line{stroke:var(--ivory);stroke-width:1.5;fill:none;vector-effect:non-scaling-stroke}
+.oscillator-panel[data-oscillator="2"] .oscillator-wave-line{stroke:var(--accent)}
+.oscillator-preview-caption{font-size:9px;color:var(--muted);padding-top:6px;letter-spacing:.03em}
+.oscillator-panel .osc-popover{top:62px;left:8px;right:8px;width:auto;z-index:45}
+.oscillator-panel .wave-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+.oscillator-panel .wave-options button{padding-inline:3px;font-size:11px}
+.tone-filter-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.tone-filter-heading h2{font-family:"Instrument Serif",Georgia,serif;font-size:22px;font-weight:400;margin:0}
+#tone-filter-mode .filter-mode-control{display:flex;flex-direction:row;align-items:center;gap:8px;max-width:none;position:relative;flex:none}
+#tone-filter-mode .filter-mode-control>button{min-height:44px;width:auto;min-width:76px;height:44px;padding:0 12px;border-radius:7px;font-size:12px;background:transparent}
+#tone-filter-mode .macro-name{display:none}
+#tone-filter-mode .macro-value{font-size:9px;white-space:nowrap}
+#tone-filter-mode #filter-mode-options{position:absolute;top:49px;bottom:auto;left:auto;right:0;width:224px;max-width:calc(100vw - 56px);z-index:45}
+.instrument[data-module=tone] #shape-surface{height:132px;min-height:0;margin:4px 0 14px;width:100%}
+.instrument[data-module=tone] #shape-surface>svg{height:100%;width:100%}
+.instrument[data-module=tone] #macros,.instrument[data-module=tone][data-filter-model=ladder] #macros{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 4px;margin:0;padding:10px 0 0;border:0;min-height:0;align-items:start}
+.instrument[data-module=tone][data-filter-model=ladder] #macros{grid-template-columns:repeat(4,minmax(0,1fr))}
+.instrument[data-module=tone] #macros>.macro,.instrument[data-module=tone] #macros>.config-control{grid-column:auto;min-width:0;max-width:none;width:auto;justify-self:stretch}
+.instrument[data-module=tone] #macros .macro-name,.instrument[data-module=tone] #macros .macro-value,.instrument[data-module=tone] #macros .config-dial-label,.instrument[data-module=tone] #macros .config-dial-value{font-size:10px;line-height:1.4;white-space:nowrap}
+.instrument[data-module=tone] #macros .dial{width:48px;height:48px;min-width:48px;min-height:48px}
+.instrument[data-module=tone] #macros .dial-face{width:44px;height:44px}
+.instrument[data-module=tone] #module-description{margin:14px 0 0;font-size:10px;line-height:1.5;min-height:0}
+.tone-shared{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:12px}
+.tone-shared #voicing-panel{margin:0;padding:12px;border:1px solid var(--line);border-radius:12px;background:#11161b;min-width:0}
+.tone-shared #scope-wrapper{height:100px;margin:0;padding:12px;border:1px solid var(--line);border-radius:12px;background:#11161b;min-width:0;align-self:stretch}
+.tone-shared #scope{height:58px;width:100%}
+.tone-shared .waveform-caption{margin-bottom:8px}
+@media(min-width:600px){
+ #tone-oscillators #waveforms{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .tone-shared{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .tone-shared #scope-wrapper{height:auto;min-height:122px}
+ .tone-shared #scope{height:76px}
+ .oscillator-wave-preview{height:124px}
+ .instrument[data-module=tone] #shape-surface{height:166px}
+}
+@media(min-width:1180px){
+ body:has(.instrument[data-module=tone]){padding:16px}
+ .instrument[data-module=tone]{padding:18px 24px 0}
+ .instrument[data-module=tone] .patch-toolbar{display:flex;align-items:center;justify-content:space-between;gap:32px;margin:12px 0 8px}
+ .instrument[data-module=tone] .patch-heading{margin:0;flex:1;min-width:0}
+ .instrument[data-module=tone] .patch-heading .eyebrow{display:none}
+ .instrument[data-module=tone] #presets{height:48px;font-size:38px;max-width:none}
+ .instrument[data-module=tone] .audio-controls{flex:1;min-width:340px}
+ .instrument[data-module=tone] #module-tabs{margin-bottom:8px}
+ .tone-source-bar{margin-bottom:4px;min-height:44px}
+ .tone-cards{grid-template-columns:minmax(0,1.4fr) minmax(360px,1fr);gap:16px}
+ #tone-oscillators #waveforms{height:100%;gap:16px}
+ .oscillator-panel{display:flex;flex-direction:column}
+ .oscillator-wave-preview{height:170px;flex:1;min-height:120px;max-height:240px;margin-top:24px}
+ .oscillator-preview-caption{margin-top:auto}
+ .instrument[data-module=tone] #shape-surface{height:112px}
+ .instrument[data-module=tone] #module-description{margin-top:8px}
+ .tone-shared #voicing-panel,.tone-shared #scope-wrapper{padding:8px 12px}
+ .tone-shared #scope-wrapper{min-height:104px}
+ .tone-shared #scope{height:58px}
+ .instrument[data-module=tone] .keyboard-section{padding-top:6px}
+ .tone-shared{margin-top:16px;gap:16px}
+}
+@media(max-width:359px){
+ .tone-source-bar{gap:8px}.tone-source-bar>span{max-width:104px;line-height:1.4}
+ .tone-filter-panel{padding:10px}
+ #tone-filter-mode .macro-value{display:none}
+ .instrument[data-module=tone] #macros .macro-name,.instrument[data-module=tone] #macros .macro-value{font-size:9px}
+}

@@ -1,5 +1,7 @@
 # Synth product plan
 
+Current correction: [warm filter and Tone layout](audio-references/warm-filter-performance.md). The Ladder now uses a scalar nonlinear feedback solve, raw Drive gain and the same8x reconstruction; the previous distributed-model descriptions/timings below are historical. Source quality remains a fidelity choice.
+
 Date: 10 November 2026. Status: Phase7 integrates Studio generation, nonlinear ladder filtering and harmonic colour. Desktop quality comes first. Technical/UX results and remaining listening/host-release work are tracked separately.
 
 ## Current Phase 7: source, nonlinear filter and harmonic colour
