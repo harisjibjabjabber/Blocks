@@ -1,15 +1,36 @@
 export const MOD_TARGETS=Object.freeze([0,2,3,11,12,13,14,18,21,22,23,24,42]);
-export const LFO_WAVES=Object.freeze(['sine','triangle','saw','square','random']);
-export const MOD_DIVISIONS=Object.freeze({'1/1':[1,0],'1/2':[2,0],'1/4':[4,0],'1/8':[8,0],'1/16':[16,0],'1/32':[32,0],'1/64':[64,0],'1/8T':[8,1],'1/16T':[16,1]});
-export function defaultLfo(id=1){return{id,enabled:false,waveform:'sine',rate:1,synced:false,division:'1/4',intensity:1,routes:[{parameter:11,depth:.3},{parameter:0,depth:.2}]};}
-export const DEFAULT_MODULATION=Object.freeze({version:1,sources:[defaultLfo()]});
+export const LFO_WAVES=Object.freeze(['sine','triangle','saw','square','random','custom']);
+export const MOD_DIVISIONS=Object.freeze({'1/1':[1,0],'1/2':[2,0],'1/4':[4,0],'1/8':[8,0],'1/16':[16,0],'1/32':[32,0],'1/64':[64,0],'1/4T':[4,1],'1/8T':[8,1],'1/16T':[16,1]});
+export const MAX_LFO_POINTS=16,MIN_LFO_GAP=1/1024;
+export const quantizeLfoX=x=>Math.round(Math.max(0,Math.min(1,x))*1024)/1024;
+export function shapeForWave(waveform='sine'){
+ const point=(x,y,bend=0)=>({x:Math.fround(x),y:Math.fround(y),bend:Math.fround(bend)});
+ if(waveform==='triangle')return[point(0,-1),point(.5,1),point(1,-1)];
+ if(waveform==='saw')return[point(0,-1),point(1,1)];
+ if(waveform==='square')return[point(0,1),point(.5-MIN_LFO_GAP,1),point(.5,-1),point(1,-1)];
+ if(waveform==='random')return[0,.25,.5,.75,1].map((x,i)=>point(x,[.4,-.7,.8,-.4,.4][i]));
+ return[0,Math.SQRT1_2,1,Math.SQRT1_2,0,-Math.SQRT1_2,-1,-Math.SQRT1_2,0].map((y,i)=>point(i/8,y));
+}
+export function normalizeLfoPoints(input){
+ if(!Array.isArray(input)||input.length<2||input.length>MAX_LFO_POINTS)throw Error('LFO shape needs 2–16 points');
+ const points=input.map(p=>{if(!p||![p.x,p.y,p.bend].every(Number.isFinite)||p.x<0||p.x>1||p.y< -1||p.y>1||p.bend< -1||p.bend>1)throw Error('Invalid LFO shape point');return{x:Math.fround(p.x),y:Math.fround(p.y),bend:Math.fround(p.bend)};});
+ if(points[0].x!==0||points.at(-1).x!==1||points.some((p,i)=>i&&p.x-points[i-1].x<MIN_LFO_GAP))throw Error('LFO shape times must be ordered with fixed endpoints');
+ return points;
+}
+export function sampleLfoPoints(points,phase){
+ if(phase<=0)return points[0].y;if(phase>=1)return points.at(-1).y;
+ let lo=0,hi=points.length-1;while(hi-lo>1){const middle=(lo+hi)>>1;if(phase<points[middle].x)hi=middle;else lo=middle;}
+ const a=points[lo],b=points[hi],t=(phase-a.x)/(b.x-a.x),q=t+a.bend*t*(1-t);return a.y+(b.y-a.y)*q;
+}
+export function defaultLfo(id=1){return{id,enabled:false,waveform:'sine',rate:1,synced:false,division:'1/4',intensity:1,retrigger:false,points:shapeForWave(),routes:[{parameter:11,depth:.3},{parameter:0,depth:.2}]};}
+export const DEFAULT_MODULATION=Object.freeze({version:2,sources:[defaultLfo()]});
 const bounded=(x,min,max)=>{if(!Number.isFinite(x))throw Error('Invalid modulation value');return Math.max(min,Math.min(max,x));};
 export function normalizeModulation(input=DEFAULT_MODULATION){
- if(!input||input.version!==1||!Array.isArray(input.sources)||input.sources.length<1||input.sources.length>4)throw Error('Invalid modulation configuration');
- const ids=new Set();const sources=input.sources.map(s=>{
-  if(!s||!Number.isInteger(s.id)||s.id<1||s.id>0x7fffffff||ids.has(s.id)||typeof s.enabled!=='boolean'||typeof s.synced!=='boolean'||!LFO_WAVES.includes(s.waveform)||!Object.hasOwn(MOD_DIVISIONS,s.division)||!Array.isArray(s.routes)||s.routes.length>8)throw Error('Invalid LFO source');ids.add(s.id);
+ if(!input||![1,2].includes(input.version)||!Array.isArray(input.sources)||input.sources.length<1||input.sources.length>4)throw Error('Invalid modulation configuration');
+ const legacy=input.version===1,ids=new Set();const sources=input.sources.map(s=>{
+  if(!s||!Number.isInteger(s.id)||s.id<1||s.id>0x7fffffff||ids.has(s.id)||typeof s.enabled!=='boolean'||typeof s.synced!=='boolean'||!LFO_WAVES.includes(s.waveform)||(legacy&&s.waveform==='custom')||!Object.hasOwn(MOD_DIVISIONS,s.division)||!Array.isArray(s.routes)||s.routes.length>8||(!legacy&&typeof s.retrigger!=='boolean'))throw Error('Invalid LFO source');ids.add(s.id);
   const targets=new Set();const routes=s.routes.map(r=>{if(!r||!MOD_TARGETS.includes(r.parameter)||targets.has(r.parameter))throw Error('Invalid or duplicate LFO destination');targets.add(r.parameter);return{parameter:r.parameter,depth:bounded(r.depth,-1,1)};});
-  return{id:s.id,enabled:s.enabled,waveform:s.waveform,rate:bounded(s.rate,.05,20),synced:s.synced,division:s.division,intensity:bounded(s.intensity,0,1),routes};
- });if(!ids.has(1))throw Error('Main LFO source is required');return{version:1,sources};
+  return{id:s.id,enabled:s.enabled,waveform:s.waveform,rate:bounded(s.rate,.05,20),synced:s.synced,division:s.division,intensity:bounded(s.intensity,0,1),retrigger:legacy?false:s.retrigger,points:legacy?shapeForWave():normalizeLfoPoints(s.points),routes};
+ });if(!ids.has(1))throw Error('Main LFO source is required');return{version:2,sources};
 }
-export function toCoreModulation(input){const s=normalizeModulation(input);return{version:1,sources:s.sources.map(l=>({id:l.id,enabled:Number(l.enabled),waveform:LFO_WAVES.indexOf(l.waveform),synced:Number(l.synced),division:MOD_DIVISIONS[l.division][0],triplet:MOD_DIVISIONS[l.division][1],rate_hz:l.rate,intensity:l.intensity,routes:l.routes.map(r=>({parameter_id:r.parameter,depth:r.depth}))}))};}
+export function toCoreModulation(input){const s=normalizeModulation(input);return{version:2,sources:s.sources.map(l=>({id:l.id,enabled:Number(l.enabled),waveform:LFO_WAVES.indexOf(l.waveform),synced:Number(l.synced),division:MOD_DIVISIONS[l.division][0],triplet:MOD_DIVISIONS[l.division][1],rate_hz:l.rate,intensity:l.intensity,retrigger:Number(l.retrigger),points:l.points.map(p=>({...p})),routes:l.routes.map(r=>({parameter_id:r.parameter,depth:r.depth}))}))};}

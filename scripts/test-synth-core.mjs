@@ -6,7 +6,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 if(!process.env.EMSDK) throw Error('Set EMSDK to Emscripten 7.0.0.');
 const out=resolve(process.env.SYNTH_CORE_EVIDENCE||resolve(root,'../synth-core-evidence'));
 mkdirSync(out,{recursive:true});
-for(const [source,name,extra] of [['core_tests.cpp','core-tests',[]],['resonant_filter_tests.cpp','resonant-filter-tests',[]],['performance_tests.cpp','performance-tests',[]],['motion_response_tests.cpp','motion-response-tests',[]],['sauce_tests.cpp','sauce-tests',[]],['fullness_body_tests.cpp','fullness-body-tests',[]],['glide_tests.cpp','glide-tests',[]],['free_drift_tests.cpp','free-drift-tests',[]],['audio_rack_tests.cpp','audio-rack-tests',[]],['modulation_tests.cpp','modulation-tests',[]],['note_rack_tests.cpp','note-rack-tests',[]],['rack_host_tests.cpp','rack-host-tests',[]],['render_wav.cpp','render-wav',['-sNODERAWFS=1']]]) {
+for(const [source,name,extra] of [['core_tests.cpp','core-tests',[]],['resonant_filter_tests.cpp','resonant-filter-tests',[]],['performance_tests.cpp','performance-tests',[]],['motion_response_tests.cpp','motion-response-tests',[]],['sauce_tests.cpp','sauce-tests',[]],['fullness_body_tests.cpp','fullness-body-tests',[]],['glide_tests.cpp','glide-tests',[]],['free_drift_tests.cpp','free-drift-tests',[]],['audio_rack_tests.cpp','audio-rack-tests',[]],['modulation_tests.cpp','modulation-tests',[]],['modulation_v2_tests.cpp','modulation-v2-tests',[]],['note_rack_tests.cpp','note-rack-tests',[]],['rack_host_tests.cpp','rack-host-tests',[]],['render_wav.cpp','render-wav',['-sNODERAWFS=1']]]) {
   const target=resolve(out,name+'.mjs');
   const result=spawnSync(process.env.PYTHON||'python',[
     resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),

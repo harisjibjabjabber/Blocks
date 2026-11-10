@@ -8,7 +8,7 @@ import {createPerformanceUI} from './performance-ui.js';
 import {createSauceRack} from './sauce-rack-ui.js';
 import {createRackEditor} from './rack-editor.js';
 import {createLfoUI} from './lfo-ui.js';
-import {DEFAULT_RACK,normalizeRack,legacyRack,newSauceBlock} from './sauce-state.js';
+import {DEFAULT_RACK,normalizeRack,legacyRack,newSauceBlock,reorderRack,syncRackOrder} from './sauce-state.js';
 import {DEFAULT_MODULATION,normalizeModulation,defaultLfo} from './modulation-state.js';
 // The instrument surface owns gestures, never voices or the audio clock.
 export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, getPerformance, applyPerformance, getRack, applyRack, getModulation, applyModulation, getSampleRate=()=>48000, onViewChange=()=>{} }) {
@@ -22,6 +22,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   const rack=()=>normalizeRack(getRack()),modulation=()=>normalizeModulation(getModulation());
   const $ = id => document.getElementById(id);
   const history = [];
+  const modulationPhases=new Map();
   let module = 'tone', sauce = null, envelopeTarget='amp', gesture = null, preset = 'velvet';
   const svgNS = 'http://www.w3.org/2000/svg';
   const waveNames = ['Sine','Triangle','Saw','Pulse','Square'];
@@ -328,13 +329,13 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   function changeConfig(action,commitNow=true){if(gesture&&(commitNow||!['config','performance'].includes(gesture.type)))return;const before=state();action();preset='custom';update();if(commitNow)commit(before);}
   function getNode(key){const[lane,id]=key.split(':');return lane==='lfo'?modulation().sources.find(n=>n.id===Number(id)):rack()[lane].find(n=>n.id===Number(id));}
   function changeNode(key,patch,commitNow=true){changeConfig(()=>{const[lane,id]=key.split(':');if(lane==='lfo'){const m=modulation();m.sources=m.sources.map(n=>n.id===Number(id)?{...n,...patch}:n);applyModulation(normalizeModulation(m));}else{const r=rack();r[lane]=r[lane].map(n=>n.id===Number(id)?{...n,...patch}:n);applyRack(normalizeRack(r));}},commitNow);}
-  const commonControls={parameters,begin,getGesture:()=>gesture,bindCompletion,getTempo:()=>performance().bpm,changeTempo:delta=>changePerformance({bpm:performance().bpm+delta})};
+  const commonControls={parameters,begin,getGesture:()=>gesture,bindCompletion,getPhase:id=>modulationPhases.get(id)??null,getTempo:()=>performance().bpm,changeTempo:delta=>changePerformance({bpm:performance().bpm+delta})};
   const rackUI=createSauceRack({container:$('sauce-rack'),canDrag:()=>!gesture,
     createEditor:(item,body,extra)=>createRackEditor({...commonControls,item,body,extra,getNode:()=>getNode(item.key),changeNode:(patch,commit)=>changeNode(item.key,patch,commit)}),
     onToggle:key=>changeNode(key,{enabled:!getNode(key).enabled}),
-    onRemove:key=>changeConfig(()=>{const[lane,id]=key.split(':');if(lane==='lfo'){const m=modulation();m.sources=m.sources.filter(n=>n.id!==Number(id));applyModulation(m);}else{const r=rack();r[lane]=r[lane].filter(n=>n.id!==Number(id));applyRack(r);}}),
-    onAdd:type=>changeConfig(()=>{if(type==='lfo'){const m=modulation();if(m.sources.length>=4)return;const id=Math.max(...m.sources.map(s=>s.id))+1;m.sources.push({...defaultLfo(id),enabled:true});applyModulation(m);}else{const r=rack(),lane=['drive','fullness'].includes(type)?'audio':'notes';if(r[lane].length>=16)return;r[lane].push(newSauceBlock(r,type));applyRack(r);}}),
-    onReorder:(lane,ids)=>changeConfig(()=>{const r=rack();r[lane]=ids.map(id=>r[lane].find(n=>n.id===id));applyRack(r);})
+    onRemove:key=>changeConfig(()=>{const[lane,id]=key.split(':');if(lane==='lfo'){const m=modulation();m.sources=m.sources.filter(n=>n.id!==Number(id));applyModulation(m);applyRack(syncRackOrder(rack(),m));}else{const r=rack();r[lane]=r[lane].filter(n=>n.id!==Number(id));applyRack(r);}}),
+    onAdd:type=>changeConfig(()=>{if(type==='lfo'){const m=modulation();if(m.sources.length>=4)return;const id=Math.max(...m.sources.map(s=>s.id))+1;m.sources.push({...defaultLfo(id),enabled:true});applyModulation(m);applyRack(syncRackOrder(rack(),m));}else{const r=rack(),lane=['drive','fullness'].includes(type)?'audio':'notes';if(r[lane].length>=16)return;r[lane].push(newSauceBlock(r,type));applyRack(r);}}),
+    onReorder:keys=>changeConfig(()=>applyRack(reorderRack(rack(),modulation(),keys)))
   });
   const lfoUI=createLfoUI({...commonControls,container:$('lfo-panel'),getSource:()=>getNode('lfo:1'),changeSource:(patch,commit)=>changeNode('lfo:1',patch,commit)});
   $('motion-controls').replaceChildren(...[[32,'Attack settling'],[33,'Settle time'],[34,'Velocity']].map(([id,name])=>knob(String(id),name)));
@@ -367,5 +368,5 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   }
   // Factory selection changes the patch, not the captured performance.
   applyValues(factoryPatch('velvet',parameters)); select('tone');
-  return {update,updatePerformance:update,setPerformancePending:()=>{},setRackPending:rackUI.setPending,loadPatch,cancel};
+  return {update,updatePerformance:update,setModulationPhases:entries=>{modulationPhases.clear();for(const entry of entries||[])if(Number.isFinite(entry.phase)&&entry.phase>=0&&entry.phase<1)modulationPhases.set(entry.id,entry.phase);lfoUI.updatePhase();rackUI.updatePhases();},setPerformancePending:()=>{},setRackPending:rackUI.setPending,loadPatch,cancel};
 }

@@ -4,7 +4,7 @@ import { migratePatch } from './patches.js';
 import {emptyPeak,receivePeak,peakDisplay} from './peak-meter.js';
 import {canonicalLevels,parameterBatch} from './parameter-state.js';
 import {DEFAULT_PERFORMANCE,normalizePerformance,toCorePerformance} from './performance-state.js';
-import {DEFAULT_RACK,normalizeRack,legacyRack,hydrateRack,toCoreSauce,toCoreNotes} from './sauce-state.js';
+import {DEFAULT_RACK,normalizeRack,legacyRack,hydrateRack,toCoreSauce,toCoreNotes,syncRackOrder} from './sauce-state.js';
 import {DEFAULT_MODULATION,normalizeModulation,toCoreModulation} from './modulation-state.js';
 const $=id=>document.getElementById(id);
 let context,node,analyser,parameters=[],values=[],ready=false,access,raf=0,lastDraw=0,instrument,version=1;
@@ -14,6 +14,7 @@ let keyboardShift=0,voiceCount=0,peakState=emptyPeak();
 const error=message=>{$('error').textContent=message;};
 function event(type,key=0,value=0,parameter=0,channel=15){if(ready&&context.state==='running')node.port.postMessage({kind:'event',type,key,value,parameter,channel,frame:Math.ceil(context.currentTime*context.sampleRate)});}
 function applyValues(next){
+  if(next.length===values.length&&next.every((value,id)=>value===values[id]))return;
   const before=values; values=canonicalLevels(next,before.length?before:undefined);
   if(!ready)return;
   if(context.state==='running'){const batch=parameterBatch(before,values);if(batch.length)node.port.postMessage({kind:'parameter-batch',values:batch,frame:Math.ceil(context.currentTime*context.sampleRate)});}
@@ -26,15 +27,15 @@ function applyPerformance(next){
   if(ready)node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});
 }
 function getRack(){return values.length?hydrateRack(rackSettings,values):normalizeRack(rackSettings);}
-function sendRack(){if(!ready)return;node.port.postMessage({kind:'sauce',config:toCoreSauce(getRack())});node.port.postMessage({kind:'notes',config:toCoreNotes(getRack())});}
+function sendRack(previous=null){if(!ready)return;const current=getRack(),sauce=toCoreSauce(current),notes=toCoreNotes(current);if(!previous||JSON.stringify(toCoreSauce(previous))!==JSON.stringify(sauce))node.port.postMessage({kind:'sauce',config:sauce});if(!previous||JSON.stringify(toCoreNotes(previous))!==JSON.stringify(notes))node.port.postMessage({kind:'notes',config:notes});}
 function applyRack(next){
-  const normalized=normalizeRack(next),previous=rackSettings;
+  const normalized=normalizeRack(next),previous=rackSettings,before=getRack();
   const shape=r=>JSON.stringify(r.notes.map(b=>[b.id,b.type,b.enabled]));if(shape(previous)!==shape(normalized))clearInputUI();
   rackSettings=normalized;
-  if(values.length){const tone=[...values];for(const b of normalized.audio)if(b.primary){tone[b.type==='drive'?12:18]=b.amount;tone[b.type==='drive'?36:39]=Number(b.enabled);}for(const b of normalized.notes)if(b.type==='drop'&&b.primary){tone[15]=b.amount;tone[16]=b.time;tone[17]=b.bend;tone[37]=Number(b.enabled);}const drive=normalized.audio.findIndex(b=>b.primary&&b.type==='drive'),full=normalized.audio.findIndex(b=>b.primary&&b.type==='fullness');if(drive>=0&&full>=0)tone[38]=Number(drive>full);applyValues(tone);}
-  sendRack();
+  if(values.length){const tone=[...values];for(const b of normalized.audio)if(b.primary){tone[b.type==='drive'?12:18]=b.amount;tone[b.type==='drive'?36:39]=Number(b.enabled);}for(const b of normalized.notes)if(b.type==='drop'&&b.primary){tone[15]=b.amount;tone[16]=b.time;tone[17]=b.bend;tone[37]=Number(b.enabled);}const drive=normalized.audio.findIndex(b=>b.primary&&b.type==='drive'),full=normalized.audio.findIndex(b=>b.primary&&b.type==='fullness');if(drive>=0&&full>=0)tone[38]=Number(drive>full);if(tone.some((value,id)=>value!==values[id]))applyValues(tone);}
+  sendRack(before);
 }
-function applyModulation(next){modulationSettings=normalizeModulation(next);if(ready)node.port.postMessage({kind:'modulation',config:toCoreModulation(modulationSettings)});}
+function applyModulation(next){const normalized=normalizeModulation(next),changed=JSON.stringify(normalized)!==JSON.stringify(modulationSettings);modulationSettings=normalized;if(ready&&changed)node.port.postMessage({kind:'modulation',config:toCoreModulation(modulationSettings)});}
 function sendExtended(){sendRack();if(ready)node.port.postMessage({kind:'modulation',config:toCoreModulation(modulationSettings)});}
 const engineData=(async()=>{
   const response=await fetch('./synth.wasm');if(!response.ok)throw Error('Cannot load synth.wasm');
@@ -53,7 +54,7 @@ function startNote(owner,pitch,velocity=.75){if(!ready||context.state!=='running
 function releaseNote(owner){const pitch=pressed.get(owner);if(pitch===undefined)return;pressed.delete(owner);if(![...pressed.values()].includes(pitch)){event(1,pitch);setKey(pitch,false);}}
 function clearInputUI(){instrument?.setPerformancePending?.(false);pressed.clear();for(const k of keys.values())k.classList.remove('active');$('monitor').textContent='0 voices';}
 function panic(){clearInputUI();node?.port.postMessage({kind:'panic'});}
-async function stop(){panic();if(context?.state==='running')await context.suspend();cancelAnimationFrame(raf);$('status').textContent='Sound stopped';$('stop').disabled=true;$('start').disabled=false;$('start').textContent='Resume sound';voiceCount=0;drawScope();}
+async function stop(){panic();if(context?.state==='running')await context.suspend();cancelAnimationFrame(raf);$('status').textContent='Sound stopped';$('stop').disabled=true;$('start').disabled=false;$('start').textContent='Resume sound';voiceCount=0;instrument?.setModulationPhases?.([]);drawScope();}
 function drawScope(samples){
   const canvas=$('scope');if(!canvas.clientWidth||!canvas.clientHeight)return;
   const drawing=canvas.getContext('2d'),ratio=devicePixelRatio||1,w=Math.round(canvas.clientWidth*ratio),h=Math.round(canvas.clientHeight*ratio);
@@ -78,7 +79,7 @@ function showPeak(){const display=peakDisplay(peakState);$('peak-indicator').dat
 $('peak-reset').addEventListener('click',()=>{peakState=emptyPeak();showPeak();});
 window.addEventListener('resize',()=>drawScope());
 
-async function start(){error('');$('start').disabled=true;try{if(!context){context=new AudioContext({latencyHint:'interactive'});await context.resume();const wasm=await engineData;await context.audioWorklet.addModule('./processor.js');node=new AudioWorkletNode(context,'blocks-synth',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[2],processorOptions:{wasm}});analyser=context.createAnalyser();analyser.fftSize=1024;node.connect(analyser);analyser.connect(context.destination);await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Synth initialization timed out')),15000);node.port.onmessage=e=>{const m=e.data;if(m.kind==='error'){error(m.message);if(!ready){clearTimeout(timer);reject(Error(m.message));}}else if(m.kind==='ready'){clearTimeout(timer);ready=true;version=m.version;node.port.postMessage({kind:'patch',version,values});node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});sendExtended();for(const id of ['midi','init','export','import'])$(id).disabled=false;resolve();}else if(m.kind==='status'){voiceCount=m.voices;instrument?.setPerformancePending?.(Boolean(m.performancePending));instrument?.setRackPending?.(m.notesPendingMask??0);$('monitor').textContent=m.voices+' voices';peakState=receivePeak(peakState,m);showPeak();if(m.invalid<0)error('Audio event block rejected');}else if(m.kind==='patch'){values=m.values;instrument?.update();}};});}else {await context.resume();node.port.postMessage({kind:'patch',version,values});node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});sendExtended();}$('status').textContent='Sound running · '+Math.round(context.sampleRate)+' Hz';$('stop').disabled=false;$('start').disabled=true;instrument?.update();scope();}catch(e){error(String(e));if(context){await context.close();context=null;}node=null;ready=false;$('start').disabled=false;$('status').textContent='Sound unavailable';}}
+async function start(){error('');$('start').disabled=true;try{if(!context){context=new AudioContext({latencyHint:'interactive'});await context.resume();const wasm=await engineData;await context.audioWorklet.addModule('./processor.js');node=new AudioWorkletNode(context,'blocks-synth',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[2],processorOptions:{wasm}});analyser=context.createAnalyser();analyser.fftSize=1024;node.connect(analyser);analyser.connect(context.destination);await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Synth initialization timed out')),15000);node.port.onmessage=e=>{const m=e.data;if(m.kind==='error'){error(m.message);if(!ready){clearTimeout(timer);reject(Error(m.message));}}else if(m.kind==='ready'){clearTimeout(timer);ready=true;version=m.version;node.port.postMessage({kind:'patch',version,values});node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});sendExtended();for(const id of ['midi','init','export','import'])$(id).disabled=false;resolve();}else if(m.kind==='status'){voiceCount=m.voices;instrument?.setPerformancePending?.(Boolean(m.performancePending));instrument?.setRackPending?.(m.notesPendingMask??0);instrument?.setModulationPhases?.(context?.state==='running'?m.lfoPhases??[]:[]);$('monitor').textContent=m.voices+' voices';peakState=receivePeak(peakState,m);showPeak();if(m.invalid<0)error('Audio event block rejected');}else if(m.kind==='patch'){values=m.values;instrument?.update();}};});}else {await context.resume();node.port.postMessage({kind:'patch',version,values});node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});sendExtended();}$('status').textContent='Sound running · '+Math.round(context.sampleRate)+' Hz';$('stop').disabled=false;$('start').disabled=true;instrument?.update();scope();}catch(e){error(String(e));if(context){await context.close();context=null;}node=null;ready=false;$('start').disabled=false;$('status').textContent='Sound unavailable';}}
 $('start').addEventListener('click',start);$('stop').addEventListener('click',stop);
 const whites=[60,62,64,65,67,69,71,72,74,76,77,79,81,83],blacks=[[61,1],[63,2],[66,4],[68,5],[70,6],[73,8],[75,9],[78,11],[80,12],[82,13]],names=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
 for(const pitch of whites){const b=document.createElement('button');b.className='key white';b.dataset.pitch=pitch;b.textContent=names[pitch%12]+(pitch%12===0?Math.floor(pitch/12)-1:'');b.setAttribute('aria-label','Play '+names[pitch%12]+(Math.floor(pitch/12)-1));$('keyboard').append(b);keys.set(pitch,b);}
@@ -106,13 +107,13 @@ for(const name of ['pointerup','pointercancel','lostpointercapture'])$('keyboard
 const mapping={a:60,w:61,s:62,e:63,d:64,f:65,t:66,g:67,y:68,h:69,u:70,j:71,k:72};
 window.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(e.target.tagName))return;const base=mapping[e.key.toLowerCase()],pitch=base===undefined?undefined:base+keyboardShift*12;if(pitch!==undefined&&!e.repeat){e.preventDefault();startNote('key-'+e.code,pitch);}});window.addEventListener('keyup',e=>releaseNote('key-'+e.code));
 for(const[pitch,key]of keys){key.addEventListener('keydown',e=>{if([' ','Enter'].includes(e.key)&&!e.repeat){e.preventDefault();startNote('button-'+pitch,Number(key.dataset.pitch));}});key.addEventListener('keyup',e=>{if([' ','Enter'].includes(e.key)){e.preventDefault();releaseNote('button-'+pitch);}});}
-$('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({format:'blocks-synth-patch',version,values,performance:performanceSettings,rack:getRack(),modulation:modulationSettings,macroVersions:{character:characterRecipe.version,motion:motionRecipe.version}},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='blocks-synth-patch.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);});
+$('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({format:'blocks-synth-patch',version,values,performance:performanceSettings,rack:syncRackOrder(getRack(),modulationSettings),modulation:modulationSettings,macroVersions:{character:characterRecipe.version,motion:motionRecipe.version}},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='blocks-synth-patch.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);});
 $('import').addEventListener('change',async e=>{
   try{
     const file=e.target.files[0];if(!file)return;if(file.size>65536)throw Error('Patch exceeds 64 KiB');
     const patch=JSON.parse(await file.text());
     const tone=migratePatch(patch,parameters,version),performance=normalizePerformance(patch.performance===undefined?DEFAULT_PERFORMANCE:patch.performance),rack=patch.rack===undefined?legacyRack(tone,performance):normalizeRack(patch.rack),modulation=normalizeModulation(patch.modulation===undefined?DEFAULT_MODULATION:patch.modulation);
-    performance.mode='off';instrument.loadPatch(tone,'custom',performance,{rack,modulation});error('');
+    performance.mode='off';instrument.loadPatch(tone,'custom',performance,{rack:syncRackOrder(rack,modulation),modulation});error('');
   }catch(e){error(String(e));}finally{e.target.value='';}
 });
 

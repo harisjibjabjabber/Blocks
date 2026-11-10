@@ -163,7 +163,7 @@ struct bs_synth {
   finalMono.bind({this,[](void*c,uint32_t ch,uint32_t key,float velocity,bool mono,bool legato){static_cast<bs_synth*>(c)->emitVoice(ch,key,velocity,mono,legato);},[](void*c,uint32_t ch,uint32_t key){static_cast<bs_synth*>(c)->voiceOff(ch,key);}});
   noteRack.bind({this,[](void*c,uint32_t ch,uint32_t key,float velocity){auto*s=static_cast<bs_synth*>(c);if(s->requestedPerformance.mono)s->finalMono.on(ch,key,velocity);else s->voiceOn(ch,key,velocity);},[](void*c,uint32_t ch,uint32_t key){auto*s=static_cast<bs_synth*>(c);if(s->requestedPerformance.mono)s->finalMono.off(ch,key);else s->voiceOff(ch,key);},[](void*c,uint32_t ch,bool down){auto*s=static_cast<bs_synth*>(c);if(s->requestedPerformance.mono)s->finalMono.pedal(ch,down);else s->voicePedal(ch,down);},[](void*c){static_cast<bs_synth*>(c)->clearOutputs();}});
  }
- void clearOutputs(){for(auto&v:voices)v=Voice{};for(auto&v:tails)v=Voice{};onOrdinals={};offOrdinals={};pedals={};finalMono.clear();}
+ void clearOutputs(){modulation.cancelRetrigger();for(auto&v:voices)v=Voice{};for(auto&v:tails)v=Voice{};onOrdinals={};offOrdinals={};pedals={};finalMono.clear();}
  void emitVoice(uint32_t channel,uint32_t key,float velocity,bool mono,bool legato){double previous=0;if(mono&&legato&&parameters[BS_GLIDE_ENABLED]&&parameters[BS_GLIDE_TIME]>0){uint64_t newest=0;for(const auto&v:voices)if(v.active&&(v.stage!=Stage::release||v.stageAge==0)&&v.order>newest){previous=v.lastFrequency;newest=v.order;}}const double duration=previous>0?smooth[BS_GLIDE_TIME]:0;if(mono)for(auto&v:voices)if(v.active)retire(v);voiceOn(channel,key,velocity,previous,duration);}
  int setNotes(const bs_notes_config&config){if(!blocks_detail::NoteRack::valid(config))return 0;bool topology=!notesExplicit||config.count!=noteRack.config().count;for(unsigned i=0;i<config.count&&!topology;++i){const auto&a=config.blocks[i];const auto&b=noteRack.config().blocks[i];topology=a.id!=b.id||a.type!=b.type||a.enabled!=b.enabled;}if(topology)performance.clear();if(!notesExplicit){clearOutputs();notesExplicit=true;auto legacy=requestedPerformance;legacy.mono=0;performance.configure(legacy);auto mono=blocks_detail::defaultPerformance();mono.mono=requestedPerformance.mono;finalMono.configure(mono);}return noteRack.configure(config,rate);}
  int setSauce(const bs_sauce_config&config){if(!blocks_detail::AudioRack::valid(config))return 0;sauceConfig=config;int drive=-1,fullness=-1;for(unsigned i=0;i<config.count;++i)if(config.blocks[i].primary){if(config.blocks[i].type==BS_SAUCE_DRIVE)drive=int(i);else fullness=int(i);}if(drive>=0&&fullness>=0)parameters[BS_SAUCE_ORDER]=drive<fullness?0:1;for(auto&v:voices)if(v.active)v.sauce.configure(config,rate,false,true);for(auto&v:tails)if(v.active)v.sauce.configure(config,rate,false,true);return 1;}
@@ -215,6 +215,7 @@ struct bs_synth {
    v->settling=random_signed(movementRng)*parameters[BS_SETTLING_CENTS]*v->movementScale;
    v->rateScale=1+.2*random_signed(movementRng);
   }
+  modulation.noteOn();
  }
  void voiceOff(uint32_t channel,uint32_t key) {
   if(channel>=16||key>=128||offOrdinals[channel][key]>=onOrdinals[channel][key])return;
@@ -239,6 +240,9 @@ struct bs_synth {
  }
  void sample(float &left,float &right) {
   performance.tick();if(notesExplicit){noteRack.tick();finalMono.tick();}
+  // A same-sample NoteOff/panic can cancel an attack before it sounds. Only
+  // fresh primary voices still held/sustained at this sample trigger the LFOs.
+  if(modulation.retriggerPending()){bool fresh=false;for(const auto&v:voices)fresh|=v.active&&v.age==0&&(v.held||v.pedal);if(!fresh)modulation.cancelRetrigger();}
   for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i)if(i!=BS_OSC1_WAVE&&i!=BS_OSC2_WAVE&&i!=BS_FILTER_MODE) smooth[i]+=smoothing*(parameters[i]-smooth[i]);
   for(unsigned osc=0;osc<2;++osc) {
    const unsigned target=unsigned(parameters[BS_OSC1_WAVE+osc]);double sum=0;
@@ -315,7 +319,11 @@ int bs_set_sauce(bs_synth*synth,const bs_sauce_config*config){return synth&&conf
 int bs_get_sauce(const bs_synth*synth,bs_sauce_config*config){if(!synth||!config)return 0;*config=synth->sauceConfig;return 1;}
 void bs_default_modulation(bs_modulation_config*config){if(config)*config=blocks_detail::defaultModulation();}
 int bs_set_modulation(bs_synth*synth,const bs_modulation_config*config){return synth&&config&&synth->modulation.configure(*config)?1:0;}
-int bs_get_modulation(const bs_synth*synth,bs_modulation_config*config){if(!synth||!config)return 0;*config=synth->modulation.config();return 1;}
+int bs_get_modulation(const bs_synth*synth,bs_modulation_config*config){return synth&&config&&synth->modulation.getLegacy(*config)?1:0;}
+void bs_default_modulation_v2(bs_modulation_config_v2*config){if(config)*config=blocks_detail::defaultModulationV2();}
+int bs_set_modulation_v2(bs_synth*synth,const bs_modulation_config_v2*config){return synth&&config&&synth->modulation.configure(*config)?1:0;}
+int bs_get_modulation_v2(const bs_synth*synth,bs_modulation_config_v2*config){if(!synth||!config)return 0;*config=synth->modulation.configV2();return 1;}
+double bs_get_modulation_phase(const bs_synth*synth,uint32_t source_id){return synth?synth->modulation.phase(source_id):-1;}
 void bs_default_performance(bs_performance_config*config){if(config)*config=blocks_detail::defaultPerformance();}
 int bs_set_performance(bs_synth*synth,const bs_performance_config*config){return synth&&config?synth->setPerformance(*config):0;}
 int bs_get_performance(const bs_synth*synth,bs_performance_config*config){if(!synth||!config)return 0;*config=synth->requestedPerformance;return 1;}
