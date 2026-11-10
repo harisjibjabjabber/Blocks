@@ -18,10 +18,23 @@ inline double harmonicPrimitive(double x) {
 // First-order antiderivative antialiasing, Parker/Zavalishin/Le Bivic 2016
 // equation9, applied only to the small residual. No external code copied.
 struct AntialiasedResidual {
- double previous=0;
+ double previous=0,previousPrimitive=0;bool primitiveValid=true;
+ void reset(double input=0){previous=input;previousPrimitive=harmonicPrimitive(input);primitiveValid=true;}
  double process(double x) {
-  const double difference=x-previous;
-  const double result=std::abs(difference)>1e-5?(harmonicPrimitive(x)-harmonicPrimitive(previous))/difference:harmonicResidual((x+previous)*.5);
+  const double difference=x-previous;double result;
+  if(std::abs(difference)>1e-5){
+   const double currentPrimitive=harmonicPrimitive(x);
+   // The primitive has no controls/state. Reuse its exact previous value,
+   // but only evaluate it when the divided-difference branch needs it.
+   if(!primitiveValid)previousPrimitive=harmonicPrimitive(previous);
+   result=(currentPrimitive-previousPrimitive)/difference;
+   previousPrimitive=currentPrimitive;primitiveValid=true;
+  }else{
+   result=harmonicResidual((x+previous)*.5);
+   // Plateaus require no primitive work. An exact repeat keeps the cache;
+   // a tiny change makes it unavailable until the next divided difference.
+   if(x!=previous)primitiveValid=false;
+  }
   previous=x;return result;
  }
 };

@@ -134,7 +134,7 @@ int main() {
   bs_set_parameter(body.p,BS_RELEASE,.001f);bs_note_off(body.p,0,60);render(body.p,20000,127);CHECK(bs_active_voices(body.p)==0);
   // Coherent 11.73kHz sine: the cubic's third harmonic crosses Nyquist. Compare
   // this CURRENT residual, not the obsolete clipped Fullness saturator.
-  constexpr unsigned n=4096,fundamental=1001;std::vector<std::complex<double>> naive(n),antialiased(n);blocks_detail::AntialiasedResidual shape;shape.previous=std::sin(6.283185307179586*fundamental*(n-1)/n);
+  constexpr unsigned n=4096,fundamental=1001;std::vector<std::complex<double>> naive(n),antialiased(n);blocks_detail::AntialiasedResidual shape;shape.reset(std::sin(6.283185307179586*fundamental*(n-1)/n));
   for(unsigned i=0;i<n;++i){const double x=std::sin(6.283185307179586*fundamental*i/n);naive[i]=blocks_detail::harmonicResidual(x);antialiased[i]=shape.process(x);}
   const double plain=aliasRatio(naive,fundamental),adaa=aliasRatio(antialiased,fundamental);CHECK(adaa<plain*.7);
   std::printf("METRIC residual long_detuned_chords_max_level_delta_dB=%.6f sine_H1_ratio=%.6f sine_H2=%.8f alias_reduction_dB=%.3f\n",worst,h1ratio,h2,10*std::log10(adaa/plain));

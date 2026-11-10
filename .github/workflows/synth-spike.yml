@@ -13,6 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check out frozen audio baseline
+        uses: actions/checkout@v4
+        with:
+          ref: dceb0d25f1f185061f1d6ab0721ddab0c3fa2586
+          path: .comparison-baseline
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -28,6 +33,8 @@ jobs:
           mkdir -p "$RUNNER_TEMP/synth-evidence"
           "$RUNNER_TEMP/native/blocks_synth_render" "$RUNNER_TEMP/synth-evidence/native.wav"
           "$RUNNER_TEMP/native/blocks_synth_benchmark" "$RUNNER_TEMP/synth-evidence/native-benchmark.json"
+      - name: Exact native rack compatibility
+        run: node scripts/compare-rack-audio.mjs --before=.comparison-baseline/packages/synth-core --backend=native --out="$RUNNER_TEMP/rack-native"
       - name: Install official Emscripten toolchain
         run: |
           git clone --depth 1 --branch 7.0.0 https://github.com/emscripten-core/emsdk.git "$RUNNER_TEMP/emsdk"
@@ -43,6 +50,7 @@ jobs:
           node scripts/test-synth-core.mjs
           node scripts/compare-synth-renders.mjs "$RUNNER_TEMP/synth-evidence/native.wav" "$RUNNER_TEMP/synth-evidence/wasm.wav"
           node scripts/build-synth.mjs
+          node scripts/compare-rack-audio.mjs --before=.comparison-baseline/packages/synth-core --backend=wasm --out="$RUNNER_TEMP/rack-wasm"
       - name: Reproducible audio auditions and core timing
         env:
           SYNTH_AUDITIONS: ${{ runner.temp }}/synth-auditions
@@ -53,6 +61,7 @@ jobs:
           node scripts/render-synth-auditions.mjs
           node scripts/render-filter-auditions.mjs
           node scripts/benchmark-synth.mjs
+          node scripts/benchmark-synth.mjs --suite=prefix --out="$RUNNER_TEMP/synth-prefix-benchmark"
       - name: Actual browser audio
         env:
           SYNTH_PROOF_DIR: ${{ runner.temp }}/synth-browser
@@ -74,6 +83,11 @@ jobs:
             ${{ runner.temp }}/synth-auditions/*.json
             ${{ runner.temp }}/synth-filter-auditions/*.wav
             ${{ runner.temp }}/synth-filter-auditions/*.json
+            ${{ runner.temp }}/rack-native/*.json
+            ${{ runner.temp }}/rack-native/*.f32
+            ${{ runner.temp }}/rack-wasm/*.json
+            ${{ runner.temp }}/rack-wasm/*.f32
+            ${{ runner.temp }}/synth-prefix-benchmark/*.json
             ${{ runner.temp }}/synth-browser
             ${{ runner.temp }}/synth-install
             packages/synth-web/build
