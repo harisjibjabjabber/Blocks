@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { planFromElapsed } from "../audio/web/schedule";
-import { alignmentPx, beatTicks, framePhrase, noteBox, panWindow, pitchToY, rulerMarks, timeToX, xToTime, zoomWindow, type KnownGrid, type TimeWindow } from "./roll-time";
+import { alignmentPx, beatTicks, musicalPosition, framePhrase, noteBox, panWindow, pitchToY, rulerMarks, timeToX, xToTime, zoomWindow, type KnownGrid, type TimeWindow } from "./roll-time";
 
 const US = 1_000_000n;
 
@@ -98,6 +98,15 @@ describe("roll time matches the scheduler", () => {
     expectAligned(pickup, zoomWindow({ start: 0n, end: 2n * US }, 0.5, pickup, us(100), 8n * US), 800);
   });
 
+  it("retains prefix gridlines without zero or negative bar labels", () => {
+    const known: KnownGrid = { bpm: 120, beatsPerBar: 4, phase: 4n * US };
+    const marks = rulerMarks({ start: 0n, end: 6n * US }, known);
+    const prefixBars = marks.filter(mark => mark.kind === "bar" && mark.time < known.phase);
+    expect(prefixBars.map(mark => mark.time)).toEqual([0n, 2n * US]);
+    expect(prefixBars.every(mark => mark.label === "")).toBe(true);
+    expect(marks.filter(mark => mark.kind === "bar" && mark.time >= known.phase).map(mark => mark.label)).toEqual(["1", "2"]);
+  });
+
   it("does not pull rubato notes onto the grid", () => {
     const rubato = [0, 420, 980, 1410].map(us);
     const known: KnownGrid = { bpm: 120, beatsPerBar: 4, phase: 0n };
@@ -143,4 +152,12 @@ describe("roll time matches the scheduler", () => {
       expectAligned(note, window, 1280);
     }
   });
+});
+
+it("labels an inferred four-bar endpoint on the exact snap lattice", () => {
+  const duration = 12_151_899n;
+  const grid = { bpm: 960_000_000 / Number(duration), beatsPerBar: 4, phase: 6_890_000n };
+  expect(musicalPosition(grid.phase + duration, grid)).toBe("5.1");
+  expect(musicalPosition(grid.phase + duration - 1n, grid)).toBe("4.4");
+  expect(musicalPosition(grid.phase, grid)).toBe("1.1");
 });

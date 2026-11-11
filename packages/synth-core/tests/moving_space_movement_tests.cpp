@@ -1,0 +1,29 @@
+#include "../src/creative_processors.h"
+#include <array>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <new>
+#include <vector>
+static bool watch=false;static unsigned allocations=0;
+void*operator new(std::size_t n){if(watch)++allocations;if(auto*p=std::malloc(n?n:1))return p;std::abort();}void*operator new[](std::size_t n){return::operator new(n);}void operator delete(void*p)noexcept{std::free(p);}void operator delete[](void*p)noexcept{std::free(p);}void operator delete(void*p,std::size_t)noexcept{std::free(p);}void operator delete[](void*p,std::size_t)noexcept{std::free(p);}
+#define CHECK(x) do{if(!(x)){std::fprintf(stderr,"FAIL %d %s\n",__LINE__,#x);std::exit(1);}}while(false)
+using namespace blocks_detail;using Frame=std::array<double,2>;constexpr double pi=3.14159265358979323846;
+static Frame tick(MovingSpace&p,double l,double r,double movement=0){watch=true;p.process(l,r,movement);watch=false;CHECK(std::isfinite(l)&&std::isfinite(r));return{l,r};}
+static double difference(const std::vector<Frame>&a,const std::vector<Frame>&b){double aa=0,bb=0,e=0;for(unsigned i=0;i<a.size();++i)for(unsigned ch=0;ch<2;++ch){aa+=a[i][ch]*a[i][ch];bb+=b[i][ch]*b[i][ch];}double scale=std::sqrt(aa/std::max(1e-30,bb));for(unsigned i=0;i<a.size();++i)for(unsigned ch=0;ch<2;++ch)e+=std::pow(a[i][ch]-b[i][ch]*scale,2);return std::sqrt(e/std::max(1e-30,aa));}
+int main(){
+ {auto c=creative_detail::defaults(0);c.motion=-1;MovingSpace p;CHECK(p.configure(c,true)&&p.prepare(48000));for(float invalid:{-1.001f,1.001f,float(NAN)}){auto bad=c;bad.motion=invalid;watch=true;CHECK(!p.configure(bad));watch=false;CHECK(!std::memcmp(&p.config(),&c,sizeof c));}CHECK(sizeof(c)==48);}
+ std::puts("PASS signed Envelope depth validates atomically without expanding48-byte ABI");
+ {auto c=creative_detail::defaults(0);MovingSpace implicit,explicitZero;CHECK(implicit.configure(c,true)&&explicitZero.configure(c,true)&&implicit.prepare(8000)&&explicitZero.prepare(8000));for(unsigned i=0;i<16000;++i){double l=.1*std::sin(i*.13),r=.07*std::cos(i*.17);double a=l,b=r;watch=true;implicit.process(a,b);watch=false;CHECK(tick(explicitZero,l,r,0)==Frame({a,b}));}c.motion=1;c.mix=1;c.shimmer=0;MovingSpace positive,negative;CHECK(positive.configure(c,true)&&positive.prepare(8000));c.motion=-1;CHECK(negative.configure(c,true)&&negative.prepare(8000));std::vector<Frame>a(16000),b(16000);for(unsigned i=0;i<a.size();++i){double t=double(i%4000)/8000,l=.2*std::exp(-t/.06)*std::sin(i*.13);a[i]=tick(positive,l,0);b[i]=tick(negative,l,0);CHECK(std::abs(positive.movementSeconds()+negative.movementSeconds())<1e-15);}double d=difference(a,b);std::printf("Opposite Envelope depth matched-audio difference%.5f\n",d);CHECK(d>.2);}
+ std::puts("PASS explicitzero LFO preserves current default; signed envelope reverses actual delay displacement/audio");
+ {auto c=creative_detail::defaults(0);c.motion=0;c.mix=1;c.shimmer=0;MovingSpace still,moving;CHECK(still.configure(c,true)&&moving.configure(c,true)&&still.prepare(8000)&&moving.prepare(8000));std::vector<Frame>a(24000),b(24000);double lo=0,hi=0;for(unsigned i=0;i<a.size();++i){double l=.1*std::sin(2*pi*220*i/8000),r=.07*std::sin(2*pi*330*i/8000),lfo=.8*std::sin(2*pi*2*i/8000);a[i]=tick(still,l,r);b[i]=tick(moving,l,r,lfo);lo=std::min(lo,moving.movementSeconds());hi=std::max(hi,moving.movementSeconds());}double d=difference(a,b);std::printf("LFO-only held-audio difference%.5f, offset%.6f..%.6fs\n",d,lo,hi);CHECK(d>.2&&lo<-.003&&hi>.003);}
+ std::puts("PASS external LFO alone moves sustained audio in both directions without an audio onset");
+ {auto c=creative_detail::defaults(0);c.motion=1;c.mix=1;c.shimmer=0;MovingSpace positive,negative;CHECK(positive.configure(c,true)&&positive.prepare(8000));c.motion=-1;CHECK(negative.configure(c,true)&&negative.prepare(8000));const double cancel=.1/(.03+.1);for(unsigned i=0;i<4000;++i){tick(positive,.1,0,-cancel);tick(negative,.1,0,cancel);}CHECK(std::abs(positive.movementSeconds())<1e-12&&std::abs(negative.movementSeconds())<1e-12);c.motion=0;CHECK(positive.configure(c,true));for(unsigned i=0;i<1000;++i)tick(positive,.1,0,1.5-1.25);CHECK(std::abs(positive.movementSeconds()-.001)<1e-12);}
+ std::puts("PASS independent signed envelope/LFO cancellation and post-summation bounds");
+ {for(double rate:{8000.,48000.,192000.,384000.}){auto c=creative_detail::defaults(0);c.motion=-1;c.mix=c.space=c.shimmer=1;MovingSpace p;CHECK(p.configure(c,true)&&p.prepare(rate));double previous=0;for(unsigned i=0;i<unsigned(rate*.15);++i){double external=i%400<200?100:-100;auto out=tick(p,.2*std::sin(i*.17),.1*std::cos(i*.11),external);double seconds=p.movementSeconds();CHECK(std::abs(seconds)<=.004000000001&&std::abs(seconds-previous)*rate<=.450000001);previous=seconds;CHECK(std::abs(out[0])<10&&std::abs(out[1])<10);}c.mix=0;CHECK(p.configure(c,true));for(unsigned i=0;i<1000;++i)CHECK(tick(p,.2,-.1,-100)==Frame({.2,-.1}));c.enabled=0;c.mix=1;CHECK(p.configure(c,true));CHECK(tick(p,.2,-.1,100)==Frame({.2,-.1}));}}
+ std::puts("PASS extreme signed sums remain within4ms/.45-sample slew at8–384k, dry/off preserved");
+ {auto c=creative_detail::defaults(0);c.motion=0;MovingSpace a,b;CHECK(a.configure(c,true)&&b.configure(c,true)&&a.prepare(8000)&&b.prepare(8000));for(unsigned i=0;i<2000;++i)tick(a,.1*std::sin(i*.1),0,.8*std::sin(i*.03));watch=true;a.clear();watch=false;for(unsigned i=2000;i<5000;++i){double external=.8*std::sin(i*.03),input=.1*std::sin(i*.1);CHECK(tick(a,input,0,external)==tick(b,input,0,external));}watch=true;a.clear();watch=false;for(unsigned i=0;i<1000;++i)CHECK(tick(a,0,0,.8*std::sin(i*.03))==Frame({0,0}));CHECK(allocations==0);}
+ std::puts("PASS clear resets localhistory only, externally advanced LFO phase retained; no render/configure/clear allocations");
+ std::puts("PASS Moving Space movement6 groups");
+}

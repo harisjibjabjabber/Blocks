@@ -1,0 +1,91 @@
+{
+  "date": "2026-11-10",
+  "platform": "Windows desktop Node22 Emscripten7 WASM O2; not AudioWorklet timing",
+  "sample_rate": 48000,
+  "block_frames": 128,
+  "block_budget_ms": 2.6666666666666665,
+  "warmup_frames": 5120,
+  "measured_frames_per_trial": 24064,
+  "description": "Studio both oscillators, ladder8x Drive4 resonance.6 cutoff2k, optional single Asymmetric Harmonics Drive4/Dynamics.4/Mix.6/Trim-2dB.3trials8regimes.No threshold or device guarantee.",
+  "rows": [
+    {
+      "notes": 16,
+      "copies": 1,
+      "chain": "studio-existing",
+      "trials": 3,
+      "median_ms_per_audio_second": 194.174003,
+      "median_p99_ms": 0.6169,
+      "worst_block_ms": 0.6362
+    },
+    {
+      "notes": 16,
+      "copies": 1,
+      "chain": "studio-ladder-harmonics",
+      "trials": 3,
+      "median_ms_per_audio_second": 2207.673072,
+      "median_p99_ms": 6.2924,
+      "worst_block_ms": 6.7484
+    },
+    {
+      "notes": 16,
+      "copies": 7,
+      "chain": "studio-existing",
+      "trials": 3,
+      "median_ms_per_audio_second": 646.643218,
+      "median_p99_ms": 1.8696,
+      "worst_block_ms": 3.8059
+    },
+    {
+      "notes": 16,
+      "copies": 7,
+      "chain": "studio-ladder-harmonics",
+      "trials": 3,
+      "median_ms_per_audio_second": 4193.648537,
+      "median_p99_ms": 11.6408,
+      "worst_block_ms": 11.9144
+    },
+    {
+      "notes": 4,
+      "copies": 1,
+      "chain": "studio-existing",
+      "trials": 3,
+      "median_ms_per_audio_second": 56.203923,
+      "median_p99_ms": 0.1908,
+      "worst_block_ms": 0.2612
+    },
+    {
+      "notes": 4,
+      "copies": 1,
+      "chain": "studio-ladder-harmonics",
+      "trials": 3,
+      "median_ms_per_audio_second": 538.370146,
+      "median_p99_ms": 1.6457,
+      "worst_block_ms": 1.8944
+    },
+    {
+      "notes": 4,
+      "copies": 7,
+      "chain": "studio-existing",
+      "trials": 3,
+      "median_ms_per_audio_second": 173.105386,
+      "median_p99_ms": 0.6303,
+      "worst_block_ms": 0.7229
+    },
+    {
+      "notes": 4,
+      "copies": 7,
+      "chain": "studio-ladder-harmonics",
+      "trials": 3,
+      "median_ms_per_audio_second": 1053.703324,
+      "median_p99_ms": 3.0173,
+      "worst_block_ms": 3.5504
+    }
+  ],
+  "hashes": {
+    "packages/synth-core/src/blocks_synth.cpp": "167df6401c1dc6da806249075262c4d49dbc864672c05ceab686b77123361d39",
+    "packages/synth-core/src/ladder_filter.h": "91d400bd304b958630e04c791dcf09998cec42f61ad3822235906424a286a308",
+    "packages/synth-core/src/harmonics.h": "f47cd57eeba4dbea16ba2d2550c85c309b7ea7d133fee090f5ee5e2c3a02bbe6",
+    "packages/synth-core/src/wave_source.h": "3ac4342cfff0aa19854cba22459736b301a6588eb996ea7cda7568b103ea160f",
+    "packages/synth-core/tests/sound_quality_benchmark.cpp": "c5a4b59b241b6c21361f633579a8dae5b9aa4ce8cd6bdbf2922e82315ed3fcf7"
+  }
+}

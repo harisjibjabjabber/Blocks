@@ -1,0 +1,7 @@
+out/
+__pycache__/
+*.f32
+*.wasm
+*.mjs
+*.wav
+table_bank.h

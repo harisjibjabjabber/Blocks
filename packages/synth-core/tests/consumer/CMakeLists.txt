@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.16)
+project(synth_consumer LANGUAGES CXX)
+find_package(blocks_synth 0.1 CONFIG REQUIRED)
+add_executable(synth_consumer main.cpp)
+target_link_libraries(synth_consumer PRIVATE Blocks::Synth)

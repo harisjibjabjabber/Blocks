@@ -1,0 +1,389 @@
+{
+  "method": "Coherent16384sample stationary sine,48kHz,inputpeak.4,cutoff6k,resonance.65. Native1x uses same nonlinear step with1xprewarp; production8x uses127tapKaiser8.6 polyphase reconstruction/decimation. Unwantedbins0-20k exclude odd desired harmonics. Fundamental/wantedpower reported independently. Not universalaliasfree/listening proof.",
+  "production_1x_vs_8x": [
+    {
+      "hz": 999.0234375,
+      "drive": 1.0,
+      "cutoff": 6000,
+      "resonance": 0.65,
+      "studio_oversampling": 8,
+      "input_peak": 0.4,
+      "one_alias_power": 1.45340318342e-27,
+      "studio_alias_power": 1.56180578377e-27,
+      "alias_reduction_dB": -0.312409197,
+      "one_fundamental_peak": 0.411375526715,
+      "studio_fundamental_peak": 0.41263731371,
+      "fundamental_change_dB": 0.026600923,
+      "wanted_power_change_dB": 0.026873371,
+      "one_peak": 0.4168367,
+      "studio_peak": 0.418757507,
+      "one_residual": 2.70616862e-16,
+      "studio_residual": 1.36717894e-16
+    },
+    {
+      "hz": 999.0234375,
+      "drive": 12.0,
+      "cutoff": 6000,
+      "resonance": 0.65,
+      "studio_oversampling": 8,
+      "input_peak": 0.4,
+      "one_alias_power": 6.7502354305e-08,
+      "studio_alias_power": 1.30908976695e-14,
+      "alias_reduction_dB": 67.123494921,
+      "one_fundamental_peak": 0.124183520023,
+      "studio_fundamental_peak": 0.120923348971,
+      "fundamental_change_dB": -0.231075989,
+      "wanted_power_change_dB": -0.237456463,
+      "one_peak": 0.119257086,
+      "studio_peak": 0.117058784,
+      "one_residual": 9.59302082e-16,
+      "studio_residual": 8.55218674e-16
+    },
+    {
+      "hz": 5000.9765625,
+      "drive": 1.0,
+      "cutoff": 6000,
+      "resonance": 0.65,
+      "studio_oversampling": 8,
+      "input_peak": 0.4,
+      "one_alias_power": 1.56366300178e-06,
+      "studio_alias_power": 5.93459278176e-17,
+      "alias_reduction_dB": 104.207522363,
+      "one_fundamental_peak": 0.354973755522,
+      "studio_fundamental_peak": 0.343267074694,
+      "fundamental_change_dB": -0.291281926,
+      "wanted_power_change_dB": -0.29058707,
+      "one_peak": 0.3537177,
+      "studio_peak": 0.347692487,
+      "one_residual": 4.57966998e-16,
+      "studio_residual": 2.75821033e-16
+    },
+    {
+      "hz": 5000.9765625,
+      "drive": 12.0,
+      "cutoff": 6000,
+      "resonance": 0.65,
+      "studio_oversampling": 8,
+      "input_peak": 0.4,
+      "one_alias_power": 1.37073708966e-05,
+      "studio_alias_power": 7.95955313714e-11,
+      "alias_reduction_dB": 52.360654778,
+      "one_fundamental_peak": 0.0313512570944,
+      "studio_fundamental_peak": 0.0303769669712,
+      "fundamental_change_dB": -0.27421101,
+      "wanted_power_change_dB": -0.27324608,
+      "one_peak": 0.035025112,
+      "studio_peak": 0.030867457,
+      "one_residual": 5.689893e-16,
+      "studio_residual": 4.38885039e-16
+    },
+    {
+      "hz": 9999.0234375,
+      "drive": 1.0,
+      "cutoff": 6000,
+      "resonance": 0.65,
+      "studio_oversampling": 8,
+      "input_peak": 0.4,
+      "one_alias_power": 1.7060613156e-05,
+      "studio_alias_power": 4.15991317957e-13,
+      "alias_reduction_dB": 76.129103689,
+      "one_fundamental_peak": 0.0477669863199,
+      "studio_fundamental_peak": 0.0654712639851,
+      "fundamental_change_dB": 2.73845767,
+      "wanted_power_change_dB": 2.73845767,
+      "one_peak": 0.052036374,
+      "studio_peak": 0.065470485,
+      "one_residual": 3.60822483e-16,
+      "studio_residual": 2.24213009e-16
+    },
+    {
+      "hz": 9999.0234375,
+      "drive": 12.0,
+      "cutoff": 6000,
+      "resonance": 0.65,
+      "studio_oversampling": 8,
+      "input_peak": 0.4,
+      "one_alias_power": 7.36865178831e-05,
+      "studio_alias_power": 3.75121003972e-09,
+      "alias_reduction_dB": 42.93216652,
+      "one_fundamental_peak": 0.00465153627714,
+      "studio_fundamental_peak": 0.00662722521839,
+      "fundamental_change_dB": 3.074706349,
+      "wanted_power_change_dB": 3.074706349,
+      "one_peak": 0.020687758,
+      "studio_peak": 0.006744311,
+      "one_residual": 4.16333634e-16,
+      "studio_residual": 2.49800181e-16
+    }
+  ],
+  "isolated_2x_4x_8x_max_drive": [
+    {
+      "oversampling": 2,
+      "hz": 5000.9765625,
+      "alias_power": 2.87091469095e-06,
+      "fundamental_peak": 0.0306119526269,
+      "alias_dBc": -19.117017862,
+      "peak": 0.033857211,
+      "residual": 4.78783679e-16,
+      "spurs": [
+        {
+          "hz": 981.4453125,
+          "amplitude": 0.00333421898081
+        },
+        {
+          "hz": 9020.5078125,
+          "amplitude": 0.000424405116445
+        },
+        {
+          "hz": 10983.3984375,
+          "amplitude": 0.000306759885253
+        },
+        {
+          "hz": 3038.0859375,
+          "amplitude": 0.000288913360309
+        },
+        {
+          "hz": 6963.8671875,
+          "amplitude": 7.17797900499e-05
+        },
+        {
+          "hz": 2944.3359375,
+          "amplitude": 4.88318755321e-05
+        },
+        {
+          "hz": 13040.0390625,
+          "amplitude": 2.37343904273e-05
+        },
+        {
+          "hz": 7057.6171875,
+          "amplitude": 1.87333979995e-05
+        }
+      ]
+    },
+    {
+      "oversampling": 4,
+      "hz": 5000.9765625,
+      "alias_power": 3.35644702161e-08,
+      "fundamental_peak": 0.0304309003792,
+      "alias_dBc": -38.386898166,
+      "peak": 0.031157495,
+      "residual": 4.54497551e-16,
+      "spurs": [
+        {
+          "hz": 3038.0859375,
+          "amplitude": 0.000346885035811
+        },
+        {
+          "hz": 6963.8671875,
+          "amplitude": 0.000113091151787
+        },
+        {
+          "hz": 13040.0390625,
+          "amplitude": 2.38612165547e-05
+        },
+        {
+          "hz": 1075.1953125,
+          "amplitude": 2.28711543923e-05
+        },
+        {
+          "hz": 16965.8203125,
+          "amplitude": 5.62163126967e-06
+        },
+        {
+          "hz": 8926.7578125,
+          "amplitude": 3.04971476495e-06
+        },
+        {
+          "hz": 11077.1484375,
+          "amplitude": 2.2371523514e-06
+        },
+        {
+          "hz": 887.6953125,
+          "amplitude": 8.10023047815e-07
+        }
+      ]
+    },
+    {
+      "oversampling": 8,
+      "hz": 5000.9765625,
+      "alias_power": 7.95955313707e-11,
+      "fundamental_peak": 0.0303769669712,
+      "alias_dBc": -64.621401402,
+      "peak": 0.030867457,
+      "residual": 4.45823933e-16,
+      "spurs": [
+        {
+          "hz": 1075.1953125,
+          "amplitude": 1.75828155515e-05
+        },
+        {
+          "hz": 8926.7578125,
+          "amplitude": 2.59232476202e-06
+        },
+        {
+          "hz": 11077.1484375,
+          "amplitude": 1.5663079482e-06
+        },
+        {
+          "hz": 2991.2109375,
+          "amplitude": 1.85077351852e-07
+        },
+        {
+          "hz": 18928.7109375,
+          "amplitude": 1.04549180708e-07
+        },
+        {
+          "hz": 981.4453125,
+          "amplitude": 6.62904881381e-08
+        },
+        {
+          "hz": 7010.7421875,
+          "amplitude": 5.48025133182e-08
+        },
+        {
+          "hz": 12993.1640625,
+          "amplitude": 1.3111974498e-08
+        }
+      ]
+    },
+    {
+      "oversampling": 2,
+      "hz": 9999.0234375,
+      "alias_power": 3.55856293192e-06,
+      "fundamental_peak": 0.00621628180456,
+      "alias_dBc": -4.337267466,
+      "peak": 0.010799398,
+      "residual": 3.1918912e-16,
+      "spurs": [
+        {
+          "hz": 2018.5546875,
+          "amplitude": 0.00275183491073
+        },
+        {
+          "hz": 6008.7890625,
+          "amplitude": 0.00233483377777
+        },
+        {
+          "hz": 1971.6796875,
+          "amplitude": 0.00107838872608
+        },
+        {
+          "hz": 13989.2578125,
+          "amplitude": 0.00016691042633
+        },
+        {
+          "hz": 5961.9140625,
+          "amplitude": 0.000126720017187
+        },
+        {
+          "hz": 17979.4921875,
+          "amplitude": 3.16666215348e-05
+        },
+        {
+          "hz": 2065.4296875,
+          "amplitude": 3.12871722333e-05
+        },
+        {
+          "hz": 6055.6640625,
+          "amplitude": 2.18865879736e-05
+        }
+      ]
+    },
+    {
+      "oversampling": 4,
+      "hz": 9999.0234375,
+      "alias_power": 1.78184265483e-06,
+      "fundamental_peak": 0.006543885034,
+      "alias_dBc": -7.787419792,
+      "peak": 0.009187243,
+      "residual": 2.63677968e-16,
+      "spurs": [
+        {
+          "hz": 2018.5546875,
+          "amplitude": 0.00266673535862
+        },
+        {
+          "hz": 5961.9140625,
+          "amplitude": 0.000116755542166
+        },
+        {
+          "hz": 17979.4921875,
+          "amplitude": 3.85866289381e-05
+        },
+        {
+          "hz": 6055.6640625,
+          "amplitude": 2.09876252023e-05
+        },
+        {
+          "hz": 1924.8046875,
+          "amplitude": 1.34585794207e-05
+        },
+        {
+          "hz": 14036.1328125,
+          "amplitude": 1.19671251189e-05
+        },
+        {
+          "hz": 13942.3828125,
+          "amplitude": 2.67861881784e-06
+        },
+        {
+          "hz": 2112.3046875,
+          "amplitude": 3.6570672571e-07
+        }
+      ]
+    },
+    {
+      "oversampling": 8,
+      "hz": 9999.0234375,
+      "alias_power": 3.75121003972e-09,
+      "fundamental_peak": 0.00662722521839,
+      "alias_dBc": -34.664320862,
+      "peak": 0.006744311,
+      "residual": 2.49800181e-16,
+      "spurs": [
+        {
+          "hz": 5961.9140625,
+          "amplitude": 0.000120887935017
+        },
+        {
+          "hz": 14036.1328125,
+          "amplitude": 1.4509989607e-05
+        },
+        {
+          "hz": 1924.8046875,
+          "amplitude": 1.34079692714e-05
+        },
+        {
+          "hz": 1995.1171875,
+          "amplitude": 5.41060580717e-07
+        },
+        {
+          "hz": 2112.3046875,
+          "amplitude": 3.93812584835e-07
+        },
+        {
+          "hz": 18002.9296875,
+          "amplitude": 3.57337425071e-07
+        },
+        {
+          "hz": 18073.2421875,
+          "amplitude": 2.19967009514e-07
+        },
+        {
+          "hz": 2041.9921875,
+          "amplitude": 7.92059644121e-08
+        }
+      ]
+    }
+  ],
+  "latency_samples": 15.75,
+  "dry_contract": "Matched FIR dry,filtered not exactbypass;15.75 groupdelay. Legacy model remains separate.",
+  "optimized_reference_null": "WASM-O2 exact double comparison passed at8k/44.1k/48k/96k/192k/384k. Native GCC-O3 exact equality failed without error magnitude in initial CI; revised test reports all-rate absolute/relative/scaled deltas and requires1e-12 scaled error. Native result pending rerun; no production DSP changed.",
+  "hashes": {
+    "src\\ladder_filter.h": "91d400bd304b958630e04c791dcf09998cec42f61ad3822235906424a286a308",
+    "tests\\ladder_alias_probe.cpp": "ee57db03c1f53c75a79581cc858b7e2c8ee9a022d1456cc04b452ad8136530ff",
+    "tests\\ladder_polyphase_tests.cpp": "26a857c9b144e83bdc3d74e551e8e3e0e296b56eb47053a09f387fd0a5326899",
+    "tests\\quality_integration_tests.cpp": "eae467155af9ce157e38086637f230284fcbf31f43b1de6c8139e476d76c216b"
+  },
+  "status": "Historical distributed-nonlinearity Ladder evidence. Replaced by scalar-feedback production; current evidence in warm_filter_summary.json. Historical source hashes/alias measurements intentionally retained."
+}

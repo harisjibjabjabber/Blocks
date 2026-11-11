@@ -14,12 +14,15 @@ export interface KnownGrid {
   beatsPerBar: number;
   /** Bar 1, in scheduler ticks. An accepted BPM without this is not a grid. */
   phase: bigint;
+  /** Dashed ruler only when this was explicitly chosen. A tempo alone never sets it. */
+  provisional?: boolean;
 }
 
 export interface RulerMark {
   time: bigint;
   kind: "second" | "bar" | "beat";
   label: string;
+  tentative: boolean;
 }
 
 export function timeToX(time: bigint, window: TimeWindow, width: number): number {
@@ -87,7 +90,10 @@ export function rulerMarks(window: TimeWindow, grid: KnownGrid | null, ticksPerS
       marks.push({
         time,
         kind: bar ? "bar" : "beat",
-        label: bar ? String(barNumber) : "",
+        // Retained material before the grid origin is labelled once by the
+        // renderer as "Before loop"; keep its grid lines, not negative bars.
+        label: bar && index >= 0n ? String(barNumber) : "",
+        tentative: grid.provisional === true,
       });
     }
     index += 1n;
@@ -110,10 +116,11 @@ function secondMarks(window: TimeWindow, ticksPerSecond: number): RulerMark[] {
   for (let guard = 0; guard < 400 && time <= window.end; guard += 1) {
     const index = time / step;
     marks.push({
-      time,
-      kind: "second",
-      label: index % every === 0n ? index.toString() + "s" : "",
-    });
+        time,
+        kind: "second",
+        label: index % every === 0n ? index.toString() + "s" : "",
+        tentative: false,
+      });
     time += step;
   }
   return marks;
@@ -128,6 +135,31 @@ export function framePhrase(historyStart: bigint, loopStart: bigint, loopEnd: bi
   }
   const end = loopEnd > start ? loopEnd : start + 1n;
   return { start, end };
+}
+
+/** Editor framing shows whole musical bars; it never changes the take or loop. */
+export function editorFrame(historyStart: bigint, loopStart: bigint, loopEnd: bigint, grid: KnownGrid, minimumBars = 2): TimeWindow {
+  const frame = framePhrase(historyStart, loopStart, loopEnd);
+  const bar = beatTicks(grid.bpm) * BigInt(grid.beatsPerBar);
+  if (bar <= 0n) return frame;
+  const needed = loopEnd > grid.phase ? loopEnd - grid.phase : bar;
+  const bars = (needed + bar - 1n) / bar;
+  return { start: frame.start, end: grid.phase + (bars > BigInt(minimumBars) ? bars : BigInt(minimumBars)) * bar };
+}
+
+/** Human-readable bar.beat, including pickups before bar one. */
+export function musicalPosition(time: bigint, grid: KnownGrid): string {
+  const beat = beatTicks(grid.bpm);
+  if (beat <= 0n) return "1.1";
+  const relative = time - grid.phase;
+  // Match the once-rounded snap lattice rather than accumulating rounded beats.
+  const idealBeat = 60_000_000 / grid.bpm;
+  const position = Number(relative) / idealBeat;
+  const nearest = Math.round(position);
+  const index = BigInt(Math.abs(Number(relative) - nearest * idealBeat) <= 0.500001 ? nearest : Math.floor(position));
+  const meter = BigInt(grid.beatsPerBar);
+  const bar = index / meter - (index < 0n && index % meter !== 0n ? 1n : 0n);
+  return `${bar + 1n}.${index - bar * meter + 1n}`;
 }
 
 export function zoomWindow(window: TimeWindow, factor: number, anchor: bigint, minSpan: bigint, maxSpan: bigint): TimeWindow {

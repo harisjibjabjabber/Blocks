@@ -4,7 +4,9 @@
  */
 
 import type { CapturedEvent } from "../domain/capture";
-import { beatTicks, type KnownGrid } from "./roll-time";
+import { loopEvents } from "../domain/loop-events";
+import type { KnownGrid } from "./roll-time";
+import { DEFAULT_SNAP, snapStep, snapTime, snapIndexAt, type SnapDivision } from "./snap";
 
 export interface RollNote {
   id: string;
@@ -93,19 +95,29 @@ export function setVelocity(notes: readonly RollNote[], id: string, velocity: nu
   return notes.map((note) => (note.id === id ? { ...note, velocity: next } : note));
 }
 
-export function nearestBeat(time: bigint, grid: KnownGrid): bigint {
-  const beat = beatTicks(grid.bpm);
-  if (beat <= 0n) {
-    return time;
+/** Quarter-note beat divided by 4. Tie at exactly half a step rounds away from zero. */
+export function gridStep(grid: KnownGrid): bigint {
+  return snapStep(grid, DEFAULT_SNAP) ?? 0n;
+}
+
+export function snapDelta(delta: bigint, step: bigint): bigint {
+  if (step <= 0n) {
+    return delta;
   }
-  const relative = time - grid.phase;
-  const steps = (relative + beat / 2n) / beat;
-  return grid.phase + steps * beat;
+  if (delta >= 0n) {
+    return ((delta + step / 2n) / step) * step;
+  }
+  const abs = -delta;
+  return -((abs + step / 2n) / step) * step;
+}
+
+export function nearestStep(time: bigint, grid: KnownGrid): bigint {
+  return snapTime(time, grid, DEFAULT_SNAP);
 }
 
 /** A preview. The notes array and the source events are not written. */
-export function quantisePreview(notes: readonly RollNote[], ids: readonly string[], grid: KnownGrid | null): { id: string; start: bigint; end: bigint }[] {
-  if (grid === null) {
+export function quantisePreview(notes: readonly RollNote[], ids: readonly string[], grid: KnownGrid | null, division: SnapDivision = DEFAULT_SNAP, strength = 50, swing = 0): { id: string; start: bigint; end: bigint }[] {
+  if (snapStep(grid, division) === null) {
     return [];
   }
   const chosen = new Set(ids);
@@ -113,7 +125,10 @@ export function quantisePreview(notes: readonly RollNote[], ids: readonly string
     .filter((note) => chosen.size === 0 || chosen.has(note.id))
     .map((note) => {
       const length = note.end > note.start ? note.end - note.start : 1n;
-      const start = nearestBeat(note.start, grid);
+      let target = snapTime(note.start, grid, division);
+      const index = snapIndexAt(target, grid, division);
+      if (index !== null && index % 2n !== 0n) target += (snapStep(grid, division) ?? 0n) * BigInt(Math.round(Math.max(0, Math.min(50, swing)))) / 100n;
+      const start = note.start + (target - note.start) * BigInt(Math.round(Math.max(0, Math.min(100, strength)))) / 100n;
       return { id: note.id, start, end: start + length };
     });
 }
@@ -126,26 +141,23 @@ export function applyPreview(notes: readonly RollNote[], preview: readonly { id:
   });
 }
 
-export function workingPlayback(source: readonly CapturedEvent[], notes: readonly RollNote[], bounds: { start: bigint; end: bigint }): CapturedEvent[] {
-  if (source.length === 0) {
-    return [];
-  }
-  const template = source[0];
-  const controllers = source.filter((event) => event.kind === "cc" && event.scheduleElapsed >= bounds.start && event.scheduleElapsed <= bounds.end);
+export function workingPlayback(source: readonly CapturedEvent[], notes: readonly RollNote[], bounds: { start: bigint; end: bigint }, domain: CapturedEvent["domain"] = "web-performance-us"): CapturedEvent[] {
+  const template: CapturedEvent = source[0] ?? { id: "editor", domain, sequence: 0n, portId: "editor", sessionId: "editor", channel: 0, kind: "note-on", note: 0, velocity: 0, controller: 0, value: 0, sourceTimestamp: 0n, receiptTimestamp: 0n, missingSourceTimestamp: false, raw: null, origin: "touch", elapsedSource: 0n, elapsedReceipt: 0n, scheduleElapsed: 0n };
+  // Keep expression payloads and timestamps intact, including pitch/pressure
+  // represented as `other`. Note edits replace only note messages.
+  const controllers = source.filter((event) => event.kind !== "note-on" && event.kind !== "note-off");
   const sounded: CapturedEvent[] = [];
+  const boundaryReleases: CapturedEvent[] = [];
   for (const note of notes) {
-    if (note.end <= bounds.start || note.start >= bounds.end) {
-      continue;
-    }
-    const on = note.start < bounds.start ? bounds.start : note.start;
-    const off = note.end > bounds.end ? bounds.end : note.end;
-    if (off <= on) {
-      continue;
-    }
-    sounded.push(cloneEvent(template, note.id + ":on", "note-on", note.pitch, note.velocity, note.channel, on));
-    sounded.push(cloneEvent(template, note.id + ":off", "note-off", note.pitch, 0, note.channel, off));
+    if (note.end <= note.start || note.start >= bounds.end) continue;
+    sounded.push(cloneEvent(template, note.id + ":on", "note-on", note.pitch, note.velocity, note.channel, note.start));
+    sounded.push(cloneEvent(template, note.id + ":off", "note-off", note.pitch, 0, note.channel, note.end));
+    if (note.end > bounds.end) boundaryReleases.push(cloneEvent(template, note.id + ":off", "note-off", note.pitch, 0, note.channel, bounds.end));
   }
-  return [...controllers, ...sounded].sort((a, b) => (a.scheduleElapsed < b.scheduleElapsed ? -1 : a.scheduleElapsed > b.scheduleElapsed ? 1 : 0));
+  // Resolve sustain on the edited note history before clipping. A finger release
+  // before start can still sound under CC64; deleted notes never enter this copy.
+  const played = loopEvents([...controllers, ...sounded], bounds);
+  return [...played, ...boundaryReleases].sort((a, b) => (a.scheduleElapsed < b.scheduleElapsed ? -1 : a.scheduleElapsed > b.scheduleElapsed ? 1 : 0));
 }
 
 function cloneEvent(template: CapturedEvent, id: string, kind: CapturedEvent["kind"], note: number, velocity: number, channel: number, time: bigint): CapturedEvent {

@@ -1,5 +1,6 @@
 import { DeviceEventEmitter, NativeModules } from "react-native";
 import { EP_PRESET } from "../audio/web/preset";
+import { INSTRUMENTS, type InstrumentId, type SynthEnvelope } from "../audio/instruments";
 import type { IncomingEvent } from "../domain/capture";
 
 interface NativeEngine {
@@ -88,10 +89,23 @@ export function createNativeEngine() {
 
   return {
     kind: "android" as const,
+    domain: "android-monotonic-ns" as const,
     presetId: EP_PRESET.id,
     presetName: EP_PRESET.name,
+    // The native bridge currently implements only the fixed Warm EP voice.
+    instruments: INSTRUMENTS.filter(item => item.id === EP_PRESET.id),
+    setLiveInstrument(_id: string, _envelope?: SynthEnvelope): InstrumentId { return EP_PRESET.id; },
+    setLayerVolume(_layerId: string, _volume: number): void {},
+    setLayerInstrument(_layerId: string, _id: string, _envelope?: SynthEnvelope): InstrumentId { return EP_PRESET.id; },
+    setAuditionInstrument(_id: string, _envelope?: SynthEnvelope): InstrumentId { return EP_PRESET.id; },
+    capabilities: { audition: false, soundingPitches: false, synthEnvelope: false },
+    // Native bridge has no isolated audition or authoritative sounding-state API.
+    audition(_note: number, _down: boolean) {},
+    stopAudition() {},
+    soundingPitches(_layerId: string): readonly number[] { return []; },
     getGate: () => gate,
     readAudioState: () => (gate.audioRunning ? "running" : "stopped"),
+    async resumeAudio() { const state = JSON.parse(await native.start()) as { audio: boolean }; gate = { ...gate, audioRunning: state.audio, ready: state.audio && gate.midiAccess }; },
     ports: () => ports,
     async enable() {
       const raw = await native.start();
@@ -131,7 +145,7 @@ export function createNativeEngine() {
     setSustain(cc: number) {
       native.setSustain(cc);
     },
-    replay(events: IncomingEvent[], stretch: number) {
+    replay(events: (IncomingEvent & { scheduleElapsed: bigint })[], stretch: number) {
       const first = events[0]?.scheduleElapsed ?? 0n;
       const lines = events
         .map((event) => {
@@ -147,6 +161,9 @@ export function createNativeEngine() {
     },
     stopReplay() {
       native.stopReplay();
+    },
+    transport(_layerId?: string) {
+      return { availability: "unavailable" as const, state: "stopped" as const, positionSeconds: null, originSeconds: null, revision: 0 };
     },
     async stats() {
       return native.stats();

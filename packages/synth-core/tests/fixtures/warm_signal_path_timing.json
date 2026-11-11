@@ -1,0 +1,88 @@
+{
+  "date": "2026-11-10",
+  "platform": "Windows desktop Node22 Emscripten7 WASM O2; not AudioWorklet timing",
+  "sample_rate": 48000,
+  "block_frames": 128,
+  "block_budget_ms": 2.6666666666666665,
+  "rows": [
+    {
+      "notes": 16,
+      "copies": 1,
+      "chain": "studio-existing",
+      "trials": 3,
+      "median_ms_per_audio_second": 183.928524,
+      "median_p99_ms": 0.7268,
+      "worst_block_ms": 0.7736
+    },
+    {
+      "notes": 16,
+      "copies": 1,
+      "chain": "studio-ladder-harmonics",
+      "trials": 3,
+      "median_ms_per_audio_second": 1023.112301,
+      "median_p99_ms": 3.1273,
+      "worst_block_ms": 3.3901
+    },
+    {
+      "notes": 16,
+      "copies": 7,
+      "chain": "studio-existing",
+      "trials": 3,
+      "median_ms_per_audio_second": 641.232247,
+      "median_p99_ms": 1.9427,
+      "worst_block_ms": 2.0679
+    },
+    {
+      "notes": 16,
+      "copies": 7,
+      "chain": "studio-ladder-harmonics",
+      "trials": 3,
+      "median_ms_per_audio_second": 1966.465293,
+      "median_p99_ms": 5.6008,
+      "worst_block_ms": 6.0383
+    },
+    {
+      "notes": 4,
+      "copies": 1,
+      "chain": "studio-existing",
+      "trials": 3,
+      "median_ms_per_audio_second": 54.340093,
+      "median_p99_ms": 0.2059,
+      "worst_block_ms": 0.3262
+    },
+    {
+      "notes": 4,
+      "copies": 1,
+      "chain": "studio-ladder-harmonics",
+      "trials": 3,
+      "median_ms_per_audio_second": 236.867154,
+      "median_p99_ms": 0.835,
+      "worst_block_ms": 0.8745
+    },
+    {
+      "notes": 4,
+      "copies": 7,
+      "chain": "studio-existing",
+      "trials": 3,
+      "median_ms_per_audio_second": 168.550532,
+      "median_p99_ms": 0.6283,
+      "worst_block_ms": 0.6817
+    },
+    {
+      "notes": 4,
+      "copies": 7,
+      "chain": "studio-ladder-harmonics",
+      "trials": 3,
+      "median_ms_per_audio_second": 496.135372,
+      "median_p99_ms": 1.5191,
+      "worst_block_ms": 1.9736
+    }
+  ],
+  "same_fixture_as": "signal_path_desktop_timing.json",
+  "old_model_is_historical": true,
+  "hashes": {
+    "packages/synth-core/src/blocks_synth.cpp": "46ba5dbc0d7a93906b464cff5615771cc5f42f62ed19f34913bae751d1026e4d",
+    "packages/synth-core/src/ladder_filter.h": "3dfdb46623fbf3ff5e79c30c8abbd0df9a9a466c12d6158146f35e03c8244311",
+    "packages/synth-core/tests/sound_quality_benchmark.cpp": "c5a4b59b241b6c21361f633579a8dae5b9aa4ce8cd6bdbf2922e82315ed3fcf7"
+  }
+}

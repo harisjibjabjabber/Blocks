@@ -1,0 +1,23 @@
+import {spawnSync} from 'node:child_process';
+import {mkdirSync,readFileSync,writeFileSync,readdirSync} from 'node:fs';
+import {resolve,dirname} from 'node:path';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {createHash} from 'node:crypto';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+if(!process.env.EMSDK)throw Error('Set EMSDK to Emscripten7.0.0');
+const out=resolve(process.env.SYNTH_FILTER_AUDITIONS_DIR||resolve(root,'../synth-filter-auditions'));
+mkdirSync(out,{recursive:true});
+const files=dir=>readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?files(resolve(dir,e.name)):/\.(?:h|cpp)$/.test(e.name)?[resolve(dir,e.name)]:[]).sort();
+const paths=[...files(resolve(root,'packages/synth-core/src')),...files(resolve(root,'packages/synth-core/include')),resolve(root,'packages/synth-core/tests/filter_auditions.cpp'),fileURLToPath(import.meta.url)];
+const sha=path=>createHash('sha256').update(readFileSync(path)).digest('hex');
+const hashes=()=>paths.map(path=>({path:path.slice(root.length+1).replaceAll('\\','/'),sha256:sha(path)}));
+const sourceHashes=hashes(),target=resolve(out,'filter-auditions.mjs');
+const compile=spawnSync(process.env.PYTHON||'python',[resolve(process.env.EMSDK,'upstream/emscripten/em++.py'),resolve(root,'packages/synth-core/src/blocks_synth.cpp'),resolve(root,'packages/synth-core/tests/filter_auditions.cpp'),'-I'+resolve(root,'packages/synth-core/include'),'-std=c++17','-O2','-Wall','-Wextra','-Wpedantic','-sSTACK_SIZE=1048576','-sENVIRONMENT=node','-sEXIT_RUNTIME=1','-sNODERAWFS=1','-o',target],{stdio:'inherit'});
+if(compile.error)throw compile.error;if(compile.status)process.exit(compile.status);
+let status=0;await(await import(pathToFileURL(target).href)).default({arguments:[out],onExit:value=>status=value});if(status||process.exitCode)process.exit(status||process.exitCode);
+if(JSON.stringify(sourceHashes)!==JSON.stringify(hashes()))throw Error('Source changed during render');
+const path=resolve(out,'filter-auditions.json'),manifest=JSON.parse(readFileSync(path,'utf8'));
+if(manifest.clips.length!==4)throw Error('Incomplete fixture');
+for(const clip of manifest.clips){clip.sha256=sha(resolve(out,clip.file));if(clip.peak>=1||clip.peak<.001||clip.finalActiveVoices!==0)throw Error('Invalid signal');}
+manifest.sourceHashes=sourceHashes;manifest.runtime={node:process.version,platform:process.platform,arch:process.arch,compiler:'Emscripten7.0.0 C++17 -O2'};
+writeFileSync(path,JSON.stringify(manifest,null,2)+'\n');console.log(path);

@@ -1,4 +1,5 @@
 import type { CapturedEvent } from "./capture";
+import { midiTempoCandidates } from "./midi-tempo";
 
 export interface SwingReport {
   longTicks: bigint;
@@ -176,40 +177,24 @@ export function inferPulse(events: readonly CapturedEvent[], ticksPerSecond: num
   }
   const minLag = ticks(60, ticksPerSecond);
   const maxLag = ticks(2000, ticksPerSecond);
-  let bestLag = 0n;
-  let bestScore = 0;
-  const step = ticks(5, ticksPerSecond);
-  for (let lag = minLag; lag <= maxLag; lag += step < 1n ? 1n : step) {
-    const tolerance = lag / 12n > ticks(15, ticksPerSecond) ? lag / 12n : ticks(15, ticksPerSecond);
-    const score = scoreLag(chosen, lag, tolerance);
-    if (score > bestScore || (score === bestScore && (bestLag === 0n || lag < bestLag))) {
-      bestScore = score;
-      bestLag = lag;
-    }
-  }
-  if (swing) {
-    const beat = swing.longTicks + swing.shortTicks;
-    const tolerance = beat / 12n > ticks(15, ticksPerSecond) ? beat / 12n : ticks(15, ticksPerSecond);
-    const swingScore = scoreLag(chosen, beat, tolerance);
-    if (swingScore >= bestScore) {
-      bestLag = beat;
-      bestScore = swingScore;
-    }
-  }
-  if (bestScore < chosen.length * 0.45) {
+  const evidence = midiTempoCandidates(chosen, ticksPerSecond);
+  const best = evidence.candidates[0];
+  if (!best) {
     return {
       ...base,
       gaps,
       falseStart,
       swing,
-      reason: "No lag explains enough of the attacks.",
+      reason: "The attacks do not support a stable beat candidate. No tempo was assigned.",
     };
   }
+  const bestLag = best.periodTicks;
+  const bestScore = scoreLag(chosen, bestLag, bestLag / 12n > ticks(15, ticksPerSecond) ? bestLag / 12n : ticks(15, ticksPerSecond));
   const half = bestLag / 2n;
   const double = bestLag * 2n;
   const halfScore = half >= minLag ? scoreLag(chosen, half, half / 8n > ticks(15, ticksPerSecond) ? half / 8n : ticks(15, ticksPerSecond)) : 0;
   const doubleScore = double <= maxLag * 2n ? scoreLag(chosen, double, double / 8n) : 0;
-  const ambiguous = doubleScore >= bestScore * 0.85 || (halfScore >= bestScore * 0.85 && half >= minLag);
+  const ambiguous = evidence.ambiguous || doubleScore >= bestScore * 0.85 || (halfScore >= bestScore * 0.85 && half >= minLag);
   const bpm = (ticksPerSecond * 60) / Number(bestLag);
   let syncopation = 0;
   const gridTolerance = bestLag / 8n > ticks(20, ticksPerSecond) ? ticks(20, ticksPerSecond) : bestLag / 8n;
@@ -223,7 +208,7 @@ export function inferPulse(events: readonly CapturedEvent[], ticksPerSecond: num
   const pickupCandidate = chosenIois.length > 0 && chosenIois[0] * 10n < bestLag * 6n;
   return {
     pulse: "estimated",
-    reason: "A repeating attack interval is present. It does not prove the bar.",
+    reason: `${evidence.sparse ? "Sparse attacks support several metrical interpretations; the candidate uses a 60–200 BPM initial octave prior." : "A repeating beat candidate is present."} It does not prove the bar or downbeat.${evidence.truncated ? " The latest 512 onset groups were analysed." : ""}`,
     periodTicks: bestLag,
     bpm,
     halfPeriodTicks: half >= minLag ? half : null,
@@ -233,7 +218,7 @@ export function inferPulse(events: readonly CapturedEvent[], ticksPerSecond: num
     primaryScore: bestScore,
     ambiguity: ambiguous ? "half-double" : "primary-stronger",
     ambiguityNote: ambiguous
-      ? "Half-time or double-time also lands on many of these attacks. The recording is unchanged."
+      ? "Other tempo levels or beat phases also fit these attacks. Half/double time and the bar placement remain uncertain. The recording is unchanged."
       : "One interval fits better than its half or double. Both remain available. The recording is unchanged.",
     swing,
     gaps,

@@ -1,0 +1,115 @@
+name: standalone synth
+on:
+  pull_request:
+  push:
+    branches-ignore: [main, handover/status]
+permissions:
+  contents: read
+concurrency:
+  group: synth-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  portable-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Native core and installable package
+        run: |
+          cmake -S packages/synth-core -B "$RUNNER_TEMP/native" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/synth-install"
+          cmake --build "$RUNNER_TEMP/native" --parallel 2
+          mkdir -p "$RUNNER_TEMP/synth-evidence"
+          "$RUNNER_TEMP/native/blocks_synth_ladder_polyphase_tests" | tee "$RUNNER_TEMP/synth-evidence/native-ladder-polyphase.txt"
+          "$RUNNER_TEMP/native/blocks_synth_oscillator_voicing_tests" | tee "$RUNNER_TEMP/synth-evidence/native-oscillator-voicing.txt"
+          "$RUNNER_TEMP/native/blocks_synth_osc_bass_tests" | tee "$RUNNER_TEMP/synth-evidence/native-osc-bass.txt"
+          "$RUNNER_TEMP/native/blocks_synth_bass_expansion_tests" | tee "$RUNNER_TEMP/synth-evidence/native-bass-expansion.txt"
+          "$RUNNER_TEMP/native/blocks_synth_harmonics_suite_tests" | tee "$RUNNER_TEMP/synth-evidence/native-harmonics-suite.txt"
+          "$RUNNER_TEMP/native/blocks_synth_harmonics_suite_integration_tests" | tee "$RUNNER_TEMP/synth-evidence/native-harmonics-suite-integration.txt"
+          ctest --test-dir "$RUNNER_TEMP/native" --output-on-failure
+          cmake --install "$RUNNER_TEMP/native"
+          cmake -S packages/synth-core/tests/consumer -B "$RUNNER_TEMP/consumer" -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/synth-install"
+          cmake --build "$RUNNER_TEMP/consumer" --parallel 2
+          "$RUNNER_TEMP/consumer/synth_consumer"
+          mkdir -p "$RUNNER_TEMP/synth-evidence"
+          "$RUNNER_TEMP/native/blocks_synth_render" "$RUNNER_TEMP/synth-evidence/native.wav"
+          "$RUNNER_TEMP/native/blocks_synth_benchmark" "$RUNNER_TEMP/synth-evidence/native-benchmark.json"
+          "$RUNNER_TEMP/native/blocks_synth_unison_benchmark" > "$RUNNER_TEMP/synth-evidence/native-unison-benchmark.txt"
+          "$RUNNER_TEMP/native/blocks_synth_sound_quality_benchmark" > "$RUNNER_TEMP/synth-evidence/native-sound-quality-benchmark.txt"
+          "$RUNNER_TEMP/native/blocks_synth_oscillator_routing_benchmark" > "$RUNNER_TEMP/synth-evidence/native-oscillator-routing-benchmark.txt"
+          "$RUNNER_TEMP/native/blocks_synth_osc_bass_audition" "$RUNNER_TEMP/synth-evidence"
+          "$RUNNER_TEMP/native/blocks_synth_bass_expansion_audition" "$RUNNER_TEMP/synth-evidence"
+          "$RUNNER_TEMP/native/blocks_synth_phase12_suite_audition" "$RUNNER_TEMP/synth-evidence"
+          "$RUNNER_TEMP/native/blocks_synth_phase13_reverb_audition" "$RUNNER_TEMP/synth-evidence"
+          "$RUNNER_TEMP/native/blocks_synth_creative_fx_audition" "$RUNNER_TEMP/synth-evidence"
+          "$RUNNER_TEMP/native/blocks_synth_creative_fx_benchmark" > "$RUNNER_TEMP/synth-evidence/native-creative-fx-benchmark.txt"
+          "$RUNNER_TEMP/native/blocks_synth_reverb_benchmark" > "$RUNNER_TEMP/synth-evidence/native-reverb-benchmark.txt"
+          "$RUNNER_TEMP/native/blocks_synth_phase11_chain_benchmark" > "$RUNNER_TEMP/synth-evidence/native-phase11-chain.txt"
+      - name: Install official Emscripten toolchain
+        run: |
+          git clone --depth 1 --branch 7.0.0 https://github.com/emscripten-core/emsdk.git "$RUNNER_TEMP/emsdk"
+          "$RUNNER_TEMP/emsdk/emsdk" install 7.0.0
+          "$RUNNER_TEMP/emsdk/emsdk" activate 7.0.0
+          echo "EMSDK=$RUNNER_TEMP/emsdk" >> "$GITHUB_ENV"
+      - name: WebAssembly core and native render comparison
+        env:
+          SYNTH_CORE_EVIDENCE: ${{ runner.temp }}/synth-evidence
+          PYTHON: python3
+        run: |
+          node --test packages/synth-web/*.test.mjs
+          node scripts/test-synth-core.mjs
+          node scripts/compare-synth-renders.mjs "$RUNNER_TEMP/synth-evidence/native.wav" "$RUNNER_TEMP/synth-evidence/wasm.wav"
+          node scripts/build-synth.mjs
+      - name: Reproducible audio auditions and core timing
+        env:
+          SYNTH_AUDITIONS: ${{ runner.temp }}/synth-auditions
+          SYNTH_FILTER_AUDITIONS_DIR: ${{ runner.temp }}/synth-filter-auditions
+          SYNTH_BENCHMARK_DIR: ${{ runner.temp }}/synth-evidence
+          PYTHON: python3
+        run: |
+          node scripts/render-synth-auditions.mjs
+          node scripts/render-filter-auditions.mjs
+          node scripts/benchmark-synth.mjs
+          node scripts/benchmark-synth.mjs --suite=prefix --out="$RUNNER_TEMP/synth-prefix-benchmark"
+      - name: Actual browser audio
+        env:
+          SYNTH_PROOF_DIR: ${{ runner.temp }}/synth-browser
+        run: |
+          python3 -m http.server 41821 --bind 127.0.0.1 --directory packages/synth-web/build > "$RUNNER_TEMP/synth-server.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:41821/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/synth-standalone-proof.mjs
+          node scripts/synth-reverb-proof.mjs
+          node scripts/synth-creative-proof.mjs
+          node scripts/synth-moving-lfo-proof.mjs
+          node scripts/synth-trim-space-proof.mjs
+          node scripts/synth-navigation-proof.mjs
+          node scripts/synth-gesture-proof.mjs
+          node scripts/synth-sound-proof.mjs
+          node scripts/synth-filter-shape-proof.mjs
+          node scripts/synth-osc-bass-proof.mjs
+          node scripts/synth-expansion-proof.mjs
+          node scripts/synth-suite-proof.mjs
+          node scripts/synth-suite-proof.mjs
+          node scripts/synth-tone-layout-proof.mjs
+          node scripts/synth-oscillator-proof.mjs
+          node scripts/synth-cache-proof.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: standalone-synth-evidence
+          path: |
+            ${{ runner.temp }}/synth-evidence/*.wav
+            ${{ runner.temp }}/synth-evidence/*.json
+            ${{ runner.temp }}/synth-evidence/*.txt
+            ${{ runner.temp }}/synth-auditions/*.wav
+            ${{ runner.temp }}/synth-auditions/*.json
+            ${{ runner.temp }}/synth-filter-auditions/*.wav
+            ${{ runner.temp }}/synth-filter-auditions/*.json
+            ${{ runner.temp }}/synth-prefix-benchmark/*.json
+            ${{ runner.temp }}/synth-browser
+            ${{ runner.temp }}/synth-install
+            packages/synth-web/build

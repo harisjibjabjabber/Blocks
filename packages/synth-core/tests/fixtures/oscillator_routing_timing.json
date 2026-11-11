@@ -1,0 +1,173 @@
+{
+  "date": "2026-11-11",
+  "platform": "Windows desktop Node22/Emscripten7 WASM-O2; not AudioWorklet/device guarantee",
+  "description": "Four held notes,48kHz,128frames,8x Ladder Drive4/cutoff2k/resonance.6,oscillator levels1/.3,Studio,no extra Sauce.96 measured blocks after40warmup blocks;3trials/16cases.",
+  "rows": [
+    {
+      "osc1": 1,
+      "osc2": 7,
+      "different_tuning": false,
+      "mask": 0,
+      "trials": 3,
+      "median_ms_per_audio_second": 347.178125,
+      "median_p99_ms": 1.05,
+      "worst_block_ms": 1.3464
+    },
+    {
+      "osc1": 1,
+      "osc2": 7,
+      "different_tuning": false,
+      "mask": 1,
+      "trials": 3,
+      "median_ms_per_audio_second": 531.808203,
+      "median_p99_ms": 1.6721,
+      "worst_block_ms": 1.7019
+    },
+    {
+      "osc1": 1,
+      "osc2": 7,
+      "different_tuning": false,
+      "mask": 2,
+      "trials": 3,
+      "median_ms_per_audio_second": 394.110547,
+      "median_p99_ms": 1.0975,
+      "worst_block_ms": 1.3198
+    },
+    {
+      "osc1": 1,
+      "osc2": 7,
+      "different_tuning": false,
+      "mask": 3,
+      "trials": 3,
+      "median_ms_per_audio_second": 470.330469,
+      "median_p99_ms": 1.6014,
+      "worst_block_ms": 1.6418
+    },
+    {
+      "osc1": 7,
+      "osc2": 1,
+      "different_tuning": false,
+      "mask": 0,
+      "trials": 3,
+      "median_ms_per_audio_second": 338.704297,
+      "median_p99_ms": 1.0495,
+      "worst_block_ms": 1.2305
+    },
+    {
+      "osc1": 7,
+      "osc2": 1,
+      "different_tuning": false,
+      "mask": 1,
+      "trials": 3,
+      "median_ms_per_audio_second": 414.154688,
+      "median_p99_ms": 1.3584,
+      "worst_block_ms": 1.379
+    },
+    {
+      "osc1": 7,
+      "osc2": 1,
+      "different_tuning": false,
+      "mask": 2,
+      "trials": 3,
+      "median_ms_per_audio_second": 399.991797,
+      "median_p99_ms": 1.1302,
+      "worst_block_ms": 1.1336
+    },
+    {
+      "osc1": 7,
+      "osc2": 1,
+      "different_tuning": false,
+      "mask": 3,
+      "trials": 3,
+      "median_ms_per_audio_second": 371.940234,
+      "median_p99_ms": 1.1479,
+      "worst_block_ms": 1.1484
+    },
+    {
+      "osc1": 7,
+      "osc2": 7,
+      "different_tuning": false,
+      "mask": 0,
+      "trials": 3,
+      "median_ms_per_audio_second": 395.922266,
+      "median_p99_ms": 1.1202,
+      "worst_block_ms": 1.3735
+    },
+    {
+      "osc1": 7,
+      "osc2": 7,
+      "different_tuning": false,
+      "mask": 1,
+      "trials": 3,
+      "median_ms_per_audio_second": 471.669141,
+      "median_p99_ms": 1.492,
+      "worst_block_ms": 1.6009
+    },
+    {
+      "osc1": 7,
+      "osc2": 7,
+      "different_tuning": false,
+      "mask": 2,
+      "trials": 3,
+      "median_ms_per_audio_second": 443.775,
+      "median_p99_ms": 1.3465,
+      "worst_block_ms": 1.4178
+    },
+    {
+      "osc1": 7,
+      "osc2": 7,
+      "different_tuning": false,
+      "mask": 3,
+      "trials": 3,
+      "median_ms_per_audio_second": 422.341016,
+      "median_p99_ms": 1.3482,
+      "worst_block_ms": 1.3496
+    },
+    {
+      "osc1": 7,
+      "osc2": 7,
+      "different_tuning": true,
+      "mask": 0,
+      "trials": 3,
+      "median_ms_per_audio_second": 396.316406,
+      "median_p99_ms": 1.1041,
+      "worst_block_ms": 1.4126
+    },
+    {
+      "osc1": 7,
+      "osc2": 7,
+      "different_tuning": true,
+      "mask": 1,
+      "trials": 3,
+      "median_ms_per_audio_second": 475.077734,
+      "median_p99_ms": 1.7311,
+      "worst_block_ms": 1.795
+    },
+    {
+      "osc1": 7,
+      "osc2": 7,
+      "different_tuning": true,
+      "mask": 2,
+      "trials": 3,
+      "median_ms_per_audio_second": 443.432813,
+      "median_p99_ms": 1.2235,
+      "worst_block_ms": 1.401
+    },
+    {
+      "osc1": 7,
+      "osc2": 7,
+      "different_tuning": true,
+      "mask": 3,
+      "trials": 3,
+      "median_ms_per_audio_second": 428.986719,
+      "median_p99_ms": 1.4332,
+      "worst_block_ms": 1.613
+    }
+  ],
+  "source_hashes": {
+    "packages/synth-core/src/blocks_synth.cpp": "e62fe17e0bf40dec2713010bd79935636b6ab8c0fc23a575d58500a4363355b8",
+    "packages/synth-core/src/filter_route.h": "39cac76a11f26170d7872c406c7f43227afb4115efa01907c3d448c766a66809",
+    "packages/synth-core/src/unison.h": "87092808031e34dd4c613443c7d8ca113725a587dbd7bb56672ac605871e54dd",
+    "packages/synth-core/tests/oscillator_routing_benchmark.cpp": "cd6855a88fb2f316da97a3ca2430f640783dd23679826ed5696525995a51d169"
+  }
+}

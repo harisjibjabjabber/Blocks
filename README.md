@@ -16,7 +16,13 @@ A musical sketchbook for Android and the web. Play MIDI into a procedural electr
 
 ## Planned
 
-Sampled piano, drums, bass, and pad. A piano roll, autosave of the ribbon, export, and a fixed layer limit. Controller learn beyond Capture and Play/Stop. A measured keyboard-to-speaker latency number. Proof on USB, a Samsung Fold, or a pedal. None of that is in this tree.
+Sampled piano, drums, bass, and pad. Autosave of the ribbon, export, and a fixed layer limit. Controller learn beyond Capture and Play/Stop. A measured keyboard-to-speaker latency number. Proof on USB, a Samsung Fold, or a pedal. None of that is in this tree.
+
+## Piano-roll correction branch
+
+The browser editor now has pitch-aligned keys, isolated key audition, an engine-driven selected-layer playhead, reversible single-note editing, and explicit quantise preview. Committed edits join playback at the next loop boundary. The editor keeps Back, Undo/Redo and transport visible at narrow widths. Raw capture history and musical silent tails remain separate from edited playback.
+
+This is a scoped local correction, not full storyboard or release acceptance. Multi-selection, marquee, the full velocity lane/clipboard/keyboard workflow, physical-touch validation, and audiovisual timing evidence remain outstanding. Capture prefix contamination is still open. See `docs/piano-roll-quality-checkpoint.md` for the exact scope, evidence, and blockers.
 
 ## Setup
 
@@ -49,6 +55,17 @@ cd android
 Requirements: JDK 17 or 21, Android SDK platform 36 or 37, build-tools 37.0.0, NDK `27.1.12297006`, CMake 3.22.1. `minSdk` is 29. The debug APK can embed the JavaScript bundle so it does not need Metro. iOS is not a supported build.
 
 ## Tests
+
+Use Node 22.11 or newer. The web build is portable across Windows and Linux.
+
+```bash
+npm ci
+npm run typecheck:web
+npm run test:js
+npm run build:web
+```
+
+The offline audio test launches an isolated headless Chrome profile. Set `CHROME` to the browser executable if it is not found automatically. For interaction checks, start the web server in another terminal, then run `npm run test:browser`. The strict browser script fails on a failed check, and saves screenshots and JSON outside the repository by default. `BLOCKS_PROOF_URL` and `BLOCKS_PROOF_DIR` override the URL and evidence folder. This is synthetic browser evidence, not physical-touch, listening, or hardware validation.
 
 ```bash
 npm test

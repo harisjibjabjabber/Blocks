@@ -1,0 +1,8 @@
+.dial-default-marker{position:absolute;inset:0;pointer-events:none;transform:rotate(var(--default-rotation,0deg))}.dial-default-marker:before{content:"";position:absolute;left:calc(50% - 1px);top:1px;width:2px;height:4px;border-radius:2px;background:var(--accent);opacity:.7}.config-dial,.performance-dial{position:relative}.osc-mini-dial .dial-default-marker:before{top:0}.config-dial .dial-default-marker:before,.performance-dial .dial-default-marker:before{top:1px}
+
+.output-width{display:grid;grid-template-columns:56px 1fr;align-items:center;gap:0 8px;border-top:1px solid var(--line);padding-top:8px;margin-top:8px}.output-width .config-dial{grid-row:span 2}.output-width .config-dial-label,.output-width .config-dial-value{text-align:left}.lfo-toolbar .lfo-randomize{min-height:44px;height:44px;font-size:10px;padding:0 8px;white-space:nowrap}
+@media(max-width:699px){.lfo-toolbar{gap:4px}.lfo-toolbar>button:first-child{min-width:0;padding:0 6px;font-size:10px;gap:3px}.lfo-toolbar .lfo-randomize{padding:0 6px}.lfo-toolbar>button:last-child{min-width:44px;width:44px;padding:0 4px}}
+
+.voicing-panel{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0}.voicing-caption{display:flex;justify-content:space-between;color:var(--muted);font-size:10px}.voicing-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:4px}.voicing-controls .config-control{min-width:0}
+
+.instrument[data-module=drop][data-sauce-keyboard=true] .keyboard-section{display:block}

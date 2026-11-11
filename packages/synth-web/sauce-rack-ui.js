@@ -1,0 +1,70 @@
+﻿// Cards keep their own controls and expansion state. Drag previews never mutate DSP state.
+import {rackVisualOrder} from './sauce-state.js';
+export function createSauceRack({container,createEditor,onToggle,onAdd,onRemove,onReorder,canDrag=()=>true}) {
+  container.className='sauce-workspace';
+  const cards=new Map(),blocked=new Set();let current=[],drag=null,previousFocus=null;
+  const names={fullness:'Fullness','moving-space':'Moving Space',impact:'Impact',arp:'Arp',strum:'Strum',drop:'Pitch Drop',lfo:'LFO'};
+  const grid=document.createElement('div');grid.className='rack-grid';grid.setAttribute('aria-label','Sauce blocks');
+  const add=document.createElement('button');add.type='button';add.id='sauce-add';add.textContent='+ Add';add.setAttribute('aria-haspopup','dialog');
+  const picker=document.createElement('dialog');picker.id='sauce-picker';picker.setAttribute('aria-labelledby','sauce-picker-title');
+  picker.innerHTML='<div class="rack-picker-heading"><h2 id="sauce-picker-title">Add Sauce</h2><button type="button" data-picker-close aria-label="Close Add Sauce">\u00d7</button></div><div class="rack-picker-options"></div><p class="rack-picker-capacity"></p>';
+  const options=picker.querySelector('.rack-picker-options');
+  for(const type of ['fullness','moving-space','impact','arp','strum','drop','lfo']){
+    const b=document.createElement('button');b.type='button';b.dataset.rackAdd=type;
+    const title=document.createElement('strong');title.textContent=names[type];const tag=document.createElement('span');tag.textContent=['moving-space','impact'].includes(type)?'Bus':type==='fullness'?'Audio':type==='lfo'?'Control':'Notes';if(['moving-space','impact'].includes(type))tag.title='Stereo bus before Harmonics; Bus blocks run in their displayed order. Clean Sub bypasses this chain.';b.append(title,tag);
+    b.addEventListener('click',()=>{closePicker();onAdd(type);});options.append(b);
+  }
+  function closePicker(){picker.close();add.setAttribute('aria-expanded','false');add.focus();}
+  add.addEventListener('click',()=>{if(!canDrag())return;previousFocus=document.activeElement;picker.showModal();add.setAttribute('aria-expanded','true');options.querySelector('button:not(:disabled)')?.focus();});
+  picker.querySelector('[data-picker-close]').addEventListener('click',closePicker);picker.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closePicker();}});picker.addEventListener('cancel',e=>{e.preventDefault();closePicker();});
+  picker.addEventListener('click',e=>{if(e.target===picker){const r=picker.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closePicker();}});
+  container.append(grid,add,picker);
+  function move(key,delta){if(!canDrag()||drag)return;const items=[...current],index=items.findIndex(i=>i.key===key),target=index+delta;if(target<0||target>=items.length)return;[items[index],items[target]]=[items[target],items[index]];onReorder(items.map(i=>i.key));document.activeElement?.scrollIntoView({block:'nearest'});}
+  function make(item){
+    const card=document.createElement('article');card.className='rack-card';card.dataset.rackBlock=item.key;card.dataset.rackType=item.type;
+    const head=document.createElement('div');head.className='rack-card-header';
+    const grip=document.createElement('button');grip.type='button';grip.className='rack-grip';grip.dataset.rackDrag=item.key;grip.textContent='\u283f';grip.title='Drag to reorder \u00b7 arrow keys move';grip.setAttribute('aria-label','Move '+names[item.type]+' '+item.id);
+    // Empty card surfaces are handles too; embedded editors retain their own gestures.
+    card.addEventListener('pointerdown',e=>{if(e.target.closest('.rack-grip')||!e.target.closest('button,input,select,textarea,a,label,summary,svg,canvas,[role=slider],[role=button],[role=switch],[contenteditable=true],[data-no-rack-drag]'))startDrag(e,item.key);});
+    card.addEventListener('pointermove',moveDrag);card.addEventListener('pointerup',dropDrag);card.addEventListener('pointercancel',cancelDrag);card.addEventListener('lostpointercapture',e=>{if(drag?.pointer===e.pointerId)cancelDrag();});
+    grip.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowUp','ArrowRight','ArrowDown'].includes(e.key)){e.preventDefault();move(item.key,['ArrowLeft','ArrowUp'].includes(e.key)?-1:1);}});
+    const title=document.createElement('div');title.className='rack-card-title';const name=document.createElement('h3');name.textContent=names[item.type]+(item.type==='lfo'?' '+item.id:'');const tag=document.createElement('span');tag.textContent=item.lane==='effects'?'Bus':item.lane==='audio'?'Audio':item.lane==='notes'?'Notes':'Control';if(item.lane==='effects')tag.title='Stereo bus before Harmonics; Bus blocks run in their displayed order. Clean Sub bypasses this chain.';title.append(name,tag);
+    const power=document.createElement('button');power.type='button';power.className='rack-power';power.dataset.rackPower=item.key;power.setAttribute('role','switch');power.setAttribute('aria-label',names[item.type]+' '+item.id+' enabled');power.addEventListener('click',()=>{if(canDrag()&&!drag)onToggle(item.key);});head.append(grip,title,power);
+    const body=document.createElement('div');body.className='rack-card-controls';const details=document.createElement('details');details.className='rack-deeper';const summary=document.createElement('summary');summary.textContent='Details';summary.dataset.rackDetails=item.key;details.append(summary);
+    const extra=document.createElement('div');extra.className='rack-extra';details.append(extra);
+    const actions=document.createElement('div');actions.className='rack-card-actions';const earlier=document.createElement('button');earlier.type='button';earlier.textContent='\u2190';earlier.dataset.rackEarlier=item.key;earlier.setAttribute('aria-label','Move '+names[item.type]+' earlier');earlier.addEventListener('click',()=>move(item.key,-1));const later=document.createElement('button');later.type='button';later.textContent='\u2192';later.dataset.rackLater=item.key;later.setAttribute('aria-label','Move '+names[item.type]+' later');later.addEventListener('click',()=>move(item.key,1));
+    const remove=document.createElement('button');remove.type='button';remove.textContent='Remove';remove.dataset.rackRemove=item.key;remove.addEventListener('click',()=>{if(canDrag()&&!drag)onRemove(item.key);});actions.append(earlier,later,remove);details.append(actions);card.append(head,body,details);grid.append(card);
+    const editor=createEditor(item,body,extra);return{card,power,grip,earlier,later,editor};
+  }
+  function startDrag(e,key){if(drag||!canDrag()||e.button!==0||current.length<2)return;e.preventDefault();const rect=cards.get(key).card.getBoundingClientRect();drag={key,pointer:e.pointerId,target:e.currentTarget,x:e.clientX,y:e.clientY,dx:e.clientX-rect.left,dy:e.clientY-rect.top,rect,threshold:e.pointerType==='touch'?12:8,before:current.map(i=>i.key),desired:current.map(i=>i.key),active:false,scrollY:window.scrollY,slots:current.map(i=>({key:i.key,rect:cards.get(i.key).card.getBoundingClientRect()}))};e.currentTarget.setPointerCapture(e.pointerId);}
+  const inside=e=>{const area=grid.getBoundingClientRect();return drag&&e.clientX>=area.left&&e.clientX<=area.right&&e.clientY>=area.top&&e.clientY<=area.bottom;};
+  function previewOrder(){const keys=drag?.desired||current.map(i=>i.key);keys.forEach((key,index)=>{cards.get(key).card.style.order=String(index);delete cards.get(key).card.dataset.dropSide;});if(drag?.active&&drag.marker)cards.get(drag.marker.key).card.dataset.dropSide=drag.marker.side;}
+  function autoScroll(){if(!drag?.active)return;const y=drag.lastY,speed=y<54?-Math.ceil((54-y)/5):y>innerHeight-54?Math.ceil((y-innerHeight+54)/5):0;if(speed){const before=scrollY;window.scrollBy(0,Math.max(-16,Math.min(16,speed)));if(scrollY!==before)moveDrag({pointerId:drag.pointer,clientX:drag.lastX,clientY:drag.lastY});}if(drag)drag.frame=requestAnimationFrame(autoScroll);}
+  function moveDrag(e){if(drag?.pointer!==e.pointerId)return;
+    if(!drag.active){if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<drag.threshold)return;drag.active=true;const ghost=cards.get(drag.key).card.cloneNode(true);ghost.classList.add('rack-drag-ghost');ghost.setAttribute('aria-hidden','true');ghost.inert=true;ghost.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));ghost.style.width=drag.rect.width+'px';ghost.style.height=drag.rect.height+'px';ghost.style.left=e.clientX-drag.dx+'px';ghost.style.top=e.clientY-drag.dy+'px';grid.style.minHeight=grid.getBoundingClientRect().height+'px';document.body.append(ghost);drag.ghost=ghost;cards.get(drag.key).card.dataset.dragging='true';drag.frame=requestAnimationFrame(autoScroll);}
+    drag.lastX=e.clientX;drag.lastY=e.clientY;drag.ghost.style.left=e.clientX-drag.dx+'px';drag.ghost.style.top=e.clientY-drag.dy+'px';
+    if(!inside(e)){drag.desired=[...drag.before];drag.marker=null;drag.ghost.dataset.invalid='true';}
+    else{delete drag.ghost.dataset.invalid;const shift=scrollY-drag.scrollY,origin=drag.rect;
+      // Lifting within the source slot should not shuffle its neighbours immediately.
+      if(e.clientX>=origin.left&&e.clientX<=origin.right&&e.clientY>=origin.top-shift&&e.clientY<=origin.bottom-shift){drag.desired=[...drag.before];drag.marker=null;}
+      else{const slots=drag.slots.filter(s=>s.key!==drag.key),nearest=slots.toSorted((a,b)=>Math.hypot(e.clientX-a.rect.left-a.rect.width/2,e.clientY-a.rect.top+shift-a.rect.height/2)-Math.hypot(e.clientX-b.rect.left-b.rect.width/2,e.clientY-b.rect.top+shift-b.rect.height/2))[0];if(nearest){const r=nearest.rect,relativeY=e.clientY-(r.top-shift),after=e.clientX>r.right?true:e.clientX<r.left?false:relativeY>r.height*.75?true:relativeY<r.height*.25?false:e.clientX>=r.left+r.width/2,keys=drag.before.filter(key=>key!==drag.key),index=keys.indexOf(nearest.key)+(after?1:0);keys.splice(index,0,drag.key);drag.desired=keys;drag.marker={key:nearest.key,side:after?'after':'before'};}}
+    }
+    previewOrder();
+  }
+  function cancelDrag(){if(!drag)return;const d=drag;drag=null;cancelAnimationFrame(d.frame);d.ghost?.remove();grid.style.minHeight='';const card=cards.get(d.key)?.card;if(card)delete card.dataset.dragging;previewOrder();try{if(d.target.hasPointerCapture(d.pointer))d.target.releasePointerCapture(d.pointer);}catch{}}
+  function dropDrag(e){if(drag?.pointer!==e.pointerId)return;const keys=[...drag.desired],changed=drag.active&&inside(e)&&JSON.stringify(keys)!==JSON.stringify(drag.before);cancelDrag();if(changed)onReorder(keys);}
+  document.addEventListener('pointerdown',e=>{if(drag&&drag.pointer!==e.pointerId){blocked.add(drag.pointer);blocked.add(e.pointerId);cancelDrag();e.preventDefault();e.stopImmediatePropagation();}},true);
+  document.addEventListener('pointerup',e=>{if(blocked.has(e.pointerId)){e.preventDefault();e.stopImmediatePropagation();setTimeout(()=>blocked.delete(e.pointerId),600);}},true);document.addEventListener('click',e=>{if(blocked.has(e.pointerId)){blocked.delete(e.pointerId);e.preventDefault();e.stopImmediatePropagation();}},true);
+  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&drag){cancelDrag();e.preventDefault();}});window.addEventListener('blur',cancelDrag);window.addEventListener('resize',cancelDrag);
+  function update({rack,modulation}){
+    const available=[...rack.notes.map(b=>({...b,lane:'notes',key:'notes:'+b.id})),...rack.audio.map(b=>({...b,lane:'audio',key:'audio:'+b.id})),...rack.effects.map(b=>({...b,lane:'effects',key:'effects:'+b.id})),...modulation.sources.filter(s=>s.id!==1).map(s=>({...s,lane:'lfo',type:'lfo',key:'lfo:'+s.id}))];
+    const next=rackVisualOrder(rack,modulation).map(key=>available.find(item=>item.key===key)).filter(Boolean);
+    if(drag&&JSON.stringify(next.map(i=>i.key))!==JSON.stringify(drag.before))cancelDrag();current=next;
+    for(const[key,entry]of cards)if(!current.some(i=>i.key===key)){entry.editor.destroy?.();entry.card.remove();cards.delete(key);}
+    for(const item of current){if(!cards.has(item.key))cards.set(item.key,make(item));const entry=cards.get(item.key),index=current.findIndex(i=>i.key===item.key);entry.power.textContent=item.enabled?'On':'Off';entry.power.setAttribute('aria-checked',String(item.enabled));entry.card.dataset.enabled=String(item.enabled);entry.earlier.disabled=index===0;entry.later.disabled=index===current.length-1;entry.grip.disabled=current.length<2;entry.editor.update();}
+    if(!drag){const focused=document.activeElement;current.forEach((item,index)=>{const card=cards.get(item.key).card;if(grid.children[index]!==card)grid.insertBefore(card,grid.children[index]||null);});if(focused&&grid.contains(focused)&&document.activeElement!==focused)focused.focus({preventScroll:true});}
+    previewOrder();for(const b of options.children){const type=b.dataset.rackAdd;b.disabled=type==='lfo'?modulation.sources.length>=4:type==='fullness'?rack.audio.length>=16:['moving-space','impact'].includes(type)?rack.effects.length>=16:rack.notes.length>=16;}
+    picker.querySelector('.rack-picker-capacity').textContent=`Bus ${rack.effects.length}/16 \u00b7 Audio ${rack.audio.length}/16 \u00b7 Notes ${rack.notes.length}/16 \u00b7 LFO ${modulation.sources.length}/4`;
+  }
+  return{update,cancel:cancelDrag,closePicker,updatePhases:()=>{for(const entry of cards.values())entry.editor.updatePhase?.();},setPending:mask=>{current.filter(i=>i.lane==='notes').forEach((item,index)=>cards.get(item.key)?.editor.setPending?.(Boolean(mask&(1<<index))));}};
+}

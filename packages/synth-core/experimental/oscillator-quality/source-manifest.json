@@ -1,0 +1,11 @@
+{
+  ".gitignore": "8f678224c149417b2e2dd5fe0ccb6ac064f07ae039ff5afba7cf207fc54e6d29",
+  "analyze.py": "e171e0151ae309c9dc16ed088ee0974e038fca3ab7374b320ffa71974b33feb4",
+  "benchmark.cpp": "a3190ab8b1aeb084a028953e6f2c274ebb3761e9af82eae98777b9546a9a0f73",
+  "generate_tables.py": "eca114b5e3d28c12d7009184e7e86f8a3a580f41a971256b2f20e9446db221d1",
+  "oscillator_source.h": "bf6444a0c6f62d1bed0bcf5fe7030b0dc212dc734cbd89fadb146db26fdc85b5",
+  "README.md": "2433628358d69e800f2acada53e619a8f8e67360cbebbef9c01f9e5a702af5b9",
+  "render.cpp": "7cc11b4711234e7971a1702f30441f3b8ac2e123b4b662c2756a31425c861344",
+  "summary.json": "4a575ca736e91bc2b9440065ee7f555f749fed3ddccf91c83be756fdbee20e7c",
+  "tests.cpp": "92f63bf1adfb64e035f5a5d880d9a2e4ff793af2063c71af18d1b6d898f7585c"
+}

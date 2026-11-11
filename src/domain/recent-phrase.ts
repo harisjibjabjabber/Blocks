@@ -47,7 +47,7 @@ export interface RecentPhraseOptions {
   ticksPerSecond: number;
   /** Read-only locked beat. Null means free time. Never written back. */
   gridPeriodTicks: bigint | null;
-  /** Read-only phase origin from an earlier layer. Not stored on the project. */
+  /** Legacy read-only grid origin. Grid phase alone never establishes a phrase boundary. */
   gridOriginTicks: bigint | null;
   historyMayBeTruncated: boolean;
 }
@@ -586,6 +586,8 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     attackGaps.push(clusters[i] - clusters[i - 1]);
   }
   const timeNote = beat === null ? "Free time: no locked beat, so the gap hypothesis is 1.5s." : "A locked beat was read and not changed. The gap hypothesis is max(1.5s, 2 beats).";
+  // A locked tempo/phase is not evidence that the wanted phrase is one bar.
+  // Preserve the available tape unless rest or progression evidence narrows it.
   let selection: CutBounds = { start: first, end: last };
   let status: RecentPhraseCut["status"] = "ambiguous";
   let priorPhrase: CutBounds | null = null;
@@ -650,26 +652,6 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     const previousStart = breaks.length > 1 ? clusters[breaks[breaks.length - 2]] : clusters[0];
     const previousEndLimit = phraseStart - 1n;
     priorPhrase = boundsFrom(events, previousStart, previousEndLimit);
-  } else if (beat !== null) {
-    const bar = beat * 4n;
-    const origin = options.gridOriginTicks ?? first;
-    const relative = last - origin;
-    const mod = ((relative % bar) + bar) % bar;
-    let barStart = last - (mod === 0n ? bar : mod);
-    if (barStart < first) {
-      barStart = first;
-    }
-    if (barStart < last) {
-      selection = { start: barStart, end: last };
-      status = "recent";
-      how = "No rest cleared the hypothesis. The window is the last bar of the locked grid, as a basic cut. The grid and its phase were not changed.";
-      const earlier = barStart - bar;
-      if (earlier >= first) {
-        priorBar = boundsFrom(events, earlier, barStart - 1n);
-      }
-    } else {
-      how = "The recording is shorter than one bar of the locked grid. The window stays the whole ribbon. The grid was not changed.";
-    }
   } else if (gaps.length > 0 && gaps.every((item) => item === 0n)) {
     status = "recent";
     how = "Note-offs under a held CC64 are not rests, so the chords stay one phrase. Basic cut, not finished Capture.";
@@ -690,7 +672,10 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     }
   }
 
-  const passage = harmonicStart(fingerStacks(events));
+  // A later pattern pass must not undo an already-supported rest boundary
+  // and pull an abandoned idea back into the new phrase.
+  const latestRestStart = breaks.length ? clusters[breaks[breaks.length - 1]] : first;
+  const passage = harmonicStart(fingerStacks(events.filter(event => event.scheduleElapsed >= latestRestStart)));
   if (passage && passage.throughEnd) {
     selection = { start: passage.start, end: last };
     status = "recent";
@@ -703,17 +688,17 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     if (walked !== null) {
       const walkStart = clusters[walked];
       const released = attacksReleased(events, walkStart, last);
-      if (walked > 0 && walkStart < selection.start) {
+      if (walked > 0 && walkStart >= latestRestStart && walkStart < selection.start) {
         selection = { start: walkStart, end: last };
         status = "recent";
         how = "The recent attacks repeat a short gap and a long gap measured from the tail. Earlier gaps do not match those two. Basic cut, not finished Capture.";
         priorPhrase = boundsFrom(events, first, walkStart - 1n);
-      } else if (walked > 0 && selection.start === first && status === "ambiguous") {
+      } else if (walked > 0 && walkStart >= latestRestStart && selection.start === first && status === "ambiguous") {
         selection = { start: walkStart, end: last };
         status = "recent";
         how = "The recent attacks repeat a short gap and a long gap measured from the tail. Earlier gaps do not match those two. Basic cut, not finished Capture.";
         priorPhrase = boundsFrom(events, first, walkStart - 1n);
-      } else if (walked === 0 && released && selection.start !== first) {
+      } else if (walked === 0 && latestRestStart === first && released && selection.start !== first) {
         selection = { start: first, end: last };
         status = "recent";
         how = "The take repeats one measured spacing and the notes were released, so the window stays the whole ribbon. Basic cut, not finished Capture.";
@@ -779,6 +764,36 @@ export function recentPhraseCut(events: readonly CapturedEvent[], options: Recen
     controllerSeed,
     deferred,
     note: note + periodNote,
+  };
+}
+
+/** Apply an explicit capture range without re-running or rewriting the phrase finder.
+ * Empty time inside these bounds is retained; raw attacks/releases stay untouched. */
+export function withCaptureRange(events: readonly CapturedEvent[], proposal: RecentPhraseCut, bounds: CutBounds): RecentPhraseCut {
+  if (typeof bounds.start !== "bigint" || typeof bounds.end !== "bigint" || bounds.start < 0n || bounds.end <= bounds.start) {
+    throw new RangeError("Capture range must have non-negative start and positive duration.");
+  }
+  const ordered = events.slice().sort((a, b) => a.scheduleElapsed < b.scheduleElapsed ? -1 : a.scheduleElapsed > b.scheduleElapsed ? 1 : a.sequence < b.sequence ? -1 : a.sequence > b.sequence ? 1 : 0);
+  const selection = { start: bounds.start, end: bounds.end };
+  const heldNoteIds = heldNotes(ordered, selection.start);
+  const controllerSeed = seedControllers(ordered, selection.start);
+  // Keep history/playback limitations, but replace assertions tied to the old cut.
+  const deferred = proposal.deferred.filter(item => !item.startsWith("A note was already sounding at the cut.") && !item.startsWith("A note is still on at the end of the cut.") && !item.startsWith("Note-boundary expansion"));
+  if (heldNoteIds.length) deferred.push("A note was already sounding at the cut. Its original attack remains in raw history; playback can seed the hold without widening the chosen range.");
+  if (noteStillOpen(ordered, selection)) deferred.push("A note is still on at the end of the cut. No note-off was invented. Playback uses the release tail.");
+  return {
+    ...proposal,
+    selection,
+    loop: { ...selection },
+    periodTicks: null,
+    phaseOriginTicks: null,
+    periodConfidence: "fallback",
+    priorPhrase: null,
+    priorBar: null,
+    heldNoteIds,
+    controllerSeed,
+    deferred,
+    note: `Manual capture range. The chosen start and end also define the loop, including empty time. Raw events and timing were not edited. ${eventsBetween(ordered, selection.start, selection.end).length} events in the window, ${events.length} in raw history.`,
   };
 }
 

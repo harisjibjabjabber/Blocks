@@ -1,0 +1,544 @@
+{
+  "static": [
+    {
+      "wave": 2,
+      "mode": 0,
+      "count": 85,
+      "alias_median_dBc": -41.390962916597324,
+      "alias_worst_dBc": -28.853185969121135,
+      "wanted_error_median_dB": -30.14590767953561,
+      "total_error_median_dB": -29.834876861118005,
+      "fundamental_error_min_dB": -0.21784909428304405,
+      "wanted_highband_worst_dB": -2.659285059901213
+    },
+    {
+      "wave": 2,
+      "mode": 1,
+      "count": 85,
+      "alias_median_dBc": -58.65419781743504,
+      "alias_worst_dBc": -43.5965221742687,
+      "wanted_error_median_dB": -40.32764201451186,
+      "total_error_median_dB": -40.26299054548478,
+      "fundamental_error_min_dB": -0.054553291174139484,
+      "wanted_highband_worst_dB": -0.7815899696316402
+    },
+    {
+      "wave": 2,
+      "mode": 2,
+      "count": 85,
+      "alias_median_dBc": -111.2782300492133,
+      "alias_worst_dBc": -82.10925538731884,
+      "wanted_error_median_dB": -111.15303756696801,
+      "total_error_median_dB": -98.7192924164855,
+      "fundamental_error_min_dB": -1.82321942000252e-08,
+      "wanted_highband_worst_dB": -0.2686922970761271
+    },
+    {
+      "wave": 3,
+      "mode": 0,
+      "count": 425,
+      "alias_median_dBc": -41.21868596533777,
+      "alias_worst_dBc": -24.110218737534904,
+      "wanted_error_median_dB": -29.977555476413453,
+      "total_error_median_dB": -29.690170506400072,
+      "fundamental_error_min_dB": -0.2178490942707609,
+      "wanted_highband_worst_dB": -3.876293657002263
+    },
+    {
+      "wave": 3,
+      "mode": 1,
+      "count": 425,
+      "alias_median_dBc": -58.90650811205081,
+      "alias_worst_dBc": -41.64616773855242,
+      "wanted_error_median_dB": -40.304070334165004,
+      "total_error_median_dB": -40.25783996925952,
+      "fundamental_error_min_dB": -0.0545532940460127,
+      "wanted_highband_worst_dB": -1.3070816439518054
+    },
+    {
+      "wave": 3,
+      "mode": 2,
+      "count": 425,
+      "alias_median_dBc": -112.06528515189939,
+      "alias_worst_dBc": -79.45364313208324,
+      "wanted_error_median_dB": -113.96126626307901,
+      "total_error_median_dB": -101.43602291873711,
+      "fundamental_error_min_dB": -1.657634268225132e-08,
+      "wanted_highband_worst_dB": -0.3684473995404122
+    },
+    {
+      "wave": 0,
+      "mode": 0,
+      "count": 8,
+      "alias_median_dBc": -129.0433220215299,
+      "alias_worst_dBc": -129.03789169601131,
+      "wanted_error_median_dB": -122.10158804098242,
+      "total_error_median_dB": -121.30174538234147,
+      "fundamental_error_min_dB": -6.819225867541525e-06,
+      "wanted_highband_worst_dB": null
+    },
+    {
+      "wave": 0,
+      "mode": 1,
+      "count": 8,
+      "alias_median_dBc": -129.0433220215299,
+      "alias_worst_dBc": -129.03789169601131,
+      "wanted_error_median_dB": -122.10158804098242,
+      "total_error_median_dB": -121.30174538234147,
+      "fundamental_error_min_dB": -6.819225867541525e-06,
+      "wanted_highband_worst_dB": null
+    },
+    {
+      "wave": 0,
+      "mode": 2,
+      "count": 8,
+      "alias_median_dBc": -129.0433220215299,
+      "alias_worst_dBc": -129.03789169601131,
+      "wanted_error_median_dB": -122.10158804098242,
+      "total_error_median_dB": -121.30174538234147,
+      "fundamental_error_min_dB": -6.819225867541525e-06,
+      "wanted_highband_worst_dB": null
+    },
+    {
+      "wave": 1,
+      "mode": 0,
+      "count": 8,
+      "alias_median_dBc": -118.98150018152161,
+      "alias_worst_dBc": -109.69131546554487,
+      "wanted_error_median_dB": -51.847113494692245,
+      "total_error_median_dB": -51.847109267388,
+      "fundamental_error_min_dB": -6.828263163033904e-06,
+      "wanted_highband_worst_dB": -10.138913553201412
+    },
+    {
+      "wave": 1,
+      "mode": 1,
+      "count": 8,
+      "alias_median_dBc": -118.98150018152161,
+      "alias_worst_dBc": -109.69131546554487,
+      "wanted_error_median_dB": -51.847113494692245,
+      "total_error_median_dB": -51.847109267388,
+      "fundamental_error_min_dB": -6.828263163033904e-06,
+      "wanted_highband_worst_dB": -10.138913553201412
+    },
+    {
+      "wave": 1,
+      "mode": 2,
+      "count": 8,
+      "alias_median_dBc": -148.32587860543606,
+      "alias_worst_dBc": -130.893316225295,
+      "wanted_error_median_dB": -151.4683905942747,
+      "total_error_median_dB": -139.98666142573848,
+      "fundamental_error_min_dB": -1.4386188173153477e-08,
+      "wanted_highband_worst_dB": -0.06819277770310195
+    }
+  ],
+  "dynamic": {
+    "method": "Source only;48k input controls held constant within each output sample for matched comparison.16x/32x naive analytic source followed by128*factor+1 Kaiser12 FIR decimation. Convergence is reported, not treated as exact reference. Discard512 endpoint samples; oversampledcandidate aligned7samples. Error includes intended spectrum/phase/PWM discrepancies, NOT pure alias-only metric. Fixedgain .2 WAVs,10ms endpoint fades,no per-file normalization. ABC=baseline/2x/table.",
+    "cases": [
+      {
+        "scenario": 0,
+        "mode": 0,
+        "aligned_error_vs32x_dB": -23.596164997255734,
+        "reference16_vs32_convergence_dB": -42.152052217913656,
+        "latency_samples": 0,
+        "peak": 0.9972747564315796,
+        "error_0_20k_dB": -25.54250471300081,
+        "reference16_vs32_0_20k_dB": -42.88054769893533
+      },
+      {
+        "scenario": 0,
+        "mode": 1,
+        "aligned_error_vs32x_dB": -29.91382594298685,
+        "reference16_vs32_convergence_dB": -42.152052217913656,
+        "latency_samples": 7,
+        "peak": 1.1221710443496704,
+        "error_0_20k_dB": -35.794908985181756,
+        "reference16_vs32_0_20k_dB": -42.88054769893533
+      },
+      {
+        "scenario": 0,
+        "mode": 2,
+        "aligned_error_vs32x_dB": -25.841193192268136,
+        "reference16_vs32_convergence_dB": -42.152052217913656,
+        "latency_samples": 0,
+        "peak": 1.175086259841919,
+        "error_0_20k_dB": -37.58133150422901,
+        "reference16_vs32_0_20k_dB": -42.88054769893533
+      },
+      {
+        "scenario": 1,
+        "mode": 0,
+        "aligned_error_vs32x_dB": -28.803142515021968,
+        "reference16_vs32_convergence_dB": -47.08953160080501,
+        "latency_samples": 0,
+        "peak": 1.0,
+        "error_0_20k_dB": -30.7461966084708,
+        "reference16_vs32_0_20k_dB": -47.83889866761723
+      },
+      {
+        "scenario": 1,
+        "mode": 1,
+        "aligned_error_vs32x_dB": -35.0263142676677,
+        "reference16_vs32_convergence_dB": -47.08953160080501,
+        "latency_samples": 7,
+        "peak": 1.125251293182373,
+        "error_0_20k_dB": -40.836924944524014,
+        "reference16_vs32_0_20k_dB": -47.83889866761723
+      },
+      {
+        "scenario": 1,
+        "mode": 2,
+        "aligned_error_vs32x_dB": -29.1672757775893,
+        "reference16_vs32_convergence_dB": -47.08953160080501,
+        "latency_samples": 0,
+        "peak": 1.2017056941986084,
+        "error_0_20k_dB": -45.195119971852584,
+        "reference16_vs32_0_20k_dB": -47.83889866761723
+      },
+      {
+        "scenario": 2,
+        "mode": 0,
+        "aligned_error_vs32x_dB": -27.036582760556925,
+        "reference16_vs32_convergence_dB": -45.69565840081199,
+        "latency_samples": 0,
+        "peak": 0.9822437167167664,
+        "error_0_20k_dB": -29.03403881879822,
+        "reference16_vs32_0_20k_dB": -46.43910737653773
+      },
+      {
+        "scenario": 2,
+        "mode": 1,
+        "aligned_error_vs32x_dB": -33.319615074418635,
+        "reference16_vs32_convergence_dB": -45.69565840081199,
+        "latency_samples": 7,
+        "peak": 1.1074862480163574,
+        "error_0_20k_dB": -39.34641121049913,
+        "reference16_vs32_0_20k_dB": -46.43910737653773
+      },
+      {
+        "scenario": 2,
+        "mode": 2,
+        "aligned_error_vs32x_dB": -27.351927803468147,
+        "reference16_vs32_convergence_dB": -45.69565840081199,
+        "latency_samples": 0,
+        "peak": 1.1576213836669922,
+        "error_0_20k_dB": -51.17957369408306,
+        "reference16_vs32_0_20k_dB": -46.43910737653773
+      },
+      {
+        "scenario": 3,
+        "mode": 0,
+        "aligned_error_vs32x_dB": -22.592614682062802,
+        "reference16_vs32_convergence_dB": -41.10745734898845,
+        "latency_samples": 0,
+        "peak": 1.0,
+        "error_0_20k_dB": -24.448814156846126,
+        "reference16_vs32_0_20k_dB": -41.840002848126275
+      },
+      {
+        "scenario": 3,
+        "mode": 1,
+        "aligned_error_vs32x_dB": -28.842790700212923,
+        "reference16_vs32_convergence_dB": -41.10745734898845,
+        "latency_samples": 7,
+        "peak": 1.2500033378601074,
+        "error_0_20k_dB": -34.211454997499715,
+        "reference16_vs32_0_20k_dB": -41.840002848126275
+      },
+      {
+        "scenario": 3,
+        "mode": 2,
+        "aligned_error_vs32x_dB": -24.512278199991865,
+        "reference16_vs32_convergence_dB": -41.10745734898845,
+        "latency_samples": 0,
+        "peak": 1.3591606616973877,
+        "error_0_20k_dB": -34.46692439974703,
+        "reference16_vs32_0_20k_dB": -41.840002848126275
+      }
+    ]
+  },
+  "timing": [
+    {
+      "repeat": 0,
+      "mode": 0,
+      "wave": 1,
+      "oscillators": 32,
+      "ms_per_audio_second": 50.88895,
+      "p99_ms": 0.287,
+      "max_ms": 0.3787,
+      "peak": 0.987676099
+    },
+    {
+      "repeat": 0,
+      "mode": 0,
+      "wave": 2,
+      "oscillators": 32,
+      "ms_per_audio_second": 25.534,
+      "p99_ms": 0.1312,
+      "max_ms": 0.2557,
+      "peak": 0.987114371
+    },
+    {
+      "repeat": 0,
+      "mode": 0,
+      "wave": 3,
+      "oscillators": 32,
+      "ms_per_audio_second": 30.8479,
+      "p99_ms": 0.2105,
+      "max_ms": 0.2618,
+      "peak": 1.0
+    },
+    {
+      "repeat": 0,
+      "mode": 1,
+      "wave": 1,
+      "oscillators": 32,
+      "ms_per_audio_second": 50.9281,
+      "p99_ms": 0.2807,
+      "max_ms": 0.328,
+      "peak": 0.987676099
+    },
+    {
+      "repeat": 0,
+      "mode": 1,
+      "wave": 2,
+      "oscillators": 32,
+      "ms_per_audio_second": 147.78955,
+      "p99_ms": 0.5645,
+      "max_ms": 0.5918,
+      "peak": 1.049901556
+    },
+    {
+      "repeat": 0,
+      "mode": 1,
+      "wave": 3,
+      "oscillators": 32,
+      "ms_per_audio_second": 151.9038,
+      "p99_ms": 0.5649,
+      "max_ms": 0.5872,
+      "peak": 1.062625638
+    },
+    {
+      "repeat": 0,
+      "mode": 2,
+      "wave": 1,
+      "oscillators": 32,
+      "ms_per_audio_second": 105.4266,
+      "p99_ms": 0.4357,
+      "max_ms": 0.4737,
+      "peak": 0.9939044
+    },
+    {
+      "repeat": 0,
+      "mode": 2,
+      "wave": 2,
+      "oscillators": 32,
+      "ms_per_audio_second": 105.74375,
+      "p99_ms": 0.4309,
+      "max_ms": 0.4709,
+      "peak": 1.141594237
+    },
+    {
+      "repeat": 0,
+      "mode": 2,
+      "wave": 3,
+      "oscillators": 32,
+      "ms_per_audio_second": 115.92915,
+      "p99_ms": 0.4634,
+      "max_ms": 0.4824,
+      "peak": 1.155951707
+    },
+    {
+      "repeat": 1,
+      "mode": 2,
+      "wave": 1,
+      "oscillators": 32,
+      "ms_per_audio_second": 105.67175,
+      "p99_ms": 0.4273,
+      "max_ms": 0.4657,
+      "peak": 0.9939044
+    },
+    {
+      "repeat": 1,
+      "mode": 2,
+      "wave": 2,
+      "oscillators": 32,
+      "ms_per_audio_second": 105.30645,
+      "p99_ms": 0.4268,
+      "max_ms": 0.4561,
+      "peak": 1.141594237
+    },
+    {
+      "repeat": 1,
+      "mode": 2,
+      "wave": 3,
+      "oscillators": 32,
+      "ms_per_audio_second": 116.01985,
+      "p99_ms": 0.4614,
+      "max_ms": 0.4791,
+      "peak": 1.155951707
+    },
+    {
+      "repeat": 1,
+      "mode": 1,
+      "wave": 1,
+      "oscillators": 32,
+      "ms_per_audio_second": 49.92975,
+      "p99_ms": 0.2778,
+      "max_ms": 0.3036,
+      "peak": 0.987676099
+    },
+    {
+      "repeat": 1,
+      "mode": 1,
+      "wave": 2,
+      "oscillators": 32,
+      "ms_per_audio_second": 145.8601,
+      "p99_ms": 0.5429,
+      "max_ms": 0.5748,
+      "peak": 1.049901556
+    },
+    {
+      "repeat": 1,
+      "mode": 1,
+      "wave": 3,
+      "oscillators": 32,
+      "ms_per_audio_second": 149.32415,
+      "p99_ms": 0.513,
+      "max_ms": 0.5848,
+      "peak": 1.062625638
+    },
+    {
+      "repeat": 1,
+      "mode": 0,
+      "wave": 1,
+      "oscillators": 32,
+      "ms_per_audio_second": 48.8576,
+      "p99_ms": 0.1368,
+      "max_ms": 0.183,
+      "peak": 0.987676099
+    },
+    {
+      "repeat": 1,
+      "mode": 0,
+      "wave": 2,
+      "oscillators": 32,
+      "ms_per_audio_second": 24.0068,
+      "p99_ms": 0.0659,
+      "max_ms": 0.0841,
+      "peak": 0.987114371
+    },
+    {
+      "repeat": 1,
+      "mode": 0,
+      "wave": 3,
+      "oscillators": 32,
+      "ms_per_audio_second": 29.68245,
+      "p99_ms": 0.0971,
+      "max_ms": 0.1371,
+      "peak": 1.0
+    },
+    {
+      "repeat": 2,
+      "mode": 0,
+      "wave": 1,
+      "oscillators": 32,
+      "ms_per_audio_second": 48.8238,
+      "p99_ms": 0.1329,
+      "max_ms": 0.1425,
+      "peak": 0.987676099
+    },
+    {
+      "repeat": 2,
+      "mode": 0,
+      "wave": 2,
+      "oscillators": 32,
+      "ms_per_audio_second": 24.0768,
+      "p99_ms": 0.0668,
+      "max_ms": 0.0865,
+      "peak": 0.987114371
+    },
+    {
+      "repeat": 2,
+      "mode": 0,
+      "wave": 3,
+      "oscillators": 32,
+      "ms_per_audio_second": 29.54925,
+      "p99_ms": 0.0824,
+      "max_ms": 0.0982,
+      "peak": 1.0
+    },
+    {
+      "repeat": 2,
+      "mode": 1,
+      "wave": 1,
+      "oscillators": 32,
+      "ms_per_audio_second": 48.85155,
+      "p99_ms": 0.1386,
+      "max_ms": 0.1564,
+      "peak": 0.987676099
+    },
+    {
+      "repeat": 2,
+      "mode": 1,
+      "wave": 2,
+      "oscillators": 32,
+      "ms_per_audio_second": 143.1679,
+      "p99_ms": 0.4744,
+      "max_ms": 0.4841,
+      "peak": 1.049901556
+    },
+    {
+      "repeat": 2,
+      "mode": 1,
+      "wave": 3,
+      "oscillators": 32,
+      "ms_per_audio_second": 151.24905,
+      "p99_ms": 0.5528,
+      "max_ms": 0.5651,
+      "peak": 1.062625638
+    },
+    {
+      "repeat": 2,
+      "mode": 2,
+      "wave": 1,
+      "oscillators": 32,
+      "ms_per_audio_second": 103.10375,
+      "p99_ms": 0.3272,
+      "max_ms": 0.3469,
+      "peak": 0.9939044
+    },
+    {
+      "repeat": 2,
+      "mode": 2,
+      "wave": 2,
+      "oscillators": 32,
+      "ms_per_audio_second": 104.5025,
+      "p99_ms": 0.422,
+      "max_ms": 0.4412,
+      "peak": 1.141594237
+    },
+    {
+      "repeat": 2,
+      "mode": 2,
+      "wave": 3,
+      "oscillators": 32,
+      "ms_per_audio_second": 115.2803,
+      "p99_ms": 0.3899,
+      "max_ms": 0.4901,
+      "peak": 1.155951707
+    }
+  ],
+  "scope": "Source-only 48kHz measurements; desktop Node22 WASM-O2 timing, not whole-engine/phone/subjective approval",
+  "hashes": {
+    "src\\wave_source.h": "3ac4342cfff0aa19854cba22459736b301a6588eb996ea7cda7568b103ea160f",
+    "src\\wave_source_tables.h": "9b73c1e3b55add8e37e72f17af06a96fdefcc43d56652ae920bf6c95e47922c2",
+    "tests\\wave_source_tests.cpp": "d6e4857925fc34343f246a58154bbe7a06287564ebe46e6410a9589bf6345063",
+    "tests\\wave_source_render.cpp": "6227d5d0ae4de177fdb3f4173b613d8cdc97615c71d5da9d1ac1589d185492f8",
+    "tests\\wave_source_reference.h": "5da91cbb69a737f91104369c2c4f5e25f6ede55ff7ba1823eac13a5f04f55799",
+    "tests\\wave_source_benchmark.cpp": "3d2acde351245ad4da74d2bb4b154e1a2436ce918bea2ae20cbb080e5a76ba5f",
+    "tools\\generate_wave_source.py": "88d04a9864109d64965c4d57d7259e6931b981395ff58f6ec2f9a413fcee7041",
+    "tools\\analyze_wave_source.py": "e895ac2d49c074d9cab269214d2561bf4af30e099803a4b257bbe2b44a4b21f9"
+  }
+}

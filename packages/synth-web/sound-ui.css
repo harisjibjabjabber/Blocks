@@ -1,0 +1,136 @@
+.instrument[data-filter-model=ladder] #macros{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.sound-filter-drive{display:flex;flex-direction:column;align-items:center;min-width:0}.sound-filter-drive .config-control{min-width:0}.instrument[data-filter-model=ladder] #macros .macro{min-width:0}.instrument[data-filter-model=ladder] #macros .macro-name{font-size:9px}.instrument[data-filter-model=ladder] #macros .macro-value{font-size:9px}@media(max-width:699px){.instrument[data-filter-model=ladder] #macros .dial{width:44px;height:44px;min-width:44px;min-height:44px}.instrument[data-filter-model=ladder] #macros .filter-mode-control>button{min-width:44px;width:44px;padding:0 2px;font-size:10px}}
+.sound-filter-drive[hidden]{display:none}
+.filter-env-shortcut{min-height:44px;min-width:44px;padding:0 8px;font-size:10px;background:transparent;white-space:nowrap}
+
+/* Tone has its own balanced card grid; it must never inherit the old macro rail. */
+.patch-toolbar{display:contents}
+.instrument[data-module=tone]{max-width:1440px}
+#tone-layout[hidden],.visual-panel[hidden]{display:none!important}
+.instrument[data-module=tone] #sound-editor{display:block;padding:0;min-width:0}
+.tone-source-bar{display:flex;align-items:center;gap:12px;min-height:48px;margin-bottom:12px;color:var(--muted);font-size:10px}
+.tone-source-bar .source-profile-control>button{font-size:11px;border-color:var(--line);padding-inline:12px}
+.tone-cards{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:stretch}
+#tone-oscillators{min-width:0}
+#tone-oscillators #waveforms{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin:0;min-width:0}
+.oscillator-panel,.tone-filter-panel{position:relative;min-width:0;border:1px solid var(--line);border-radius:12px;background:linear-gradient(150deg,#181d22,#11161b);padding:12px}
+.oscillator-panel .oscillator-row{grid-template-columns:minmax(0,1fr)44px;gap:12px;height:44px}
+.oscillator-panel .wave-select-button{border:0;border-radius:6px;padding:0 8px 0 0;background:transparent;min-width:0}
+.oscillator-panel .osc-label{font-size:10px;letter-spacing:.08em}
+.oscillator-panel .wave-name{font-size:15px}
+.oscillator-wave-preview{display:block;width:100%;height:80px;margin-top:12px;overflow:hidden}
+.oscillator-wave-grid{stroke:var(--line);stroke-width:1;fill:none;vector-effect:non-scaling-stroke}
+.oscillator-wave-line{stroke:var(--ivory);stroke-width:1.5;fill:none;vector-effect:non-scaling-stroke}
+.oscillator-panel[data-oscillator="2"] .oscillator-wave-line{stroke:var(--accent)}
+.oscillator-preview-caption{font-size:9px;color:var(--muted);padding-top:6px;letter-spacing:.03em}
+.oscillator-bass{min-width:0;margin-top:4px}
+.osc-bass-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}
+.osc-bass-heading .oscillator-preview-caption{margin:0;padding:0}
+.osc-bass-toggle{min-height:44px;font-size:10px;padding:0 10px;background:transparent}
+.osc-bass-toggle[aria-checked=true]{color:var(--accent);border-color:var(--accent)}
+.osc-bass-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:8px 0}
+.osc-bass-controls[hidden]{display:none}
+.osc-bass-controls>.config-control{min-width:0}
+.osc-bass-panel[hidden],.sub-controls[hidden]{display:none}
+.osc-bass-modes{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin-top:4px}
+.osc-bass-modes select,.osc-bass-modes button,.bass-timing-details button,.sub-panel select,.sub-toggle{min-height:44px;min-width:44px;background:var(--panel,#151a1f);color:var(--ivory);font-size:11px;border:1px solid var(--line);border-radius:7px;padding:0 8px}
+.osc-bass-modes button[aria-pressed=true],.bass-timing-details button[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
+.osc-bass-details summary,.sub-details summary{min-height:44px;display:flex;align-items:center;font-size:11px;cursor:pointer}
+.bass-timing-details{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:8px}
+.osc-bass-details .lfo-tempo{display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between;margin:8px 0 0}
+.sub-panel{border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:0;background:#11161b}
+.sub-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:8px;padding-top:8px}
+.sub-controls label{display:grid;gap:4px;font-size:10px;color:var(--muted);min-width:0}
+.sub-controls select{width:100%;min-width:0}
+.sub-details{grid-column:1/-1}.sub-deeper{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.filter-env-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:8px;margin-top:8px}
+.filter-env-entry>button{min-height:44px;font-size:11px;background:transparent;padding:0 10px}
+
+.oscillator-panel .osc-popover{top:62px;left:8px;right:8px;width:auto;z-index:45}
+.oscillator-panel .wave-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+.oscillator-panel .wave-options button{padding-inline:3px;font-size:11px}
+.tone-filter-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.tone-filter-heading h2{font-family:"Instrument Serif",Georgia,serif;font-size:22px;font-weight:400;margin:0}
+#tone-filter-mode .filter-mode-control{display:flex;flex-direction:row;align-items:center;gap:8px;max-width:none;position:relative;flex:none}
+#tone-filter-mode .filter-mode-control>button{min-height:44px;width:auto;min-width:76px;height:44px;padding:0 12px;border-radius:7px;font-size:12px;background:transparent}
+#tone-filter-mode .macro-name{display:none}
+#tone-filter-mode .macro-value{font-size:9px;white-space:nowrap}
+#tone-filter-mode #filter-mode-options{position:absolute;top:49px;bottom:auto;left:auto;right:0;width:224px;max-width:calc(100vw - 56px);z-index:45}
+.instrument[data-module=tone] #shape-surface{height:132px;min-height:0;margin:4px 0 14px;width:100%}
+.instrument[data-module=tone] #shape-surface>svg{height:100%;width:100%}
+.instrument[data-module=tone] #macros,.instrument[data-module=tone][data-filter-model=ladder] #macros{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 4px;margin:0;padding:10px 0 0;border:0;min-height:0;align-items:start}
+.instrument[data-module=tone][data-filter-model=ladder] #macros{grid-template-columns:repeat(4,minmax(0,1fr))}
+.instrument[data-module=tone] #macros>.macro,.instrument[data-module=tone] #macros>.config-control{grid-column:auto;min-width:0;max-width:none;width:auto;justify-self:stretch}
+.instrument[data-module=tone] #macros .macro-name,.instrument[data-module=tone] #macros .macro-value,.instrument[data-module=tone] #macros .config-dial-label,.instrument[data-module=tone] #macros .config-dial-value{font-size:10px;line-height:1.4;white-space:nowrap}
+.instrument[data-module=tone] #macros .dial{width:48px;height:48px;min-width:48px;min-height:48px}
+.instrument[data-module=tone] #macros .dial-face{width:44px;height:44px}
+.instrument[data-module=tone] #module-description{margin:14px 0 0;font-size:10px;line-height:1.5;min-height:0}
+.tone-shared{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:12px}
+.tone-shared #voicing-panel{margin:0;padding:12px;border:1px solid var(--line);border-radius:12px;background:#11161b;min-width:0}
+.tone-shared #scope-wrapper{height:100px;margin:0;padding:12px;border:1px solid var(--line);border-radius:12px;background:#11161b;min-width:0;align-self:stretch}
+.tone-shared #scope{height:58px;width:100%}
+.tone-shared .waveform-caption{margin-bottom:8px}
+@media(min-width:600px){
+ #tone-oscillators #waveforms{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .tone-shared{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .tone-shared #scope-wrapper{height:auto;min-height:122px}
+ .tone-shared #scope{height:76px}
+ .oscillator-wave-preview{height:124px}
+ .instrument[data-module=tone] #shape-surface{height:166px}
+}
+@media(min-width:1180px){
+ body:has(.instrument[data-module=tone]){padding:16px}
+ .instrument[data-module=tone]{padding:18px 24px 0}
+ .instrument[data-module=tone] .patch-toolbar{display:flex;align-items:center;justify-content:space-between;gap:32px;margin:12px 0 8px}
+ .instrument[data-module=tone] .patch-heading{margin:0;flex:1;min-width:0}
+ .instrument[data-module=tone] .patch-heading .eyebrow{display:none}
+ .instrument[data-module=tone] #presets{height:48px;font-size:38px;max-width:none}
+ .instrument[data-module=tone] .audio-controls{flex:1;min-width:340px}
+ .instrument[data-module=tone] #module-tabs{margin-bottom:8px}
+ .tone-source-bar{margin-bottom:4px;min-height:44px}
+ .tone-cards{grid-template-columns:minmax(0,1.4fr) minmax(360px,1fr);gap:16px}
+ #tone-oscillators #waveforms{height:100%;gap:16px}
+ .oscillator-panel{display:flex;flex-direction:column}
+ .oscillator-wave-preview{height:170px;flex:1;min-height:120px;max-height:240px;margin-top:24px}
+ .oscillator-preview-caption{margin-top:auto}
+ .instrument[data-module=tone] #shape-surface{height:112px}
+ .instrument[data-module=tone] #module-description{margin-top:8px}
+ .tone-shared #voicing-panel,.tone-shared #scope-wrapper{padding:8px 12px}
+ .tone-shared #scope-wrapper{min-height:104px}
+ .tone-shared #scope{height:58px}
+ .instrument[data-module=tone] .keyboard-section{padding-top:6px}
+ .tone-shared{margin-top:16px;gap:16px}
+}
+@media(max-width:359px){
+ .tone-source-bar{gap:8px}.tone-source-bar>span{max-width:104px;line-height:1.4}
+ .tone-filter-panel{padding:10px}
+ #tone-filter-mode .macro-value{display:none}
+ .instrument[data-module=tone] #macros .macro-name,.instrument[data-module=tone] #macros .macro-value{font-size:9px}
+}
+
+/* Each oscillator owns its unison; routing switches affect only the shared filter. */
+.oscillator-unison{border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;padding:10px 0 0;margin:12px 0 0;flex:none}
+.oscillator-unison .voicing-caption{font-size:9px;gap:6px}
+.oscillator-unison .voicing-controls{gap:4px}
+.oscillator-unison .config-dial-label,.oscillator-unison .config-dial-value{font-size:10px}
+.tone-shared{grid-template-columns:minmax(0,1fr)}
+.tone-shared #scope-wrapper{min-height:0;height:66px;padding:8px 12px}
+.tone-shared #scope-wrapper #scope{height:30px}
+.tone-shared .waveform-caption{margin-bottom:4px}
+#filter-routing{display:flex;align-items:center;gap:6px;min-height:44px;margin:4px 0;color:var(--muted);font-size:10px}
+#filter-routing>span{margin-right:auto}
+#filter-routing button{height:44px;min-height:44px;min-width:58px;padding:0 10px;font-size:11px;background:transparent}
+#filter-routing button[aria-pressed=true]{border-color:var(--accent);color:var(--ivory);background:#ff743f0a}
+#filter-routing button[aria-pressed=false]{color:var(--muted)}
+.tone-filter-heading h2{margin-right:auto}
+.tone-filter-heading{gap:6px}
+.instrument[data-module=tone] #macros{grid-template-columns:repeat(4,minmax(0,1fr))}
+.instrument[data-module=tone][data-filter-model=ladder] #macros{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media(min-width:1180px){
+ .tone-shared:has(.sub-controls[hidden]){grid-template-columns:96px minmax(0,1fr)}
+ .tone-shared:has(.sub-controls[hidden]) #sub-panel{display:flex;align-items:center;justify-content:center;padding:8px}
+ .oscillator-wave-preview{height:120px;min-height:72px;max-height:160px;margin-top:12px}
+ .oscillator-preview-caption{margin-top:0}
+ .oscillator-unison{margin-top:12px}
+ .tone-shared #scope-wrapper{min-height:0;height:64px}
+ .tone-shared #scope-wrapper #scope{height:28px}
+}

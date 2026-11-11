@@ -25,6 +25,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run typecheck:web
+      - run: npm test
       - name: Build the static web app
         run: npm run build:web
       - uses: actions/upload-pages-artifact@v3
