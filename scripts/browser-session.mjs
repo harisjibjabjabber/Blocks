@@ -12,10 +12,23 @@ export async function browserSession() {
   const chrome = candidates.find(path => path && (existsSync(path) || !path.includes("/")));
   if (!chrome) throw new Error("Chrome not found; set CHROME to its executable path.");
   const profile = mkdtempSync(join(tmpdir(), "blocks-browser-"));
+  // GitHub's disposable Linux runner tests only this repository's local app.
+  // Keep the normal browser sandbox for every local/non-GitHub session.
+  const ciNoSandbox = process.platform === "linux" && process.env.GITHUB_ACTIONS === "true";
   const child = spawn(chrome, ["--headless=new", "--mute-audio", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
-    "--remote-debugging-port=0", `--user-data-dir=${profile}`, "--autoplay-policy=no-user-gesture-required", "about:blank"], { stdio: "ignore", windowsHide: true });
-  let launchError;
+    ...(ciNoSandbox ? ["--no-sandbox"] : []),
+    "--remote-debugging-port=0", `--user-data-dir=${profile}`, "--autoplay-policy=no-user-gesture-required", "about:blank"], { stdio: ["ignore", "ignore", "pipe"], windowsHide: true });
+  let launchError, exitStatus, stderr = "", connected = false;
+  child.stderr?.setEncoding("utf8");
+  child.stderr?.on("data", chunk => { stderr = (stderr + chunk).slice(-16384); });
   child.on("error", error => { launchError = error; });
+  child.once("exit", (code, signal) => { exitStatus = { code, signal }; });
+  const launchFailure = error => new Error([
+    `Chrome test launch failed: ${error.message || error}`,
+    `Executable: ${chrome}; Linux GitHub CI no-sandbox: ${ciNoSandbox}`,
+    `Exit code: ${exitStatus?.code ?? "not reported"}; signal: ${exitStatus?.signal ?? "none"}; spawn error: ${launchError?.code ?? "none"}`,
+    `Chrome stderr (last 16384 characters):\n${stderr.trim() || "(empty)"}`
+  ].join("\n"), { cause: error });
   let socket;
   const pending = new Map();
   let seq = 0;
@@ -42,11 +55,18 @@ export async function browserSession() {
   }
   try {
     const portFile = join(profile, "DevToolsActivePort");
-    for (let i = 0; i < 100 && !existsSync(portFile); i++) { if (launchError) throw launchError; await delay(100); }
+    for (let i = 0; i < 100 && !existsSync(portFile); i++) {
+      if (launchError) throw launchError;
+      if (exitStatus) throw new Error("Chrome exited before exposing its test endpoint");
+      await delay(100);
+    }
+    if (launchError) throw launchError;
+    if (exitStatus) throw new Error("Chrome exited during test endpoint startup");
     if (!existsSync(portFile)) throw new Error("Chrome did not expose its test endpoint");
     const port = Number(readFileSync(portFile, "utf8").split("\n")[0]);
-    const pages = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
+    const pages = await (await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(5000) })).json();
     const page = pages.find(page => page.type === "page");
+    if (!page?.webSocketDebuggerUrl) throw new Error("Chrome test endpoint has no page target");
     socket = new WebSocket(page.webSocketDebuggerUrl);
     await new Promise((resolveOpen, reject) => { socket.addEventListener("open", resolveOpen, { once: true }); socket.addEventListener("error", reject, { once: true }); });
     socket.addEventListener("message", event => {
@@ -55,6 +75,7 @@ export async function browserSession() {
       if (pending.has(msg.id)) { const request = pending.get(msg.id); pending.delete(msg.id); clearTimeout(request.timer); msg.error ? request.reject(new Error(JSON.stringify(msg.error))) : request.resolve(msg.result); }
     });
     await send("Page.enable"); await send("Runtime.enable");
+    connected = true;
     const evaluate = async expression => {
       const result = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true, userGesture: true });
       if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description ?? result.exceptionDetails.text);
@@ -63,5 +84,5 @@ export async function browserSession() {
     const navigate = async url => { await send("Page.navigate", { url }); for (let i = 0; i < 100; i++) { await delay(100); if (await evaluate("document.readyState === 'complete'")) break; } };
     const screenshot = async path => { const { data } = await send("Page.captureScreenshot", { format: "png" }); writeFileSync(path, Buffer.from(data, "base64")); };
     return { send, evaluate, navigate, screenshot, exceptions, close };
-  } catch (error) { await close(); throw error; }
+  } catch (error) { const failure = connected ? error : launchFailure(error); await close(); throw failure; }
 }
