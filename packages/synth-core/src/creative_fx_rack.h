@@ -30,7 +30,8 @@ public:
  static bool valid(const bs_creative_fx_config&c){
   if(c.version!=BS_CREATIVE_FX_VERSION||c.count>BS_CREATIVE_FX_CAPACITY)return false;
   for(unsigned i=0;i<c.count;++i){const auto&b=c.blocks[i];if(!b.id||b.id>0x7fffffffu||b.type>BS_CREATIVE_IMPACT||b.enabled>1)return false;for(unsigned j=0;j<i;++j)if(c.blocks[j].id==b.id)return false;
-   const float fields[]={b.mix,b.motion,b.space,b.shimmer,b.tight,b.click,b.body};for(float x:fields)if(!std::isfinite(x)||x<0||x>1)return false;
+   const float fields[]={b.mix,b.space,b.shimmer,b.tight,b.click,b.body};for(float x:fields)if(!std::isfinite(x)||x<0||x>1)return false;
+   if(!std::isfinite(b.motion)||b.motion< -1||b.motion>1)return false;
    if(!std::isfinite(b.pitch)||b.pitch< -12||b.pitch>12||!std::isfinite(b.output_db)||b.output_db< -24||b.output_db>12)return false;
   }return true;
  }
@@ -39,11 +40,12 @@ public:
  bool configure(const bs_creative_fx_config&c){if(!valid(c))return false;requested_=c;if(!processed_){apply(c,true);phase_=stable;fade_=1;}else if(phase_==stable&&topology(active_,c)){apply(c,false);}else if(phase_!=out){phase_=out;}return true;}
  const bs_creative_fx_config&config()const{return requested_;}
  void clear(){for(auto&s:slots_){s.space.clear();s.impact.clear();}apply(requested_,true);phase_=stable;fade_=1;processed_=false;}
- void process(double&l,double&r){
+ void process(double&l,double&r){process(l,r,[](uint32_t){return 0.;});}
+ template<class Movement>void process(double&l,double&r,Movement movement){
   processed_=true;if(phase_==out){fade_=std::max(0.,fade_-step_);if(fade_==0){apply(requested_,false);phase_=in;}}
   else if(phase_==in){fade_=std::min(1.,fade_+step_);if(fade_==1)phase_=stable;}
   const double dryL=l,dryR=r;
-  for(unsigned i=0;i<active_.count;++i){auto&s=slots_[order_[i]];if(s.type==BS_CREATIVE_MOVING_SPACE)s.space.process(l,r);else s.impact.process(l,r);}
+  for(unsigned i=0;i<active_.count;++i){auto&s=slots_[order_[i]];if(s.type==BS_CREATIVE_MOVING_SPACE)s.space.process(l,r,movement(s.id));else s.impact.process(l,r);}
   if(fade_!=1){l=dryL+fade_*(l-dryL);r=dryR+fade_*(r-dryR);}
  }
 };

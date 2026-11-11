@@ -1,6 +1,6 @@
 import {DEFAULT_PERFORMANCE,normalizePerformance,toCorePerformance} from './performance-state.js';
 export const CREATIVE_FX_TYPES=Object.freeze(['moving-space','impact']);
-export const CREATIVE_FX_FIELDS=Object.freeze([['mix','mix',0,1],['motion','motion',0,1],['space','space',0,1],['shimmer','shimmer',0,1],['pitch','pitch',-12,12],['tight','tight',0,1],['click','click',0,1],['body','body',0,1],['outputDb','output_db',-24,12]].map(Object.freeze));
+export const CREATIVE_FX_FIELDS=Object.freeze([['mix','mix',0,1],['motion','motion',-1,1],['space','space',0,1],['shimmer','shimmer',0,1],['pitch','pitch',-12,12],['tight','tight',0,1],['click','click',0,1],['body','body',0,1],['outputDb','output_db',-24,12]].map(Object.freeze));
 export const DEFAULT_CREATIVE_FX_SETTINGS=Object.freeze({
  'moving-space':Object.freeze({mix:.35,motion:.45,space:.35,shimmer:.45,pitch:12,tight:.6,click:.35,body:.5,outputDb:0}),
  impact:Object.freeze({mix:.7,motion:.45,space:.35,shimmer:.45,pitch:12,tight:.6,click:.35,body:.5,outputDb:0}),

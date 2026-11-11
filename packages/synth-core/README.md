@@ -49,3 +49,5 @@ Phase13 DSP, sources, controls, evidence and limitations: [space/output results]
 `bs_get_reverb_scope` copies128 recent decimated wet-left samples for display without changing audio state. The browser displays these under the Reverb dials; this is not a spectrum or stereo meter.
 
 Creative FX: `blocks_creative_fx.h` exposes a776-byte config for16 independent Moving Space/Impact stereo inserts. The bus precedes Harmonics and excludes Clean Sub; setters are allocation-free and topology edits fade through dry. See [follow-up DSP and evidence](../../docs/research/space-creative-and-punch-followup.md). Tight now releases prior-body attenuation quickly for repeated hits; no note ADSR changes.
+
+Moving Space Env (`motion`) is signed-1..1. Shared LFO routes target kind3/effect ID/parameter0 with independent signed depths in the unchanged Modulation v3 layout. All contributions combine before physical tap bounds. See [movement contract and verification](../../docs/research/moving-space-movement.md).

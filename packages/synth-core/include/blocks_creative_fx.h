@@ -10,9 +10,11 @@ typedef struct bs_synth bs_synth;
 typedef enum bs_creative_fx_type {BS_CREATIVE_MOVING_SPACE=0,BS_CREATIVE_IMPACT=1} bs_creative_fx_type;
 /* 48bytes. Independent stereo bus processors follow summed voices/FX Sub and
  * precede Harmonics, Width, Delay and Space reverb. Clean Sub bypasses this bus.
- * Moving Space: mix,motion,space,shimmer,pitch,output_db. Impact: mix,tight,
- * click,body,output_db. All normalized fields0..1; pitch-12..12 semitones and
+ * Moving Space: mix,motion (signed audio-envelope depth),space,shimmer,pitch,output_db. Impact: mix,tight,
+ * click,body,output_db. Normalized fields0..1 except motion-1..1; pitch-12..12 semitones and
  * output_db-24..12. Other fields retain their validated stored values.
+ * LFO motion is additive via modulation target_kind3/parameter0, not a second
+ * oscillator/clock in each block. Signed contributions sum before bounds.
  * Defaults are useful when explicitly adding a block; default rack is empty. */
 typedef struct bs_creative_fx_block {
  uint32_t id,type,enabled;

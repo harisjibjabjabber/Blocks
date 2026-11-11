@@ -13,7 +13,7 @@ inline double clamp(double x,double lo,double hi){return std::max(lo,std::min(hi
 inline double follow(double x,double target,double a){x+=(target-x)*a;return std::abs(x-target)<1e-12?target:x;}
 inline double gain(double db){return std::pow(10.,db/20);}
 inline double db(double x){return 20*std::log10(std::max(1e-12,x));}
-inline bool valid(const bs_creative_fx_block&c){if(!c.id||c.type>1||c.enabled>1)return false;const float v[]={c.mix,c.motion,c.space,c.shimmer,c.tight,c.click,c.body};for(float x:v)if(!std::isfinite(x)||x<0||x>1)return false;return std::isfinite(c.pitch)&&c.pitch>=-12&&c.pitch<=12&&std::isfinite(c.output_db)&&c.output_db>=-24&&c.output_db<=12;}
+inline bool valid(const bs_creative_fx_block&c){if(!c.id||c.type>1||c.enabled>1)return false;const float v[]={c.mix,c.space,c.shimmer,c.tight,c.click,c.body};for(float x:v)if(!std::isfinite(x)||x<0||x>1)return false;return std::isfinite(c.motion)&&c.motion>=-1&&c.motion<=1&&std::isfinite(c.pitch)&&c.pitch>=-12&&c.pitch<=12&&std::isfinite(c.output_db)&&c.output_db>=-24&&c.output_db<=12;}
 inline bs_creative_fx_block defaults(unsigned type){return{1,type,1,type==0?.35f:.7f,.45f,.35f,.45f,12,.6f,.35f,.5f,0};}
 struct Line{
  std::unique_ptr<float[]> data;unsigned capacity=0,at=0,history=0;
@@ -47,10 +47,18 @@ public:
  bool prepare(double rate){using namespace creative_detail;if(!std::isfinite(rate)||rate<8000||rate>384000)return false;std::array<Line,8>candidate;for(unsigned i=0;i<8;++i)if(!candidate[i].prepare(unsigned(std::ceil(rate*(i<4?.041:i<6?.01:.092)))+8))return false;line_=std::move(candidate);rate_=rate;smooth_=1-std::exp(-1/(.02*rate));envAttack_=1-std::exp(-1/(.0012*rate));envRelease_=1-std::exp(-1/(.12*rate));lpAlpha_=1-std::exp(-2*pi*std::min(7000.,.18*rate)/rate);double total=0;for(unsigned k=0;k<63;++k){double x=double(k)-31;taps_[k]=(x==0?.4:std::sin(.4*pi*x)/(pi*x))*(.42-.5*std::cos(2*pi*k/62)+.08*std::cos(4*pi*k/62));total+=taps_[k];}for(auto&t:taps_)t/=total;prepared_=true;clear();return true;}
  bool configure(const bs_creative_fx_block&c,bool now=false){if(!creative_detail::valid(c)||c.type!=0)return false;config_=c;pitchTarget_=std::pow(2.,c.pitch/12.);trimTarget_=creative_detail::gain(c.output_db);for(unsigned i=0;i<4;++i)feedbackTarget_[i]=std::pow(10.,-3*seconds(i)*(.55+.95*c.space)/(.08+.72*c.space*c.space));if(now){on_=c.enabled;mix_=c.enabled?c.mix:0;motion_=c.motion;space_=c.space;shimmer_=c.shimmer;pitch_=pitchTarget_;trim_=trimTarget_;neutral_=std::abs(c.pitch)<1e-5?1:0;feedback_=feedbackTarget_;}return true;}
  const bs_creative_fx_block&config()const{return config_;}
+ // Actual delay displacement for native diagnostics/tests, not an LFO clock.
+ double movementSeconds()const{return offset_/rate_;}
  void clear(){for(auto&b:line_)b.clear();damp_.fill(0);for(auto&v:inputFilter_)v.fill(0);for(auto&v:history_)v.fill(0);envelope_=offset_=phase_=0;firAt_=0;shifting_=false;configure(config_,true);}
- void process(double&l,double&r){using namespace creative_detail;if(!prepared_)return;if(!std::isfinite(l)||!std::isfinite(r)){l=r=0;clear();return;}if(!config_.enabled&&mix_==0&&line_[0].history==0)return;
+ void process(double&l,double&r,double lfoMovement=0){using namespace creative_detail;if(!prepared_)return;if(!std::isfinite(l)||!std::isfinite(r)){l=r=0;clear();return;}if(!config_.enabled&&mix_==0&&line_[0].history==0)return;
   on_=follow(on_,config_.enabled,smooth_);mix_=follow(mix_,config_.enabled?config_.mix:0,smooth_);motion_=follow(motion_,config_.motion,smooth_);space_=follow(space_,config_.space,smooth_);shimmer_=follow(shimmer_,config_.shimmer,smooth_);pitch_=follow(pitch_,pitchTarget_,smooth_);trim_=follow(trim_,trimTarget_,smooth_);
-  const double input[]={l*on_,r*on_};double peak=std::max(std::abs(input[0]),std::abs(input[1]));envelope_=follow(envelope_,peak,peak>envelope_?envAttack_:envRelease_);double desired=.004*rate_*motion_*envelope_/(.03+envelope_);offset_+=clamp(desired-offset_,-.45,.45);
+  const double input[]={l*on_,r*on_};double peak=std::max(std::abs(input[0]),std::abs(input[1]));envelope_=follow(envelope_,peak,peak>envelope_?envAttack_:envRelease_);
+  // The host sums signed routes first. Preserve that sum until it combines
+  // with the independent signed audio-envelope depth; clamp only the total.
+  // Keep the original expression order so external0 preserves prior audio.
+  double desired=.004*rate_*motion_*envelope_/(.03+envelope_);
+  desired+=.004*rate_*(std::isfinite(lfoMovement)?lfoMovement:0);
+  desired=clamp(desired,-.004*rate_,.004*rate_);offset_+=clamp(desired-offset_,-.45,.45);
   std::array<double,2>in{};for(unsigned ch=0;ch<2;++ch){double x=input[ch];for(auto&f:inputFilter_[ch]){f+=lpAlpha_*(x-f);x=f;}double d=line_[4+ch].read((ch?.0061:.0037)*rate_);in[ch]=d-.6*x;line_[4+ch].write(x+.6*in[ch]);}
   std::array<double,4>v{},h{};constexpr double bends[]={1.,-.87,.65,-.91};for(unsigned i=0;i<4;++i){double d=seconds(i)*(.55+.95*space_)*rate_+offset_*bends[i];double x=line_[i].read(d);damp_[i]+=lpAlpha_*(x-damp_[i]);v[i]=std::abs(damp_[i])<1e-20?0:damp_[i];}
   h[0]=.5*(v[0]+v[1]+v[2]+v[3]);h[1]=.5*(v[0]-v[1]+v[2]-v[3]);h[2]=.5*(v[0]+v[1]-v[2]-v[3]);h[3]=.5*(v[0]-v[1]-v[2]+v[3]);

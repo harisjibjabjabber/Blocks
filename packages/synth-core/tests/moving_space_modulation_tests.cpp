@@ -1,0 +1,31 @@
+#include "blocks_synth.h"
+#include "blocks_bass_support.h"
+#include "../src/modulation.h"
+#include <algorithm>
+#include <array>
+#include <vector>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <new>
+static bool watch=false;static unsigned allocations=0;
+void*operator new(std::size_t n){if(watch)++allocations;if(void*p=std::malloc(n?n:1))return p;throw std::bad_alloc();}
+void operator delete(void*p)noexcept{std::free(p);}void operator delete(void*p,std::size_t)noexcept{std::free(p);}
+#define CHECK(x) do{if(!(x)){std::fprintf(stderr,"FAIL%d %s\n",__LINE__,#x);std::exit(1);}}while(false)
+static bs_modulation_config_v3 lfo(float depth=0,uint32_t target=7){bs_modulation_config_v3 c{};bs_default_modulation_v3(&c);auto&s=c.sources[0];s.enabled=1;s.synced=0;s.waveform=BS_LFO_SINE;s.rate_hz=1;s.intensity=1;s.route_count=1;s.routes[0]={3,target,0,depth};return c;}
+struct Synth{bs_synth*p=bs_create();Synth(float depth=0,float env=0,uint32_t target=7,bool cancel=false){CHECK(p&&bs_prepare(p,48000));for(auto x:{std::pair<unsigned,float>{BS_OSC1_WAVE,BS_SAW},{BS_OSC1_LEVEL,.7f},{BS_OSC2_LEVEL,0},{BS_GAIN,.2f},{BS_FILTER_MIX,0},{BS_DRIFT_CENTS,0},{BS_SETTLING_CENTS,0},{BS_FULLNESS_ENABLED,0},{BS_ATTACK,.002f},{BS_DECAY,.1f},{BS_SUSTAIN_LEVEL,1},{BS_RELEASE,.05f}})CHECK(bs_set_parameter(p,x.first,x.second));bs_creative_fx_config fx{};bs_default_creative_fx(&fx);fx.count=1;CHECK(bs_default_creative_fx_block(0,&fx.blocks[0]));fx.blocks[0].id=7;fx.blocks[0].mix=1;fx.blocks[0].motion=env;fx.blocks[0].shimmer=0;CHECK(bs_set_creative_fx(p,&fx));auto m=lfo(depth,target);if(cancel){m.source_count=2;m.sources[1]=m.sources[0];m.sources[1].id=2;m.sources[1].routes[0].depth=-depth;}CHECK(bs_set_modulation_v3(p,&m));bs_reset(p);bs_note_on(p,0,48,.8f);}~Synth(){bs_destroy(p);}};
+static std::vector<float>render(bs_synth*s,unsigned n,unsigned block=127){std::vector<float>a(n*2);for(unsigned i=0;i<n;i+=block){watch=true;CHECK(!bs_render(s,a.data()+i,a.data()+n+i,std::min(block,n-i),nullptr,0));watch=false;}for(float x:a)CHECK(std::isfinite(x)&&std::abs(x)<=.980001f);return a;}
+static double difference(const std::vector<float>&a,const std::vector<float>&b){double ea=0,eb=0,e=0;for(unsigned i=0;i<a.size();++i){ea+=double(a[i])*a[i];eb+=double(b[i])*b[i];}const double scale=std::sqrt(ea/std::max(eb,1e-30));for(unsigned i=0;i<a.size();++i)e+=std::pow(double(a[i])-b[i]*scale,2);return std::sqrt(e/std::max(ea,1e-30));}
+int main(){
+ {blocks_detail::Modulation m;auto c=lfo(.75f);auto&s=c.sources[0];s.waveform=BS_LFO_CUSTOM;s.point_count=2;s.points[0]={0,.8f,0};s.points[1]={1,.8f,0};s.intensity=.5f;CHECK(m.configure(c));auto tone=m.tick(48000,120);CHECK(std::abs(m.effectOffset(7)-.3)<1e-7&&m.effectOffset(999)==0&&m.sauceCount_==0);for(double v:tone)CHECK(v==0);auto bad=c;bad.sources[0].routes[0].parameter_id=1;CHECK(!m.configure(bad));bad=c;bad.sources[0].routes[0].target_id=0;CHECK(!m.configure(bad));s.enabled=0;CHECK(m.configure(c));m.tick(48000,120);CHECK(m.effectOffset(7)==0&&m.phase(1)>0);m.reset();CHECK(m.effectCount_==0);}
+ std::puts("PASS kind3 actual source waveform/intensity/depth, strict target validation, off clocks and neutral other targets");
+ {std::array<unsigned,4>permutation{0,1,2,3};blocks_detail::Modulation reference;auto c=lfo();c.source_count=4;for(unsigned i=0;i<4;++i){c.sources[i]=c.sources[0];c.sources[i].id=i+1;c.sources[i].rate_hz=.3f+i*.2f;c.sources[i].routes[0].depth=i%2?-.8f:.7f;}CHECK(reference.configure(c));std::vector<double>expected(800);for(auto&v:expected){reference.tick(48000,120);v=reference.effectOffset(7);}do{auto q=c;for(unsigned i=0;i<4;++i)q.sources[i]=c.sources[permutation[i]];blocks_detail::Modulation m;CHECK(m.configure(q));for(double v:expected){m.tick(48000,120);CHECK(m.effectOffset(7)==v);}}while(std::next_permutation(permutation.begin(),permutation.end()));}
+ std::puts("PASS all24 source orders retain canonical signed MovingSpace route sums");
+ {Synth base,zero(0),cancel(.8f,0,7,true),orphan(.8f,0,999),positive(.8f),negative(-.8f),envPositive(0,.7f),envNegative(0,-.7f);auto a=render(base.p,24000);CHECK(a==render(zero.p,24000)&&a==render(cancel.p,24000)&&a==render(orphan.p,24000));auto p=render(positive.p,24000),n=render(negative.p,24000);const double dp=difference(a,p),dn=difference(p,n),de=difference(render(envPositive.p,24000),render(envNegative.p,24000));std::printf("METRIC actual held-note LFO difference %.6f polarity %.6f envelope polarity %.6f\n",dp,dn,de);CHECK(dp>.1&&dn>.1&&de>.1);}
+ std::puts("PASS actual held-note LFO motion and signed Env, exact zero/cancel/orphan audio");
+ {Synth a(.6f,.3f),b(.6f,.3f);CHECK(render(a.p,6000,1)==render(b.p,6000,256));const double before=bs_get_modulation_phase(a.p,1);bs_creative_fx_config fx{};CHECK(bs_get_creative_fx(a.p,&fx));fx.blocks[0].motion=-.4f;for(auto*s:{a.p,b.p}){watch=true;CHECK(bs_set_creative_fx(s,&fx));watch=false;}CHECK(bs_get_modulation_phase(a.p,1)==before);CHECK(render(a.p,6000,1)==render(b.p,6000,127));auto m=lfo(-.6f);for(auto*s:{a.p,b.p}){watch=true;CHECK(bs_set_modulation_v3(s,&m));watch=false;}CHECK(render(a.p,4000,1)==render(b.p,4000,256));bs_creative_fx_config got{};CHECK(bs_get_creative_fx(a.p,&got)&&got.blocks[0].motion==-.4f);CHECK(bs_active_voices(a.p)==1);bs_panic(a.p);auto silent=render(a.p,512);for(float x:silent)CHECK(x==0);CHECK(bs_get_modulation_phase(a.p,1)>before&&allocations==0);}
+ std::puts("PASS live independent depths preserve clocks/notes/baselines, block invariance, panic and zero allocations");
+ {Synth slow(.5f),fast(.5f);auto m=lfo(.5f);m.sources[0].synced=1;m.sources[0].division=4;bs_clock_config clock{1,240,4};CHECK(bs_set_clock(fast.p,&clock));for(auto*s:{slow.p,fast.p}){CHECK(bs_set_modulation_v3(s,&m));bs_reset(s);}render(slow.p,12000);render(fast.p,12000);CHECK(std::abs(bs_get_modulation_phase(slow.p,1)-11999.*2/48000)<1e-10);CHECK(std::abs(bs_get_modulation_phase(fast.p,1)-11999.*4/48000)<1e-10);m.sources[0].retrigger=1;CHECK(bs_set_modulation_v3(slow.p,&m));bs_note_on(slow.p,0,60,.8f);render(slow.p,1);CHECK(bs_get_modulation_phase(slow.p,1)==0);CHECK(allocations==0);}
+ std::puts("PASS shared MovingSpace LFO follows host BPM and its existing optional note retrigger");
+}

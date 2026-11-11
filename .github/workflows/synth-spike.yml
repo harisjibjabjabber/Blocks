@@ -84,6 +84,7 @@ jobs:
           node scripts/synth-standalone-proof.mjs
           node scripts/synth-reverb-proof.mjs
           node scripts/synth-creative-proof.mjs
+          node scripts/synth-moving-lfo-proof.mjs
           node scripts/synth-trim-space-proof.mjs
           node scripts/synth-navigation-proof.mjs
           node scripts/synth-gesture-proof.mjs

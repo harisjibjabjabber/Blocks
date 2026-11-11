@@ -12,7 +12,10 @@ typedef struct bs_synth bs_synth;
 typedef enum bs_lfo_waveform { BS_LFO_SINE=0, BS_LFO_TRIANGLE=1, BS_LFO_SAW=2, BS_LFO_SQUARE=3, BS_LFO_SMOOTH_RANDOM=4, BS_LFO_CUSTOM=5 } bs_lfo_waveform;
 typedef struct bs_lfo_point {float x,y,bend;} bs_lfo_point;
 /* Current2232-byte config: stable source IDs,32 points,8 routes/source.
- * target_kind0tone/1Sauceamount/2LFOrate-intensity. Canonical ID reduction,
+ * target_kind0tone/1Sauceamount/2LFOrate-intensity/3MovingSpace movement.
+ * Kind3 uses stable effect ID, parameter0 and signed normalized depth; unknown
+ * effect IDs are inert. Contributions sum in source-ID order before DSP bounds.
+ * Canonical ID reduction,
  * previous-sample crossmod feedback; clock phase persists on config edits. */
 typedef struct bs_lfo_route_v3 { uint32_t target_kind,target_id,parameter_id;float depth; } bs_lfo_route_v3;
 typedef struct bs_lfo_source_v3 {
