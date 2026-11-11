@@ -45,37 +45,6 @@ export function createRackEditor({item,body,extra,getNode,changeNode,getModulati
     panel.querySelector('[data-lfo-ref=lfo-rate-slot]').hidden=true;panel.querySelector('[data-lfo-ref=lfo-intensity-slot]').hidden=true;
     curve=()=>{badge.textContent=getNode().routes.length+' routes'+(getNode().synced?' · '+getNode().division:'');};
   }
-  if(item.type==='moving-space'){
-    const section=document.createElement('section');section.className='fx-lfo-movement';section.dataset.fxLfo=String(item.id);
-    const heading=document.createElement('h4');heading.textContent='LFO movement';
-    const list=document.createElement('div');list.className='fx-lfo-routes';
-    const add=document.createElement('select');add.dataset.fxLfoAdd=String(item.id);add.setAttribute('aria-label','Add shared LFO to Moving Space '+item.id);
-    section.append(heading,list,add);extra.append(section);
-    const matches=r=>r.kind==='effects'&&r.targetId===item.id&&r.parameter===0;
-    const source=id=>getModulation().sources.find(s=>s.id===id);
-    const rows=new Map();let pickerKey='';
-    add.addEventListener('change',()=>{if(getGesture()||!add.value)return;const s=source(Number(add.value));if(s&&s.routes.length<8&&!s.routes.some(matches))changeSource(s.id,{routes:[...s.routes,{kind:'effects',targetId:item.id,parameter:0,depth:0}]},true);});
-    updateMovementRoutes=()=>{
-      const sources=getModulation().sources,assigned=sources.filter(s=>s.routes.some(matches));
-      for(const[id,row]of rows)if(!assigned.some(s=>s.id===id)){row.element.remove();rows.delete(id);}
-      for(const s of assigned){
-        if(!rows.has(s.id)){
-          const row=document.createElement('div');row.className='fx-lfo-route';row.dataset.fxLfoSource=String(s.id);
-          const label=document.createElement('span');label.className='fx-lfo-label';label.textContent='LFO '+s.id+' · Shared';
-          const power=document.createElement('button');power.type='button';power.setAttribute('role','switch');power.dataset.fxLfoPower=String(s.id);power.setAttribute('aria-label','Shared LFO '+s.id+' enabled');power.title='Shared source: switching it changes all its routes.';
-          power.addEventListener('click',()=>{if(!getGesture()){const current=source(s.id);changeSource(s.id,{enabled:!current.enabled},true);}});
-          const edit=document.createElement('button');edit.type='button';edit.textContent='Edit';edit.dataset.fxLfoEdit=String(s.id);edit.setAttribute('aria-label','Edit shared LFO '+s.id);edit.addEventListener('click',()=>{if(!getGesture())openLfo(s.id);});
-          const depth=configDial({...options,key:item.key+':lfo:'+s.id+':depth',label:'Depth',min:-1,max:1,defaultValue:0,getValue:()=>source(s.id)?.routes.find(matches)?.depth??0,change:(value,commit)=>{const current=source(s.id);if(current)changeSource(s.id,{routes:current.routes.map(r=>matches(r)?{...r,depth:value}:r)},commit);},format:v=>(v>0?'+':'')+Math.round(v*100)+'%'});
-          const remove=document.createElement('button');remove.type='button';remove.textContent='Remove';remove.dataset.fxLfoRemove=String(s.id);remove.setAttribute('aria-label','Remove LFO '+s.id+' movement route');remove.addEventListener('click',()=>{if(!getGesture()){const current=source(s.id);changeSource(s.id,{routes:current.routes.filter(r=>!matches(r))},true);}});
-          row.append(label,power,edit,depth.element,remove);list.append(row);rows.set(s.id,{element:row,power,depth});
-        }
-        const row=rows.get(s.id);row.power.textContent=s.enabled?'On':'Off';row.power.setAttribute('aria-checked',String(s.enabled));row.depth.update();
-      }
-      const nextKey=sources.map(s=>s.id+':'+s.routes.length+':'+s.routes.some(matches)).join('|');
-      if(nextKey!==pickerKey){pickerKey=nextKey;add.replaceChildren();const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='+ Shared LFO';add.append(placeholder);for(const s of sources.filter(s=>!s.routes.some(matches))){const option=document.createElement('option');option.value=String(s.id);option.textContent='LFO '+s.id+' · '+s.routes.length+'/8 routes';option.disabled=s.routes.length>=8;add.append(option);}add.disabled=!sources.some(s=>!s.routes.some(matches)&&s.routes.length<8);if(add.disabled)placeholder.textContent='No available LFO routes';}
-      add.value='';
-    };
-  }
   if(item.type==='drop'){
     contour=document.createElementNS('http://www.w3.org/2000/svg','svg');contour.setAttribute('viewBox','0 0 180 48');contour.classList.add('rack-contour');contour.setAttribute('aria-label','Pitch fall shape');extra.prepend(contour);
   }

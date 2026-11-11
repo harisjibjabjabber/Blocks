@@ -36,6 +36,20 @@ int bs_get_modulation_v3(const bs_synth *synth,bs_modulation_config_v3 *config);
 /* Phase used at the last rendered sample, [0,1); -1 for null/unknown ID.
  * Disabled sources still advance. Before first render/reset, phase is0. */
 double bs_get_modulation_phase(const bs_synth *synth,uint32_t source_id);
+/* Actual last-rendered signed waveform times intensity; disabled/unknown0. */
+double bs_get_modulation_value(const bs_synth *synth,uint32_t source_id);
+/* Continuous target registry. scope0shared bus/control,1per voice. Mapping
+ *0linear/1logarithmic. Depth is normalized full-span, summed before bounds.
+ * Kind4 fixed namespace; kind5 CreativeFX stable node ID. Unsupported/null
+ * entries must not be advertised as drag destinations by a client. */
+typedef struct bs_modulation_target_descriptor {
+ float minimum,maximum,default_value;uint32_t mapping,scope;
+ const char *name,*unit;
+} bs_modulation_target_descriptor;
+const bs_modulation_target_descriptor *bs_modulation_target_info(uint32_t kind,uint32_t target_id,uint32_t parameter_id);
+/* Actual physical control; voice scope reports newest active main voice.
+ * Unknown target returns NaN. Unmodulated/no-active voice returns base value. */
+double bs_get_modulated_target_value(const bs_synth*,uint32_t kind,uint32_t target_id,uint32_t parameter_id);
 
 #ifdef __cplusplus
 }

@@ -81,6 +81,8 @@ jobs:
             if curl --fail --silent http://127.0.0.1:41821/ > /dev/null; then break; fi
             sleep 1
           done
+          node scripts/synth-workspace-proof.mjs
+          SYNTH_WORKSPACE_SPOTS=1 SYNTH_PROOF_DIR="$SYNTH_PROOF_DIR/workspace-spots" node scripts/synth-workspace-proof.mjs
           node scripts/synth-standalone-proof.mjs
           node scripts/synth-reverb-proof.mjs
           node scripts/synth-creative-proof.mjs
@@ -92,7 +94,6 @@ jobs:
           node scripts/synth-filter-shape-proof.mjs
           node scripts/synth-osc-bass-proof.mjs
           node scripts/synth-expansion-proof.mjs
-          node scripts/synth-suite-proof.mjs
           node scripts/synth-suite-proof.mjs
           node scripts/synth-tone-layout-proof.mjs
           node scripts/synth-oscillator-proof.mjs

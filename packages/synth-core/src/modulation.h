@@ -2,6 +2,7 @@
 #define BLOCKS_MODULATION_ENGINE_H
 #include "blocks_modulation.h"
 #include "blocks_synth.h"
+#include "workspace_targets.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -9,11 +10,11 @@
 #include <cstdint>
 #include <cstring>
 namespace blocks_detail {
-inline bool modulationTarget(uint32_t id){switch(id){case 0:case 2:case 3:case 11:case 13:case 14:case 18:case 21:case 22:case 23:case 24:case BS_FILTER_RESONANCE:return true;default:return false;}}
+inline bool modulationTarget(uint32_t id){return workspaceTarget(0,0,id)!=nullptr;}
 template<class Source>inline void defaultLfoShape(Source&s){s.retrigger=0;s.point_count=9;constexpr float h=.7071067811865475244f;const float y[]={0,h,1,h,0,-h,-1,-h,0};for(unsigned i=0;i<9;++i)s.points[i]={float(i)/8,y[i],0};}
 inline bs_modulation_config_v3 defaultModulationV3(){bs_modulation_config_v3 c{};c.version=3;c.source_count=1;auto&s=c.sources[0];s.id=1;s.division=4;s.rate_hz=1;s.intensity=1;s.route_count=2;s.routes[0]={0,0,11,.3f};s.routes[1]={0,0,0,.2f};defaultLfoShape(s);return c;}
 class Modulation {
- struct Clock{double phase=0,lastPhase=0;uint64_t cycle=0;double previous=0,rateOffset=0,intensityOffset=0;};
+ struct Clock{double phase=0,lastPhase=0;uint64_t cycle=0;double previous=0,smoothedValue=0,rateOffset=0,intensityOffset=0,hz=1,intensity=1;};
  struct Shape{std::array<double,BS_MAX_LFO_POINTS_V3-1> inverseWidth{},delta{};};
  bs_modulation_config_v3 config_=defaultModulationV3();
  std::array<Clock,BS_MAX_LFOS> clocks_{};
@@ -31,7 +32,7 @@ class Modulation {
   for(uint32_t j=0;j<s.route_count;++j){const auto&r=s.routes[j];if(!validRoute(r))return false;for(uint32_t k=0;k<j;++k)if(sameRoute(r,s.routes[k]))return false;}
   return true;
  }
- static bool validRoute(const bs_lfo_route_v3&r){return std::isfinite(r.depth)&&r.depth>=-1&&r.depth<=1&&((r.target_kind==0&&r.target_id==0&&modulationTarget(r.parameter_id))||(r.target_kind==1&&r.target_id!=0&&r.parameter_id==0)||(r.target_kind==2&&r.parameter_id<=1)||(r.target_kind==3&&r.target_id!=0&&r.parameter_id==0));}
+ static bool validRoute(const bs_lfo_route_v3&r){return workspaceRoute(r);}
  static bool sameRoute(const bs_lfo_route_v3&a,const bs_lfo_route_v3&b){return a.target_kind==b.target_kind&&a.target_id==b.target_id&&a.parameter_id==b.parameter_id;}
  static double custom(const bs_lfo_source_v3&s,const Shape&shape,double phase){
   // At most5 binary-search comparisons for32 points. Phase is half-open[0,1):
@@ -73,16 +74,21 @@ public:
  bool retriggerPending()const{return retriggerPending_;}
  void cancelRetrigger(){retriggerPending_=false;}
  double phase(uint32_t id)const{for(unsigned i=0;i<config_.source_count;++i)if(config_.sources[i].id==id)return clocks_[i].lastPhase;return -1;}
+ double value(uint32_t id)const{for(unsigned i=0;i<config_.source_count;++i)if(config_.sources[i].id==id)return clocks_[i].previous;return 0;}
+ double control(uint32_t id,unsigned parameter)const{for(unsigned i=0;i<config_.source_count;++i)if(config_.sources[i].id==id)return parameter?clocks_[i].intensity:clocks_[i].hz;return 0;}
+ double targetOffset(uint32_t kind,uint32_t id,uint32_t parameter)const{double sum=0;for(unsigned order=0;order<config_.source_count;++order){unsigned i=executionOrder_[order];const auto&s=config_.sources[i];if(!s.enabled)continue;for(unsigned j=0;j<s.route_count;++j){const auto&r=s.routes[j];if(r.target_kind==kind&&r.target_id==id&&r.parameter_id==parameter)sum+=(kind>=4?clocks_[i].smoothedValue:clocks_[i].previous)*r.depth;}}return sum;}
+ bool hasTarget(uint32_t kind,uint32_t id,uint32_t parameter)const{for(unsigned i=0;i<config_.source_count;++i){const auto&s=config_.sources[i];if(!s.enabled)continue;for(unsigned j=0;j<s.route_count;++j){const auto&r=s.routes[j];if(r.target_kind==kind&&r.target_id==id&&r.parameter_id==parameter&&r.depth!=0)return true;}}return false;}
  struct SauceOffset{uint32_t id=0;double value=0;};
  std::array<SauceOffset,BS_MAX_LFOS*BS_MAX_LFO_ROUTES>sauceOffsets_{},effectOffsets_{};unsigned sauceCount_=0,effectCount_=0;
  double effectOffset(uint32_t id)const{for(unsigned i=0;i<effectCount_;++i)if(effectOffsets_[i].id==id)return effectOffsets_[i].value;return 0;}
  double sauceOffset(uint32_t id)const{for(unsigned i=0;i<sauceCount_;++i)if(sauceOffsets_[i].id==id)return sauceOffsets_[i].value;return 0;}
  bool hasSauceOffsets()const{return sauceCount_!=0;}
- std::array<double,BS_PARAMETER_COUNT> tick(double sampleRate,double bpm){
+ std::array<double,BS_PARAMETER_COUNT> tick(double sampleRate,double bpm,const std::array<double,4>&externalRate={},const std::array<double,4>&externalIntensity={}){
   std::array<double,BS_PARAMETER_COUNT> offsets{};
   if(!std::isfinite(sampleRate)||sampleRate<8000||sampleRate>384000||!std::isfinite(bpm)||bpm<40||bpm>240)return offsets;
   const bool restart=retriggerPending_;retriggerPending_=false;
   std::array<double,BS_MAX_LFOS> rateOffsets{},intensityOffsets{},values{};
+  for(unsigned i=0;i<config_.source_count;++i){unsigned id=config_.sources[i].id;if(id>=1&&id<=4){rateOffsets[i]=externalRate[id-1];intensityOffsets[i]=externalIntensity[id-1];}}
   // Feedback reads a complete prior-sample snapshot: no order-dependent graph
   // traversal, algebraic loop, recursion or unbounded evaluation.
   for(unsigned p=0;p<config_.source_count;++p){unsigned i=executionOrder_[p];const auto&s=config_.sources[i];if(!s.enabled)continue;
@@ -92,13 +98,13 @@ public:
   for(uint32_t position=0;position<config_.source_count;++position){const uint32_t i=executionOrder_[position];const auto&s=config_.sources[i];auto&c=clocks_[i];if(restart&&s.retrigger){c.phase=0;c.cycle=0;}c.lastPhase=c.phase;
    c.rateOffset+=smoothing*(rateOffsets[i]-c.rateOffset);c.intensityOffset+=smoothing*(intensityOffsets[i]-c.intensityOffset);
    if(std::abs(c.rateOffset-rateOffsets[i])<1e-12)c.rateOffset=rateOffsets[i];if(std::abs(c.intensityOffset-intensityOffsets[i])<1e-12)c.intensityOffset=intensityOffsets[i];
-   const double intensity=std::max(0.,std::min(1.,double(s.intensity)+c.intensityOffset));
+   const double intensity=c.intensity=std::max(0.,std::min(1.,double(s.intensity)+c.intensityOffset));
    if(s.enabled&&intensity!=0){const double value=waveform(s,c,shapes_[i])*intensity;values[i]=value;for(uint32_t j=0;j<s.route_count;++j){const auto&r=s.routes[j];if(r.target_kind==0)offsets[r.parameter_id]+=value*r.depth;else if(r.target_kind==1){unsigned k=0;while(k<sauceCount_&&sauceOffsets_[k].id!=r.target_id)++k;if(k==sauceCount_){sauceOffsets_[k]={r.target_id,0};++sauceCount_;}sauceOffsets_[k].value+=value*r.depth;}else if(r.target_kind==3){unsigned k=0;while(k<effectCount_&&effectOffsets_[k].id!=r.target_id)++k;if(k==effectCount_){effectOffsets_[k]={r.target_id,0};++effectCount_;}effectOffsets_[k].value+=value*r.depth;}}}
    const double baseHz=s.synced?(bpm/60)*(double(s.division)/4)*(s.triplet?1.5:1):s.rate_hz;
-   const double hz=c.rateOffset==0?baseHz:std::max(.003125,std::min(1280.,baseHz*std::exp2(4*std::max(-4.,std::min(4.,c.rateOffset)))));
+   const double hz=c.hz=c.rateOffset==0?baseHz:std::max(.003125,std::min(1280.,baseHz*std::exp(std::log(400.)*std::max(-4.,std::min(4.,c.rateOffset)))));
    c.phase+=hz/sampleRate;const double cycles=std::floor(c.phase);c.phase-=cycles;c.cycle+=uint64_t(cycles);
   }
-  for(unsigned i=0;i<config_.source_count;++i)clocks_[i].previous=values[i];return offsets;
+  for(unsigned i=0;i<config_.source_count;++i){clocks_[i].previous=values[i];clocks_[i].smoothedValue+=smoothing*(values[i]-clocks_[i].smoothedValue);}return offsets;
  }
 
 };

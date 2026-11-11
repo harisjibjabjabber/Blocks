@@ -19,7 +19,7 @@ int main(){
   Modulation m;CHECK(Modulation::valid(m.configV3()));CHECK(m.configV3().sources[0].enabled==0);for(double v:m.tick(48000,120))CHECK(v==0);
   auto c=enabled();CHECK(m.configure(c));const auto saved=m.configV3();
   const auto reject=[&](bs_modulation_config_v3 bad){CHECK(!m.configure(bad));CHECK(std::memcmp(&saved,&m.configV3(),sizeof(saved))==0);};
-  auto b=c;b.version=2;reject(b);b=c;b.source_count=5;reject(b);b=c;b.sources[0].route_count=9;reject(b);b=c;b.sources[0].routes[1].parameter_id=11;reject(b);b=c;b.sources[0].routes[0].parameter_id=4;reject(b);b=c;b.sources[0].routes[0].depth=std::numeric_limits<float>::quiet_NaN();reject(b);b=c;b.sources[0].intensity=1.01f;reject(b);b=c;b.sources[0].rate_hz=0;reject(b);b=c;b.sources[0].waveform=6;reject(b);b=c;b.sources[0].division=64;b.sources[0].triplet=1;reject(b);b=c;b.source_count=2;b.sources[1]=b.sources[0];reject(b);
+  auto b=c;b.version=2;reject(b);b=c;b.source_count=5;reject(b);b=c;b.sources[0].route_count=9;reject(b);b=c;b.sources[0].routes[1].parameter_id=11;reject(b);b=c;b.sources[0].routes[0].parameter_id=19;reject(b);b=c;b.sources[0].routes[0].depth=std::numeric_limits<float>::quiet_NaN();reject(b);b=c;b.sources[0].intensity=1.01f;reject(b);b=c;b.sources[0].rate_hz=0;reject(b);b=c;b.sources[0].waveform=6;reject(b);b=c;b.sources[0].division=64;b.sources[0].triplet=1;reject(b);b=c;b.source_count=2;b.sources[1]=b.sources[0];reject(b);
   for(uint32_t id=0;id<BS_PARAMETER_COUNT;++id){b=c;b.sources[0].route_count=1;b.sources[0].routes[0].parameter_id=id;CHECK(Modulation::valid(b)==blocks_detail::modulationTarget(id));}
  }
  std::puts("PASS LFO fixed ABI, disabled default, typed target whitelist and atomic rejection");

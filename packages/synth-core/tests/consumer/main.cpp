@@ -1,3 +1,6 @@
+#include <blocks_envelopes.h>
+#include <blocks_tuning.h>
+#include <blocks_filter_bank.h>
 #include <blocks_notes.h>
 #include <blocks_sauce.h>
 #include <blocks_modulation.h>
@@ -14,6 +17,9 @@
 int main() {
   bs_synth* synth=bs_create();
   if(!synth) return 1;
+  bs_envelopes_config envelopes{};bs_default_envelopes(&envelopes);
+  bs_tuning_config tuning{};bs_default_tuning(&tuning);
+  bs_filter_bank_config filters{};bs_default_filter_bank(&filters);
   bs_sauce_config sauce{},sauceRead{};
   bs_sound_config sound{},soundRead{};bs_harmonics_suite_config harmonics{},harmonicsRead{};
   bs_default_sound(&sound);bs_default_harmonics_suite(&harmonics);
@@ -29,7 +35,11 @@ int main() {
   bs_performance_config performance{},performanceRead{};
   bs_default_modulation_v3(&modulationV3);bs_default_sauce(&sauce);bs_default_notes(&notes);
   bs_default_performance(&performance);
-  const bool configured=bs_set_clock(synth,&clock)&&bs_get_clock(synth,&clock)&&bs_set_sub(synth,&sub)&&bs_get_sub(synth,&sub)&&bs_set_osc_bass_v2(synth,&bassV2)&&bs_get_osc_bass_v2(synth,&bassV2)
+  const bool configured=bs_set_envelopes(synth,&envelopes)&&bs_get_envelopes(synth,&envelopes)
+    &&bs_set_tuning(synth,&tuning)&&bs_get_tuning(synth,&tuning)
+    &&bs_set_filter_bank(synth,&filters)&&bs_get_filter_bank(synth,&filters)
+    &&bs_modulation_target_info(4,11,0)&&bs_get_envelope_value(synth,1)==0
+    &&bs_set_clock(synth,&clock)&&bs_get_clock(synth,&clock)&&bs_set_sub(synth,&sub)&&bs_get_sub(synth,&sub)&&bs_set_osc_bass_v2(synth,&bassV2)&&bs_get_osc_bass_v2(synth,&bassV2)
     &&bs_set_reverb(synth,&reverb)&&bs_get_reverb(synth,&reverbRead)&&bs_get_output_meters(synth,&output)&&bs_output_latency(synth)==72
     &&bs_set_creative_fx(synth,&creative)&&bs_get_creative_fx(synth,&creativeRead)&&creativeRead.count==0
     &&bs_set_voicing_v2(synth,&voicingV2)&&bs_get_voicing_v2(synth,&voicingV2Read)
@@ -47,6 +57,7 @@ int main() {
     ||bs_notes_pending_mask(synth)!=0){bs_destroy(synth);return 2;}
   float preview[16]{};
   if(!bs_osc_bass_preview_v2(2,1,.5f,&bassV2.oscillators[0],.25,65,48000,120,1,1,preview,16)){bs_destroy(synth);return 3;}
+  if(!bs_sub_preview(4,.5f,65,48000,preview,16)){bs_destroy(synth);return 4;}
   float left[128]{},right[128]{};
   bs_note_on(synth,0,60,.7f);
   int result=bs_render(synth,left,right,128,nullptr,0);

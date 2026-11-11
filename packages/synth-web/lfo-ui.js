@@ -3,7 +3,7 @@ import {configDial} from './config-dial.js';
 import {createLfoTimingDial} from './lfo-timing.js';
 import {createLfoCurve} from './lfo-curve.js';
 export function createLfoUI({container,parameters,getSource,getTempo,changeSource,changeTempo,begin,getGesture,bindCompletion,getPhase=()=>null,getDestinations=()=>MOD_TARGETS.map(parameter=>({kind:"tone",targetId:0,parameter,key:"tone:0:"+parameter,label:parameters[parameter]?.name??"Parameter "+parameter})),instance="main"}) {
-  container.className='lfo-panel';const lifecycle=new AbortController();
+  container.classList.add('lfo-panel');const lifecycle=new AbortController();
   container.innerHTML=`<div class="lfo-toolbar"><button type="button" id="lfo-wave-toggle" aria-expanded="false" aria-controls="lfo-wave-options"><span id="lfo-wave-name"></span><span aria-hidden="true">⌄</span></button><button type="button" id="lfo-randomize" class="lfo-randomize" aria-label="Generate a new random LFO pattern" title="Generate a new drawable 30-point pattern">New random</button><button type="button" id="lfo-delete-point" aria-label="Delete selected LFO point" title="Delete selected point" disabled>Delete</button><button type="button" id="lfo-enabled" role="switch" aria-checked="false">Off</button></div><div id="lfo-wave-options" role="group" aria-label="LFO waveform" hidden></div>
     <div id="lfo-curve"></div>
     <div class="lfo-primary-controls"><div id="lfo-rate-slot"></div><div id="lfo-intensity-slot"></div><button type="button" id="lfo-sync" aria-pressed="false">Sync</button><button type="button" id="lfo-retrigger" aria-pressed="false" title="Restart on played or generated note attacks; shared by all voices">Retrigger</button></div>
@@ -30,7 +30,7 @@ export function createLfoUI({container,parameters,getSource,getTempo,changeSourc
   document.addEventListener('pointerdown',e=>{if(!e.target.closest('[data-lfo-ref=lfo-wave-toggle],[data-lfo-ref=lfo-wave-options]'))closeWaves();},{signal:lifecycle.signal});window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#lfo-wave-options').hidden){closeWaves(true);e.preventDefault();}},{signal:lifecycle.signal});
   let routeKey='',routeDials=[];
   function update(){
-    const s=getSource();if(!s)return;container.dataset.lfoId=s.id;rate.update();intensity.update();curve.update();curve.setPhase(getPhase(s.id));
+    const s=getSource();if(!s)return;container.dataset.lfoId=s.id;rate.update();intensity.update();rate.button.dataset.control='lfo:'+s.id+':rate';rate.button.dataset.modValue=s.rate;intensity.button.dataset.control='lfo:'+s.id+':intensity';curve.update();curve.setPhase(getPhase(s.id));
     $('#lfo-enabled').setAttribute('aria-label','LFO '+s.id+' enabled');$('#lfo-enabled').setAttribute('aria-checked',String(s.enabled));$('#lfo-enabled').textContent=s.enabled?'On':'Off';$('#lfo-sync').setAttribute('aria-pressed',String(s.synced));$('#lfo-retrigger').setAttribute('aria-pressed',String(Boolean(s.retrigger)));$('#lfo-retrigger').setAttribute('aria-label','Restart shared LFO on played or generated note attacks');$('.lfo-tempo').hidden=!s.synced;$('#lfo-routes-toggle').textContent='Routes · '+s.routes.length;
     $('#lfo-bpm').textContent=Math.round(getTempo())+' BPM';$('#lfo-bpm-down').disabled=getTempo()<=40;$('#lfo-bpm-up').disabled=getTempo()>=240;
     $('#lfo-wave-name').textContent=s.waveform[0].toUpperCase()+s.waveform.slice(1);for(const b of container.querySelectorAll('[data-lfo-wave]'))b.setAttribute('aria-pressed',String(b.dataset.lfoWave===s.waveform));

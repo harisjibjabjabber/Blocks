@@ -2,11 +2,11 @@ import{browserSession,delay}from'./browser-session.mjs';import{mkdirSync,writeFi
 const out=resolve(process.env.SYNTH_PROOF_DIR||'../oscillator-evidence');mkdirSync(out,{recursive:true});const url=process.env.SYNTH_PROOF_URL||'http://127.0.0.1:41821/';
 const b=await browserSession(),checks=[];let failure,file=0;
 const ev=s=>b.evaluate(s),check=(value,name)=>{if(!value)throw Error(name);checks.push(name);console.log('PASS',name);};
-const rect=s=>ev(`(()=>{const e=document.querySelector(${JSON.stringify(s)});e.scrollIntoView({block:'nearest'});const r=e.getBoundingClientRect();if(!r.width||!r.height)throw Error('Hidden control '+${JSON.stringify(s)});return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
+const rect=s=>ev(`(()=>{const e=document.querySelector(${JSON.stringify(s)});e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();if(!r.width||!r.height)throw Error('Hidden control '+${JSON.stringify(s)});return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
 const mouse=(type,p,count=1)=>b.send('Input.dispatchMouseEvent',{type,...p,button:'left',buttons:type==='mouseReleased'?0:1,clickCount:count});
 const click=async s=>{const p=await rect(s);await mouse('mousePressed',p);await mouse('mouseReleased',p);await delay(60);};
 const key=async(s,key)=>{await ev(`document.querySelector(${JSON.stringify(s)}).focus()`);for(const type of['keyDown','keyUp'])await b.send('Input.dispatchKeyEvent',{type,key});await delay(50);};
-const dial=(osc,key)=>`[data-control="voicing:${osc}:${key}"]`,route=osc=>`[data-filter-osc="osc${osc}"]`;
+const dial=(osc,key)=>`[data-control="voicing:${osc}:${key}"]`,route=osc=>`[data-bank-osc="osc${osc}"]`;
 const patch=()=>ev(`(async()=>{document.querySelector('#export').click();return JSON.parse(await window.__blob.text())})()`);
 async function load(p){const path=resolve(out,'input-'+(++file)+'.json');writeFileSync(path,JSON.stringify(p));const{root}=await b.send('DOM.getDocument');const{nodeId}=await b.send('DOM.querySelector',{nodeId:root.nodeId,selector:'#import'});await b.send('DOM.setFileInputFiles',{nodeId,files:[path]});await delay(100);}
 try{
@@ -19,7 +19,7 @@ try{
  let configured=await patch();check(configured.voicing.oscillators[0].count===2&&configured.voicing.oscillators[1].count===7&&configured.voicing.oscillators[0].detune>0&&configured.voicing.oscillators[1].detune===0&&configured.voicing.oscillators[0].spread===0&&configured.voicing.oscillators[1].spread>0,'Count detune and spread are independent per oscillator');
  check(JSON.stringify(configured.values)===JSON.stringify(running.values),'Unison does not alter mixer or tone parameters');
  check(await ev(`(()=>{const v=window.__nativeConfigs.filter(m=>m.kind==='voicing').at(-1)?.config;return v?.version===2&&v.oscillators[0].count===2&&v.oscillators[1].count===7&&v.oscillators[0].detune_cents>0&&v.oscillators[1].detune_cents===0})()`),'Native v2 getter confirms independent fields');
- await click('#filter-mode-toggle');await click('[data-filter-mode="2"]');configured=await patch();
+ await ev(`(()=>{const e=document.querySelector('.filter-bank-mode select');e.value='ladder';e.dispatchEvent(new Event('change',{bubbles:true}));})()`);await delay(60);configured=await patch();
  await ev('document.activeElement.blur()');await b.send('Input.dispatchKeyEvent',{type:'keyDown',key:'a',code:'KeyA',text:'a'});await delay(100);
  await click(route(1));let routed=await patch();check(!routed.filterRouting.osc1&&routed.filterRouting.osc2,'Osc1 switch affects only its filter route');
  check(await ev(`window.__nativeConfigs.filter(m=>m.kind==='filter-routing').at(-1)?.config.mask===2&&document.querySelector('[data-pitch="60"]').classList.contains('active')&&Number.parseInt(document.querySelector('#monitor').textContent)>0`),'Native route changes preserve held note');
@@ -34,14 +34,14 @@ try{
  for(const width of[320,390,760,1024,1280,1440,1920]){
   await b.send('Emulation.setDeviceMetricsOverride',{width,height:width===320?740:width===390?844:900,deviceScaleFactor:1,mobile:false});await delay(100);await ev('window.scrollTo(0,0)');
   check(await ev(`(()=>{const panels=[...document.querySelectorAll('.oscillator-panel')];return document.documentElement.scrollWidth<=innerWidth&&panels.every(p=>{const r=p.getBoundingClientRect(),d=[...p.querySelectorAll('.voicing-controls .config-control')].map(e=>e.getBoundingClientRect());return d.every(x=>x.left>=r.left&&x.right<=r.right)&&d.every((x,i)=>d.slice(i+1).every(y=>x.right<=y.left||y.right<=x.left))})})()`),'Per oscillator controls do not overlap '+width);
-  check(await ev(`[...document.querySelectorAll('.oscillator-unison button,#filter-routing button')].every(e=>{const r=e.getBoundingClientRect();return r.width>=44&&r.height>=44})`),'All new touch targets at least44px '+width);
+  check(await ev(`[...document.querySelectorAll('.oscillator-unison button,.filter-bank-source button')].every(e=>{const r=e.getBoundingClientRect();return r.width>=44&&r.height>=44})`),'All new touch targets at least44px '+width);
   check(await ev(`(()=>{const c=document.querySelector('#scope').getBoundingClientRect(),p=document.querySelector('#scope-wrapper').getBoundingClientRect();return c.left>=p.left&&c.right<=p.right&&c.top>=p.top&&c.bottom<=p.bottom})()`),'Combined waveform stays inside its strip '+width);
   await b.screenshot(resolve(out,`oscillators-${width}.png`));if(width<1180){await ev(`document.querySelector('#tone-filter').scrollIntoView({block:'start'})`);await b.screenshot(resolve(out,`filter-routing-${width}.png`));}
-  if(width>=1280)check(await ev(`document.querySelector('#keyboard').getBoundingClientRect().bottom<=innerHeight`),'Desktop keyboard remains visible at rest '+width);
+  if(width>=1280){await ev(`document.querySelector('#keyboard').scrollIntoView({block:'center'})`);check(await ev(`document.querySelector('#keyboard').getBoundingClientRect().bottom<=document.querySelector('.modulation-dock').getBoundingClientRect().top`),'Desktop keyboard remains reachable above modulation dock '+width);}
  }
  await click('#stop');await key('[data-osclevel="21"]','Home');await key('[data-osclevel="22"]','Home');
  check(await ev(`(()=>{const c=document.querySelector('#scope'),pixels=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let ink=0;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){if(pixels[(y*c.width+x)*4+3]){ink++;if(Math.abs(y-c.height/2)>2)return false}}return ink>0&&document.querySelector('#scope-label').textContent==='Preview'})()`),'Zero oscillator levels produce a truthful centered flat preview');
- for(const module of['envelope','character','lfo']){await click('#module-tabs [data-module="'+module+'"]');check(await ev(`document.querySelector('#scope').getBoundingClientRect().width===0`),'Combined waveform remains hidden outside Tone '+module);}
+ for(const module of['character','harmonics','space','drop']){await click('#module-tabs [data-module="'+module+'"]');check(await ev(`document.querySelector('#scope').getBoundingClientRect().width===0`),'Combined waveform remains hidden outside Tone '+module);}
  await click('#module-tabs [data-module=tone]');check(await ev(`document.querySelector('#scope').getBoundingClientRect().width>0`),'Returning to Tone restores combined waveform');
  await click('.patch-files>summary');await click('#init');check((await patch()).voicing.oscillators.every(o=>o.count===1&&o.detune===0&&o.spread===0)&&(await patch()).filterRouting.osc1&&(await patch()).filterRouting.osc2,'Init resets both oscillators and routing');
  check(!b.exceptions.length&&await ev(`document.querySelector('#error').textContent===''`),'No runtime/native errors');

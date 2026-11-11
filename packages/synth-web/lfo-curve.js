@@ -11,7 +11,7 @@ export function moveCurvePoint(points,index,x,y){const next=points.map(p=>({...p
 export function insertCurvePoint(points,x,y){x=quantizeLfoX(x);if(points.length>=MAX_LFO_POINTS||points.some(p=>Math.abs(p.x-x)<POINT_GAP))return null;const next=points.map(p=>({...p}));next.push({x:clamp(x,POINT_GAP,1-POINT_GAP),y:clamp(y,-1,1),bend:0});next.sort((a,b)=>a.x-b.x);return next;}
 
 export function createLfoCurve({container,getSource,changeSource,begin,getGesture,bindCompletion,instance,onSelection=()=>{}}){
-  const ns='http://www.w3.org/2000/svg',key=instance+':curve';let selected=null,phase=null,lastWave='';
+  const ns='http://www.w3.org/2000/svg',key=instance+':curve';let selected=null,phase=null,lastWave='',lastSourceId=null;
   container.className='lfo-curve';const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 400 140');svg.setAttribute('aria-label','LFO shape. Tap to add, drag points, drag segments to bend.');container.append(svg);
   const helper=document.createElement('div');helper.className='lfo-curve-hint';helper.textContent='Tap to add · drag points · bend segments';container.append(helper);
   const points=()=>{const s=getSource();return(s.waveform==='custom'?s.points:shapeForWave(s.waveform)).map(p=>({...p}));};
@@ -43,7 +43,7 @@ export function createLfoCurve({container,getSource,changeSource,begin,getGestur
   function removeSelected(){if(getGesture()||selected===null)return;const ps=points();if(selected===0||selected===ps.length-1)return;ps.splice(selected,1);select(null);change(ps,true);}
   function node(tag,attrs){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);svg.append(e);return e;}
   function render(){
-    const s=getSource(),r=box();if(!s||!r.width)return;if(s.waveform!==lastWave){if(!getGesture())selected=null;lastWave=s.waveform;}
+    const s=getSource(),r=box();if(!s||!r.width)return;if(s.waveform!==lastWave||s.id!==lastSourceId){if(!getGesture())selected=null;lastWave=s.waveform;lastSourceId=s.id;}
     const ps=points();if(selected!==null&&selected>=ps.length)selected=null;
     svg.setAttribute('viewBox',`0 0 ${r.width} ${r.height}`);svg.replaceChildren();
     for(const x of[0,.25,.5,.75,1]){const a=pixel({x,y:1}),b=pixel({x,y:-1});node('path',{d:`M${a.x} ${a.y}V${b.y}`,class:'lfo-curve-grid'});}

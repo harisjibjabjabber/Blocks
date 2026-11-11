@@ -13,8 +13,9 @@ void bs_default_clock(bs_clock_config*);
 int bs_set_clock(bs_synth*,const bs_clock_config*);
 int bs_get_clock(const bs_synth*,bs_clock_config*);
 /* One centred voice follows the final note stream. priority0lowest/1last,
- * waveform0sine/1triangle,octave-2..0,routing0Clean/1FX,level0..1.
- * Clean rejoins AFTER main tanh, before common master and final safety clamp.
+ * waveform0Sine/1Triangle/2Saw/3Pulse/4Square,octave-3..3,
+ * routing0Clean/1FX,level0..1. Octave aliases tuning oscillator index2.
+ * Clean rejoins after Harmonics, before common master and output protection.
  * FX traverses Tone/colour/rack and common Width/Delay/output stages. */
 typedef struct bs_sub_config {uint32_t version,enabled,waveform;int32_t octave;uint32_t priority,routing;float level;uint32_t reserved;} bs_sub_config;
 void bs_default_sub(bs_sub_config*);
@@ -22,6 +23,8 @@ int bs_set_sub(bs_synth*,const bs_sub_config*);
 int bs_get_sub(const bs_synth*,bs_sub_config*);
 /* Current logical Sub note, -1 if silent; one voice independent of main count. */
 int bs_get_sub_note(const bs_synth*);
+/* Native Sub reference waveform, same generation as the renderer. No allocation. */
+int bs_sub_preview(uint32_t waveform,float pulse_width,double frequency,double sample_rate,float* output,uint32_t samples);
 #ifdef __cplusplus
 }
 #endif

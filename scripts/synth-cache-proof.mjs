@@ -37,7 +37,7 @@ try{
  phase='actual';await b.navigate(url);await wait(`!!document.querySelector('[data-control="voicing:1:count"]')`);
  check(await b.evaluate(`document.querySelectorAll('.oscillator-unison').length===2&&document.querySelector('#error').textContent===''`),'Current versioned app boots both independent unison panels over the stale cache');
  check(await b.evaluate(`[...document.querySelectorAll('script[src],link[rel=stylesheet]')].every(e=>new URL(e.src||e.href).searchParams.get('v')===${JSON.stringify(revision)})`),'HTML entry script and all stylesheets reference the same build revision');
- for(const module of['envelope','character','drop','lfo','tone']){
+ for(const module of['character','harmonics','space','drop','tone']){
   await b.evaluate(`document.querySelector('#module-tabs [data-module="${module}"]').click()`);
   check(await b.evaluate(`document.querySelector('.instrument').dataset.module===${JSON.stringify(module)}&&document.querySelector('#error').textContent===''`),'Cached-session module switch works: '+module);
  }

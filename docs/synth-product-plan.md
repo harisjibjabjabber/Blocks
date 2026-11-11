@@ -1,5 +1,7 @@
 # Synth product plan
 
+Completed local phase: [modulation workspace and coherent Tone controls](research/modulation-workspace-phase.md), preview `444bff222574e0127b03`. Four LFOs, three envelopes (Env 1 amplitude; Env 2/3 assignable), persistent dock, source-to-dial assignment, signed native-value indicators and Matrix; octave −3…+3/fine pitch on Osc 1/2/Sub and parallel Filter A/B. Shared widths/power controls and touch assignment are cleaned up. Local technical/UX gates pass; remote CI and listening approval remain open.
+
 New Sauce backlog, 11 November (ideas only, no implementation in the movement pass):
 
 - **Resampling / grain:** Decimort-inspired sample-rate and bit-depth colour, with a gentle useful region before deliberately rough crunch. Research pre/post resampling filters, jitter, quantization and dithering from [D16's official Decimort2 description](https://d16.pl/decimort2) and [manual](https://d16.pl/pub/manuals/Decimort%202-manual-gb.pdf). This should become an original repeatable block, with Mix/Trim and matched-level listening; it is not a claim to copy D16's private algorithms.

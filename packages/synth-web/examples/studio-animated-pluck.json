@@ -4,7 +4,7 @@
   "values": [
     0.18,
     0.25,
-    1.2,
+    0,
     0.5,
     0.003,
     0.3,
@@ -26,7 +26,7 @@
     0.75,
     0.25,
     1,
-    15,
+    0,
     0.001,
     0.19,
     0,
@@ -65,8 +65,8 @@
     "version": 1,
     "audio": [],
     "notes": [],
-    "order": [],
-    "effects": []
+    "effects": [],
+    "order": []
   },
   "modulation": {
     "version": 3,
@@ -135,6 +135,180 @@
             "depth": 0.08
           }
         ]
+      },
+      {
+        "id": 2,
+        "enabled": false,
+        "waveform": "sine",
+        "rate": 1,
+        "synced": true,
+        "division": "1/4",
+        "intensity": 1,
+        "retrigger": false,
+        "points": [
+          {
+            "x": 0,
+            "y": 0,
+            "bend": 0
+          },
+          {
+            "x": 0.125,
+            "y": 0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 0.25,
+            "y": 1,
+            "bend": 0
+          },
+          {
+            "x": 0.375,
+            "y": 0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 0.5,
+            "y": 0,
+            "bend": 0
+          },
+          {
+            "x": 0.625,
+            "y": -0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 0.75,
+            "y": -1,
+            "bend": 0
+          },
+          {
+            "x": 0.875,
+            "y": -0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "bend": 0
+          }
+        ],
+        "routes": []
+      },
+      {
+        "id": 3,
+        "enabled": false,
+        "waveform": "sine",
+        "rate": 1,
+        "synced": true,
+        "division": "1/4",
+        "intensity": 1,
+        "retrigger": false,
+        "points": [
+          {
+            "x": 0,
+            "y": 0,
+            "bend": 0
+          },
+          {
+            "x": 0.125,
+            "y": 0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 0.25,
+            "y": 1,
+            "bend": 0
+          },
+          {
+            "x": 0.375,
+            "y": 0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 0.5,
+            "y": 0,
+            "bend": 0
+          },
+          {
+            "x": 0.625,
+            "y": -0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 0.75,
+            "y": -1,
+            "bend": 0
+          },
+          {
+            "x": 0.875,
+            "y": -0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "bend": 0
+          }
+        ],
+        "routes": []
+      },
+      {
+        "id": 4,
+        "enabled": false,
+        "waveform": "sine",
+        "rate": 1,
+        "synced": true,
+        "division": "1/4",
+        "intensity": 1,
+        "retrigger": false,
+        "points": [
+          {
+            "x": 0,
+            "y": 0,
+            "bend": 0
+          },
+          {
+            "x": 0.125,
+            "y": 0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 0.25,
+            "y": 1,
+            "bend": 0
+          },
+          {
+            "x": 0.375,
+            "y": 0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 0.5,
+            "y": 0,
+            "bend": 0
+          },
+          {
+            "x": 0.625,
+            "y": -0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 0.75,
+            "y": -1,
+            "bend": 0
+          },
+          {
+            "x": 0.875,
+            "y": -0.7071067690849304,
+            "bend": 0
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "bend": 0
+          }
+        ],
+        "routes": []
       }
     ]
   },
@@ -299,5 +473,92 @@
     "shimmerSemitones": 12,
     "wetWidth": 1,
     "ducking": 0
+  },
+  "envelopes": {
+    "version": 1,
+    "sources": [
+      {
+        "id": 1,
+        "attack": 0.003,
+        "decay": 0.3,
+        "sustain": 0.14,
+        "release": 0.23,
+        "attackBend": 0,
+        "decayBend": -0.35,
+        "releaseBend": 0,
+        "routes": []
+      },
+      {
+        "id": 2,
+        "attack": 0.001,
+        "decay": 0.19,
+        "sustain": 0,
+        "release": 0.15,
+        "attackBend": 0,
+        "decayBend": 0,
+        "releaseBend": 0,
+        "routes": [
+          {
+            "kind": "config",
+            "targetId": 10,
+            "parameter": 0,
+            "depth": 0.12542916485999217
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "attack": 0.005,
+        "decay": 0.25,
+        "sustain": 0,
+        "release": 0.15,
+        "attackBend": 0,
+        "decayBend": 0,
+        "releaseBend": 0,
+        "routes": []
+      }
+    ]
+  },
+  "tuning": {
+    "version": 1,
+    "oscillators": [
+      {
+        "octave": 0,
+        "fineCents": 0
+      },
+      {
+        "octave": 0,
+        "fineCents": 1.2
+      }
+    ],
+    "sub": {
+      "octave": -1,
+      "fineCents": 0
+    }
+  },
+  "filterBank": {
+    "version": 1,
+    "filters": [
+      {
+        "enabled": true,
+        "model": "ladder",
+        "osc1": true,
+        "osc2": true,
+        "cutoff": 2400,
+        "resonance": 0.25,
+        "mix": 1,
+        "drive": 1.35
+      },
+      {
+        "enabled": false,
+        "model": "soft",
+        "osc1": true,
+        "osc2": true,
+        "cutoff": 20000,
+        "resonance": 0,
+        "mix": 1,
+        "drive": 1
+      }
+    ]
   }
 }

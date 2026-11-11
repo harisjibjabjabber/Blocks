@@ -1,3 +1,6 @@
+import {normalizeEnvelopes,hydrateEnvelopes} from '../packages/synth-web/envelope-state.js';
+import {normalizeTuning,hydrateTuning} from '../packages/synth-web/tuning-state.js';
+import {normalizeFilterBank,hydrateFilterBank} from '../packages/synth-web/filter-bank-state.js';
 import {normalizeReverb} from '../packages/synth-web/reverb-state.js';
 import {normalizeSuite} from '../packages/synth-web/suite-state.js';
 // Explicit complete CURRENT-format fixture construction for tests/examples.
@@ -14,6 +17,7 @@ import {normalizeDelay} from '../packages/synth-web/delay-state.js';
 import {normalizeFilterRouting} from '../packages/synth-web/filter-routing-state.js';
 import {canonicalLevels} from '../packages/synth-web/parameter-state.js';
 export function currentPatch(values,overrides={}){
- const clock=normalizeClock(overrides.clock),modulation=normalizeModulation(overrides.modulation);
- return{format:'blocks-synth-patch',version:7,values:canonicalLevels(values),stereoWidth:1,...overrides,performance:normalizePerformance({...normalizePerformance(),...overrides.performance,mode:'off',bpm:clock.bpm}),rack:syncRackOrder(normalizeRack(overrides.rack),modulation),modulation,clock,suite:normalizeSuite(overrides.suite),sub:normalizeSub(overrides.sub),oscBass:normalizeOscBass(overrides.oscBass),voicing:normalizeVoicing(overrides.voicing),sound:normalizeSound(overrides.sound),delay:normalizeDelay(overrides.delay),reverb:normalizeReverb(overrides.reverb),filterRouting:normalizeFilterRouting(overrides.filterRouting)};
+ const tone=canonicalLevels(values),clock=normalizeClock(overrides.clock),modulation=normalizeModulation(overrides.modulation),sub=normalizeSub(overrides.sub),sound=normalizeSound(overrides.sound),filterRouting=normalizeFilterRouting(overrides.filterRouting);
+ const tuning=hydrateTuning(normalizeTuning(overrides.tuning),sub);if(!overrides.tuning)tuning.oscillators[1].fineCents=tone[2];tone[2]=0;
+ return{...overrides,format:'blocks-synth-patch',version:7,values:tone,envelopes:hydrateEnvelopes(normalizeEnvelopes(overrides.envelopes),tone),tuning,filterBank:hydrateFilterBank(normalizeFilterBank(overrides.filterBank),tone,sound,filterRouting),stereoWidth:overrides.stereoWidth??1,performance:normalizePerformance({...normalizePerformance(),...overrides.performance,mode:'off',bpm:clock.bpm}),rack:syncRackOrder(normalizeRack(overrides.rack),modulation),modulation,clock,suite:normalizeSuite(overrides.suite),sub,oscBass:normalizeOscBass(overrides.oscBass),voicing:normalizeVoicing(overrides.voicing),sound,delay:normalizeDelay(overrides.delay),reverb:normalizeReverb(overrides.reverb),filterRouting};
 }
