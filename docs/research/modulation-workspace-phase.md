@@ -1,6 +1,6 @@
 # Modulation workspace phase
 
-Status: implemented and locally verified, 11 November 2026. Preview revision `8b95e7a353f48ba264bb`. Independent scoped UX and technical gates pass; listening approval and remote CI remain open.
+Status: implemented and locally verified, 11 November 2026. Preview revision `52eda8cc0e5061c01095`. Independent scoped UX and technical gates pass; listening approval and remote CI remain open.
 
 The user requests a coherent instrument workspace, with four drawable LFOs and three envelopes available below every sound page. Env 1 remains the existing per-voice amplitude envelope; Env 2 and Env 3 are assignable. Each main oscillator and the mono Sub needs an octave selector from -3 through +3 and independent fine tuning. The Sub should visually belong to the oscillator family. Tone gains two independent filters, A and B, with visible routing and a neutral second-filter default.
 
@@ -37,7 +37,7 @@ Local validation:
 - 103 frontend Node tests pass, including strict current-file validation and worklet ABI encoding.
 - All 36 functional WASM targets pass across the sweep and focused reruns. The sweep found a real explicit-rack/global pitch-drop duplication in its last target; the implementation was corrected and all eight rack-host groups reran successfully. No assertion was relaxed for that regression.
 - Ten focused DSP/C-API groups cover atomic configs, measured independent tuning, actual Filter B audio, per-voice Env 3, Gain/Sauce/LFO routes, live envelope progress, base-state retention, block invariance, panic, allocation checks and five-wave Sub previews. The envelope-to-clock ratio measured 4.47213428 against the descriptor-derived 4.47213595.
-- The eight modulation-focused browser suites pass 165 checks, followed by seven final guard/layout checks on revision 444bff. Standalone interaction/audio, Suite, filter shape, nine-width Tone layout and oscillator-routing regressions also pass. Existing source, Reverb and Creative browser checks remain in the CI workflow.
+- The eight modulation-focused browser suites pass 165 checks, followed by nine final guard/layout checks on revision 444bff. Standalone interaction/audio, Suite, filter shape, nine-width Tone layout and oscillator-routing regressions also pass. Existing source, Reverb and Creative browser checks remain in the CI workflow.
 - A/B renders against the preceding build are bit-exact for three 96,000-float default/Ladder/seven-copy reference signals, with new features inactive.
 - Independent visual checks cover 320/390px and desktop; nine-width layout checks include 760px. The source assignment, route removal and footer scroll paths use real pointer events.
 
@@ -48,3 +48,5 @@ Evidence is in the local workspace sibling directories: `phase13-review/workspac
 An offline 48kHz/128-frame fixture with four held voices, seven copies on each oscillator, Ladder Drive 8 and one Harmonics Colour stage measured mean/p99 blocks 1.472/1.786 ms without routes. With eight LFO routes and two envelope routes, mean/p99 were 2.084/2.423 ms against a 2.667 ms deadline. One measured block reached 2.815 ms. This is a device-specific diagnostic, not real-time or arbitrary-polyphony certification; the CPU display remains an estimated render-budget meter. Optimization and heavier routing stress remain later work.
 
 Discrete model/routing/count controls and composite recipes are not continuous destinations. Independent note generators keep their own scheduling controls; full note-processor modulation and cross-group audio routing remain future work. The current matrix exposes only implemented meaningful targets, including mode-dependent timing guards. Worn Media and resampling/grain are still backlog, not implemented effects.
+
+Final visual validation adds centered overlays across Tone/Character/Harmonics/Space and zero-offset marker alignment for square-root Drive, piecewise envelope time and Glide. Depth spans retain native physical meaning before conversion to each dial's visual scale. Arming a source preserves the open editor; cancellation cannot redirect later edits to a different source. All 21 workspace checks, including the nine final guards, pass with zero browser exceptions on the final revision.

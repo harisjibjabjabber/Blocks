@@ -12,7 +12,7 @@ export function createDockEnvelope({container,getEnvelope,changeEnvelope,getLimi
     const isBend=key.endsWith('Bend'),isTime=key!=='sustain'&&!isBend;
     const label=key[0].toUpperCase()+key.slice(1).replace('Bend',' curve');
     const limits=()=>getLimits()[key],def=()=>limits().default;
-    const dial=configDial({begin,getGesture,bindCompletion,key:'dock:env:'+key,label,min:isBend?-2:0,max:isBend?2:1,defaultValue:()=>isTime?timeToUnit(def(),limits().min,limits().max):def(),getValue:()=>isTime?timeToUnit(getEnvelope()[key],limits().min,limits().max):getEnvelope()[key],change:(v,c)=>changeEnvelope({[key]:isTime?timeFromUnit(v,limits().min,limits().max):v},c),format:v=>{const actual=isTime?timeFromUnit(v,limits().min,limits().max):v;return isTime?(actual<1?Math.round(actual*1000)+' ms':actual.toFixed(2)+' s'):isBend?(Math.abs(v)<.01?'Linear':(v>0?'+':'')+v.toFixed(2)):Math.round(v*100)+'%';}});
+    const dial=configDial({begin,getGesture,bindCompletion,key:'dock:env:'+key,label,modulationToUnit:v=>isTime?timeToUnit(v,limits().min,limits().max):isBend?(v+2)/4:v,min:isBend?-2:0,max:isBend?2:1,defaultValue:()=>isTime?timeToUnit(def(),limits().min,limits().max):def(),getValue:()=>isTime?timeToUnit(getEnvelope()[key],limits().min,limits().max):getEnvelope()[key],change:(v,c)=>changeEnvelope({[key]:isTime?timeFromUnit(v,limits().min,limits().max):v},c),format:v=>{const actual=isTime?timeFromUnit(v,limits().min,limits().max):v;return isTime?(actual<1?Math.round(actual*1000)+' ms':actual.toFixed(2)+' s'):isBend?(Math.abs(v)<.01?'Linear':(v>0?'+':'')+v.toFixed(2)):Math.round(v*100)+'%';}});
     (isBend?bends:controls).append(dial.element);dials.push({key,dial});
   }
   let span=0;

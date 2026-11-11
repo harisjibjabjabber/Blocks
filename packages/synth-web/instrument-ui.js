@@ -131,7 +131,7 @@ export function createInstrumentUI({ getEnvelopes=()=>DEFAULT_ENVELOPES,applyEnv
   const knobN = id => id === 'character' ? characterN() : id==='motion'?motionN():norm(Number(id));
   function knob(id, name, mini=false) {
     const container=document.createElement('div'); container.className=mini?'osc-level-control':'macro';
-    const button=document.createElement('button'); button.type='button';button.className=mini?'dial osc-mini-dial':'dial'; button.dataset.knob=id;
+    const button=document.createElement('button'); button.type='button';button.className=mini?'dial osc-mini-dial':'dial'; button.dataset.knob=id;if(Number.isInteger(Number(id)))button.modulationToUnit=v=>norm(Number(id),v);
     if(mini)button.dataset.osclevel=id;
     button.setAttribute('role','slider'); button.setAttribute('aria-label',name);
     button.setAttribute('aria-valuemin','0'); button.setAttribute('aria-valuemax','100');
@@ -223,7 +223,7 @@ export function createInstrumentUI({ getEnvelopes=()=>DEFAULT_ENVELOPES,applyEnv
     if([2,12,24,36,38].includes(p.id))continue;
     const label=document.createElement('label');label.className='control';if(p.id===1)label.style.display='none';
     const line=document.createElement('span'),name=document.createElement('span'),out=document.createElement('output');name.textContent=p.name;out.dataset.value=p.id;line.append(name,out);
-    const input=document.createElement('input');input.type='range';input.min=p.mapping===2?p.min:0;input.max=p.mapping===2?p.max:1000;input.step=1;input.dataset.param=p.id;input.setAttribute('aria-label',p.name);
+    const input=document.createElement('input');input.type='range';input.min=p.mapping===2?p.min:0;input.max=p.mapping===2?p.max:1000;input.step=1;input.dataset.param=p.id;input.modulationToUnit=v=>(timingIds.includes(p.id)?timeUnit:norm)(p.id,v);input.setAttribute('aria-label',p.name);
     input.addEventListener('pointerdown',e=>{if(!begin(e,'precision',{id:p.id}))e.preventDefault();});
     input.addEventListener('input',()=>{if(gesture&&!(gesture.type==='precision'&&gesture.id===p.id))return;const before=state(),next=[...getValues()];next[p.id]=p.mapping===2?Number(input.value):(timingIds.includes(p.id)?timeValue:physical)(p.id,Number(input.value)/1000);apply(next);if(!gesture)commit(before);});
     bindCompletion(input);label.append(line,input);bank.append(label);if([15,16,17].includes(p.id))primaryDropControls.push(label);
@@ -423,7 +423,7 @@ export function createInstrumentUI({ getEnvelopes=()=>DEFAULT_ENVELOPES,applyEnv
     getEnvelopeLimits:id=>Object.fromEntries(ENVELOPE_FIELDS.map(([key,,min,max])=>[key,{min,max,default:DEFAULT_ENVELOPES.sources.find(s=>s.id===id)[key]}])),
     getSourceValue:(kind,id)=>sourceValues.get(kind+':'+id)??null,getTargetValue:target=>targetValues.get(ROUTE_KINDS.indexOf(target.kind)+':'+target.targetId+':'+target.parameter)??null,
     getDestinations:destinations,
-    getTargetForElement:el=>{if(el.disabled||el.dataset.lfoTiming==='division')return null;const key=el.dataset.control??(el.dataset.knob!==undefined?'knob:'+el.dataset.knob:el.dataset.param!==undefined?'tone:'+el.dataset.param:null);if(!key)return null;const target=modulationTargetForControl(destinations(),key);if(!target||target.active===false)return null;let normalized;if(el.dataset.knob!==undefined&&Number.isFinite(Number(el.dataset.knob)))normalized=norm(Number(el.dataset.knob));else if(el.dataset.param!==undefined)normalized=Number(el.value)/1000;else{const value=key==='output:delay:time'?getDelay().time:key.match(/^osc-bass:[01]:spinHz$/)?getOscBass().oscillators[Number(key.split(':')[1])].spinHz:Number(el.dataset.modValue??el.getAttribute('aria-valuenow'));normalized=target.mapping===1?Math.log(Math.max(target.min,value)/target.min)/Math.log(target.max/target.min):(value-target.min)/(target.max-target.min);}return{...target,normalized:clamp(normalized)};},
+    getTargetForElement:el=>{if(el.disabled||el.dataset.lfoTiming==='division')return null;const key=el.dataset.control??(el.dataset.knob!==undefined?'knob:'+el.dataset.knob:el.dataset.param!==undefined?'tone:'+el.dataset.param:null);if(!key)return null;const target=modulationTargetForControl(destinations(),key);if(!target||target.active===false)return null;const baseValue=el.dataset.knob!==undefined?getValues()[Number(el.dataset.knob)]:el.dataset.param!==undefined?getValues()[Number(el.dataset.param)]:key==='output:delay:time'?getDelay().time:key.match(/^osc-bass:[01]:spinHz$/)?getOscBass().oscillators[Number(key.split(':')[1])].spinHz:Number(el.dataset.modValue??el.getAttribute('aria-valuenow'));const rawToUnit=el.modulationToUnit??(v=>target.mapping===1?Math.log(Math.max(target.min,v)/target.min)/Math.log(target.max/target.min):(v-target.min)/(target.max-target.min));const toUnit=v=>clamp(rawToUnit(Math.max(target.min,Math.min(target.max,v))));return{...target,baseValue,toUnit,normalized:toUnit(baseValue)};},
     onKeyboardToggle:()=>{const keyboard=document.querySelector('.keyboard-section'),show=getComputedStyle(keyboard).display==='none';document.querySelector('.instrument').dataset.dockKeyboard=String(show);}
   });
 
