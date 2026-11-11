@@ -12,7 +12,7 @@ export async function browserSession() {
   const chrome = candidates.find(path => path && (existsSync(path) || !path.includes("/")));
   if (!chrome) throw new Error("Chrome not found; set CHROME to its executable path.");
   const profile = mkdtempSync(join(tmpdir(), "blocks-browser-"));
-  const child = spawn(chrome, ["--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
+  const child = spawn(chrome, ["--headless=new", "--mute-audio", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
     "--remote-debugging-port=0", `--user-data-dir=${profile}`, "--autoplay-policy=no-user-gesture-required", "about:blank"], { stdio: "ignore", windowsHide: true });
   let launchError;
   child.on("error", error => { launchError = error; });

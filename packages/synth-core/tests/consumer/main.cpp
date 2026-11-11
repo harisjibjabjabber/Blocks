@@ -3,6 +3,7 @@
 #include <blocks_modulation.h>
 #include <blocks_synth.h>
 #include <blocks_voicing.h>
+#include <blocks_filter_routing.h>
 #include <blocks_delay.h>
 #include <blocks_sound.h>
 #include <blocks_harmonics.h>
@@ -14,6 +15,8 @@ int main() {
   bs_default_sound(&sound);bs_default_harmonics(&harmonics);
   bs_voicing_config voicing{},voicingRead{};bs_delay_config delay{},delayRead{};
   bs_default_voicing(&voicing);bs_default_delay(&delay);
+  bs_voicing_config_v2 voicingV2{},voicingV2Read{};bs_filter_routing_config routing{},routingRead{};
+  bs_default_voicing_v2(&voicingV2);bs_default_filter_routing(&routing);
   bs_notes_config notes{},notesRead{};
   bs_modulation_config modulation{},modulationRead{};
   bs_modulation_config_v2 modulationV2{},modulationV2Read{};
@@ -22,6 +25,8 @@ int main() {
   bs_default_modulation_v3(&modulationV3);bs_default_sauce(&sauce);bs_default_notes(&notes);
   bs_default_modulation(&modulation);bs_default_modulation_v2(&modulationV2);bs_default_performance(&performance);
   const bool configured=bs_set_voicing(synth,&voicing)&&bs_get_voicing(synth,&voicingRead)
+    &&bs_set_voicing_v2(synth,&voicingV2)&&bs_get_voicing_v2(synth,&voicingV2Read)
+    &&bs_set_filter_routing(synth,&routing)&&bs_get_filter_routing(synth,&routingRead)
     &&bs_set_sound(synth,&sound)&&bs_get_sound(synth,&soundRead)
     &&bs_set_harmonics(synth,&harmonics)&&bs_get_harmonics(synth,&harmonicsRead)
     &&bs_set_delay(synth,&delay)&&bs_get_delay(synth,&delayRead)&&bs_set_sauce(synth,&sauce)&&bs_get_sauce(synth,&sauceRead)

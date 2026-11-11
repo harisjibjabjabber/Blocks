@@ -82,3 +82,25 @@
  #tone-filter-mode .macro-value{display:none}
  .instrument[data-module=tone] #macros .macro-name,.instrument[data-module=tone] #macros .macro-value{font-size:9px}
 }
+
+/* Each oscillator owns its unison; routing switches affect only the shared filter. */
+.oscillator-unison{border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;padding:10px 0 0;margin:12px 0 0;flex:none}
+.oscillator-unison .voicing-caption{font-size:9px;gap:6px}
+.oscillator-unison .voicing-controls{gap:4px}
+.oscillator-unison .config-dial-label,.oscillator-unison .config-dial-value{font-size:10px}
+.tone-shared{grid-template-columns:minmax(0,1fr)}
+.tone-shared #scope-wrapper{min-height:0;height:66px;padding:8px 12px}
+.tone-shared #scope-wrapper #scope{height:30px}
+.tone-shared .waveform-caption{margin-bottom:4px}
+#filter-routing{display:flex;align-items:center;gap:6px;min-height:44px;margin:4px 0;color:var(--muted);font-size:10px}
+#filter-routing>span{margin-right:auto}
+#filter-routing button{height:44px;min-height:44px;min-width:58px;padding:0 10px;font-size:11px;background:transparent}
+#filter-routing button[aria-pressed=true]{border-color:var(--accent);color:var(--ivory);background:#ff743f0a}
+#filter-routing button[aria-pressed=false]{color:var(--muted)}
+@media(min-width:1180px){
+ .oscillator-wave-preview{height:120px;min-height:72px;max-height:160px;margin-top:12px}
+ .oscillator-preview-caption{margin-top:0}
+ .oscillator-unison{margin-top:12px}
+ .tone-shared #scope-wrapper{min-height:0;height:64px}
+ .tone-shared #scope-wrapper #scope{height:28px}
+}

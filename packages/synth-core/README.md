@@ -1,5 +1,7 @@
 # Portable synth core - engineering spike
 
+Current addition: [independent oscillator unison and filter routing](../../docs/audio-references/oscillator-voicing-routing.md). Count/Detune/Spread now live in each oscillator card. Filter Affects buttons choose Osc1/Osc2 (both on by default); Off bypasses only the filter. Old shared settings migrate to both oscillators. Earlier shared-voicing descriptions below are historical.
+
 Current correction: [warm filter and Tone layout](../../docs/audio-references/warm-filter-performance.md). Ladder now uses scalar nonlinear feedback and raw Drive gain with the same8x reconstruction. Earlier distributed-model/timing descriptions below are historical. Tone separates Osc1/Osc2/filter cards and keeps Quality global.
 
 Original C++17 DSP, independent of Blocks, UI frameworks, Web Audio and plugin SDKs. A C ABI is the host boundary: native hosts link the static library; the browser host compiles the same source to WebAssembly. This is not a finished VST plugin or an analogue circuit emulation.

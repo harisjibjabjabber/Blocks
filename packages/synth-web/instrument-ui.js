@@ -3,6 +3,7 @@ import {DEFAULT_SOUND,LEGACY_SOUND,normalizeSound} from './sound-state.js';
 import {createSourceUI} from './sound-ui.js';
 import {createVoicingUI} from './voicing-ui.js';
 import {DEFAULT_VOICING,normalizeVoicing} from './voicing-state.js';
+import {DEFAULT_FILTER_ROUTING,normalizeFilterRouting} from './filter-routing-state.js';
 import {DEFAULT_DELAY,normalizeDelay} from './delay-state.js';
 import {resetValue,neutralValues} from './neutral-state.js';
 import {configDial} from './config-dial.js';
@@ -21,7 +22,7 @@ import {createLfoUI} from './lfo-ui.js';
 import {DEFAULT_RACK,normalizeRack,legacyRack,newSauceBlock,reorderRack,syncRackOrder} from './sauce-state.js';
 import {DEFAULT_MODULATION,normalizeModulation,defaultLfo,modulationDestinations} from './modulation-state.js';
 // The instrument surface owns gestures, never voices or the audio clock.
-export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, getPerformance, applyPerformance, getRack, applyRack, getModulation, applyModulation, getSound=()=>DEFAULT_SOUND,applySound=()=>{},getStereoWidth=()=>1,applyStereoWidth=()=>{},getVoicing=()=>DEFAULT_VOICING,applyVoicing=()=>{},getDelay=()=>DEFAULT_DELAY,applyDelay=()=>{},getSampleRate=()=>48000, onViewChange=()=>{} }) {
+export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, getPerformance, applyPerformance, getRack, applyRack, getModulation, applyModulation, getSound=()=>DEFAULT_SOUND,applySound=()=>{},getStereoWidth=()=>1,applyStereoWidth=()=>{},getVoicing=()=>DEFAULT_VOICING,applyVoicing=()=>{},getFilterRouting=()=>DEFAULT_FILTER_ROUTING,applyFilterRouting=()=>{},getDelay=()=>DEFAULT_DELAY,applyDelay=()=>{},getSampleRate=()=>48000, onViewChange=()=>{} }) {
   let localPerformance={...DEFAULT_PERFORMANCE};
   getPerformance??=()=>localPerformance;
   applyPerformance??=next=>{localPerformance={...next};};
@@ -68,10 +69,10 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     return Number(value.toFixed(id === 14 ? 2 : 1)) + (id === 14 ? ' Hz' : id === 12 ? '×' : id === 3 ? '' : ' ct');
   };
   const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
-  const state = () => ({values: [...getValues()], performance:performance(), rack:rack(), modulation:modulation(),stereoWidth:getStereoWidth(),voicing:normalizeVoicing(getVoicing()),delay:normalizeDelay(getDelay()),sound:normalizeSound(getSound()), preset});
+  const state = () => ({values: [...getValues()], performance:performance(), rack:rack(), modulation:modulation(),stereoWidth:getStereoWidth(),voicing:normalizeVoicing(getVoicing()),filterRouting:normalizeFilterRouting(getFilterRouting()),delay:normalizeDelay(getDelay()),sound:normalizeSound(getSound()), preset});
   const restorePerformance=next=>{if(JSON.stringify(next)!==JSON.stringify(performance()))applyPerformance(next);};
   function commit(before) {
-    if (JSON.stringify(before.sound)!==JSON.stringify(getSound()) || JSON.stringify(before.voicing)!==JSON.stringify(getVoicing()) || JSON.stringify(before.delay)!==JSON.stringify(getDelay()) || before.stereoWidth!==getStereoWidth() || !same(before.values, getValues()) || JSON.stringify(before.performance)!==JSON.stringify(performance()) || JSON.stringify(before.rack)!==JSON.stringify(rack()) || JSON.stringify(before.modulation)!==JSON.stringify(modulation())) { history.push(before); if (history.length > 40) history.shift(); }
+    if (JSON.stringify(before.filterRouting)!==JSON.stringify(getFilterRouting()) || JSON.stringify(before.sound)!==JSON.stringify(getSound()) || JSON.stringify(before.voicing)!==JSON.stringify(getVoicing()) || JSON.stringify(before.delay)!==JSON.stringify(getDelay()) || before.stereoWidth!==getStereoWidth() || !same(before.values, getValues()) || JSON.stringify(before.performance)!==JSON.stringify(performance()) || JSON.stringify(before.rack)!==JSON.stringify(rack()) || JSON.stringify(before.modulation)!==JSON.stringify(modulation())) { history.push(before); if (history.length > 40) history.shift(); }
     $('undo').disabled = !history.length;
   }
   function apply(next, markCustom = true) {
@@ -85,7 +86,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     const before = gesture.before;
     gesture = null; restore(before);
   }
-  function restore(before){preset=before.preset;applyValues(before.values);restorePerformance(before.performance);applyRack(before.rack);applyModulation(before.modulation);applyStereoWidth(before.stereoWidth??1);applyVoicing(normalizeVoicing(before.voicing));applyDelay(normalizeDelay(before.delay));applySound(normalizeSound(before.sound));update();}
+  function restore(before){preset=before.preset;applyValues(before.values);restorePerformance(before.performance);applyRack(before.rack);applyModulation(before.modulation);applyStereoWidth(before.stereoWidth??1);applyVoicing(normalizeVoicing(before.voicing));applyFilterRouting(normalizeFilterRouting(before.filterRouting));applyDelay(normalizeDelay(before.delay));applySound(normalizeSound(before.sound));update();}
   function begin(e, type, data = {}) {
     if (gesture || (e.button !== undefined && e.button !== 0)) return false;
     gesture = {type, pointer: e.pointerId, before: state(), x: e.clientX, y: e.clientY, ...data};
@@ -152,7 +153,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   const descriptions={tone:'Across: cutoff · up/down: filter mix',envelope:'Drag points or stage labels · bend curves for shape',character:'Movement follows the amplitude envelope',drop:'Per-note pitch fall · drag the curve to bend · new notes'};
   const visualPanel=document.querySelector('#sound-editor > .visual-panel');
   $('tone-oscillators').append($('waveforms'));
-  $('tone-shared').append($('voicing-panel'),$('scope-wrapper'));
+  $('tone-shared').append($('scope-wrapper'));
   function layoutTone(){
     const tone=module==='tone';$('tone-layout').hidden=!tone;visualPanel.hidden=tone;
     if(tone){$('tone-filter').append($('shape-surface'),$('macros'),$('module-description'));}
@@ -167,7 +168,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     closeMotion(false);$('motion-details-toggle').hidden=module!=='character';
     $('waveforms').hidden=module!=='tone'||!parameters[19];
     $('scope-wrapper').hidden=module!=='tone';
-    $('sauce-rack').hidden=module!=='drop';$('sauce-output').hidden=module!=='drop';$('voicing-panel').hidden=module!=='tone';
+    $('sauce-rack').hidden=module!=='drop';$('sauce-output').hidden=module!=='drop';
     $('sound-editor').hidden=module==='drop';
     $('sound-editor').setAttribute('aria-label',module==='drop'&&sauce?sauceTitles[sauce]+' settings':'Sound editing');
     $('envelope-tabs').hidden=module!=='envelope';
@@ -224,7 +225,8 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     const panel=document.createElement('section');panel.className='oscillator-panel';panel.dataset.oscillator=number;panel.setAttribute('aria-label','Oscillator '+number);
     const preview=document.createElementNS(svgNS,'svg');preview.classList.add('oscillator-wave-preview');preview.dataset.oscPreview=id;preview.setAttribute('viewBox','0 0 320 112');preview.setAttribute('preserveAspectRatio','none');preview.setAttribute('role','img');
     const caption=document.createElement('div');caption.className='oscillator-preview-caption';caption.textContent='Wave shape';
-    panel.append(row,preview,caption);$('waveforms').append(panel);
+    const unison=document.createElement('div');unison.id='oscillator-unison-'+number;
+    panel.append(row,preview,caption,unison);$('waveforms').append(panel);
   }
   $('waveforms').append(popover);
   const svg=document.createElementNS(svgNS,'svg');svg.setAttribute('viewBox','0 0 420 210');svg.setAttribute('aria-label','Sound shape editor');
@@ -347,7 +349,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   document.addEventListener('pointerdown',e=>{if(!e.target.closest('#volume-panel,#volume-toggle')){$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}if(!e.target.closest('#waveforms'))closeOsc(false);if(!e.target.closest('#filter-mode-toggle,#filter-mode-options'))closeFilter(false);if(!gesture&&!e.target.closest('#motion-details,#motion-details-toggle,.keyboard-section'))closeMotion(false);if(!gesture&&!e.target.closest('.keyboard-section'))closeGlide(false);});
   window.addEventListener('keydown',e=>{if(e.key==='Escape'){const editing=!!gesture;cancel();closeOsc(true);closeFilter(true);if(!editing){closeMotion(true);closeGlide(true);}$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}});window.addEventListener('blur',cancel);
   $('undo').addEventListener('click',()=>{cancel();rackUI.cancel();const before=history.pop();if(before)restore(before);$('undo').disabled=!history.length;});
-  function loadPatch(next,name='custom',settings=DEFAULT_PERFORMANCE,extras={}) {cancel();rackUI.cancel();closeOsc(false);closeFilter(false);lfoUI.close();const before=state();releaseVoices();preset=name;applyValues(next);applyPerformance(normalizePerformance(settings));applyRack(extras.rack?normalizeRack(extras.rack):legacyRack(next,settings));applyModulation(extras.modulation?normalizeModulation(extras.modulation):normalizeModulation());applyStereoWidth(normalizeStereoWidth(extras.stereoWidth));applyVoicing(normalizeVoicing(extras.voicing));applyDelay(normalizeDelay(extras.delay));applySound(normalizeSound(extras.sound??(name==='init'?DEFAULT_SOUND:LEGACY_SOUND)));update();commit(before);}
+  function loadPatch(next,name='custom',settings=DEFAULT_PERFORMANCE,extras={}) {cancel();rackUI.cancel();closeOsc(false);closeFilter(false);lfoUI.close();const before=state();releaseVoices();preset=name;applyValues(next);applyPerformance(normalizePerformance(settings));applyRack(extras.rack?normalizeRack(extras.rack):legacyRack(next,settings));applyModulation(extras.modulation?normalizeModulation(extras.modulation):normalizeModulation());applyStereoWidth(normalizeStereoWidth(extras.stereoWidth));applyVoicing(normalizeVoicing(extras.voicing));applyFilterRouting(normalizeFilterRouting(extras.filterRouting));applyDelay(normalizeDelay(extras.delay));applySound(normalizeSound(extras.sound??(name==='init'?DEFAULT_SOUND:LEGACY_SOUND)));update();commit(before);}
   if(!$('presets').querySelector('[value="custom"]')){const option=document.createElement('option');option.value='custom';option.textContent='Custom patch';option.disabled=true;$('presets').append(option);}
   const initOption=document.createElement('option');initOption.value='init';initOption.textContent='Init';$('presets').prepend(initOption);
   $('presets').addEventListener('change',e=>loadPatch(e.target.value==='init'?neutralValues(parameters):factoryPatch(e.target.value,parameters),e.target.value));
@@ -361,9 +363,9 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   function changeNode(key,patch,commitNow=true){changeConfig(()=>{const[lane,id]=key.split(':');if(lane==='lfo'){const m=modulation();m.sources=m.sources.map(n=>n.id===Number(id)?{...n,...patch}:n);applyModulation(normalizeModulation(m));}else{const r=rack();r[lane]=r[lane].map(n=>n.id===Number(id)?{...n,...patch}:n);applyRack(normalizeRack(r));}},commitNow);}
   const commonControls={parameters,getDestinations:()=>modulationDestinations(parameters,rack(),modulation()),begin,getGesture:()=>gesture,bindCompletion,getPhase:id=>modulationPhases.get(id)??null,getTempo:()=>performance().bpm,changeTempo:delta=>changePerformance({bpm:performance().bpm+delta})};
   const outputUI=createOutputUI({...commonControls,container:$('sauce-output'),getKeyboardVisible:()=>sauceKeyboard,onKeyboardToggle:()=>{sauceKeyboard=!sauceKeyboard;document.querySelector('.instrument').dataset.sauceKeyboard=String(sauceKeyboard);outputUI.update();},getWidth:getStereoWidth,changeWidth:(value,commit)=>changeConfig(()=>applyStereoWidth(value),commit),getDelay,changeDelay:(patch,commit)=>changeConfig(()=>applyDelay(normalizeDelay({...getDelay(),...patch})),commit)});
-  const voicingUI=createVoicingUI({...commonControls,container:$('voicing-panel'),getVoicing,changeVoicing:(patch,commit)=>changeConfig(()=>applyVoicing(normalizeVoicing({...getVoicing(),...patch})),commit)});
+  const voicingUIs=[0,1].map(oscillator=>createVoicingUI({...commonControls,oscillator,container:$('oscillator-unison-'+(oscillator+1)),getVoicing,changeVoicing:(index,patch,commit)=>changeConfig(()=>{const next=normalizeVoicing(getVoicing());Object.assign(next.oscillators[index],patch);applyVoicing(normalizeVoicing(next));},commit)}));
   const sourceUI=createSourceUI({container:$('tone-source'),getSound,getGesture:()=>gesture,changeSound:(patch,commit)=>changeConfig(()=>applySound(normalizeSound({...getSound(),...patch})),commit)});
-  $('voicing-panel').querySelector('.voicing-caption').firstElementChild.textContent='Shared unison';
+  for(const button of document.querySelectorAll('[data-filter-osc]'))button.addEventListener('click',()=>{if(gesture)return;const key=button.dataset.filterOsc;changeConfig(()=>applyFilterRouting(normalizeFilterRouting({...getFilterRouting(),[key]:!getFilterRouting()[key]})),true);});
   $('scope-wrapper').querySelector('.waveform-caption').firstElementChild.textContent='Combined output';
   const rackUI=createSauceRack({container:$('sauce-rack'),canDrag:()=>!gesture,
     createEditor:(item,body,extra)=>createRackEditor({...commonControls,item,body,extra,getNode:()=>getNode(item.key),changeNode:(patch,commit)=>changeNode(item.key,patch,commit)}),
@@ -381,7 +383,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   $('glide-time-toggle').addEventListener('click',()=>{if(gesture||!parameters[41])return;const open=$('glide-panel').hidden;$('glide-panel').hidden=!open;$('glide-time-toggle').setAttribute('aria-expanded',String(open));if(open){closeMotion(false);$('glide-panel').querySelector('[data-knob]').focus();}});
   window.addEventListener('resize',()=>{cancel();update();});
   function update() {
-    outputUI.update();voicingUI.update();sourceUI.update();const ladder=getSound().filterModel==='ladder';document.querySelector('.instrument').dataset.filterModel=module==='tone'&&ladder?'ladder':'existing';if(filterDriveControl){filterDriveControl.element.hidden=!ladder;filterDriveControl.update();}
+    outputUI.update();voicingUIs.forEach(ui=>ui.update());sourceUI.update();for(const button of document.querySelectorAll('[data-filter-osc]')){const on=getFilterRouting()[button.dataset.filterOsc];button.setAttribute('aria-pressed',String(on));button.title=on?'Oscillator passes through Tone filter':'Oscillator bypasses Tone filter; mixer and Sauce remain active';}const ladder=getSound().filterModel==='ladder';document.querySelector('.instrument').dataset.filterModel=module==='tone'&&ladder?'ladder':'existing';if(filterDriveControl){filterDriveControl.element.hidden=!ladder;filterDriveControl.update();}
     for(const p of parameters){const input=document.querySelector(`[data-param="${p.id}"]`);input.value=p.mapping===2?getValues()[p.id]:Math.round((timingIds.includes(p.id)?timeUnit: norm)(p.id)*1000);input.setAttribute('aria-valuetext',format(p.id));document.querySelector(`[data-value="${p.id}"]`).textContent=format(p.id);}
     for(const chooser of document.querySelectorAll('[data-waveosc]')){const id=Number(chooser.dataset.waveosc),number=id===19?1:2;chooser.querySelector('.wave-name').textContent=format(id);chooser.setAttribute('aria-label','Oscillator '+number+' waveform '+format(id));}
     for(const preview of document.querySelectorAll('[data-osc-preview]')){

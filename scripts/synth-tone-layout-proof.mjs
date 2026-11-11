@@ -44,7 +44,7 @@ try{
    await click('[data-wave="'+(id===19?4:1)+'"]');
   }
   check(await ev(`document.querySelector('[data-osc-preview="19"]').getAttribute('aria-label').includes('Square')&&document.querySelector('[data-osc-preview="20"]').getAttribute('aria-label').includes('Triangle')`),'Both individual shape previews follow actual waveform choices '+width);
-  await click('#source-profile-toggle');check(await ev(`(()=>{const p=document.querySelector('#source-profile-options'),r=p.getBoundingClientRect();return !p.hidden&&r.x>=0&&r.right<=innerWidth&&!p.closest('#voicing-panel')})()`),'Global source chooser outside Unison fits '+width);await key('[data-source-profile=studio]','Escape');
+  await click('#source-profile-toggle');check(await ev(`(()=>{const p=document.querySelector('#source-profile-options'),r=p.getBoundingClientRect();return !p.hidden&&r.x>=0&&r.right<=innerWidth&&!p.closest('.voicing-panel')})()`),'Global source chooser outside Unison fits '+width);await key('[data-source-profile=studio]','Escape');
   await ev(`document.querySelector('.keyboard-section').scrollIntoView({block:'end'})`);const keyboard=await ev(`(()=>{const r=document.querySelector('#keyboard').getBoundingClientRect();return {y:r.y,bottom:r.bottom,width:r.width,height:r.height,innerHeight}})()`);writeFileSync(resolve(out,`keyboard-${width}.json`),JSON.stringify(keyboard));check(keyboard.width>0&&keyboard.height>0&&keyboard.y>=0&&keyboard.bottom<=keyboard.innerHeight+1,'Keyboard remains reachable by scrolling '+width);
   if(width<600){await ev(`document.querySelector('#tone-filter').scrollIntoView({block:'start'})`);await b.screenshot(resolve(out,`filter-${width}.png`));}
  }

@@ -18,6 +18,16 @@ typedef struct bs_synth bs_synth;
  * No extra MIDI ownership. Two filter/effects paths share note envelopes.
  * Getter returns requested settings; reset/prepare preserve and snap targets. */
 typedef struct bs_voicing_config {uint32_t version,count;float detune_cents,spread;} bs_voicing_config;
+#define BS_VOICING_VERSION_V2 2u
+/* Independent per-oscillator settings. Both entries use the same bounds and
+ * NoteOn Count/live Detune/Spread semantics as v1. Atomic whole-config updates.
+ * v1 setter assigns both entries. v1 getter refuses without writing if their
+ * requested values differ; use v2 to export independent state losslessly. */
+typedef struct bs_osc_voicing_config {uint32_t count;float detune_cents,spread;} bs_osc_voicing_config;
+typedef struct bs_voicing_config_v2 {uint32_t version,reserved;bs_osc_voicing_config oscillators[2];} bs_voicing_config_v2;
+void bs_default_voicing_v2(bs_voicing_config_v2 *config);
+int bs_set_voicing_v2(bs_synth *synth,const bs_voicing_config_v2 *config);
+int bs_get_voicing_v2(const bs_synth *synth,bs_voicing_config_v2 *config);
 void bs_default_voicing(bs_voicing_config *config);
 int bs_set_voicing(bs_synth *synth,const bs_voicing_config *config);
 int bs_get_voicing(const bs_synth *synth,bs_voicing_config *config);

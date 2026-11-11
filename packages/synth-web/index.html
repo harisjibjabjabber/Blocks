@@ -43,14 +43,13 @@
     <section id="sound-editor" class="sound-editor" aria-label="Sound editing">
       <div id="tone-layout" hidden>
         <div class="tone-source-bar"><div id="tone-source"></div><span>Shared by both oscillators</span></div>
-        <div class="tone-cards"><div id="tone-oscillators"></div><section id="tone-filter" class="tone-filter-panel" aria-label="Shared filter"><div class="tone-filter-heading"><h2>Filter</h2><div id="tone-filter-mode"></div></div></section></div>
+        <div class="tone-cards"><div id="tone-oscillators"></div><section id="tone-filter" class="tone-filter-panel" aria-label="Shared filter"><div class="tone-filter-heading"><h2>Filter</h2><div id="tone-filter-mode"></div></div><div id="filter-routing" role="group" aria-label="Oscillators affected by Tone filter"><span>Affects</span><button type="button" data-filter-osc="osc1" aria-pressed="true" aria-label="Filter Oscillator 1">Osc 1</button><button type="button" data-filter-osc="osc2" aria-pressed="true" aria-label="Filter Oscillator 2">Osc 2</button></div></section></div>
         <div id="tone-shared" class="tone-shared"></div>
       </div>
       <div class="visual-panel">
         <div class="surface-heading"><div id="envelope-tabs" role="group" aria-label="Envelope destination" hidden><button type="button" data-envelope="amp" aria-pressed="true">Amp</button><button type="button" data-envelope="filter" aria-pressed="false">Filter</button></div><button id="motion-details-toggle" type="button" aria-expanded="false" aria-controls="motion-details" hidden>Pitch details <span aria-hidden="true">⌄</span></button><h2 id="module-title">Oscillator + filter</h2><output id="value-summary" aria-live="off"></output></div>
         <div id="waveforms" aria-label="Oscillator waveforms" hidden></div>
         <div id="scope-wrapper" hidden><div class="waveform-caption"><span>Waveform</span><span id="scope-label">Preview</span></div><canvas id="scope" aria-label="Synth waveform preview"></canvas></div>
-        <div id="voicing-panel" hidden></div>
         <div id="shape-surface" aria-label="Interactive sound graph"></div>
         <div id="performance-panel" hidden></div>
         <div id="lfo-panel" hidden></div>
