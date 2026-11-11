@@ -51,6 +51,8 @@ This measures bands around the fundamental/octave, including granular sidebands.
 
 Four actual-instrument phrases—bass pluck, arpeggio, sustained chord and bright lead—produce32 eight-second WAVs in workspace `work/phase13-auditions`: dry/Plate/Hall/Shimmer, each fixed gain and separately matched to−30dBFS RMS. No peak normalization or extra post-render limiter. Source patch/events are in `phase13_reverb_audition.cpp`; metrics accompany the files. These fixtures support listening; automated tests do not establish commercial sound-quality parity.
 
+The older-named `phase12_suite_audition.cpp` now exports current Harmonics comparisons at one shared−36dBFS RMS target. Removing the output tanh exposed larger crest factors: the previous−30dBFS target would overrun full scale in three matched files (worst1.4264). Lowering the common target preserves relative transients and equal RMS without per-file peak normalization or another limiter. Current exports are separate from the historical Phase12 listening evidence.
+
 Final local timing, including scope collection: Windows/Node22.23.4/WASM,48kHz/128 frames, four held notes, seven copies on each oscillator, Ladder drive12/resonance.6/cutoff2kHz, Suite and Delay off. Three trials of64 warmup/192 measured blocks, isolated from our browser tests. Values below are trial medians except the maximum column.
 
 | Reverb | ms per audio second | p99 block ms | Worst observed ms |

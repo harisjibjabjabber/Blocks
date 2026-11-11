@@ -10,7 +10,9 @@
 #include <vector>
 
 // Actual complete synth, common source/level/timing. Float WAVs preserve all
-// peaks; matched versions use RMS only, never peak normalization or limiting.
+// peaks; matched versions use one shared-36dBFS RMS target, never per-file peak
+// normalization or post-render limiting. Extra headroom preserves the crest
+// factor now that the final always-on tanh is retired.
 static void put(std::ostream&o,uint32_t v,unsigned n){for(unsigned i=0;i<n;++i)o.put(char(v>>(8*i)));}
 static bool wav(const std::string&path,const std::vector<float>&data,double gain){
  std::ofstream o(path,std::ios::binary);if(!o)return false;
@@ -48,10 +50,10 @@ int main(int argc,char**argv){
    if(bs_render(s,l.data(),r.data(),n,events.data(),count))return 6;
    for(unsigned i=0;i<n;++i)for(float x:{l[i],r[i]}){if(!std::isfinite(x))return 7;data.push_back(x);peak=std::max(peak,std::abs(double(x)));squares+=double(x)*x;if(start+i>=120000){late+=double(x)*x;++lateN;}if(start+i<72000){const unsigned age=(start+i)%18000;if(age>=96&&age<1200){attackEnergy+=double(x)*x;++attackN;}if(age>=2880&&age<9600){bodyEnergy+=double(x)*x;++bodyN;}}}
   }
-  double rms=std::sqrt(squares/data.size()),matched=std::pow(10.,-30./20.)/std::max(rms,1e-12);
+  double rms=std::sqrt(squares/data.size()),matched=std::pow(10.,-36./20.)/std::max(rms,1e-12);
   std::string stem=std::string(argv[1])+"/"+names[mode];
-  if(peak*matched>=1)return 9;
+  if(peak*matched>=1){std::fprintf(stderr,"Matched audition %s exceeds full scale at shared-36dBFS target: %.9g\n",names[mode],peak*matched);return 9;}
   if(!wav(stem+"-fixed.wav",data,1)||!wav(stem+"-matched.wav",data,matched))return 8;
-  std::printf("%s raw_peak=%.9g fixed_peak=%.9g rms=%.9g matched_gain=%.9g matched_peak=%.9g late_rms=%.9g attack_rms=%.9g body_rms=%.9g latency=%u\n",names[mode],peak,peak,rms,matched,peak*matched,std::sqrt(late/std::max(1u,lateN)),std::sqrt(attackEnergy/std::max(1u,attackN)),std::sqrt(bodyEnergy/std::max(1u,bodyN)),bs_harmonics_suite_latency());std::fflush(stdout);bs_destroy(s);
+  std::printf("%s raw_peak=%.9g fixed_peak=%.9g rms=%.9g matched_gain=%.9g matched_peak=%.9g matched_target_dbfs=-36 late_rms=%.9g attack_rms=%.9g body_rms=%.9g latency=%u\n",names[mode],peak,peak,rms,matched,peak*matched,std::sqrt(late/std::max(1u,lateN)),std::sqrt(attackEnergy/std::max(1u,attackN)),std::sqrt(bodyEnergy/std::max(1u,bodyN)),bs_output_latency(s));std::fflush(stdout);bs_destroy(s);
  }
 }
