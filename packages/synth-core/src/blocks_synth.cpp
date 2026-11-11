@@ -11,6 +11,7 @@
 #include "performance.h"
 #include "modulation.h"
 #include "unison.h"
+#include "osc_bass.h"
 #include "blocks_filter_routing.h"
 #include "filter_route.h"
 #include "stereo_delay.h"
@@ -167,7 +168,7 @@ struct bs_synth {
  uint64_t sequence=0;
  blocks_detail::Performance performance;
  blocks_detail::Modulation modulation;
- blocks_detail::Unison unison,unison2;
+ blocks_detail::Unison unison,unison2;blocks_detail::OscBass oscBass;
  bs_filter_routing_config filterRouting{BS_FILTER_ROUTING_VERSION,3};std::array<double,2>filterRoutes{{1,1}};
  blocks_detail::StereoDelay delay;
  bs_sauce_config sauceConfig{BS_SAUCE_VERSION,0,{}};
@@ -199,7 +200,7 @@ struct bs_synth {
  int setNotes(const bs_notes_config&config){if(!blocks_detail::NoteRack::valid(config))return 0;bool topology=!notesExplicit||config.count!=noteRack.config().count;for(unsigned i=0;i<config.count&&!topology;++i){const auto&a=config.blocks[i];const auto&b=noteRack.config().blocks[i];topology=a.id!=b.id||a.type!=b.type||a.enabled!=b.enabled;}if(topology)performance.clear();if(!notesExplicit){clearOutputs();notesExplicit=true;auto legacy=requestedPerformance;legacy.mono=0;performance.configure(legacy);auto mono=blocks_detail::defaultPerformance();mono.mono=requestedPerformance.mono;finalMono.configure(mono);}return noteRack.configure(config,rate);}
  int setSauce(const bs_sauce_config&config){if(!blocks_detail::AudioRack::valid(config))return 0;sauceConfig=config;int drive=-1,fullness=-1;for(unsigned i=0;i<config.count;++i)if(config.blocks[i].primary){if(config.blocks[i].type==BS_SAUCE_DRIVE)drive=int(i);else fullness=int(i);}if(drive>=0&&fullness>=0)parameters[BS_SAUCE_ORDER]=drive<fullness?0:1;for(auto&v:voices)if(v.active){v.sauce.configure(config,rate,false,true);if(v.unisonCount>1)v.rightSauce.configure(config,rate,false,true);}for(auto&v:tails)if(v.active){v.sauce.configure(config,rate,false,true);if(v.unisonCount>1)v.rightSauce.configure(config,rate,false,true);}return 1;}
  void reorderPrimary(bool reverse){auto next=sauceConfig;int drive=-1,fullness=-1;for(unsigned i=0;i<next.count;++i)if(next.blocks[i].primary){if(next.blocks[i].type==BS_SAUCE_DRIVE)drive=int(i);else fullness=int(i);}if(drive>=0&&fullness>=0&&((drive>fullness)!=reverse)){std::swap(next.blocks[unsigned(drive)],next.blocks[unsigned(fullness)]);setSauce(next);}}
- void reset() { sourceBlend=soundConfig.oscillator;ladderBlend=soundConfig.filter_model;ladderDrive=soundConfig.filter_drive;delay.clear();unison.reset();unison2.reset();filterRoutes={double(bool(filterRouting.mask&1)),double(bool(filterRouting.mask&2))};stereoWidthSmooth=stereoWidth; for(unsigned osc=0;osc<2;++osc) {waveWeights[osc]={};waveWeights[osc][unsigned(parameters[BS_OSC1_WAVE+osc])]=1;} for(auto&v:voices)v=Voice{};for(auto&v:tails)v=Voice{}; onOrdinals={}; offOrdinals={}; pedals={}; sequence=0;driftPhase=0;filterBlend=parameters[BS_FILTER_MODE];modulation.reset();modulationSmooth={};performance.prepare(rate);noteRack.prepare(rate);finalMono.prepare(rate); for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; }
+ void reset() { sourceBlend=soundConfig.oscillator;ladderBlend=soundConfig.filter_model;ladderDrive=soundConfig.filter_drive;delay.clear();unison.reset();unison2.reset();oscBass.reset(rate);filterRoutes={double(bool(filterRouting.mask&1)),double(bool(filterRouting.mask&2))};stereoWidthSmooth=stereoWidth; for(unsigned osc=0;osc<2;++osc) {waveWeights[osc]={};waveWeights[osc][unsigned(parameters[BS_OSC1_WAVE+osc])]=1;} for(auto&v:voices)v=Voice{};for(auto&v:tails)v=Voice{}; onOrdinals={}; offOrdinals={}; pedals={}; sequence=0;driftPhase=0;filterBlend=parameters[BS_FILTER_MODE];modulation.reset();modulationSmooth={};performance.prepare(rate);noteRack.prepare(rate);finalMono.prepare(rate); for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; }
  void panic() {performance.clear();noteRack.clear();clearOutputs();}
  void retire(Voice&v){
   Voice*tail=nullptr;for(auto&candidate:tails)if(!candidate.active){tail=&candidate;break;}
@@ -273,7 +274,7 @@ struct bs_synth {
   return 1;
  }
  void sample(float &left,float &right) {
-  unison.tick(smoothing);unison2.tick(smoothing);
+  unison.tick(smoothing);unison2.tick(smoothing);oscBass.tick(rate,smoothing);
   for(unsigned osc=0;osc<2;++osc){const double target=(filterRouting.mask&(1u<<osc))?1:0;filterRoutes[osc]+=smoothing*(target-filterRoutes[osc]);if(std::abs(filterRoutes[osc]-target)<1e-12)filterRoutes[osc]=target;}
   const auto linearFade=[](double x,double target,double step){return x<target?std::min(target,x+step):std::max(target,x-step);};
   sourceBlend=linearFade(sourceBlend,soundConfig.oscillator,dt/.005);ladderBlend=linearFade(ladderBlend,soundConfig.filter_model,dt/.01);
@@ -331,7 +332,7 @@ struct bs_synth {
    v.lastFrequency=frequency;
    double raw=0,rawRight=0,bypass=0,bypassRight=0;
    // Keep the legacy paired sum and phase stream exactly whenever possible.
-   const bool paired=v.unisonCount1==v.unisonCount2&&unison.sameSmoothing(unison2)&&filterRoutes[0]==1&&filterRoutes[1]==1;
+   const bool paired=!oscBass.active(0)&&!oscBass.active(1)&&v.unisonCount1==v.unisonCount2&&unison.sameSmoothing(unison2)&&filterRoutes[0]==1&&filterRoutes[1]==1;
    if(paired&&v.unisonCount==1){
     const double step1=clamp(frequency*dt,1e-9,.45),step2=clamp(frequency*oscillator2Ratio*dt,1e-9,.45);
     const double saw1=saw(v.phase1,step1),pulse2=pulse(v.phase2,step2,effective[BS_PULSE_WIDTH]);
@@ -350,7 +351,7 @@ struct bs_synth {
     const auto generate=[&](unsigned osc,double level,unsigned count,blocks_detail::Unison&voicing,double&single,std::array<double,BS_MAX_UNISON>&phases){
      std::array<double,2>sum{};
      for(unsigned copy=0;copy<count;++copy){const auto u=count==1?blocks_detail::Unison::Copy{}:voicing.copies[count][copy];double&phase=count==1?single:phases[copy];const double step=clamp(frequency*u.ratio*(osc?oscillator2Ratio:1)*dt,1e-9,.45);
-      double value=0;if(level!=0){if(sourceBlend>0)value=level*source(waveWeights[osc],phase,step,w);else value=level*(legacyWaves?(osc?pulse(phase,step,w):saw(phase,step)):oscillator(waveWeights[osc],phase,step,w));}
+      double value=0;if(level!=0){if(oscBass.fullyActive(osc))value=level*oscBass.apply(osc,0,waveWeights[osc],phase,step,w);else{if(sourceBlend>0)value=level*source(waveWeights[osc],phase,step,w);else value=level*(legacyWaves?(osc?pulse(phase,step,w):saw(phase,step)):oscillator(waveWeights[osc],phase,step,w));if(oscBass.active(osc))value=level*oscBass.apply(osc,value/level,waveWeights[osc],phase,step,w);}}
       sum[0]+=value*u.left;sum[1]+=value*u.right;phase+=step;phase-=std::floor(phase);
      }
      return sum;
@@ -404,6 +405,15 @@ struct bs_synth {
 };
 
 extern "C" {
+void bs_default_osc_bass(bs_osc_bass_config*c){if(c)*c=blocks_detail::defaultOscBass();}
+int bs_set_osc_bass(bs_synth*s,const bs_osc_bass_config*c){return s&&c&&s->oscBass.configure(*c)?1:0;}
+int bs_get_osc_bass(const bs_synth*s,bs_osc_bass_config*c){if(!s||!c)return 0;*c=s->oscBass.config();return 1;}
+double bs_get_osc_bass_phase(const bs_synth*s,uint32_t oscillator){return s?s->oscBass.phase(oscillator):-1;}
+int bs_osc_bass_preview(uint32_t wave,uint32_t quality,float width,const bs_osc_bass_entry*c,double rotation,double frequency,double rate,float*out,uint32_t samples){
+ if(wave>4||quality>1||!std::isfinite(width)||width<.1f||width>.9f||!c||!blocks_detail::validOscBassEntry(*c)||!std::isfinite(rotation)||rotation<0||rotation>=1||!std::isfinite(rate)||rate<8000||rate>384000||!std::isfinite(frequency)||frequency<=0||frequency>=rate*.5||!out||samples==0||samples>2048)return 0;
+ Weights weights{};weights[wave]=1;const double step=std::min(.45,frequency/rate);const auto pose=blocks_detail::OscBassSource::pose(c->spin_hz,c->motion,c->grit,rotation,rate);
+ for(unsigned i=0;i<samples;++i){const double phase=double(i)/samples;out[i]=float(c->enabled?blocks_detail::OscBassSource::mix(weights,phase,step,width,pose):quality?blocks_detail::StudioOscillator::mix(weights,phase,step,width):oscillator(weights,phase,step,width));}return 1;
+}
 void bs_default_harmonics(bs_harmonics_config*c){if(c)*c=blocks_detail::defaultHarmonics();}
 int bs_set_harmonics(bs_synth*s,const bs_harmonics_config*c){return s&&c?s->setHarmonics(*c):0;}
 int bs_get_harmonics(const bs_synth*s,bs_harmonics_config*c){if(!s||!c)return 0;*c=s->harmonicsConfig;return 1;}

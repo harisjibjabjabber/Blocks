@@ -21,6 +21,14 @@
 .oscillator-wave-line{stroke:var(--ivory);stroke-width:1.5;fill:none;vector-effect:non-scaling-stroke}
 .oscillator-panel[data-oscillator="2"] .oscillator-wave-line{stroke:var(--accent)}
 .oscillator-preview-caption{font-size:9px;color:var(--muted);padding-top:6px;letter-spacing:.03em}
+.oscillator-bass{min-width:0;margin-top:4px}
+.osc-bass-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}
+.osc-bass-heading .oscillator-preview-caption{margin:0;padding:0}
+.osc-bass-toggle{min-height:44px;font-size:10px;padding:0 10px;background:transparent}
+.osc-bass-toggle[aria-checked=true]{color:var(--accent);border-color:var(--accent)}
+.osc-bass-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:8px 0}
+.osc-bass-controls[hidden]{display:none}
+.osc-bass-controls>.config-control{min-width:0}
 .oscillator-panel .osc-popover{top:62px;left:8px;right:8px;width:auto;z-index:45}
 .oscillator-panel .wave-options{grid-template-columns:repeat(3,minmax(0,1fr))}
 .oscillator-panel .wave-options button{padding-inline:3px;font-size:11px}

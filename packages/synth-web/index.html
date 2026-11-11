@@ -30,7 +30,7 @@
       <button id="midi" disabled>Connect MIDI</button>
     </div>
     </div>
-    <div class="signal-row"><span id="status" role="status">Sound stopped</span><span id="monitor">0 voices</span></div>
+    <div class="signal-row"><span id="status" role="status">Sound stopped</span><output id="cpu-load" title="Estimated audio-thread load against its processing budget, not whole-computer CPU usage." aria-label="Estimated audio CPU load">CPU —</output><span id="monitor">0 voices</span></div>
     <nav id="module-tabs" aria-label="Sound module">
       <button type="button" data-module="tone" class="selected" aria-pressed="true">Tone</button>
       <button type="button" data-module="envelope" aria-pressed="false">Envelope</button>

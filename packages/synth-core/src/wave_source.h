@@ -12,6 +12,7 @@ namespace blocks_detail {
 // Caller supplies finite phase, positive step <=.45 and finite pulse width.
 // Wave IDs follow the public enum: Sine0, Triangle1, Saw2, Pulse3, Square4.
 class StudioOscillator {
+public:
  struct Plan {unsigned level;double blend;};
  static Plan plan(double step) {
   const double allowed=.49/std::max(step,1e-12);

@@ -1,6 +1,10 @@
 # Synth product plan
 
-Current phase: [independent oscillator unison and shared-filter routing](audio-references/oscillator-voicing-routing.md),11 November2026. Count/Detune/Spread per oscillator, two Filter Affects switches, backward migration and matched Ladder bypass timing. No sampler/VST packaging is added in this pass.
+Phase 10 built, 11 November 2026: [independent opt-in Bass/Rotor engines](audio-references/rotating-grit-bass.md) inside each oscillator. Waveform, Mix, Unison and filter routing remain independent; enabling Bass reveals Spin, Motion and Grit. The source anchors its fundamental while rotating an overtone vector, with native waveform preview math and no post-effect FIR latency. Default Off preserves existing sound. Six focused source/API groups and fourteen browser checks pass, with independent phone/desktop UX acceptance. Eighteen old-source fixtures retain their exact 589,824-byte fingerprint. Musical approval remains open until the user listens.
+
+Scoped companion fixes: version the complete browser module/worklet/WASM/style graph to avoid stale-cache startup failures; add an approximate audio render-budget meter; show a clearly labelled small-signal Ladder shape preview. The CPU meter is an estimate of this synth's audio-thread deadline use, not whole-computer utilization. At 48 kHz/128 frames, 100% is about 2.67 ms. Avoid a broad retest solely for this meter; verify the new source and affected paths with focused checks.
+
+Phase 9: [independent oscillator unison and shared-filter routing](audio-references/oscillator-voicing-routing.md),11 November2026. Count/Detune/Spread per oscillator, two Filter Affects switches, backward migration and matched Ladder bypass timing. No sampler/VST packaging is added in this pass.
 
 Current correction: [warm filter and Tone layout](audio-references/warm-filter-performance.md). The Ladder now uses a scalar nonlinear feedback solve, raw Drive gain and the same8x reconstruction; the previous distributed-model descriptions/timings below are historical. Source quality remains a fidelity choice.
 

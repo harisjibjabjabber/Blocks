@@ -28,6 +28,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/synth-evidence"
           "$RUNNER_TEMP/native/blocks_synth_ladder_polyphase_tests" | tee "$RUNNER_TEMP/synth-evidence/native-ladder-polyphase.txt"
           "$RUNNER_TEMP/native/blocks_synth_oscillator_voicing_tests" | tee "$RUNNER_TEMP/synth-evidence/native-oscillator-voicing.txt"
+          "$RUNNER_TEMP/native/blocks_synth_osc_bass_tests" | tee "$RUNNER_TEMP/synth-evidence/native-osc-bass.txt"
           ctest --test-dir "$RUNNER_TEMP/native" --output-on-failure
           cmake --install "$RUNNER_TEMP/native"
           cmake -S packages/synth-core/tests/consumer -B "$RUNNER_TEMP/consumer" -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/synth-install"
@@ -39,6 +40,7 @@ jobs:
           "$RUNNER_TEMP/native/blocks_synth_unison_benchmark" > "$RUNNER_TEMP/synth-evidence/native-unison-benchmark.txt"
           "$RUNNER_TEMP/native/blocks_synth_sound_quality_benchmark" > "$RUNNER_TEMP/synth-evidence/native-sound-quality-benchmark.txt"
           "$RUNNER_TEMP/native/blocks_synth_oscillator_routing_benchmark" > "$RUNNER_TEMP/synth-evidence/native-oscillator-routing-benchmark.txt"
+          "$RUNNER_TEMP/native/blocks_synth_osc_bass_audition" "$RUNNER_TEMP/synth-evidence"
       - name: Exact native rack compatibility
         run: node scripts/compare-rack-audio.mjs --before=.comparison-baseline/packages/synth-core --backend=native --out="$RUNNER_TEMP/rack-native"
       - name: Install official Emscripten toolchain
@@ -81,8 +83,11 @@ jobs:
           node scripts/synth-standalone-proof.mjs
           node scripts/synth-gesture-proof.mjs
           node scripts/synth-sound-proof.mjs
+          node scripts/synth-filter-shape-proof.mjs
+          node scripts/synth-osc-bass-proof.mjs
           node scripts/synth-tone-layout-proof.mjs
           node scripts/synth-oscillator-proof.mjs
+          node scripts/synth-cache-proof.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

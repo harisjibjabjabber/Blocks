@@ -1,5 +1,13 @@
 # Standalone browser instrument
 
+In Tone, enable **Bass** below either oscillator's waveform to reveal **Spin**, **Motion** and **Grit**. Both oscillators retain independent waveform, Mix, Unison and filter routing. The [native Bass/Rotor source](../../docs/audio-references/rotating-grit-bass.md) rotates overtone phase around an anchored fundamental, without an extra audio-effect latency stage. Bass defaults Off, including old-file imports. It uses its own band-limited bank; shared Legacy/Studio quality applies to the original source.
+
+The per-oscillator and idle combined previews use native C3 source-shape math. Motion/Grit update stopped previews, while actual native phase telemetry drives animation in visible Tone. Tall shapes scale to the plot; preview scaling never changes audio levels. Save/load, Init, Undo and gesture cancellation retain independent Bass settings. New Bass parameters are not yet in the LFO mapping menu.
+
+The top CPU meter estimates this synth's audio-thread processing time as a percentage of the render deadline, rather than whole-computer CPU utilization. At 48 kHz/128 frames, 100% means about 2.67 ms per block. It averages half a second, uses a coarse clock where AudioWorklet lacks a high-resolution timer, and clears on Stop. Other audio nodes, device latency and missed deadlines are not measured.
+
+Build output now gives HTML assets, every child module, AudioWorklet and WASM a common content revision. This avoids mixing cached old UI code with newly built components. `node scripts/synth-cache-proof.mjs` deliberately seeds stale modules, reproduces the former null/className startup failure and checks that a normal current-page load recovers.
+
 Current addition: [independent oscillator unison and filter routing](../../docs/audio-references/oscillator-voicing-routing.md). Count/Detune/Spread now live in each oscillator card. Filter Affects buttons choose Osc1/Osc2 (both on by default); Off bypasses only the filter. Old shared settings migrate to both oscillators. Earlier shared-voicing descriptions below are historical.
 
 Current correction: [warm filter and Tone layout](../../docs/audio-references/warm-filter-performance.md). Ladder now uses scalar nonlinear feedback and raw Drive gain with the same8x reconstruction. Earlier distributed-model/timing descriptions below are historical. Tone separates Osc1/Osc2/filter cards and keeps Quality global.
