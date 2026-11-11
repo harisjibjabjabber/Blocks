@@ -285,5 +285,23 @@
         "down": 1
       }
     ]
+  },
+  "reverb": {
+    "version": 1,
+    "enabled": false,
+    "type": "plate",
+    "predelay": 0.015,
+    "decay": 2.5,
+    "size": 1,
+    "diffusion": 0.75,
+    "lowCut": 120,
+    "damping": 7000,
+    "modRate": 0.3,
+    "modDepth": 0.2,
+    "shimmer": 0.35,
+    "mix": 0.25,
+    "outputDb": 0,
+    "shimmerSemitones": 12,
+    "wetWidth": 1
   }
 }

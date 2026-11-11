@@ -9,6 +9,8 @@
 #include <blocks_delay.h>
 #include <blocks_sound.h>
 #include <blocks_harmonics_suite.h>
+#include <blocks_reverb.h>
+#include <blocks_output.h>
 int main() {
   bs_synth* synth=bs_create();
   if(!synth) return 1;
@@ -17,6 +19,7 @@ int main() {
   bs_default_sound(&sound);bs_default_harmonics_suite(&harmonics);
   bs_delay_config delay{},delayRead{};
   bs_default_delay(&delay);
+  bs_reverb_config reverb{},reverbRead{};bs_default_reverb(&reverb);bs_output_meters output{};
   bs_osc_bass_config_v2 bassV2{};bs_default_osc_bass_v2(&bassV2);bs_clock_config clock{};bs_default_clock(&clock);bs_sub_config sub{};bs_default_sub(&sub);
   bs_voicing_config_v2 voicingV2{},voicingV2Read{};bs_filter_routing_config routing{},routingRead{};
   bs_default_voicing_v2(&voicingV2);bs_default_filter_routing(&routing);
@@ -26,6 +29,7 @@ int main() {
   bs_default_modulation_v3(&modulationV3);bs_default_sauce(&sauce);bs_default_notes(&notes);
   bs_default_performance(&performance);
   const bool configured=bs_set_clock(synth,&clock)&&bs_get_clock(synth,&clock)&&bs_set_sub(synth,&sub)&&bs_get_sub(synth,&sub)&&bs_set_osc_bass_v2(synth,&bassV2)&&bs_get_osc_bass_v2(synth,&bassV2)
+    &&bs_set_reverb(synth,&reverb)&&bs_get_reverb(synth,&reverbRead)&&bs_get_output_meters(synth,&output)&&bs_output_latency(synth)==72
     &&bs_set_voicing_v2(synth,&voicingV2)&&bs_get_voicing_v2(synth,&voicingV2Read)
     &&bs_set_filter_routing(synth,&routing)&&bs_get_filter_routing(synth,&routingRead)
     &&bs_get_osc_bass_phase(synth,0)==0

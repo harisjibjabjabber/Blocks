@@ -6,6 +6,8 @@
 #include "blocks_modulation.h"
 #include "blocks_voicing.h"
 #include "blocks_delay.h"
+#include "blocks_output.h"
+#include "blocks_reverb.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -87,7 +89,7 @@ float bs_get_parameter(const bs_synth *synth, uint32_t id);
  * 5ms time-constant smoothing; reset/prepare snap to retained target, panic
  * preserves it. Event BS_STEREO_WIDTH uses value for sample-offset automation.
  * Width1 is exact bypass; width0 mono, width2 doubles existing Side BEFORE
- * unchanged final tanh/gain protection. No stereo information is generated. */
+ * stereo-linked output protection. No stereo information is generated. */
 int bs_set_stereo_width(bs_synth *synth,float width);
 float bs_get_stereo_width(const bs_synth *synth); /* null returns neutral1 */
 int bs_get_patch(const bs_synth *synth, bs_patch *patch);

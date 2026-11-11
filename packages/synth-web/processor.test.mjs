@@ -1,3 +1,4 @@
+import {normalizeReverb,toCoreReverb,REVERB_FIELDS} from './reverb-state.js';
 import {normalizeSuite,toCoreSuite,SUITE_FLOATS,SUITE_UINTS} from './suite-state.js';
 // Worklet unit tests with a fake renderer. These verify telemetry/copying only;
 // actual DSP output is covered by the separate core and real-browser suites.
@@ -9,12 +10,12 @@ const source=await readFile(new URL('./processor.js',import.meta.url),'utf8');
 
 async function fixture(){
   const memory={buffer:new ArrayBuffer(65536)},floats=new Float32Array(memory.buffer),messages=[];
-  let width=1;let registered,next=1024,samples=[[],[]],renderCalls=0;const renderedEvents=[],patchCalls=[],performanceCalls=[];
+  let scope=Array.from({length:128},(_,i)=>(i-64)/128),scopeCount=128;let width=1;let registered,next=1024,samples=[[],[]],renderCalls=0;const renderedEvents=[],patchCalls=[],performanceCalls=[];
   const performanceFields=['version','mode','order','division','triplet','seed','mono','bpm','curl','gate','strum_ms','randomness'];
   let performance={version:1,mode:0,order:0,division:8,triplet:0,seed:0xc0ffee,mono:0,bpm:120,curl:0,gate:.7,strum_ms:35,randomness:.25};
-  const rackCalls={clock:[],sub:[],osc_bass:[],sauce:[],modulation:[],notes:[],voicing:[],filter_routing:[],delay:[],sound:[],harmonics_suite:[]},rackApi={};
-  for(const [kind,size]of[['clock',12],['sub',32],['osc_bass',80],['sauce',328],['modulation',2232],['notes',1224],['voicing',32],['filter_routing',8],['delay',40],['sound',16],['harmonics_suite',204]]){let bytes=new Uint8Array(size);new DataView(bytes.buffer).setUint32(0,kind==='modulation'?3:kind==='voicing'?2:1,true);const suffix=kind==='modulation'?'_v3':(kind==='voicing'||kind==='osc_bass')?'_v2':'';rackApi['bs_get_'+kind+suffix]=(_s,p)=>{new Uint8Array(memory.buffer,p,size).set(bytes);return 1;};rackApi['bs_set_'+kind+suffix]=(_s,p)=>{bytes=Uint8Array.from(new Uint8Array(memory.buffer,p,size));rackCalls[kind].push(Array.from(bytes));return 1;};}
-  const api={memory,...rackApi,bs_get_harmonics_suite_meters:(_s,p)=>{new Float32Array(memory.buffer,p,11).set([.2,.4,3,5,-30,-20,-10,1,-2,3,-4]);return 1;},bs_set_stereo_width:(_s,value)=>{width=value;return 1;},bs_get_stereo_width:()=>width,
+  const rackCalls={clock:[],sub:[],osc_bass:[],sauce:[],modulation:[],notes:[],voicing:[],filter_routing:[],delay:[],reverb:[],sound:[],harmonics_suite:[]},rackApi={};
+  for(const [kind,size]of[['clock',12],['sub',32],['osc_bass',80],['sauce',328],['modulation',2232],['notes',1224],['voicing',32],['filter_routing',8],['delay',40],['reverb',64],['sound',16],['harmonics_suite',204]]){let bytes=new Uint8Array(size);new DataView(bytes.buffer).setUint32(0,kind==='modulation'?3:kind==='voicing'?2:1,true);const suffix=kind==='modulation'?'_v3':(kind==='voicing'||kind==='osc_bass')?'_v2':'';rackApi['bs_get_'+kind+suffix]=(_s,p)=>{new Uint8Array(memory.buffer,p,size).set(bytes);return 1;};rackApi['bs_set_'+kind+suffix]=(_s,p)=>{bytes=Uint8Array.from(new Uint8Array(memory.buffer,p,size));rackCalls[kind].push(Array.from(bytes));return 1;};}
+  const api={memory,...rackApi,bs_get_reverb_scope:(s,p,capacity)=>{assert.equal(s,1);assert.equal(capacity,128);new Float32Array(memory.buffer,p,128).set(scope);return scopeCount;},bs_output_latency:s=>{assert.equal(s,1);return 48;},bs_get_output_meters:(_s,p)=>{new Float32Array(memory.buffer,p,3).set([1.25,.95,2.4]);return 1;},bs_get_harmonics_suite_meters:(_s,p)=>{new Float32Array(memory.buffer,p,11).set([.2,.4,3,5,-30,-20,-10,1,-2,3,-4]);return 1;},bs_set_stereo_width:(_s,value)=>{width=value;return 1;},bs_get_stereo_width:()=>width,
     bs_get_performance:(_s,p)=>{const v=new DataView(memory.buffer);performanceFields.forEach((key,i)=>i<7?v.setUint32(p+i*4,performance[key],true):v.setFloat32(p+i*4,performance[key],true));return 1;},
     bs_set_performance:(_s,p)=>{const v=new DataView(memory.buffer),next={};performanceFields.forEach((key,i)=>next[key]=i<7?v.getUint32(p+i*4,true):v.getFloat32(p+i*4,true));performanceCalls.push({config:next,bytes:Array.from(new Uint8Array(memory.buffer,p,48))});performance=next;return 1;},
     bs_performance_pending:()=>performance.curl!==0?1:0,
@@ -28,7 +29,7 @@ async function fixture(){
   vm.runInContext(source,context,{filename:'processor.js'});
   const processor=new registered({processorOptions:{wasm:new Uint8Array()}});
   await new Promise(resolve=>setImmediate(resolve));assert.equal(processor.ready,true);
-  return {get width(){return width;},messages,renderedEvents,patchCalls,performanceCalls,rackCalls,message:m=>processor.message(m),get queued(){return processor.count;},get renderCalls(){return renderCalls;},block(left=[],right=[],channels=2){
+  return {setScope:(values,count=128)=>{scope=values;scopeCount=count;},get width(){return width;},messages,renderedEvents,patchCalls,performanceCalls,rackCalls,message:m=>processor.message(m),get queued(){return processor.count;},get renderCalls(){return renderCalls;},block(left=[],right=[],channels=2){
     samples=[left,right];const outputs=Array.from({length:channels},()=>new Float32Array(4));
     assert.equal(processor.process([], [outputs]),true);context.currentFrame+=4;return outputs;
   },statuses(){return messages.filter(m=>m.kind==='status');}};
@@ -176,3 +177,17 @@ test('removed configuration formats reject without changing current native state
 
 test('global Suite encodes204bytes with bands and rejects invalid configs atomically without dropping queued notes',async()=>{const f=await fixture(),c=toCoreSuite({...normalizeSuite(),enabled:true,style:'rectify',colour2Enabled:true,colour2Style:'tape',dynamics:-.6,compEnabled:true,crushEnabled:true,ottEnabled:true,driveDb:18,compMakeupDb:-12,crushRecovery:2});f.message({kind:'event',type:0,key:60,value:.8});f.message({kind:'suite',config:c});const v=new DataView(Uint8Array.from(f.rackCalls.harmonics_suite[0]).buffer);assert.equal(v.byteLength,204);SUITE_UINTS.forEach(([,key,o])=>assert.equal(v.getUint32(o,true),c[key]));SUITE_FLOATS.forEach(([,key,,,,o])=>assert.equal(v.getFloat32(o,true),Math.fround(c[key])));c.bands.forEach((b,i)=>['threshold_db','gain_db','up','down'].forEach((k,j)=>assert.equal(v.getFloat32(136+i*16+j*4,true),Math.fround(b[k]))));assert.equal(f.messages.at(-1).config.dynamics,Math.fround(-.6));for(const change of[{reserved:1},{version:1},{enabled:true},{colour_style:5},{colour2_style:5},{dynamics:-1.1},{drive_db:37},{ott_up:NaN},{comp_ratio:.5},{comp_makeup_db:-25},{crush_recovery:5},{bands:[]},{ott_low_hz:1000,ott_high_hz:1000},{comp_auto_makeup:2}])f.message({kind:'suite',config:{...c,...change}});assert.equal(f.rackCalls.harmonics_suite.length,1);assert.equal(f.queued,1);});
 test('actual Suite meter fields retain units and retired audio block types reject',async()=>{const f=await fixture();for(const type of[0,2])f.message({kind:'sauce',config:{version:1,blocks:[{id:1,type,primary:0,enabled:1,amount:1}]}});assert.equal(f.rackCalls.sauce.length,0);for(let i=0;i<24;i++)f.block();const m=f.statuses().at(-1).suiteMeters;assert.equal(m.dynamicsGainDb,-4);assert.equal(m.compReductionDb,3);assert.equal(m.crushReductionDb,5);assert.deepEqual(Array.from(m.ottGainDb),[1,-2,3]);assert.deepEqual(Array.from(m.ottInputDb),[-30,-20,-10]);});
+
+test('reverb bridge writes64 bytes and reads native state; invalid controls preserve queue/config',async()=>{
+ const f=await fixture();f.message({kind:'parameter-batch',values:[{id:11,value:2000}]});
+ const c=toCoreReverb({...normalizeReverb(),enabled:true,type:'shimmer',decay:12,shimmerSemitones:-7,wetWidth:1.7});f.message({kind:'reverb',config:c});
+ assert.equal(f.rackCalls.reverb.length,1);assert.equal(f.queued,1);const bytes=Uint8Array.from(f.rackCalls.reverb[0]),v=new DataView(bytes.buffer);assert.equal(bytes.length,64);assert.equal(v.getUint32(0,true),1);assert.equal(v.getUint32(4,true),1);assert.equal(v.getUint32(8,true),2);
+ REVERB_FIELDS.forEach(([,key],i)=>assert.equal(v.getFloat32(12+i*4,true),Math.fround(c[key]),key));
+ const read=f.messages.findLast(m=>m.kind==='reverb').config;assert.equal(read.shimmer_semitones,-7);assert.equal(read.wet_width,Math.fround(1.7));
+ for(const bad of[{...c,enabled:true},{...c,mode:3},{...c,version:2},...REVERB_FIELDS.map(([,key])=>({...c,[key]:NaN})),{...c,shimmer_semitones:-13},{...c,wet_width:3}])f.message({kind:'reverb',config:bad});
+ assert.equal(f.rackCalls.reverb.length,1);assert.equal(f.queued,1);
+});
+
+test('output protection reports native pre/post peaks and reduction with actual instance latency',async()=>{const f=await fixture();for(let i=0;i<24;++i)f.block();const s=f.statuses()[0];assert.equal(s.outputLatency,48);assert.equal(s.outputMeters.inputPeak,1.25);assert.equal(s.outputMeters.outputPeak,Math.fround(.95));assert.equal(s.outputMeters.gainReductionDb,Math.fround(2.4));});
+
+test('reverb scope forwards exactly128 native wet samples and rejects invalid or short telemetry',async()=>{const f=await fixture();for(let i=0;i<24;++i)f.block();assert.deepEqual(Array.from(f.statuses()[0].reverbScope),Array.from({length:128},(_,i)=>(i-64)/128));f.setScope(Array(128).fill(0));for(let i=0;i<24;++i)f.block();assert.deepEqual(Array.from(f.statuses()[1].reverbScope),Array(128).fill(0));f.setScope(Array(128).fill(NaN));for(let i=0;i<24;++i)f.block();assert.equal(f.statuses()[2].reverbScope,null);f.setScope(Array(128).fill(.1),0);for(let i=0;i<24;++i)f.block();assert.equal(f.statuses()[3].reverbScope,null);});

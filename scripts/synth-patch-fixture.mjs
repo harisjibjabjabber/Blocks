@@ -1,3 +1,4 @@
+import {normalizeReverb} from '../packages/synth-web/reverb-state.js';
 import {normalizeSuite} from '../packages/synth-web/suite-state.js';
 // Explicit complete CURRENT-format fixture construction for tests/examples.
 // Runtime file import never fills missing sections with these defaults.
@@ -14,5 +15,5 @@ import {normalizeFilterRouting} from '../packages/synth-web/filter-routing-state
 import {canonicalLevels} from '../packages/synth-web/parameter-state.js';
 export function currentPatch(values,overrides={}){
  const clock=normalizeClock(overrides.clock),modulation=normalizeModulation(overrides.modulation);
- return{format:'blocks-synth-patch',version:7,values:canonicalLevels(values),stereoWidth:1,...overrides,performance:normalizePerformance({...normalizePerformance(),...overrides.performance,mode:'off',bpm:clock.bpm}),rack:syncRackOrder(normalizeRack(overrides.rack),modulation),modulation,clock,suite:normalizeSuite(overrides.suite),sub:normalizeSub(overrides.sub),oscBass:normalizeOscBass(overrides.oscBass),voicing:normalizeVoicing(overrides.voicing),sound:normalizeSound(overrides.sound),delay:normalizeDelay(overrides.delay),filterRouting:normalizeFilterRouting(overrides.filterRouting)};
+ return{format:'blocks-synth-patch',version:7,values:canonicalLevels(values),stereoWidth:1,...overrides,performance:normalizePerformance({...normalizePerformance(),...overrides.performance,mode:'off',bpm:clock.bpm}),rack:syncRackOrder(normalizeRack(overrides.rack),modulation),modulation,clock,suite:normalizeSuite(overrides.suite),sub:normalizeSub(overrides.sub),oscBass:normalizeOscBass(overrides.oscBass),voicing:normalizeVoicing(overrides.voicing),sound:normalizeSound(overrides.sound),delay:normalizeDelay(overrides.delay),reverb:normalizeReverb(overrides.reverb),filterRouting:normalizeFilterRouting(overrides.filterRouting)};
 }

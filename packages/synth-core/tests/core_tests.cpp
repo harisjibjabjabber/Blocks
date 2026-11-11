@@ -72,8 +72,8 @@ int main() {
  {
   Synth s; bs_set_parameter(s.p,BS_RELEASE,.001f); bs_reset(s.p);
   auto a=render(s.p,256,256,{note(17,60),{100,BS_NOTE_OFF,0,60,0,0}});
-  for(unsigned i=0;i<=17+bs_harmonics_suite_latency();++i) CHECK(a.l[i]==0&&a.r[i]==0);
-  CHECK(energy(a)>0); CHECK(bs_active_voices(s.p)==0); for(unsigned i=150+bs_harmonics_suite_latency();i<256;++i) CHECK(a.l[i]==0&&a.r[i]==0);
+  for(unsigned i=0;i<=17+bs_output_latency(s.p);++i) CHECK(a.l[i]==0&&a.r[i]==0);
+  CHECK(energy(a)>0); CHECK(bs_active_voices(s.p)==0); for(unsigned i=150+bs_output_latency(s.p);i<256;++i) CHECK(a.l[i]==0&&a.r[i]==0);
   bs_note_on(s.p,0,60,1); bs_note_on(s.p,0,60,1); bs_note_on(s.p,1,60,1); render(s.p,80,80); bs_sustain(s.p,0,1); bs_note_off(s.p,0,60); render(s.p,100,32); CHECK(bs_active_voices(s.p)==3);
   bs_sustain(s.p,0,0); render(s.p,100,32); CHECK(bs_active_voices(s.p)==2); bs_note_off(s.p,0,60); render(s.p,100,32); CHECK(bs_active_voices(s.p)==1); bs_note_off(s.p,1,60); render(s.p,100,32); CHECK(bs_active_voices(s.p)==0);
   bs_note_on(s.p,0,70,1); auto panic=render(s.p,256,31,{{40,BS_PANIC,0,0,0,0}}); for(unsigned i=40;i<256;++i) CHECK(panic.l[i]==0&&panic.r[i]==0);
@@ -171,7 +171,7 @@ int main() {
    std::printf("METRIC held_wave_retarget Fullness=%.1f max_sample_delta=%.7f transition_delta=%.7f\n",amount,delta,transitionDelta);// Test only the change caused by an edit against equal phase/history.
    // Natural waveform slew grows when the retired always-on tanh is removed.
    double onsetDifference=0;
-   for(unsigned wave=0;wave<5;++wave){Synth edited,control;for(auto*x:{edited.p,control.p}){bs_set_parameter(x,BS_FULLNESS,amount);bs_set_parameter(x,BS_OSC2_DETUNE,0);bs_reset(x);bs_note_on(x,0,60,1);render(x,3000,127);}bs_set_parameter(edited.p,BS_OSC1_WAVE,float(wave));const auto changed=render(edited.p,64,64),unchanged=render(control.p,64,64);for(unsigned i=0;i<bs_harmonics_suite_latency();++i)CHECK(changed.l[i]==unchanged.l[i]);for(unsigned i=bs_harmonics_suite_latency();i<bs_harmonics_suite_latency()+8;++i)onsetDifference=std::max(onsetDifference,std::abs(double(changed.l[i])-unchanged.l[i]));}
+   for(unsigned wave=0;wave<5;++wave){Synth edited,control;for(auto*x:{edited.p,control.p}){bs_set_parameter(x,BS_FULLNESS,amount);bs_set_parameter(x,BS_OSC2_DETUNE,0);bs_reset(x);bs_note_on(x,0,60,1);render(x,3000,127);}bs_set_parameter(edited.p,BS_OSC1_WAVE,float(wave));const auto changed=render(edited.p,128,128),unchanged=render(control.p,128,128);for(unsigned i=0;i<bs_output_latency(edited.p);++i)CHECK(changed.l[i]==unchanged.l[i]);for(unsigned i=bs_harmonics_suite_latency();i<bs_output_latency(edited.p)+8;++i)onsetDifference=std::max(onsetDifference,std::abs(double(changed.l[i])-unchanged.l[i]));}
    std::printf("METRIC held_wave_edit_first8samples_difference=%.9g\n",onsetDifference);CHECK(onsetDifference<.002);
   }
   constexpr unsigned n=4096,f=503;std::vector<std::complex<double>> tri(n),naive(n),sinusoid(n);

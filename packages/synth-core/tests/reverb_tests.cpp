@@ -1,0 +1,54 @@
+#include "../src/stereo_reverb.h"
+#include <array>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <limits>
+#include <new>
+#include <vector>
+static bool watching=false;static unsigned allocations=0;
+void*operator new(std::size_t n){if(watching)++allocations;if(auto*p=std::malloc(n?n:1))return p;std::abort();}
+void*operator new[](std::size_t n){return ::operator new(n);}
+void operator delete(void*p)noexcept{std::free(p);}void operator delete[](void*p)noexcept{std::free(p);}
+void operator delete(void*p,std::size_t)noexcept{std::free(p);}void operator delete[](void*p,std::size_t)noexcept{std::free(p);}
+#define CHECK(x) do{if(!(x)){std::fprintf(stderr,"FAIL %d %s\n",__LINE__,#x);std::exit(1);}}while(false)
+using blocks_detail::StereoReverb;
+using Frame=std::array<double,2>;
+static Frame tick(StereoReverb&r,double l=0,double rr=0){watching=true;r.process(l,rr);watching=false;CHECK(std::isfinite(l)&&std::isfinite(rr));return{l,rr};}
+static bs_reverb_config active(unsigned mode=0){auto c=StereoReverb::defaults();c.enabled=1;c.mode=mode;c.wet=1;c.predelay_seconds=0;c.mod_depth=0;return c;}
+static double energy(Frame x){return x[0]*x[0]+x[1]*x[1];}
+static std::vector<Frame> impulse(bs_reverb_config c,double rate,unsigned count){StereoReverb r;CHECK(r.configure(c)&&r.prepare(rate));std::vector<Frame>out(count);for(unsigned i=0;i<count;++i)out[i]=tick(r,i==0?1:0);return out;}
+static double powerAt(const std::vector<Frame>&x,double hz,double rate,unsigned from){double re=0,im=0;for(unsigned i=from;i<x.size();++i){const double a=6.283185307179586*hz*i/rate;re+=x[i][0]*std::cos(a);im+=x[i][0]*std::sin(a);}return(re*re+im*im)/std::pow(double(x.size()-from),2);}
+static double bandPower(const std::vector<Frame>&x,double low,double high,double rate,unsigned from){const unsigned count=unsigned(x.size())-from;double power=0;for(unsigned bin=unsigned(std::ceil(low*count/rate));bin<=unsigned(std::floor(high*count/rate));++bin){const double coeff=2*std::cos(6.283185307179586*bin/count);for(unsigned ch=0;ch<2;++ch){double s1=0,s2=0;for(unsigned i=from;i<x.size();++i){const double s=x[i][ch]+coeff*s1-s2;s2=s1;s1=s;}power+=(s1*s1+s2*s2-coeff*s1*s2)/(double(count)*count);}}return power;}
+int main(){
+ {auto c=StereoReverb::defaults();CHECK(sizeof c==64&&c.enabled==0&&c.wet==.25f&&c.shimmer_semitones==12&&c.wet_width==1);StereoReverb r;CHECK(r.prepare(48000));
+  for(unsigned i=0;i<16;++i){auto bad=c;if(i==0)bad.version=2;else if(i==1)bad.enabled=2;else if(i==2)bad.mode=3;else{float nan=std::numeric_limits<float>::quiet_NaN();std::memcpy(reinterpret_cast<char*>(&bad)+12+4*(i-3),&nan,4);}watching=true;CHECK(!r.configure(bad));watching=false;CHECK(std::memcmp(&c,&r.config(),sizeof c)==0);}
+  CHECK(!r.prepare(7999)&&!r.prepare(384001));for(unsigned i=0;i<2000;++i){double l=.2*std::sin(i*.1),rr=.3*std::cos(i*.03);auto o=tick(r,l,rr);CHECK(o[0]==l&&o[1]==rr);}c=active();c.wet=0;c.output_db=12;CHECK(r.configure(c));r.clear();for(unsigned i=0;i<2000;++i){auto o=tick(r,.3,-.4);CHECK(o[0]==.3&&o[1]==-.4);}
+ }std::puts("PASS64-byte atomic config, defaults, invalid prepare and exact Off/Mix0");
+ {auto c=active();c.predelay_seconds=.125f;auto x=impulse(c,8000,16000);for(unsigned i=0;i<1000;++i)CHECK(x[i][0]==0&&x[i][1]==0);CHECK(energy(x[1000])>1e-9);double l=0,r=0,cross=0;for(auto v:x){l+=v[0]*v[0];r+=v[1]*v[1];cross+=v[0]*v[1];}CHECK(l>1e-3&&r>1e-3&&std::abs(cross/std::sqrt(l*r))<.95);
+  StereoReverb unit;CHECK(unit.configure(c)&&unit.prepare(8000));tick(unit,1,1);for(unsigned i=0;i<4000;++i)tick(unit);watching=true;unit.clear();watching=false;for(unsigned i=0;i<24000;++i)CHECK(energy(tick(unit))==0);
+ }std::puts("PASS exact predelay, noncollapsed stereo tail and allocation-free panic silence");
+ {auto c=active();c.decay_seconds=2;c.lowcut_hz=20;c.damping_hz=20000;const auto x=impulse(c,8000,64000);std::vector<double>edc(x.size()+1);for(unsigned i=unsigned(x.size());i>0;--i)edc[i-1]=edc[i]+energy(x[i-1]);double sx=0,sy=0,sxx=0,sxy=0,n=0;
+  for(unsigned i=0;i<x.size();i+=16){const double db=10*std::log10(std::max(1e-30,edc[i]/edc[0]));if(db<-5&&db>-35){double t=i/8000.;sx+=t;sy+=db;sxx+=t*t;sxy+=t*db;++n;}}
+  CHECK(n>20);double slope=(n*sxy-sx*sy)/(n*sxx-sx*sx),rt=-60/slope;std::printf("Measured nominal2s broadband EDC RT60 %.4fs\n",rt);CHECK(rt>.65&&rt<2.7);
+  auto hall=c;hall.mode=1;auto y=impulse(hall,8000,16000);double ep=0,eh=0,difference=0;for(unsigned i=0;i<800;++i){ep+=energy(x[i]);eh+=energy(y[i]);}for(unsigned i=0;i<16000;++i)difference+=std::pow(x[i][0]-y[i][0],2);CHECK(eh<ep&&difference>.01);
+ }std::puts("PASS measured energy decay and distinct Plate/Hall onset/tank response");
+ {for(double rate:{8000.,48000.,192000.,384000.}){auto c=active(2);c.decay_seconds=30;c.size=2;c.diffusion=1;c.damping_hz=20000;c.mod_depth=1;c.mod_rate_hz=2;c.shimmer=1;c.shimmer_semitones=-12;c.wet_width=2;StereoReverb r;CHECK(r.configure(c)&&r.prepare(rate));double peak=0;
+   const unsigned n=unsigned(rate*.3);for(unsigned i=0;i<n;++i){auto o=tick(r,i<rate*.1?.2*std::sin(i*.13):0,i<rate*.1?.2*std::cos(i*.11):0);peak=std::max(peak,std::max(std::abs(o[0]),std::abs(o[1])));}CHECK(peak<4);}
+  auto c=active(2);c.decay_seconds=30;c.shimmer=1;c.mod_depth=1;c.mod_rate_hz=2;StereoReverb r;CHECK(r.configure(c)&&r.prepare(8000));double first=0,last=0,peak=0;for(unsigned i=0;i<128000;++i){auto o=tick(r,i<8000?.2*std::sin(i*.13):0,i<8000?.2*std::cos(i*.17):0);peak=std::max(peak,std::sqrt(energy(o)));if(i>=8000&&i<24000)first+=energy(o);if(i>=112000)last+=energy(o);}std::printf("Extreme shimmer tail energy %.8g -> %.8g peak%.5g\n",first,last,peak);CHECK(last<first&&peak<4);
+ }std::puts("PASS extreme modulated/shimmer feedback finite across8–384k and decaying after input");
+ {constexpr unsigned n=64000;std::array<double,3> shifted{};unsigned at=0;for(double semitones:{0.,12.,-12.}){auto c=active(2);c.shimmer=1;c.shimmer_semitones=float(semitones);c.decay_seconds=8;c.damping_hz=20000;c.lowcut_hz=20;StereoReverb r;CHECK(r.configure(c)&&r.prepare(8000));std::vector<Frame>x(n);for(unsigned i=0;i<n;++i)x[i]=tick(r,.1*std::sin(6.283185307179586*250*i/8000));shifted[at++]=powerAt(x,semitones<0?125:500,8000,32000);}
+  std::printf("Shimmer 500Hz baseline %.8g octaveup %.8g; octavedown125Hz %.8g\n",shifted[0],shifted[1],shifted[2]);CHECK(shifted[1]>shifted[0]*100&&shifted[1]>1e-9&&shifted[2]>1e-9);
+ }std::puts("PASS actual octave-up/down audio spectral components, not a visual/generator substitute");
+ {auto c=active(2);c.shimmer=1;c.shimmer_semitones=12;c.decay_seconds=8;c.damping_hz=20000;c.lowcut_hz=20;StereoReverb r;CHECK(r.configure(c)&&r.prepare(8000));std::vector<Frame>steady(64000),tail(16000);for(unsigned i=0;i<steady.size();++i)steady[i]=tick(r,.1*std::sin(6.283185307179586*250*i/8000));for(auto&v:tail)v=tick(r);const double pointFundamental=powerAt(steady,250,8000,32000),pointOctave=powerAt(steady,500,8000,32000);const double steadyFundamental=bandPower(steady,215,285,8000,32000),steadyOctave=bandPower(steady,465,535,8000,32000),tailFundamental=bandPower(tail,215,285,8000,0),tailOctave=bandPower(tail,465,535,8000,0);std::printf("Shimmer balance single250 %.9g /500 %.9g ratio%.3fdB; stereo steady bands%.9g /%.9g ratio%.3fdB; tail%.9g /%.9g ratio%.3fdB\n",pointFundamental,pointOctave,10*std::log10(pointOctave/pointFundamental),steadyFundamental,steadyOctave,10*std::log10(steadyOctave/steadyFundamental),tailFundamental,tailOctave,10*std::log10(tailOctave/tailFundamental));CHECK(steadyOctave>steadyFundamental*.03&&tailOctave>tailFundamental*.1);}
+ {for(double hz:{65.406391325,130.81278265,261.6255653}){auto c=active(2);c.shimmer=1;c.shimmer_semitones=12;c.decay_seconds=8;c.lowcut_hz=20;StereoReverb r;CHECK(r.configure(c)&&r.prepare(48000));std::vector<Frame>steady(144000),tail(96000);for(unsigned i=0;i<steady.size();++i)steady[i]=tick(r,.1*std::sin(6.283185307179586*hz*i/48000));for(auto&v:tail)v=tick(r);const double width=std::min(35.,hz*.2);const double sf=bandPower(steady,hz-width,hz+width,48000,96000),so=bandPower(steady,2*hz-width,2*hz+width,48000,96000),tf=bandPower(tail,hz-width,hz+width,48000,0),to=bandPower(tail,2*hz-width,2*hz+width,48000,0);std::printf("48k shimmer input%.3fHz: octave/fund steady%.3fdB tail%.3fdB\n",hz,10*std::log10(so/sf),10*std::log10(to/tf));CHECK(so>sf*.01&&to>tf*.01);}}
+ std::puts("PASS maximum Shimmer octave energy remains substantial in steady and released C2/C3/C4 tails");
+ {auto c=active(2);c.shimmer=1;c.shimmer_semitones=12;c.decay_seconds=8;c.damping_hz=20000;c.lowcut_hz=20;StereoReverb r;CHECK(r.configure(c)&&r.prepare(16000));std::vector<Frame>x(64000);for(unsigned i=0;i<x.size();++i)x[i]=tick(r,.1*std::sin(6.283185307179586*5500*i/16000));const double fundamental=powerAt(x,5500,16000,32000);double folded=0;for(unsigned hz=4970;hz<=5030;hz+=2)folded+=powerAt(x,hz,16000,32000);const double relative=10*std::log10(std::max(1e-30,folded/fundamental));std::printf("Octave-up alias band5k from5.5k at16k: %.3fdB vs retainedfundamental\n",relative);CHECK(fundamental>1e-10&&relative<-40);
+ }std::puts("PASS octave-up antialias guard measured on above-Fs/4 input");
+ {auto c=active();StereoReverb a,b;CHECK(a.configure(c)&&b.configure(c)&&a.prepare(8000)&&b.prepare(8000));std::vector<Frame>x(16000),y(16000);auto run=[&](StereoReverb&r,std::vector<Frame>&out,unsigned block){for(unsigned start=0;start<out.size();start+=block)for(unsigned i=start;i<std::min(unsigned(out.size()),start+block);++i){if(i==1000||i==2000||i==2010||i==4000||i==8000){auto next=c;next.mode=i%3;next.size=i%2?2:.5;next.predelay_seconds=i==4000?0:.25f;next.decay_seconds=30;next.wet_width=2;next.shimmer=1;next.shimmer_semitones=i==8000?-12:12;watching=true;CHECK(r.configure(next));watching=false;}if(i==12000){watching=true;r.clear();watching=false;}out[i]=tick(r,i<12000?.1*std::sin(i*.02):0,i<12000?.1*std::cos(i*.03):0);}};run(a,x,1);run(b,y,127);CHECK(x==y);double jump=0;for(unsigned i=1;i<12000;++i)jump=std::max(jump,std::abs(x[i][0]-x[i-1][0]));std::printf("Live-edit max step %.7g\n",jump);CHECK(jump<.25);for(unsigned i=12000;i<x.size();++i)CHECK(energy(x[i])==0);
+ }std::puts("PASS live retargeting, block independence and zero allocations in render/configure/panic");
+ {auto c=active();c.wet_width=0;StereoReverb r;CHECK(r.configure(c)&&r.prepare(8000));for(unsigned i=0;i<8000;++i){auto o=tick(r,i==0?1:0,i==100?.2:0);CHECK(o[0]==o[1]);}c.enabled=0;CHECK(r.configure(c));for(unsigned i=0;i<6000;++i)tick(r);for(unsigned i=0;i<100;++i){auto o=tick(r,.125,-.25);CHECK(o[0]==.125&&o[1]==-.25);}c.enabled=1;CHECK(r.configure(c));bool tail=false;for(unsigned i=0;i<4000;++i)tail|=energy(tick(r))>1e-16;CHECK(tail);watching=true;r.clear();watching=false;for(unsigned i=0;i<1000;++i)CHECK(energy(tick(r))==0);
+ }std::puts("PASS wet-only mono width, smooth exact Off and recoverable advancing tail");
+ CHECK(allocations==0);std::puts("PASS Reverb10 helper groups");
+}
