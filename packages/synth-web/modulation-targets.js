@@ -79,4 +79,3 @@ export function buildModulationTargets(parameters=[],rack={audio:[],effects:[]},
 }
 
 export function modulationTargetForControl(targets,controlKey){return targets.find(t=>t.controlKeys?.includes(controlKey))??null;}
-

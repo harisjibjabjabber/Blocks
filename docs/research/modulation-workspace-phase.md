@@ -1,6 +1,6 @@
 # Modulation workspace phase
 
-Status: implemented and locally verified, 11 November 2026. Preview revision `444bff222574e0127b03`. Independent scoped UX and technical gates pass; listening approval and remote CI remain open.
+Status: implemented and locally verified, 11 November 2026. Preview revision `8b95e7a353f48ba264bb`. Independent scoped UX and technical gates pass; listening approval and remote CI remain open.
 
 The user requests a coherent instrument workspace, with four drawable LFOs and three envelopes available below every sound page. Env 1 remains the existing per-voice amplitude envelope; Env 2 and Env 3 are assignable. Each main oscillator and the mono Sub needs an octave selector from -3 through +3 and independent fine tuning. The Sub should visually belong to the oscillator family. Tone gains two independent filters, A and B, with visible routing and a neutral second-filter default.
 
