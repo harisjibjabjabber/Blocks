@@ -1,6 +1,6 @@
 # Phase 13: space and output headroom
 
-Implemented 11 November 2026 after the [research/review spike](phase13-quality-and-reverb-spike.md). Portable C++ processors serve the standalone browser host and future native hosts. These are original algorithms and voicings, not replicas of private Valhalla/Soundtoys code or physical plate circuits.
+Initial implementation, now followed by [Space/Creative/punch refinement](space-creative-and-punch-followup.md). Implemented 11 November 2026 after the [research/review spike](phase13-quality-and-reverb-spike.md). Portable C++ processors serve the standalone browser host and future native hosts. These are original algorithms and voicings, not replicas of private Valhalla/Soundtoys code or physical plate circuits.
 
 ## What changed and why
 

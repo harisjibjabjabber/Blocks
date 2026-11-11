@@ -44,6 +44,8 @@ The current C API, clock/Sub routing and preview contract are documented in [the
 
 This is an instrument engine, not a packaged VST or a claimed hardware/commercial-plugin emulation. Wider listening, physical-device performance, external audio hosting and plugin adapters remain separate work. Older phase reports are historical and do not impose patch-compatibility constraints.
 
-Phase13 DSP, sources, controls, evidence and limitations: [space/output results](../../docs/research/phase13-reverb-results.md). Reverb64 exposes wet-only width/trim, predelay, decay, size, diffusion, low cut, damping, movement and Shimmer interval/amount. Off fades send/wet; existing tail memory advances and can return if re-enabled. Panic/reset discard histories. Clean Sub bypasses the reverb send and joins before common master/protection.
+Phase13 DSP, sources, controls, evidence and limitations: [space/output results](../../docs/research/phase13-reverb-results.md). Reverb v2/68 exposes wet-only width/trim and self-ducking, predelay, decay, size, diffusion, low cut, damping, movement and Shimmer interval/amount. Off fades send/wet; existing tail memory advances and can return if re-enabled. Panic/reset discard histories. Clean Sub bypasses the reverb send and joins before common master/protection.
 
 `bs_get_reverb_scope` copies128 recent decimated wet-left samples for display without changing audio state. The browser displays these under the Reverb dials; this is not a spectrum or stereo meter.
+
+Creative FX: `blocks_creative_fx.h` exposes a776-byte config for16 independent Moving Space/Impact stereo inserts. The bus precedes Harmonics and excludes Clean Sub; setters are allocation-free and topology edits fade through dry. See [follow-up DSP and evidence](../../docs/research/space-creative-and-punch-followup.md). Tight now releases prior-body attenuation quickly for repeated hits; no note ADSR changes.

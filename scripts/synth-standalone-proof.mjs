@@ -45,9 +45,9 @@ try {
   report.scripts = await b.evaluate(`Array.from(document.scripts,s=>s.src)`);
   await check('standalone modules expose descriptor controls before audio starts', async () => {
     assert.equal(await b.evaluate(`document.getElementById('status').textContent`), 'Sound stopped'); assert.ok(report.scripts.every(s => !s.includes('/assets/index-') && !s.includes('react')));
-    assert.deepEqual(await b.evaluate(`Array.from(document.querySelectorAll('#module-tabs [data-module]'),e=>e.dataset.module)`), ['tone', 'envelope', 'character', 'harmonics', 'drop', 'lfo']);
+    assert.deepEqual(await b.evaluate(`Array.from(document.querySelectorAll('#module-tabs [data-module]'),e=>e.dataset.module)`), ['tone', 'envelope', 'character', 'harmonics', 'space', 'drop', 'lfo']);
     const initial=await values(); assert.equal(initial.length, 44); assert.ok(initial.every(n => Number.isFinite(n) && n >= 0 && n <= 1000)); assert.equal(await b.evaluate(`document.getElementById('error').textContent`), '');
-    for (const name of ['envelope', 'character', 'harmonics', 'drop', 'lfo', 'tone']) { await module(name); assert.deepEqual(await values(), initial); }
+    for (const name of ['envelope', 'character', 'harmonics', 'space', 'drop', 'lfo', 'tone']) { await module(name); assert.deepEqual(await values(), initial); }
     await click('.patch-files > summary');await click('#init');defaults=await values();assert.deepEqual(defaults,initial);await preset('velvet');const factory=await values();await click('#init');assert.notDeepEqual(await values(),factory);await click('#undo');assert.deepEqual(await values(),factory);await click('#init');await preset('velvet');
   });
   await check('rotary edits before Start are restored by one Undo', async () => {

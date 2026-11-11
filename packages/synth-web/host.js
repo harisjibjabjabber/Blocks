@@ -14,7 +14,7 @@ import { validateCurrentPatch } from './patches.js';
 import {emptyPeak,receivePeak,peakDisplay} from './peak-meter.js';
 import {canonicalLevels,parameterBatch} from './parameter-state.js';
 import {DEFAULT_PERFORMANCE,normalizePerformance,toCorePerformance} from './performance-state.js';
-import {DEFAULT_RACK,normalizeRack,hydrateRack,toCoreSauce,toCoreNotes,syncRackOrder} from './sauce-state.js';
+import {DEFAULT_RACK,normalizeRack,hydrateRack,toCoreSauce,toCoreNotes,toCoreCreativeFX,syncRackOrder} from './sauce-state.js';
 import {DEFAULT_MODULATION,normalizeModulation,toCoreModulation} from './modulation-state.js';
 const $=id=>document.getElementById(id);
 let context,node,analyser,parameters=[],values=[],ready=false,access,raf=0,lastDraw=0,instrument,version=1;
@@ -40,7 +40,7 @@ function applyPerformance(next){
   if(ready)node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});
 }
 function getRack(){return values.length?hydrateRack(rackSettings,values):normalizeRack(rackSettings);}
-function sendRack(previous=null){if(!ready)return;const current=getRack(),sauce=toCoreSauce(current),notes=toCoreNotes(current);if(!previous||JSON.stringify(toCoreSauce(previous))!==JSON.stringify(sauce))node.port.postMessage({kind:'sauce',config:sauce});if(!previous||JSON.stringify(toCoreNotes(previous))!==JSON.stringify(notes))node.port.postMessage({kind:'notes',config:notes});}
+function sendRack(previous=null){if(!ready)return;const current=getRack(),sauce=toCoreSauce(current),notes=toCoreNotes(current),effects=toCoreCreativeFX(current);if(!previous||JSON.stringify(toCoreSauce(previous))!==JSON.stringify(sauce))node.port.postMessage({kind:'sauce',config:sauce});if(!previous||JSON.stringify(toCoreNotes(previous))!==JSON.stringify(notes))node.port.postMessage({kind:'notes',config:notes});if(!previous||JSON.stringify(toCoreCreativeFX(previous))!==JSON.stringify(effects))node.port.postMessage({kind:'creative-fx',config:effects});}
 function applyRack(next){
   const normalized=normalizeRack(next),previous=rackSettings,before=getRack();
   const shape=r=>JSON.stringify(r.notes.map(b=>[b.id,b.type,b.enabled]));if(shape(previous)!==shape(normalized))clearInputUI();

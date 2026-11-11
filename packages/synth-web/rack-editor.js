@@ -1,3 +1,4 @@
+import {DEFAULT_CREATIVE_FX_SETTINGS} from './sauce-state.js';
 import {configDial} from './config-dial.js';
 import {createPerformanceUI} from './performance-ui.js';
 import {createLfoUI} from './lfo-ui.js';
@@ -8,12 +9,27 @@ export function createRackEditor({item,body,extra,getNode,changeNode,parameters,
   const dials=[],options={begin,getGesture,bindCompletion};
   function dial(field,label,min,max,format,extraOptions={},target=body){
     const defaults={fullness:{amount:0},drop:{amount:0,time:.12,bend:0},lfo:{intensity:1}};
-    const control=configDial({...options,key:item.key+':'+field,label,min,max,defaultValue:defaults[item.type]?.[field]??0,getValue:()=>getNode()?.[field]??min,change:(value,commit)=>changeNode({[field]:value},commit),format,...extraOptions});target.append(control.element);dials.push(control);return control;
+    const control=configDial({...options,key:item.key+':'+field,label,min,max,defaultValue:DEFAULT_CREATIVE_FX_SETTINGS[item.type]?.[field]??defaults[item.type]?.[field]??0,getValue:()=>getNode()?.[field]??min,change:(value,commit)=>changeNode({[field]:value},commit),format,...extraOptions});target.append(control.element);dials.push(control);return control;
   }
   let performanceUI,lfoUI,contour,curve;
   const time=v=>v<1?Math.round(v*1000)+' ms':v.toFixed(2)+' s';
   if(item.type==='fullness')dial('amount','Fullness',0,1,v=>Math.round(v*100)+'%');
-  else if(item.type==='drop'){
+  else if(item.type==='moving-space'||item.type==='impact'){
+    const percent=v=>Math.round(v*100)+'%',db=v=>(v>0?'+':'')+Number(v.toFixed(1))+' dB';
+    const described=(field,label,text,target=body)=>{const d=dial(field,label,0,1,percent,{},target);d.button.title=text;d.button.setAttribute('aria-description',text);return d;};
+    described('mix','Mix','Blend the processed sound with the dry signal.');
+    if(item.type==='moving-space'){
+      described('motion','Motion','Sound-reactive pitch bending through the moving space.');
+      described('space','Space','Size and decay of the short reverberant space.');
+      described('shimmer','Shimmer','Amount of the pitch-shifted wash.',extra);
+      const pitch=dial('pitch','Pitch',-12,12,v=>(v>0?'+':'')+Number(v.toFixed(1))+' st',{},extra);pitch.button.title='Pitch interval of the shimmer wash.';
+    }else{
+      described('tight','Tight','Contain the body with hard compression.');
+      described('click','Click','Accent the upper transient of the incoming sound.');
+      const bodyDial=described('body','Body','Balance the low foundation; 50% is neutral.');bodyDial.button.title='Low foundation balance; 50% is neutral.';
+    }
+    dial('outputDb','Trim',-24,12,db,{},extra);
+  }else if(item.type==='drop'){
     dial('amount','Amount',0,2400,v=>Math.round(v)+' ct');
     dial('time','Fall',.001,4,time,{toUnit:v=>Math.log(v/.001)/Math.log(4000),fromUnit:n=>.001*4000**n});
     dial('bend','Curve',-2,2,v=>Math.abs(v)<.01?'Linear':(v>0?'+':'')+v.toFixed(2),{},extra);

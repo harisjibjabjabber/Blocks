@@ -14,3 +14,5 @@
 @media(max-width:899px){.harmonics-stages{grid-template-columns:1fr}.harmonics-stage-controls{grid-template-columns:repeat(3,minmax(0,1fr))}.harmonics-detail-controls{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:699px){.harmonics-colours{grid-template-columns:1fr}.harmonics-styles button{flex:1 0 44px;font-size:10px;padding:0 4px}.harmonics-flow{font-size:9px}.harmonics-visual header span{font-size:9px}}
 #harmonics-shortcut[hidden],#harmonics-shortcut-power[hidden]{display:none!important}
 .harmonics-band-tabs button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}.harmonics-band-tabs output{margin-top:0}
+
+[data-suite-stage=comp]>.harmonics-stage-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.harmonics-makeup{grid-column:1/-1;display:flex;align-items:center;justify-content:space-evenly;gap:12px;padding:8px 0 4px;border-top:1px solid var(--line)}.harmonics-makeup [data-suite-auto-makeup]{flex:0 1 128px;min-height:44px;padding:0 12px}.harmonics-makeup .config-control{flex:0 0 92px}

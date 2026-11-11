@@ -3,15 +3,15 @@ import {rackVisualOrder} from './sauce-state.js';
 export function createSauceRack({container,createEditor,onToggle,onAdd,onRemove,onReorder,canDrag=()=>true}) {
   container.className='sauce-workspace';
   const cards=new Map(),blocked=new Set();let current=[],drag=null,previousFocus=null;
-  const names={fullness:'Fullness',arp:'Arp',strum:'Strum',drop:'Pitch Drop',lfo:'LFO'};
+  const names={fullness:'Fullness','moving-space':'Moving Space',impact:'Impact',arp:'Arp',strum:'Strum',drop:'Pitch Drop',lfo:'LFO'};
   const grid=document.createElement('div');grid.className='rack-grid';grid.setAttribute('aria-label','Sauce blocks');
   const add=document.createElement('button');add.type='button';add.id='sauce-add';add.textContent='+ Add';add.setAttribute('aria-haspopup','dialog');
   const picker=document.createElement('dialog');picker.id='sauce-picker';picker.setAttribute('aria-labelledby','sauce-picker-title');
   picker.innerHTML='<div class="rack-picker-heading"><h2 id="sauce-picker-title">Add Sauce</h2><button type="button" data-picker-close aria-label="Close Add Sauce">\u00d7</button></div><div class="rack-picker-options"></div><p class="rack-picker-capacity"></p>';
   const options=picker.querySelector('.rack-picker-options');
-  for(const type of ['fullness','arp','strum','drop','lfo']){
+  for(const type of ['fullness','moving-space','impact','arp','strum','drop','lfo']){
     const b=document.createElement('button');b.type='button';b.dataset.rackAdd=type;
-    const title=document.createElement('strong');title.textContent=names[type];const tag=document.createElement('span');tag.textContent=type==='fullness'?'Audio':type==='lfo'?'Control':'Notes';b.append(title,tag);
+    const title=document.createElement('strong');title.textContent=names[type];const tag=document.createElement('span');tag.textContent=['moving-space','impact'].includes(type)?'Bus':type==='fullness'?'Audio':type==='lfo'?'Control':'Notes';if(['moving-space','impact'].includes(type))tag.title='Stereo bus before Harmonics; Bus blocks run in their displayed order. Clean Sub bypasses this chain.';b.append(title,tag);
     b.addEventListener('click',()=>{closePicker();onAdd(type);});options.append(b);
   }
   function closePicker(){picker.close();add.setAttribute('aria-expanded','false');add.focus();}
@@ -28,7 +28,7 @@ export function createSauceRack({container,createEditor,onToggle,onAdd,onRemove,
     card.addEventListener('pointerdown',e=>{if(e.target.closest('.rack-grip')||!e.target.closest('button,input,select,textarea,a,label,summary,svg,canvas,[role=slider],[role=button],[role=switch],[contenteditable=true],[data-no-rack-drag]'))startDrag(e,item.key);});
     card.addEventListener('pointermove',moveDrag);card.addEventListener('pointerup',dropDrag);card.addEventListener('pointercancel',cancelDrag);card.addEventListener('lostpointercapture',e=>{if(drag?.pointer===e.pointerId)cancelDrag();});
     grip.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowUp','ArrowRight','ArrowDown'].includes(e.key)){e.preventDefault();move(item.key,['ArrowLeft','ArrowUp'].includes(e.key)?-1:1);}});
-    const title=document.createElement('div');title.className='rack-card-title';const name=document.createElement('h3');name.textContent=names[item.type]+(item.type==='lfo'?' '+item.id:'');const tag=document.createElement('span');tag.textContent=item.lane==='audio'?'Audio':item.lane==='notes'?'Notes':'Control';title.append(name,tag);
+    const title=document.createElement('div');title.className='rack-card-title';const name=document.createElement('h3');name.textContent=names[item.type]+(item.type==='lfo'?' '+item.id:'');const tag=document.createElement('span');tag.textContent=item.lane==='effects'?'Bus':item.lane==='audio'?'Audio':item.lane==='notes'?'Notes':'Control';if(item.lane==='effects')tag.title='Stereo bus before Harmonics; Bus blocks run in their displayed order. Clean Sub bypasses this chain.';title.append(name,tag);
     const power=document.createElement('button');power.type='button';power.className='rack-power';power.dataset.rackPower=item.key;power.setAttribute('role','switch');power.setAttribute('aria-label',names[item.type]+' '+item.id+' enabled');power.addEventListener('click',()=>{if(canDrag()&&!drag)onToggle(item.key);});head.append(grip,title,power);
     const body=document.createElement('div');body.className='rack-card-controls';const details=document.createElement('details');details.className='rack-deeper';const summary=document.createElement('summary');summary.textContent='Details';summary.dataset.rackDetails=item.key;details.append(summary);
     const extra=document.createElement('div');extra.className='rack-extra';details.append(extra);
@@ -57,14 +57,14 @@ export function createSauceRack({container,createEditor,onToggle,onAdd,onRemove,
   document.addEventListener('pointerup',e=>{if(blocked.has(e.pointerId)){e.preventDefault();e.stopImmediatePropagation();setTimeout(()=>blocked.delete(e.pointerId),600);}},true);document.addEventListener('click',e=>{if(blocked.has(e.pointerId)){blocked.delete(e.pointerId);e.preventDefault();e.stopImmediatePropagation();}},true);
   window.addEventListener('keydown',e=>{if(e.key==='Escape'&&drag){cancelDrag();e.preventDefault();}});window.addEventListener('blur',cancelDrag);window.addEventListener('resize',cancelDrag);
   function update({rack,modulation}){
-    const available=[...rack.notes.map(b=>({...b,lane:'notes',key:'notes:'+b.id})),...rack.audio.map(b=>({...b,lane:'audio',key:'audio:'+b.id})),...modulation.sources.filter(s=>s.id!==1).map(s=>({...s,lane:'lfo',type:'lfo',key:'lfo:'+s.id}))];
+    const available=[...rack.notes.map(b=>({...b,lane:'notes',key:'notes:'+b.id})),...rack.audio.map(b=>({...b,lane:'audio',key:'audio:'+b.id})),...rack.effects.map(b=>({...b,lane:'effects',key:'effects:'+b.id})),...modulation.sources.filter(s=>s.id!==1).map(s=>({...s,lane:'lfo',type:'lfo',key:'lfo:'+s.id}))];
     const next=rackVisualOrder(rack,modulation).map(key=>available.find(item=>item.key===key)).filter(Boolean);
     if(drag&&JSON.stringify(next.map(i=>i.key))!==JSON.stringify(drag.before))cancelDrag();current=next;
     for(const[key,entry]of cards)if(!current.some(i=>i.key===key)){entry.editor.destroy?.();entry.card.remove();cards.delete(key);}
     for(const item of current){if(!cards.has(item.key))cards.set(item.key,make(item));const entry=cards.get(item.key),index=current.findIndex(i=>i.key===item.key);entry.power.textContent=item.enabled?'On':'Off';entry.power.setAttribute('aria-checked',String(item.enabled));entry.card.dataset.enabled=String(item.enabled);entry.earlier.disabled=index===0;entry.later.disabled=index===current.length-1;entry.grip.disabled=current.length<2;entry.editor.update();}
     if(!drag){const focused=document.activeElement;current.forEach((item,index)=>{const card=cards.get(item.key).card;if(grid.children[index]!==card)grid.insertBefore(card,grid.children[index]||null);});if(focused&&grid.contains(focused)&&document.activeElement!==focused)focused.focus({preventScroll:true});}
-    previewOrder();for(const b of options.children){const type=b.dataset.rackAdd;b.disabled=type==='lfo'?modulation.sources.length>=4:type==='fullness'?rack.audio.length>=16:rack.notes.length>=16;}
-    picker.querySelector('.rack-picker-capacity').textContent=`Audio ${rack.audio.length}/16 \u00b7 Notes ${rack.notes.length}/16 \u00b7 LFO ${modulation.sources.length}/4`;
+    previewOrder();for(const b of options.children){const type=b.dataset.rackAdd;b.disabled=type==='lfo'?modulation.sources.length>=4:type==='fullness'?rack.audio.length>=16:['moving-space','impact'].includes(type)?rack.effects.length>=16:rack.notes.length>=16;}
+    picker.querySelector('.rack-picker-capacity').textContent=`Bus ${rack.effects.length}/16 \u00b7 Audio ${rack.audio.length}/16 \u00b7 Notes ${rack.notes.length}/16 \u00b7 LFO ${modulation.sources.length}/4`;
   }
   return{update,cancel:cancelDrag,closePicker,updatePhases:()=>{for(const entry of cards.values())entry.editor.updatePhase?.();},setPending:mask=>{current.filter(i=>i.lane==='notes').forEach((item,index)=>cards.get(item.key)?.editor.setPending?.(Boolean(mask&(1<<index))));}};
 }

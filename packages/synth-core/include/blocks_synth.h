@@ -8,6 +8,7 @@
 #include "blocks_delay.h"
 #include "blocks_output.h"
 #include "blocks_reverb.h"
+#include "blocks_creative_fx.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

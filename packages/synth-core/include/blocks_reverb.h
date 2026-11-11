@@ -5,10 +5,10 @@
 extern "C" {
 #endif
 typedef struct bs_synth bs_synth;
-#define BS_REVERB_VERSION 1u
+#define BS_REVERB_VERSION 2u
 typedef enum bs_reverb_mode { BS_REVERB_PLATE=0, BS_REVERB_HALL=1, BS_REVERB_SHIMMER=2 } bs_reverb_mode;
 /* Original stereo feedback reverberator, not a physical plate/circuit model.
- * 64 bytes: three uint32 followed by thirteen floats. Stored Mix is useful but
+ * 68 bytes: three uint32 followed by fourteen floats. Stored Mix is useful but
  * master defaults Off. Mix is a linear dry/wet crossfade; trim and width affect
  * wet only. Off ramps send/wet down while the tail advances; re-enabling can
  * recover that tail. Panic/reset discard histories without allocating.
@@ -17,11 +17,17 @@ typedef enum bs_reverb_mode { BS_REVERB_PLATE=0, BS_REVERB_HALL=1, BS_REVERB_SHI
  * change the measured frequency-dependent decay. Shimmer performs real audio
  * pitch shifting; it is not a generated oscillator. Zero semitones is unshifted.
  * Settings changes are smoothed/crossfaded, not guaranteed phase-neutral.
+ * Ducking0..1 attenuates only the wet return from actual dry-input level. It
+ * does not clear the tank or change MIDI envelopes. Stereo-linked peak sensing
+ * has1.5ms attack/50ms release; gain reduction has3ms attack/180ms release
+ * time constants. The broad soft level knee spans-60..-24dBFS, to24dB maximum
+ * reduction at full Amount. No lookahead or pre-arrival tail removal.
  */
 typedef struct bs_reverb_config {
  uint32_t version,enabled,mode;
  float predelay_seconds,decay_seconds,size,diffusion,lowcut_hz,damping_hz;
  float mod_rate_hz,mod_depth,shimmer,wet,output_db,shimmer_semitones,wet_width;
+ float ducking;
 } bs_reverb_config;
 void bs_default_reverb(bs_reverb_config *config);
 int bs_set_reverb(bs_synth *synth,const bs_reverb_config *config);

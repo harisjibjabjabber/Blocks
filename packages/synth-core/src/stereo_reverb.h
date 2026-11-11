@@ -37,6 +37,8 @@ class StereoReverb {
  double rate_=48000,smooth_=0,fadeStep_=0,wet_=0,send_=0,trim_=1,width_=1;
  double diffusion_=0,lowAlpha_=0,dampAlpha_=0,modDepth_=0,modRate_=0,shimmer_=0,pitch_=2,shiftPhase_=0;
  double lowTarget_=0,dampTarget_=0,trimTarget_=1,pitchTarget_=2,early_=.2;
+ double duckAmount_=0,duckEnvelope_=0,duckReduction_=0;
+ double duckAttack_=0,duckRelease_=0,duckGainAttack_=0,duckGainRelease_=0;
  bool prepared_=false;
  double wetLeft_=0;
  static double approach(double a,double b,double c){a+=(b-a)*c;return std::abs(a-b)<1e-12?b:a;}
@@ -70,18 +72,19 @@ class StereoReverb {
   shiftPhase_+=(1-pitch_)/window;shiftPhase_-=std::floor(shiftPhase_);return result;
  }
 public:
- static bs_reverb_config defaults(){return{1,0,BS_REVERB_PLATE,.015f,2.5f,1,.75f,120,7000,.3f,.2f,.35f,.25f,0,12,1};}
+ static bs_reverb_config defaults(){return{BS_REVERB_VERSION,0,BS_REVERB_PLATE,.015f,2.5f,1,.75f,120,7000,.3f,.2f,.35f,.25f,0,12,1,0};}
  static bool valid(const bs_reverb_config&c){
-  if(c.version!=1||c.enabled>1||c.mode>2)return false;
-  const float values[]={c.predelay_seconds,c.decay_seconds,c.size,c.diffusion,c.lowcut_hz,c.damping_hz,c.mod_rate_hz,c.mod_depth,c.shimmer,c.wet,c.output_db,c.shimmer_semitones,c.wet_width};
-  constexpr float lo[]={0,.2f,.5f,0,20,200,.05f,0,0,0,-24,-12,0},hi[]={.25f,30,2,1,2000,20000,2,1,1,1,12,12,2};
-  for(unsigned i=0;i<13;++i)if(!std::isfinite(values[i])||values[i]<lo[i]||values[i]>hi[i])return false;return true;
+  if(c.version!=BS_REVERB_VERSION||c.enabled>1||c.mode>2)return false;
+  const float values[]={c.predelay_seconds,c.decay_seconds,c.size,c.diffusion,c.lowcut_hz,c.damping_hz,c.mod_rate_hz,c.mod_depth,c.shimmer,c.wet,c.output_db,c.shimmer_semitones,c.wet_width,c.ducking};
+  constexpr float lo[]={0,.2f,.5f,0,20,200,.05f,0,0,0,-24,-12,0,0},hi[]={.25f,30,2,1,2000,20000,2,1,1,1,12,12,2,1};
+  for(unsigned i=0;i<14;++i)if(!std::isfinite(values[i])||values[i]<lo[i]||values[i]>hi[i])return false;return true;
  }
  bool prepare(double rate){
   if(!std::isfinite(rate)||rate<8000||rate>384000)return false;
   std::array<Line,18> next;
   for(unsigned i=0;i<18;++i){const double seconds=i<8?.24:i<14?.08:i<16?.251:.091;if(!next[i].prepare(unsigned(std::ceil(seconds*rate))+8))return false;}
   lines_=std::move(next);rate_=rate;smooth_=1-std::exp(-1/(.02*rate));fadeStep_=1/(.05*rate);
+  duckAttack_=1-std::exp(-1/(.0015*rate));duckRelease_=1-std::exp(-1/(.05*rate));duckGainAttack_=1-std::exp(-1/(.003*rate));duckGainRelease_=1-std::exp(-1/(.18*rate));
   // Original Blackman-windowed sinc. Conservative0.20Fs pass edge protects
   // every supported upward ratio through2x; down shifts retain this warm band.
   double total=0;for(unsigned k=0;k<63;++k){const double x=double(k)-31;const double sinc=x==0?.4:std::sin(2*pi*.2*x)/(pi*x);shiftTaps_[k]=sinc*(.42-.5*std::cos(2*pi*k/62)+.08*std::cos(4*pi*k/62));total+=shiftTaps_[k];}for(auto&t:shiftTaps_)t/=total;
@@ -93,6 +96,7 @@ public:
  void clear(){
   wetLeft_=0;
   for(auto&l:lines_)l.clear();dampingState_.fill(0);inputLow_.fill(0);shiftReturn_.fill(0);shiftPhase_=0;shiftAt_=0;for(auto&h:shiftHistory_)h.fill(0);shiftActive_=false;neutralPitch_=std::abs(config_.shimmer_semitones)<1e-5?1:0;targets(true);feedback_=feedbackTarget_;
+  duckAmount_=config_.ducking;duckEnvelope_=duckReduction_=0;
   for(unsigned i=0;i<8;++i)phase_[i]=i*.123456789;
   wet_=config_.enabled?config_.wet:0;send_=config_.enabled?1:0;trim_=trimTarget_;width_=config_.wet_width;diffusion_=config_.diffusion;lowAlpha_=lowTarget_;dampAlpha_=dampTarget_;modDepth_=config_.mod_depth;modRate_=config_.mod_rate_hz;shimmer_=config_.mode==BS_REVERB_SHIMMER?config_.shimmer:0;pitch_=pitchTarget_;early_=config_.mode==BS_REVERB_PLATE?.2:.055;
  }
@@ -105,6 +109,17 @@ public:
   trim_=approach(trim_,trimTarget_,smooth_);width_=approach(width_,config_.wet_width,smooth_);diffusion_=approach(diffusion_,config_.diffusion,smooth_);
   lowAlpha_=approach(lowAlpha_,lowTarget_,smooth_);dampAlpha_=approach(dampAlpha_,dampTarget_,smooth_);modDepth_=approach(modDepth_,config_.mod_depth,smooth_);modRate_=approach(modRate_,config_.mod_rate_hz,smooth_);
   shimmer_=approach(shimmer_,config_.mode==BS_REVERB_SHIMMER?config_.shimmer:0,smooth_);pitch_=approach(pitch_,pitchTarget_,smooth_);early_=approach(early_,config_.mode==BS_REVERB_PLATE?.2:.055,smooth_);
+  duckAmount_=approach(duckAmount_,config_.ducking,smooth_);
+  double duckGain=1;
+  if(duckAmount_!=0){
+   const double peak=std::max(std::abs(left),std::abs(right));
+   duckEnvelope_=approach(duckEnvelope_,peak,peak>duckEnvelope_?duckAttack_:duckRelease_);
+   const double db=20*std::log10(std::max(1e-12,duckEnvelope_));
+   const double knee=std::max(0.,std::min(1.,(db+60)/36));
+   const double target=24*knee*knee*(3-2*knee);
+   duckReduction_=approach(duckReduction_,target,target>duckReduction_?duckGainAttack_:duckGainRelease_);
+   duckGain=std::pow(10.,-duckAmount_*duckReduction_/20);
+  }else{duckEnvelope_=duckReduction_=0;}
   const double original[2]={left,right};std::array<double,2> input{};
   for(unsigned ch=0;ch<2;++ch){const double x=original[ch]*send_;inputLow_[ch]=quiet(inputLow_[ch]+lowAlpha_*(x-inputLow_[ch]));const double hp=x-inputLow_[ch];auto&pre=lines_[14+ch];const double delayed=taps_[14+ch].read(pre,fadeStep_,0,hp);pre.write(hp);input[ch]=diffuse(ch,delayed);}
   std::array<double,8> v{};double sum=0,wetL=0,wetR=0;
@@ -127,10 +142,11 @@ public:
   for(unsigned i=0;i<8;++i){feedback_[i]=approach(feedback_[i],feedbackTarget_[i],smooth_);const double feed=norm*(a[i]*input[0]+b[i]*input[1]);const double shiftedFeedback=norm*shimmer_*(a[i]*(.35*shift[0]-.5*returnL)+b[i]*(.35*shift[1]-.5*returnR));const double returning=(.25*sum-v[i]+shiftedFeedback)*feedback_[i];lines_[i].write(guard(feed+returning));}
   wetL+=early_*input[0];wetR+=early_*input[1];
   const double mid=(wetL+wetR)*.5,side=(wetL-wetR)*.5*width_;wetL=(mid+side)*trim_;wetR=(mid-side)*trim_;
+  if(duckAmount_!=0){wetL*=duckGain;wetR*=duckGain;}
   wetLeft_=wet_*wetL;
   if(wet_!=0){left=(1-wet_)*left+wet_*wetL;right=(1-wet_)*right+wet_*wetR;}
  }
 };
-static_assert(sizeof(bs_reverb_config)==64&&offsetof(bs_reverb_config,predelay_seconds)==12&&offsetof(bs_reverb_config,shimmer_semitones)==56&&offsetof(bs_reverb_config,wet_width)==60,"Reverb ABI");
+static_assert(sizeof(bs_reverb_config)==68&&offsetof(bs_reverb_config,predelay_seconds)==12&&offsetof(bs_reverb_config,shimmer_semitones)==56&&offsetof(bs_reverb_config,wet_width)==60&&offsetof(bs_reverb_config,ducking)==64,"Reverb ABI");
 }
 #endif

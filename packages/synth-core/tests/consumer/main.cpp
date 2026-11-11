@@ -20,6 +20,7 @@ int main() {
   bs_delay_config delay{},delayRead{};
   bs_default_delay(&delay);
   bs_reverb_config reverb{},reverbRead{};bs_default_reverb(&reverb);bs_output_meters output{};
+  bs_creative_fx_config creative{},creativeRead{};bs_default_creative_fx(&creative);
   bs_osc_bass_config_v2 bassV2{};bs_default_osc_bass_v2(&bassV2);bs_clock_config clock{};bs_default_clock(&clock);bs_sub_config sub{};bs_default_sub(&sub);
   bs_voicing_config_v2 voicingV2{},voicingV2Read{};bs_filter_routing_config routing{},routingRead{};
   bs_default_voicing_v2(&voicingV2);bs_default_filter_routing(&routing);
@@ -30,6 +31,7 @@ int main() {
   bs_default_performance(&performance);
   const bool configured=bs_set_clock(synth,&clock)&&bs_get_clock(synth,&clock)&&bs_set_sub(synth,&sub)&&bs_get_sub(synth,&sub)&&bs_set_osc_bass_v2(synth,&bassV2)&&bs_get_osc_bass_v2(synth,&bassV2)
     &&bs_set_reverb(synth,&reverb)&&bs_get_reverb(synth,&reverbRead)&&bs_get_output_meters(synth,&output)&&bs_output_latency(synth)==72
+    &&bs_set_creative_fx(synth,&creative)&&bs_get_creative_fx(synth,&creativeRead)&&creativeRead.count==0
     &&bs_set_voicing_v2(synth,&voicingV2)&&bs_get_voicing_v2(synth,&voicingV2Read)
     &&bs_set_filter_routing(synth,&routing)&&bs_get_filter_routing(synth,&routingRead)
     &&bs_get_osc_bass_phase(synth,0)==0

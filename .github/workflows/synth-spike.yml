@@ -42,6 +42,8 @@ jobs:
           "$RUNNER_TEMP/native/blocks_synth_bass_expansion_audition" "$RUNNER_TEMP/synth-evidence"
           "$RUNNER_TEMP/native/blocks_synth_phase12_suite_audition" "$RUNNER_TEMP/synth-evidence"
           "$RUNNER_TEMP/native/blocks_synth_phase13_reverb_audition" "$RUNNER_TEMP/synth-evidence"
+          "$RUNNER_TEMP/native/blocks_synth_creative_fx_audition" "$RUNNER_TEMP/synth-evidence"
+          "$RUNNER_TEMP/native/blocks_synth_creative_fx_benchmark" > "$RUNNER_TEMP/synth-evidence/native-creative-fx-benchmark.txt"
           "$RUNNER_TEMP/native/blocks_synth_reverb_benchmark" > "$RUNNER_TEMP/synth-evidence/native-reverb-benchmark.txt"
           "$RUNNER_TEMP/native/blocks_synth_phase11_chain_benchmark" > "$RUNNER_TEMP/synth-evidence/native-phase11-chain.txt"
       - name: Install official Emscripten toolchain
@@ -81,6 +83,9 @@ jobs:
           done
           node scripts/synth-standalone-proof.mjs
           node scripts/synth-reverb-proof.mjs
+          node scripts/synth-creative-proof.mjs
+          node scripts/synth-trim-space-proof.mjs
+          node scripts/synth-navigation-proof.mjs
           node scripts/synth-gesture-proof.mjs
           node scripts/synth-sound-proof.mjs
           node scripts/synth-filter-shape-proof.mjs

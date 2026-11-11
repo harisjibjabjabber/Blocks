@@ -42,7 +42,7 @@ export function createInstrumentUI({ getSuite=()=>DEFAULT_SUITE,applySuite=()=>{
   const history = [];
   const modulationPhases=new Map();
   let oscBassPhases=[.25,.25],oscBassRawPhases=null,oscBassRates=null,oscBassTime=0,oscBassRunning=false,oscBassFrame=null,oscBassDrawTime=0;
-  let sauceKeyboard=false;
+  let sauceKeyboard=false,spaceKeyboard=true;
   let filterDriveControl;
   let module = 'tone', sauce = null, envelopeTarget='amp', gesture = null, preset = 'velvet';
   const svgNS = 'http://www.w3.org/2000/svg';
@@ -156,7 +156,7 @@ export function createInstrumentUI({ getSuite=()=>DEFAULT_SUITE,applySuite=()=>{
   }
   const macros={tone:[[11,'Cutoff'],[42,'Resonance'],[23,'Filter mix']],envelope:[['character','Character']],character:[['character','Harmonics'],['motion','Pitch'],[14,'Speed']],drop:[[15,'Amount'],[16,'Fall time'],['character','Character']]};
   if(parameters[18]) {macros.character.push([18,'Fullness']);}
-  const titles={harmonics:'Harmonics',tone:'Oscillator + filter',envelope:'Amplitude envelope',character:'Character',drop:'Sauce',lfo:'LFO'};
+  const titles={space:'Space',harmonics:'Harmonics',tone:'Oscillator + filter',envelope:'Amplitude envelope',character:'Character',drop:'Sauce',lfo:'LFO'};
   const descriptions={tone:'Across: cutoff Â· up/down: filter mix',envelope:'Drag points or stage labels Â· bend curves for shape',character:'Movement follows the amplitude envelope',drop:'Per-note pitch fall Â· drag the curve to bend Â· new notes'};
   const visualPanel=document.querySelector('#sound-editor > .visual-panel');
   $('tone-oscillators').append($('waveforms'));
@@ -166,6 +166,18 @@ export function createInstrumentUI({ getSuite=()=>DEFAULT_SUITE,applySuite=()=>{
     if(tone){$('tone-filter').append($('shape-surface'),$('macros'),$('module-description'));}
     else{visualPanel.insertBefore($('shape-surface'),$('performance-panel'));visualPanel.append($('module-description'));$('sound-editor').append($('macros'));}
   }
+  function revealSelectedTab(){
+    const tabBar=$('module-tabs'),activeTab=tabBar.querySelector('[data-module="'+module+'"]');
+    if(!activeTab)return;const t=activeTab.getBoundingClientRect(),r=tabBar.getBoundingClientRect();
+    if(t.left<r.left)tabBar.scrollLeft-=r.left-t.left;else if(t.right>r.right)tabBar.scrollLeft+=t.right-r.right;
+  }
+  // Resize reveals the selection once; ordinary updates and manual swipes do not.
+  let tabViewportWidth=-1,tabResizeFrame=0;
+  const tabResizeObserver=new ResizeObserver(entries=>{
+    const width=entries[0].contentRect.width;if(Math.abs(width-tabViewportWidth)<.5)return;tabViewportWidth=width;
+    cancelAnimationFrame(tabResizeFrame);tabResizeFrame=requestAnimationFrame(revealSelectedTab);
+  });
+  tabResizeObserver.observe($('module-tabs'));
   function select(next) {
     cancel();rackUI.cancel();closeGlide(false);closeFilter(false); module=next;
     document.querySelector('.instrument').dataset.module=module;
@@ -175,8 +187,8 @@ export function createInstrumentUI({ getSuite=()=>DEFAULT_SUITE,applySuite=()=>{
     closeMotion(false);$('motion-details-toggle').hidden=module!=='character';
     $('waveforms').hidden=module!=='tone'||!parameters[19];
     $('scope-wrapper').hidden=module!=='tone';
-    $('sauce-rack').hidden=module!=='drop';$('sauce-output').hidden=module!=='drop';
-    $('sound-editor').hidden=module==='drop'||module==='harmonics';$('harmonics-page').hidden=module!=='harmonics';$('harmonics-shortcut').hidden=module!=='character';$('harmonics-shortcut-power').hidden=module!=='character';
+    $('sauce-rack').hidden=module!=='drop';$('space-panel').hidden=module!=='space';document.querySelector('.instrument').dataset.spaceKeyboard=String(spaceKeyboard);
+    $('sound-editor').hidden=module==='drop'||module==='harmonics'||module==='space';$('harmonics-page').hidden=module!=='harmonics';$('harmonics-shortcut').hidden=module!=='character';$('harmonics-shortcut-power').hidden=module!=='character';
     $('sound-editor').setAttribute('aria-label',module==='drop'&&sauce?sauceTitles[sauce]+' settings':'Sound editing');
     $('envelope-tabs').hidden=module!=='envelope';
     const isPerformance=false;
@@ -186,6 +198,7 @@ export function createInstrumentUI({ getSuite=()=>DEFAULT_SUITE,applySuite=()=>{
     for(const b of document.querySelectorAll('[data-envelope]'))if(b.tagName==='BUTTON')b.setAttribute('aria-pressed',String(b.dataset.envelope===envelopeTarget));
     svg.setAttribute('preserveAspectRatio',module==='tone'?'none':'xMidYMid meet');
     for(const b of document.querySelectorAll('#module-tabs [data-module]')) {const active=b.dataset.module===module;b.setAttribute('aria-pressed',String(active));b.classList.toggle('selected',active);}
+    revealSelectedTab();
     $('module-title').textContent=module==='envelope'?(envelopeTarget==='amp'?'Amplitude envelope':'Filter envelope'):module==='drop'?(sauceTitles[sauce]||'Sauce'):titles[module]; $('module-description').textContent=module==='drop'&&sauce==='drive'?'Mixer warmth Â· turn up for more edge':descriptions[module];
     const selected=module==='envelope'&&envelopeTarget==='filter'?[[24,'Filter amount'],[11,'Base cutoff'],['character','Character']]:module==='drop'?(sauce==='fullness'?[[18,'Fullness']]:sauce==='drop'?[[15,'Amount'],[16,'Fall time']]:[]):(macros[module]||[]);
     $('macros').replaceChildren(...(module==='tone'&&parameters[43]?[filterModeControl()]:[]),...(isPerformance?[]:selected.filter(([id])=>typeof id!=='number'||parameters[id]).map(([id,name])=>knob(String(id),name))));
@@ -373,7 +386,7 @@ export function createInstrumentUI({ getSuite=()=>DEFAULT_SUITE,applySuite=()=>{
   const suiteShortcut=document.createElement('button');suiteShortcut.type='button';suiteShortcut.id='harmonics-shortcut';suiteShortcut.className='harmonics-shortcut';suiteShortcut.textContent='Harmonics â†’';suiteShortcut.hidden=true;suiteShortcut.addEventListener('click',()=>select('harmonics'));document.querySelector('.surface-heading').append(suiteShortcut);
   const suiteShortcutPower=document.createElement('button');suiteShortcutPower.type='button';suiteShortcutPower.id='harmonics-shortcut-power';suiteShortcutPower.setAttribute('role','switch');suiteShortcutPower.setAttribute('aria-label','Harmonics suite enabled');suiteShortcutPower.hidden=true;suiteShortcutPower.addEventListener('click',()=>changeConfig(()=>applySuite({...getSuite(),enabled:!getSuite().enabled}),true));document.querySelector('.surface-heading').append(suiteShortcutPower);
 
-  const outputUI=createOutputUI({...commonControls,container:$('sauce-output'),getKeyboardVisible:()=>sauceKeyboard,onKeyboardToggle:()=>{sauceKeyboard=!sauceKeyboard;document.querySelector('.instrument').dataset.sauceKeyboard=String(sauceKeyboard);outputUI.update();},getWidth:getStereoWidth,changeWidth:(value,commit)=>changeConfig(()=>applyStereoWidth(value),commit),getReverb,changeReverb:(patch,commit)=>changeConfig(()=>applyReverb(normalizeReverb({...getReverb(),...patch})),commit),getDelay,changeDelay:(patch,commit)=>changeConfig(()=>applyDelay(normalizeDelay({...getDelay(),...patch})),commit)});
+  const outputUI=createOutputUI({...commonControls,container:$('space-panel'),getKeyboardVisible:()=>spaceKeyboard,onKeyboardToggle:()=>{spaceKeyboard=!spaceKeyboard;document.querySelector('.instrument').dataset.spaceKeyboard=String(spaceKeyboard);outputUI.update();},getWidth:getStereoWidth,changeWidth:(value,commit)=>changeConfig(()=>applyStereoWidth(value),commit),getReverb,changeReverb:(patch,commit)=>changeConfig(()=>applyReverb(normalizeReverb({...getReverb(),...patch})),commit),getDelay,changeDelay:(patch,commit)=>changeConfig(()=>applyDelay(normalizeDelay({...getDelay(),...patch})),commit)});
   const bassUIs=[0,1].map(oscillator=>createOscBassUI({...commonControls,oscillator,container:$('oscillator-bass-'+(oscillator+1)),getConfig:getOscBass,change:(index,patch,commit)=>changeConfig(()=>{const next=normalizeOscBass(getOscBass());Object.assign(next.oscillators[index],patch);applyOscBass(normalizeOscBass(next));},commit)}));
   const subContainer=document.createElement('section');subContainer.id='sub-panel';$('tone-shared').prepend(subContainer);const subUI=createSubUI({...commonControls,container:subContainer,getSub,changeSub:(patch,commit)=>changeConfig(()=>applySub(normalizeSub({...getSub(),...patch})),commit)});
   const filterEnvButton=document.createElement('button');filterEnvButton.type='button';filterEnvButton.className='filter-env-shortcut';filterEnvButton.dataset.filterEnvOpen='';filterEnvButton.textContent='Envelope â†’';filterEnvButton.setAttribute('aria-label','Open filter envelope');filterEnvButton.addEventListener('click',()=>{if(gesture)return;envelopeTarget='filter';select('envelope');});const filterEnvDial=configDial({...commonControls,key:'filter:envAmount',label:'Env amount',min:parameters[24].min,max:parameters[24].max,defaultValue:0,getValue:()=>getValues()[24],change:(value,commit)=>changeConfig(()=>{const next=[...getValues()];next[24]=value;applyValues(next);},commit),format:value=>(value>0?'+':'')+Number(value.toFixed(1))+' st'});$('tone-filter').querySelector('.tone-filter-heading').insertBefore(filterEnvButton,$('tone-filter-mode'));
@@ -384,9 +397,10 @@ export function createInstrumentUI({ getSuite=()=>DEFAULT_SUITE,applySuite=()=>{
     createEditor:(item,body,extra)=>createRackEditor({...commonControls,item,body,extra,getNode:()=>getNode(item.key),changeNode:(patch,commit)=>changeNode(item.key,patch,commit)}),
     onToggle:key=>changeNode(key,{enabled:!getNode(key).enabled}),
     onRemove:key=>changeConfig(()=>{const[lane,id]=key.split(':');if(lane==='lfo'){const m=modulation();m.sources=m.sources.filter(n=>n.id!==Number(id));m.sources.forEach(source=>source.routes=source.routes.filter(route=>!(route.kind==='lfo'&&route.targetId===Number(id))));applyModulation(m);applyRack(syncRackOrder(rack(),m));}else{const r=rack();r[lane]=r[lane].filter(n=>n.id!==Number(id));applyRack(r);if(lane==='audio'){const m=modulation();m.sources.forEach(source=>source.routes=source.routes.filter(route=>!(route.kind==='sauce'&&route.targetId===Number(id))));applyModulation(m);}}}),
-    onAdd:type=>changeConfig(()=>{if(type==='lfo'){const m=modulation();if(m.sources.length>=4)return;const id=Math.max(...m.sources.map(s=>s.id))+1;m.sources.push({...defaultLfo(id),enabled:true});applyModulation(m);applyRack(syncRackOrder(rack(),m));}else{const r=rack(),lane=type==='fullness'?'audio':'notes';if(r[lane].length>=16)return;r[lane].push(newSauceBlock(r,type));applyRack(r);}}),
+    onAdd:type=>changeConfig(()=>{if(type==='lfo'){const m=modulation();if(m.sources.length>=4)return;const id=Math.max(...m.sources.map(s=>s.id))+1;m.sources.push({...defaultLfo(id),enabled:true});applyModulation(m);applyRack(syncRackOrder(rack(),m));}else{const r=rack(),lane=type==='fullness'?'audio':['moving-space','impact'].includes(type)?'effects':'notes';if(r[lane].length>=16)return;r[lane].push(newSauceBlock(r,type));applyRack(r);}}),
     onReorder:keys=>changeConfig(()=>applyRack(reorderRack(rack(),modulation(),keys)))
   });
+  const sauceHeading=document.createElement('div');sauceHeading.className='sauce-section-heading';sauceHeading.innerHTML='<h2>Sauce</h2><button type="button" id="sauce-keyboard-toggle" aria-pressed="false">Keyboard</button>';$('sauce-rack').prepend(sauceHeading);$('sauce-keyboard-toggle').addEventListener('click',()=>{if(gesture)return;sauceKeyboard=!sauceKeyboard;document.querySelector('.instrument').dataset.sauceKeyboard=String(sauceKeyboard);$('sauce-keyboard-toggle').setAttribute('aria-pressed',String(sauceKeyboard));});
   const lfoUI=createLfoUI({...commonControls,container:$('lfo-panel'),getSource:()=>getNode('lfo:1'),changeSource:(patch,commit)=>changeNode('lfo:1',patch,commit)});
   $('motion-controls').replaceChildren(...[[32,'Attack settling'],[33,'Settle time'],[34,'Velocity']].map(([id,name])=>knob(String(id),name)));
   $('motion-details-toggle').addEventListener('click',()=>{if(gesture)return;const open=$('motion-details').hidden;$('motion-details').hidden=!open;$('motion-details-toggle').setAttribute('aria-expanded',String(open));if(open){closeGlide(false);$('motion-controls').querySelector('[data-knob]').focus();}});

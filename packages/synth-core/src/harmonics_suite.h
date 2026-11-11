@@ -64,7 +64,7 @@ public:
   rate_=suite_detail::clamp(rate,8000,384000);smooth_=coeff(.005);peakDecay_=std::exp(-1/(.15*rate_));
   toneAlpha_=1-std::exp(-2*suite_detail::pi*700/(4*rate_));magnetAlpha_=1-std::exp(-2*suite_detail::pi*25/(4*rate_));dcPole_=std::exp(-2*suite_detail::pi*5/(4*rate_));
   sagAttack_=coeff(.02);sagRelease_=coeff(.18);crushAttack_=1-std::exp(-1/(.0013*4*rate_));loadAlpha_=1-std::exp(-1/(.25*4*rate_));
-  dynamicFastAttack_=coeff(.0015);dynamicFastRelease_=coeff(.015);dynamicSlow_=coeff(.15);dynamicBase_=coeff(.015);dynamicLowAlpha_=1-std::exp(-2*suite_detail::pi*100/rate_);dynamicPeakDecay_=std::exp(-1/(.3*rate_));dynamicInputDecay_=std::exp(-1/(.03*rate_));onsetDecay_=std::exp(-1/(.015*rate_));dynamicGainAttack_=coeff(.001);dynamicGainRelease_=coeff(.015);
+  dynamicFastAttack_=coeff(.0015);dynamicFastRelease_=coeff(.015);dynamicSlow_=coeff(.15);dynamicBase_=coeff(.015);dynamicLowAlpha_=1-std::exp(-2*suite_detail::pi*100/rate_);dynamicPeakDecay_=std::exp(-1/(.3*rate_));dynamicInputDecay_=std::exp(-1/(.03*rate_));onsetDecay_=std::exp(-1/(.015*rate_));dynamicGainAttack_=coeff(.001);dynamicGainRelease_=coeff(.015);dynamicPunchRecovery_=coeff(.00035);
   reset();
  }
  bool configure(const bs_harmonics_suite_config&c,bool now=false){
@@ -143,7 +143,7 @@ private:
  std::array<suite_detail::Slot,2>slots_;
  std::array<suite_detail::Smooth,3>bandThreshold_,bandTrim_,bandUp_,bandDown_;
  double compEnv_=0,compDb_=0,compTarget_=0,compAttack_=0,compRelease_=0,compPeakDecay_=0,crushDb_=0,crushLoad_=0,crushRecovery_=0;
- double onsetHold_=0,onsetDecay_=0,dynamicInputDecay_=0,dynamicLowL_=0,dynamicLowR_=0,dynamicLowAlpha_=0,dynamicBase_=0,dynamicBaseValue_=0,dynamicFast_=0,dynamicSlowValue_=0,dynamicPeak_=0,dynamicDb_=0,dynamicFastAttack_=0,dynamicFastRelease_=0,dynamicSlow_=0,dynamicPeakDecay_=0,dynamicGainAttack_=0,dynamicGainRelease_=0;
+ double onsetHold_=0,onsetDecay_=0,dynamicInputDecay_=0,dynamicLowL_=0,dynamicLowR_=0,dynamicLowAlpha_=0,dynamicBase_=0,dynamicBaseValue_=0,dynamicFast_=0,dynamicSlowValue_=0,dynamicPeak_=0,dynamicDb_=0,dynamicFastAttack_=0,dynamicFastRelease_=0,dynamicSlow_=0,dynamicPeakDecay_=0,dynamicGainAttack_=0,dynamicGainRelease_=0,dynamicPunchRecovery_=0;
  std::array<double,3>bandEnv_{},bandDb_{},bandTarget_{},bandRelease_{},bandAttack_{};double ottGainRelease_=0;
  unsigned counter_=0;bool wetDormant_=false,filterDormant_=false;
  suite_detail::Channel left_,right_;suite_detail::Delay<24>dryL_,dryR_,dynamicDelay_;suite_detail::Split splitL_,splitR_;
@@ -168,8 +168,12 @@ private:
   const double base=std::max(dynamicBaseValue_,1e-10),fast=std::max(dynamicFast_,1e-10),slow=std::max(dynamicSlowValue_,1e-10);
   double attack=std::max(0.,db(fast/base)),tail=std::max(0.,db(slow/base)),guard=clamp((db(base)+100)/35,0.,1.);
   onsetHold_=std::max(clamp(attack/6,0.,1.),onsetHold_*onsetDecay_);double body=1-onsetHold_;
-  double target=dynamics_.v<0?(-dynamics_.v)*(std::min(18.,2*attack+12*onsetHold_)-body*std::min(48.,3*tail)):dynamics_.v*(std::min(3.,.25*attack)+body*std::min(24.,4*tail))*guard;
-  target=clamp(target,-48.,24.);dynamicDb_=chase(dynamicDb_,target,target<dynamicDb_?dynamicGainAttack_:dynamicGainRelease_);
+  // Tight must release the previous body's attenuation as a new audio onset
+  // arrives. The former15ms upward-gain chase erased the first1–8ms of repeat
+  // notes. Recover in0.35ms, cap intentional onset lift at6dB, and release the
+  // negative-side state near silence. Bloom retains its existing gain law.
+  double target=dynamics_.v<0?(-dynamics_.v)*(std::min(6.,attack+3*onsetHold_)-body*std::min(48.,3*tail)*guard):dynamics_.v*(std::min(3.,.25*attack)+body*std::min(24.,4*tail))*guard;
+  target=clamp(target,-48.,24.);dynamicDb_=chase(dynamicDb_,target,target<dynamicDb_?dynamicGainAttack_:(dynamics_.v<0?dynamicPunchRecovery_:dynamicGainRelease_));
   meters_.dynamics_gain_db=float(dynamicDb_);return gain(dynamicDb_);
  }
  double colourSample(suite_detail::ColourState&c,suite_detail::Slot&s,double x){

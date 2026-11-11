@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {DEFAULT_RACK,normalizeRack,newSauceBlock,hydrateRack,toCoreSauce,toCoreNotes,rackVisualOrder,reorderRack,syncRackOrder} from './sauce-state.js';
+import {DEFAULT_RACK,normalizeRack,newSauceBlock,hydrateRack,toCoreSauce,toCoreNotes,toCoreCreativeFX,CREATIVE_FX_FIELDS,rackVisualOrder,reorderRack,syncRackOrder} from './sauce-state.js';
 import {DEFAULT_MODULATION,normalizeModulation,toCoreModulation,defaultLfo,shapeForWave,normalizeLfoPoints,sampleLfoPoints,randomLfoPoints,modulationDestinations,routeTargetKey} from './modulation-state.js';
 test('repeatable rack blocks are independent and serialize both processing lanes in exact order',()=>{
  let rack=normalizeRack(DEFAULT_RACK);assert.deepEqual(rack.audio,[]);assert.deepEqual(rack.notes,[]);
@@ -52,4 +52,13 @@ test('new synced defaults preserve explicit current free clocks and random30poin
 test('dynamic destinations key repeated blocks and LFO targets independently',()=>{
  const m=normalizeModulation(),r=normalizeRack();r.audio.push(newSauceBlock(r,'fullness'));r.audio.push(newSauceBlock(r,'fullness'));m.sources.push(defaultLfo(2));const destinations=modulationDestinations([],r,m);assert(destinations.some(d=>d.label==='Fullness 2 · Amount'));assert(destinations.some(d=>d.label==='LFO 2 · Rate'));
  m.sources[0].routes=[{kind:'sauce',targetId:2,parameter:0,depth:.4},{kind:'lfo',targetId:1,parameter:0,depth:.3},{kind:'lfo',targetId:2,parameter:0,depth:-.2}];const saved=normalizeModulation(m);assert.equal(new Set(saved.sources[0].routes.map(routeTargetKey)).size,3);assert.deepEqual(toCoreModulation(saved).sources[0].routes.map(r=>r.target_kind),[1,2,2]);assert.throws(()=>normalizeModulation({...m,version:2}));
+});
+
+test('Creative FX repeated types use globally unique IDs and ordered actual effect subsequence',()=>{
+ let r=normalizeRack();assert.deepEqual(r.effects,[]);r.audio.push(newSauceBlock(r,'fullness'));r.effects.push(newSauceBlock(r,'moving-space'));r.notes.push(newSauceBlock(r,'arp'));r.effects.push(newSauceBlock(r,'impact'));r.effects.push(newSauceBlock(r,'impact'));r=normalizeRack(r);
+ assert.deepEqual(r.effects.map(b=>b.id),[2,4,5]);assert.equal(r.effects[0].mix,.35);assert.equal(r.effects[1].mix,.7);assert(r.effects.every(b=>b.enabled&&!b.primary));
+ const m=normalizeModulation(),before=structuredClone(r);r=reorderRack(r,m,['effects:5','notes:3','audio:1','effects:2','effects:4']);assert.deepEqual(toCoreCreativeFX(r).blocks.map(b=>b.id),[5,2,4]);assert.deepEqual(toCoreSauce(r),toCoreSauce(before));assert.deepEqual(toCoreNotes(r),toCoreNotes(before));assert.deepEqual(normalizeRack(JSON.parse(JSON.stringify(r))),r);
+ r.effects=r.effects.filter(b=>b.id!==2);r=normalizeRack(r);assert(!r.order.includes('effects:2'));assert.deepEqual(toCoreCreativeFX(r).blocks.map(b=>b.id),[5,4]);
+ assert.throws(()=>normalizeRack({...r,effects:[{...r.effects[0],id:1}]}));assert.throws(()=>normalizeRack({...r,effects:[{...r.effects[0],primary:true}]}));assert.throws(()=>normalizeRack({...r,effects:Array.from({length:17},(_,i)=>({...r.effects[0],id:20+i}))}));
+ for(const[key,,lo,hi]of CREATIVE_FX_FIELDS){for(const value of[lo,hi])assert.equal(normalizeRack({...r,effects:[{...r.effects[0],[key]:value}]}).effects[0][key],value);for(const value of[NaN,undefined,lo-1,hi+1])assert.throws(()=>normalizeRack({...r,effects:[{...r.effects[0],[key]:value}]}));}
 });
