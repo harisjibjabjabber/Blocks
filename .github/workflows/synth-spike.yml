@@ -27,6 +27,7 @@ jobs:
           cmake --build "$RUNNER_TEMP/native" --parallel 2
           mkdir -p "$RUNNER_TEMP/synth-evidence"
           "$RUNNER_TEMP/native/blocks_synth_ladder_polyphase_tests" | tee "$RUNNER_TEMP/synth-evidence/native-ladder-polyphase.txt"
+          "$RUNNER_TEMP/native/blocks_synth_oscillator_voicing_tests" | tee "$RUNNER_TEMP/synth-evidence/native-oscillator-voicing.txt"
           ctest --test-dir "$RUNNER_TEMP/native" --output-on-failure
           cmake --install "$RUNNER_TEMP/native"
           cmake -S packages/synth-core/tests/consumer -B "$RUNNER_TEMP/consumer" -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/synth-install"
