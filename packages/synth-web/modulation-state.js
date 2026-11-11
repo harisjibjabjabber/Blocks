@@ -1,4 +1,4 @@
-export const MOD_TARGETS=Object.freeze([0,2,3,11,12,13,14,18,21,22,23,24,42]);
+export const MOD_TARGETS=Object.freeze([0,2,3,11,13,14,18,21,22,23,24,42]);
 export const LFO_WAVES=Object.freeze(['sine','triangle','saw','square','random','custom']);
 export const MOD_DIVISIONS=Object.freeze({'1/1':[1,0],'1/2':[2,0],'1/4':[4,0],'1/8':[8,0],'1/16':[16,0],'1/32':[32,0],'1/64':[64,0],'1/4T':[4,1],'1/8T':[8,1],'1/16T':[16,1]});
 export const MAX_LFO_POINTS=32,MIN_LFO_GAP=1/1024;
@@ -51,7 +51,7 @@ export const routeTargetKey=r=>`${r.kind??'tone'}:${r.targetId??0}:${r.parameter
 export const defaultRouteDepth=()=>0;
 export function modulationDestinations(parameters,rack,modulation){
  const destinations=MOD_TARGETS.map(parameter=>({kind:'tone',targetId:0,parameter,label:'Tone · '+(parameter===0?'Sound level':parameters[parameter]?.name??'Parameter '+parameter)}));
- const counts={};for(const block of rack.audio){const number=counts[block.type]=(counts[block.type]??0)+1;destinations.push({kind:'sauce',targetId:block.id,parameter:0,label:({drive:'Drive',fullness:'Fullness',harmonics:'Harmonics'}[block.type])+' '+number+' · '+(block.type==='harmonics'?'Drive':'Amount')});}
+ const counts={};for(const block of rack.audio){const number=counts[block.type]=(counts[block.type]??0)+1;destinations.push({kind:'sauce',targetId:block.id,parameter:0,label:'Fullness'+' '+number+' · '+'Amount'});}
  for(const source of modulation.sources)for(const[parameter,label]of[[0,'Rate'],[1,'Intensity']])destinations.push({kind:'lfo',targetId:source.id,parameter,label:'LFO '+source.id+' · '+label});
  return destinations.map(r=>({...r,key:routeTargetKey(r)}));
 }

@@ -1,6 +1,7 @@
 #ifndef BLOCKS_SYNTH_H
 #define BLOCKS_SYNTH_H
 #include <stdint.h>
+#include "blocks_harmonics_suite.h"
 #include "blocks_sauce.h"
 #include "blocks_modulation.h"
 #include "blocks_voicing.h"
@@ -16,7 +17,7 @@ typedef enum bs_parameter_id {
   BS_GAIN=0, BS_OSC_MIX=1, BS_OSC2_DETUNE=2, BS_PULSE_WIDTH=3,
   BS_ATTACK=4, BS_DECAY=5, BS_SUSTAIN_LEVEL=6, BS_RELEASE=7,
   BS_ATTACK_BEND=8, BS_DECAY_BEND=9, BS_RELEASE_BEND=10,
-  BS_CUTOFF=11, BS_DRIVE=12, BS_DRIFT_CENTS=13, BS_DRIFT_HZ=14,
+  BS_CUTOFF=11, BS_DRIVE=12, /*12,36,38 reserved: Suite owns distortion.*/ BS_DRIFT_CENTS=13, BS_DRIFT_HZ=14,
   BS_PITCH_DROP_CENTS=15, BS_PITCH_DROP_TIME=16, BS_PITCH_DROP_BEND=17,
   BS_FULLNESS=18, BS_OSC1_WAVE=19, BS_OSC2_WAVE=20,
   BS_OSC1_LEVEL=21, BS_OSC2_LEVEL=22, BS_FILTER_MIX=23, BS_FILTER_AMOUNT=24,

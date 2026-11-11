@@ -8,13 +8,13 @@
 #include <blocks_filter_routing.h>
 #include <blocks_delay.h>
 #include <blocks_sound.h>
-#include <blocks_harmonics.h>
+#include <blocks_harmonics_suite.h>
 int main() {
   bs_synth* synth=bs_create();
   if(!synth) return 1;
   bs_sauce_config sauce{},sauceRead{};
-  bs_sound_config sound{},soundRead{};bs_harmonics_config harmonics{},harmonicsRead{};
-  bs_default_sound(&sound);bs_default_harmonics(&harmonics);
+  bs_sound_config sound{},soundRead{};bs_harmonics_suite_config harmonics{},harmonicsRead{};
+  bs_default_sound(&sound);bs_default_harmonics_suite(&harmonics);
   bs_delay_config delay{},delayRead{};
   bs_default_delay(&delay);
   bs_osc_bass_config_v2 bassV2{};bs_default_osc_bass_v2(&bassV2);bs_clock_config clock{};bs_default_clock(&clock);bs_sub_config sub{};bs_default_sub(&sub);
@@ -30,13 +30,13 @@ int main() {
     &&bs_set_filter_routing(synth,&routing)&&bs_get_filter_routing(synth,&routingRead)
     &&bs_get_osc_bass_phase(synth,0)==0
     &&bs_set_sound(synth,&sound)&&bs_get_sound(synth,&soundRead)
-    &&bs_set_harmonics(synth,&harmonics)&&bs_get_harmonics(synth,&harmonicsRead)
+    &&bs_set_harmonics_suite(synth,&harmonics)&&bs_get_harmonics_suite(synth,&harmonicsRead)
     &&bs_set_delay(synth,&delay)&&bs_get_delay(synth,&delayRead)&&bs_set_sauce(synth,&sauce)&&bs_get_sauce(synth,&sauceRead)
     &&bs_set_notes(synth,&notes)&&bs_get_notes(synth,&notesRead)
     &&bs_set_modulation_v3(synth,&modulationV3)&&bs_get_modulation_v3(synth,&modulationV3Read)
     &&bs_set_stereo_width(synth,1)&&bs_get_stereo_width(synth)==1
     &&bs_set_performance(synth,&performance)&&bs_get_performance(synth,&performanceRead);
-  if(!configured||soundRead.version!=BS_SOUND_VERSION||harmonicsRead.version!=BS_HARMONICS_VERSION||sauceRead.version!=BS_SAUCE_VERSION||notesRead.version!=BS_NOTES_VERSION
+  if(!configured||soundRead.version!=BS_SOUND_VERSION||harmonicsRead.version!=BS_HARMONICS_SUITE_VERSION||sauceRead.version!=BS_SAUCE_VERSION||notesRead.version!=BS_NOTES_VERSION
     ||modulationV3Read.version!=BS_MODULATION_V3_VERSION||performanceRead.version!=BS_PERFORMANCE_VERSION
     ||bs_notes_pending_mask(synth)!=0){bs_destroy(synth);return 2;}
   float preview[16]{};

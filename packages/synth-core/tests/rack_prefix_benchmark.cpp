@@ -41,13 +41,13 @@ bool run(bs_synth*s,bs_sauce_config&rack,unsigned prefix,bool measured,Result&re
 }
 int main(int argc,char**argv){
  if(argc!=2||bs_abi_version()!=7||bs_parameter_count()!=44)return 1;
- std::ofstream out(argv[1]);out<<std::setprecision(12)<<"{\"fixtureVersion\":1,\"kind\":\"Focused unchanged-prefix rack timing, not device validation\",\"sampleRate\":48000,\"blockFrames\":128,\"audioBlockBudgetMs\":"<<1000.*block/rate<<",\"cases\":[";bool first=true;
+ std::ofstream out(argv[1]);out<<std::setprecision(12)<<"{\"fixtureVersion\":2,\"kind\":\"Focused Fullness-only unchanged-prefix rack timing, not device validation\",\"sampleRate\":48000,\"blockFrames\":128,\"audioBlockBudgetMs\":"<<1000.*block/rate<<",\"cases\":[";bool first=true;
  for(unsigned wave=0;wave<2;++wave)for(unsigned mode=0;mode<2;++mode)for(unsigned prefix:{0u,8u,15u}){
   auto*s=bs_create();if(!s||!bs_prepare(s,rate))return 2;
   bs_set_parameter(s,BS_ATTACK,.003f);bs_set_parameter(s,BS_RELEASE,.1f);bs_set_parameter(s,BS_SUSTAIN_LEVEL,.65f);
   bs_set_parameter(s,BS_FILTER_MODE,float(mode));bs_set_parameter(s,BS_FILTER_RESONANCE,.75f);bs_set_parameter(s,BS_CUTOFF,1200);
   bs_set_parameter(s,BS_OSC1_WAVE,float(wave?4:2));bs_set_parameter(s,BS_OSC2_WAVE,3);
-  bs_sauce_config rack{};bs_default_sauce(&rack);rack.count=16;for(unsigned i=0;i<16;++i)rack.blocks[i]={i+1,i%2?BS_SAUCE_FULLNESS:BS_SAUCE_DRIVE,0,1,i%2?.5f:2.f};
+  bs_sauce_config rack{};bs_default_sauce(&rack);rack.count=16;for(unsigned i=0;i<16;++i)rack.blocks[i]={i+1,BS_SAUCE_FULLNESS,0,1,i%2?.5f:.2f};
   if(!bs_set_sauce(s,&rack))return 3;bs_reset(s);for(unsigned key=48;key<64;++key)bs_note_on(s,0,key,.65f);
   Result result;if(!run(s,rack,prefix,false,result))return 4;for(unsigned repeat=0;repeat<3;++repeat)if(!run(s,rack,prefix,true,result))return 4;
   bs_panic(s);bs_destroy(s);if(result.peak<1e-6||result.voices<16)return 5;

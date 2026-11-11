@@ -63,24 +63,9 @@
   },
   "rack": {
     "version": 1,
-    "audio": [
-      {
-        "id": 1,
-        "type": "harmonics",
-        "primary": false,
-        "enabled": true,
-        "amount": 1.8,
-        "model": "round",
-        "tone": -0.12,
-        "dynamics": 0.35,
-        "mix": 0.4,
-        "outputDb": -2.2
-      }
-    ],
+    "audio": [],
     "notes": [],
-    "order": [
-      "audio:1"
-    ]
+    "order": []
   },
   "modulation": {
     "version": 3,
@@ -191,7 +176,7 @@
     "filterDrive": 1.4
   },
   "macroVersions": {
-    "character": 5,
+    "suite": 1,
     "motion": 5
   },
   "name": "Studio warm bass",
@@ -240,5 +225,65 @@
     "version": 1,
     "osc1": true,
     "osc2": true
+  },
+  "suite": {
+    "version": 2,
+    "enabled": true,
+    "compEnabled": false,
+    "colourEnabled": true,
+    "style": "amp",
+    "crushEnabled": false,
+    "ottEnabled": false,
+    "colour2Enabled": false,
+    "colour2Style": "amp",
+    "compAutoMakeup": true,
+    "driveDb": 5.105450102066121,
+    "tone": -0.12,
+    "dynamics": 0,
+    "mix": 0.4,
+    "outputDb": -2.2,
+    "compThresholdDb": -30,
+    "compRatio": 4,
+    "compAttackMs": 3,
+    "compReleaseMs": 150,
+    "compKneeDb": 6,
+    "compMakeupDb": 0,
+    "crushAmount": 0,
+    "crushRecovery": 0.15,
+    "crushCrunchDb": 0,
+    "ottAmount": 0.5,
+    "ottTime": 1,
+    "ottUp": 1,
+    "ottDown": 1,
+    "colourMix": 1,
+    "colour2DriveDb": 0,
+    "colour2Tone": 0,
+    "colour2Mix": 1,
+    "ottLowHz": 88.3,
+    "ottHighHz": 2500,
+    "colourOutputDb": 0,
+    "colour2OutputDb": 0,
+    "crushOutputDb": 0,
+    "ottOutputDb": 0,
+    "ottBands": [
+      {
+        "thresholdDb": -38.9401,
+        "gainDb": 0,
+        "up": 1,
+        "down": 1
+      },
+      {
+        "thresholdDb": -34.8204,
+        "gainDb": 0,
+        "up": 1,
+        "down": 1
+      },
+      {
+        "thresholdDb": -41.6879,
+        "gainDb": 0,
+        "up": 1,
+        "down": 1
+      }
+    ]
   }
 }

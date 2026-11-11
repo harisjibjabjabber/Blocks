@@ -25,7 +25,8 @@ jobs:
           "$RUNNER_TEMP/native/blocks_synth_oscillator_voicing_tests" | tee "$RUNNER_TEMP/synth-evidence/native-oscillator-voicing.txt"
           "$RUNNER_TEMP/native/blocks_synth_osc_bass_tests" | tee "$RUNNER_TEMP/synth-evidence/native-osc-bass.txt"
           "$RUNNER_TEMP/native/blocks_synth_bass_expansion_tests" | tee "$RUNNER_TEMP/synth-evidence/native-bass-expansion.txt"
-          "$RUNNER_TEMP/native/blocks_synth_harmonics_quality_tests" | tee "$RUNNER_TEMP/synth-evidence/native-harmonics-quality.txt"
+          "$RUNNER_TEMP/native/blocks_synth_harmonics_suite_tests" | tee "$RUNNER_TEMP/synth-evidence/native-harmonics-suite.txt"
+          "$RUNNER_TEMP/native/blocks_synth_harmonics_suite_integration_tests" | tee "$RUNNER_TEMP/synth-evidence/native-harmonics-suite-integration.txt"
           ctest --test-dir "$RUNNER_TEMP/native" --output-on-failure
           cmake --install "$RUNNER_TEMP/native"
           cmake -S packages/synth-core/tests/consumer -B "$RUNNER_TEMP/consumer" -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/synth-install"
@@ -39,6 +40,7 @@ jobs:
           "$RUNNER_TEMP/native/blocks_synth_oscillator_routing_benchmark" > "$RUNNER_TEMP/synth-evidence/native-oscillator-routing-benchmark.txt"
           "$RUNNER_TEMP/native/blocks_synth_osc_bass_audition" "$RUNNER_TEMP/synth-evidence"
           "$RUNNER_TEMP/native/blocks_synth_bass_expansion_audition" "$RUNNER_TEMP/synth-evidence"
+          "$RUNNER_TEMP/native/blocks_synth_phase12_suite_audition" "$RUNNER_TEMP/synth-evidence"
           "$RUNNER_TEMP/native/blocks_synth_phase11_chain_benchmark" > "$RUNNER_TEMP/synth-evidence/native-phase11-chain.txt"
       - name: Install official Emscripten toolchain
         run: |
@@ -81,6 +83,8 @@ jobs:
           node scripts/synth-filter-shape-proof.mjs
           node scripts/synth-osc-bass-proof.mjs
           node scripts/synth-expansion-proof.mjs
+          node scripts/synth-suite-proof.mjs
+          node scripts/synth-suite-proof.mjs
           node scripts/synth-tone-layout-proof.mjs
           node scripts/synth-oscillator-proof.mjs
           node scripts/synth-cache-proof.mjs

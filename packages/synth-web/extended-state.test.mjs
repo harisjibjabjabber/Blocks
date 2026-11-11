@@ -4,10 +4,10 @@ import {DEFAULT_RACK,normalizeRack,newSauceBlock,hydrateRack,toCoreSauce,toCoreN
 import {DEFAULT_MODULATION,normalizeModulation,toCoreModulation,defaultLfo,shapeForWave,normalizeLfoPoints,sampleLfoPoints,randomLfoPoints,modulationDestinations,routeTargetKey} from './modulation-state.js';
 test('repeatable rack blocks are independent and serialize both processing lanes in exact order',()=>{
  let rack=normalizeRack(DEFAULT_RACK);assert.deepEqual(rack.audio,[]);assert.deepEqual(rack.notes,[]);
- for(const type of ['drive','drive','fullness'])rack.audio.push(newSauceBlock(rack,type));
+ for(const type of ['fullness','fullness','fullness'])rack.audio.push(newSauceBlock(rack,type));
  for(const type of ['arp','arp','strum','drop','drop'])rack.notes.push(newSauceBlock(rack,type));
- rack.audio[1].amount=8;rack.notes[1].performance.division='1/64';rack.notes[4].amount=1200;
- const copy=structuredClone(rack),normalized=normalizeRack(rack);assert.deepEqual(rack,copy);assert.equal(normalized.audio[0].amount,1);assert.equal(normalized.audio[1].amount,8);assert.equal(normalized.notes[0].performance.division,'1/8');
+ rack.audio[1].amount=.8;rack.notes[1].performance.division='1/64';rack.notes[4].amount=1200;
+ const copy=structuredClone(rack),normalized=normalizeRack(rack);assert.deepEqual(rack,copy);assert.equal(normalized.audio[0].amount,0);assert.equal(normalized.audio[1].amount,.8);assert.equal(normalized.notes[0].performance.division,'1/8');
  assert.deepEqual(toCoreSauce(rack).blocks.map(b=>b.id),rack.audio.map(b=>b.id));assert.equal(toCoreNotes(rack).blocks[1].perf.division,64);assert.equal(toCoreNotes(rack).blocks[4].drop_amount,1200);
  for(const bad of [{...rack,version:2},{...rack,audio:Array(17).fill(rack.audio[0])},{...rack,notes:[...rack.notes,rack.notes[0]]}])assert.throws(()=>normalizeRack(bad));
 });
@@ -25,7 +25,7 @@ test('filter resonance routes persist separately from tone; filter mode is never
 });
 
 test('global rack order projects typed subsequences without changing cross-type processing',()=>{
- let r=normalizeRack();r.notes.push(newSauceBlock(r,'arp'));r.audio.push(newSauceBlock(r,'drive'));r.audio.push(newSauceBlock(r,'fullness'));r=normalizeRack(r);const m=normalizeModulation();m.sources.push(defaultLfo(2));
+ let r=normalizeRack();r.notes.push(newSauceBlock(r,'arp'));r.audio.push(newSauceBlock(r,'fullness'));r.audio.push(newSauceBlock(r,'fullness'));r=normalizeRack(r);const m=normalizeModulation();m.sources.push(defaultLfo(2));
  const available=rackVisualOrder(r,m);assert.equal(available.length,4);const beforeAudio=toCoreSauce(r),beforeNotes=toCoreNotes(r);
  const mixed=['audio:2','lfo:2','notes:1','audio:3'];r=reorderRack(r,m,mixed);assert.deepEqual(r.order,mixed);assert.deepEqual(toCoreSauce(r),beforeAudio);assert.deepEqual(toCoreNotes(r),beforeNotes);
  r=reorderRack(r,m,['audio:3','notes:1','lfo:2','audio:2']);assert.deepEqual(r.audio.map(b=>b.id),[3,2]);assert.deepEqual(r.notes.map(b=>b.id),[1]);
@@ -50,6 +50,6 @@ test('new synced defaults preserve explicit current free clocks and random30poin
  let seed=1;const random=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296);const points=randomLfoPoints(30,random);assert.equal(points.length,30);assert.equal(points[0].y,points.at(-1).y);assert.notDeepEqual(points,randomLfoPoints(30,random));const m=normalizeModulation();m.sources[0].points=points;m.sources[0].waveform='custom';assert.deepEqual(normalizeModulation(JSON.parse(JSON.stringify(m))),m);
 });
 test('dynamic destinations key repeated blocks and LFO targets independently',()=>{
- const m=normalizeModulation(),r=normalizeRack();r.audio.push(newSauceBlock(r,'drive'));r.audio.push(newSauceBlock(r,'drive'));m.sources.push(defaultLfo(2));const destinations=modulationDestinations([],r,m);assert(destinations.some(d=>d.label==='Drive 2 · Amount'));assert(destinations.some(d=>d.label==='LFO 2 · Rate'));
+ const m=normalizeModulation(),r=normalizeRack();r.audio.push(newSauceBlock(r,'fullness'));r.audio.push(newSauceBlock(r,'fullness'));m.sources.push(defaultLfo(2));const destinations=modulationDestinations([],r,m);assert(destinations.some(d=>d.label==='Fullness 2 · Amount'));assert(destinations.some(d=>d.label==='LFO 2 · Rate'));
  m.sources[0].routes=[{kind:'sauce',targetId:2,parameter:0,depth:.4},{kind:'lfo',targetId:1,parameter:0,depth:.3},{kind:'lfo',targetId:2,parameter:0,depth:-.2}];const saved=normalizeModulation(m);assert.equal(new Set(saved.sources[0].routes.map(routeTargetKey)).size,3);assert.deepEqual(toCoreModulation(saved).sources[0].routes.map(r=>r.target_kind),[1,2,2]);assert.throws(()=>normalizeModulation({...m,version:2}));
 });

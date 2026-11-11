@@ -1,0 +1,40 @@
+Harmonics Suite multiband gain-law adaptation
+
+The fitted gain-law constants, depth curves and timing laws in
+src/suite_ott_curve.h are adapted from the xfer_ott function by David Braun,
+which explicitly declares an MIT license in Faust's compressors.lib:
+https://github.com/grame-cncm/faustlibraries/blob/b8f0e061808aa320b899e82f81043164ace1d00f/compressors.lib
+
+Only this explicitly MIT-licensed function is adapted. Other functions in the
+same library have different licenses and are not incorporated. Blocks supplies
+its own crossover, parameter smoothing, silence handling and threshold UI.
+The source's published accuracy measurements do not describe this modified
+implementation. There is no affiliation with or endorsement by Xfer Records.
+
+Copyright (c) David Braun
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+Research-only references
+
+Gin/MGA, Airwindows Point, SPL, Softube and Soundtoys were consulted for
+published detector, musical-control and staged-processing principles. No
+source from those implementations is incorporated. The Amp, Tape, Clip,
+Sine Crush, Rectify and signed Dynamics algorithms are original Blocks DSP,
+not simulations of a named commercial circuit or licensed plugin model.

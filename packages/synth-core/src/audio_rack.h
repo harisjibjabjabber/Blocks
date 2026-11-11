@@ -2,8 +2,6 @@
 #define BLOCKS_AUDIO_RACK_H
 #include "blocks_sauce.h"
 #include "fullness.h"
-#include "sauce.h"
-#include "harmonics.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -14,20 +12,18 @@ public:
  struct Modulation {struct Offset{uint32_t id=0;double value=0;};std::array<Offset,32> offsets{};unsigned count=0;double at(uint32_t id)const{for(unsigned i=0;i<count;++i)if(offsets[i].id==id)return offsets[i].value;return 0;}};
 private:
  const Modulation*modulation_=nullptr;
- struct State {FullnessPath fullness;Harmonics harmonics;double amount=0,enabled=0,modulation=0;};
- struct Graph {bs_sauce_config config{};std::array<State,BS_SAUCE_CAPACITY> states{};SauceRack base;bool includeBase=false,primaryDrive=false,primaryFullness=false;};
+ struct State {FullnessPath fullness;double amount=0,enabled=0,modulation=0;};
+ struct Graph {bs_sauce_config config{};std::array<State,BS_SAUCE_CAPACITY> states{};FullnessPath base;bool includeBase=false,primaryFullness=false;};
  Graph active_{},old_{};bs_sauce_config requested_{};bool pending_=false,includeBase_=false;uint32_t position_=0,length_=0,sharedPrefix_=0;bool sharedBase_=false;double rate_=48000,smoothing_=1-std::exp(-1.0/240);
- bs_harmonics_config harmonicsConfig_=defaultHarmonics();double linkedMagnitude_=-1,amplitudeContext_=1;
  static bool equal(const bs_sauce_config&a,const bs_sauce_config&b){if(a.version!=b.version||a.count!=b.count)return false;for(unsigned i=0;i<a.count;++i){const auto&x=a.blocks[i];const auto&y=b.blocks[i];if(x.id!=y.id||x.type!=y.type||x.primary!=y.primary||x.enabled!=y.enabled||x.amount!=y.amount)return false;}return true;}
  void begin(const bs_sauce_config&config,bool immediate){
   old_=active_;Graph next{};next.config=config;next.base=active_.base;next.includeBase=includeBase_;
-  for(unsigned i=0;i<config.count;++i){const auto&b=config.blocks[i];if(b.primary){next.primaryDrive|=b.type==BS_SAUCE_DRIVE;next.primaryFullness|=b.type==BS_SAUCE_FULLNESS;}auto&state=next.states[i];state.amount=b.amount;state.enabled=b.enabled;
-   bool retained=false;for(unsigned j=0;j<active_.config.count;++j)if(active_.config.blocks[j].id==b.id&&active_.config.blocks[j].type==b.type){state=active_.states[j];retained=true;break;}
-   if(b.type==BS_SAUCE_HARMONICS){if(!retained)state.harmonics.prepare(rate_);state.harmonics.configure(harmonicsEntry(harmonicsConfig_,b.id),immediate||!retained);if(state.enabled==0&&b.enabled)state.harmonics.reset();state.enabled=b.enabled;}
+  for(unsigned i=0;i<config.count;++i){const auto&b=config.blocks[i];if(b.primary){next.primaryFullness=true;}auto&state=next.states[i];state.amount=b.amount;state.enabled=b.enabled;
+   for(unsigned j=0;j<active_.config.count;++j)if(active_.config.blocks[j].id==b.id&&active_.config.blocks[j].type==b.type){state=active_.states[j];break;}
    if(immediate){state.amount=b.amount;state.enabled=b.enabled;}
   }
   active_=next;position_=0;length_=immediate?0:uint32_t(std::max(1.0,std::ceil(rate_*.005)));
-  sharedBase_=active_.includeBase==old_.includeBase&&(!active_.includeBase||(active_.primaryDrive==old_.primaryDrive&&active_.primaryFullness==old_.primaryFullness));
+  sharedBase_=active_.includeBase==old_.includeBase&&(!active_.includeBase||(active_.primaryFullness==old_.primaryFullness));
   sharedPrefix_=0;
   if(sharedBase_)while(sharedPrefix_<std::min(active_.config.count,old_.config.count)){
    const auto&a=active_.config.blocks[sharedPrefix_];const auto&b=old_.config.blocks[sharedPrefix_];
@@ -35,18 +31,15 @@ private:
    ++sharedPrefix_;
   }
  }
- double base(Graph&g,double input,double driveAmount,double fullnessAmount,double driveEnabled,double fullnessEnabled,double dcPole,double alpha,double baseOrder){
-  return g.includeBase?g.base.process(input,driveAmount,fullnessAmount,baseOrder,g.primaryDrive?0:driveEnabled,g.primaryFullness?0:fullnessEnabled,dcPole,alpha):input;
- }
- double stages(Graph&g,double input,unsigned start,unsigned end,double driveAmount,double fullnessAmount,double driveEnabled,double fullnessEnabled,double dcPole,double alpha){
+ static double body(FullnessPath&state,double input,double amount,double dcPole,double alpha){const double residual=state.process(input,dcPole),colour=amount>0?input+amount*residual:input;const double low=state.body(colour,alpha);return amount>0?colour+amount*low:colour;}
+ double base(Graph&g,double input,double,double fullnessAmount,double,double fullnessEnabled,double dcPole,double alpha,double){return g.includeBase?body(g.base,input,g.primaryFullness?0:fullnessAmount*fullnessEnabled,dcPole,alpha):input;}
+ double stages(Graph&g,double input,unsigned start,unsigned end,double,double fullnessAmount,double,double fullnessEnabled,double dcPole,double alpha){
   for(unsigned i=start;i<end;++i){const auto&b=g.config.blocks[i];auto&state=g.states[i];double amount,enabled;
-   if(b.primary){amount=b.type==BS_SAUCE_DRIVE?driveAmount:fullnessAmount;enabled=b.type==BS_SAUCE_DRIVE?driveEnabled:fullnessEnabled;}
+   if(b.primary){amount=fullnessAmount;enabled=fullnessEnabled;}
    else{state.amount+=smoothing_*(b.amount-state.amount);state.enabled+=smoothing_*(b.enabled-state.enabled);if(std::abs(state.amount-b.amount)<1e-12)state.amount=b.amount;if(std::abs(state.enabled-b.enabled)<1e-12)state.enabled=b.enabled;amount=state.amount;enabled=state.enabled;}
    const double modTarget=modulation_?modulation_->at(b.id):0;
-   if(modTarget!=0||state.modulation!=0){state.modulation+=smoothing_*(modTarget-state.modulation);if(std::abs(state.modulation-modTarget)<1e-12)state.modulation=modTarget;if(state.modulation!=0)amount=b.type!=BS_SAUCE_FULLNESS?std::max(1.,std::min(12.,amount*std::exp(2.4849066497880004*std::max(-4.,std::min(4.,state.modulation))))):std::max(0.,std::min(1.,amount+state.modulation));}
-   if(b.type==BS_SAUCE_DRIVE){if(enabled!=0){const double wet=std::tanh(input*amount);input=enabled==1?wet:input+enabled*(wet-input);}}
-   else if(b.type==BS_SAUCE_FULLNESS){const double depth=amount*enabled,residual=state.fullness.process(input,dcPole),colour=depth>0?input+depth*residual:input,body=state.fullness.body(colour,alpha);input=depth>0?colour+depth*body:colour;}
-   else if(enabled!=0){const double wet=state.harmonics.process(input,amount,linkedMagnitude_,(linkedMagnitude_>=0?linkedMagnitude_:std::abs(input))*std::abs(amplitudeContext_));input=enabled==1?wet:input+enabled*(wet-input);}
+   if(modTarget!=0||state.modulation!=0){state.modulation+=smoothing_*(modTarget-state.modulation);if(std::abs(state.modulation-modTarget)<1e-12)state.modulation=modTarget;amount=std::clamp(amount+state.modulation,0.,1.);}
+   input=body(state.fullness,input,amount*enabled,dcPole,alpha);
   }
   return input;
  }
@@ -56,17 +49,14 @@ private:
  }
 
 public:
- static bs_sauce_config defaults(){bs_sauce_config c{};c.version=BS_SAUCE_VERSION;c.count=2;c.blocks[0]={1,BS_SAUCE_DRIVE,1,1,1};c.blocks[1]={2,BS_SAUCE_FULLNESS,1,1,0};return c;}
- static bool valid(const bs_sauce_config&c){if(c.version!=BS_SAUCE_VERSION||c.count>BS_SAUCE_CAPACITY)return false;bool primary[2]={false,false};for(unsigned i=0;i<c.count;++i){const auto&b=c.blocks[i];if(!b.id||b.type>BS_SAUCE_HARMONICS||b.primary>1||b.enabled>1||!std::isfinite(b.amount)||b.amount<(b.type==BS_SAUCE_FULLNESS?0.f:1.f)||b.amount>(b.type==BS_SAUCE_FULLNESS?1.f:12.f)||(b.type==BS_SAUCE_HARMONICS&&b.primary))return false;if(b.primary){if(primary[b.type])return false;primary[b.type]=true;}for(unsigned j=0;j<i;++j)if(c.blocks[j].id==b.id)return false;}return true;}
- static bool valid(const bs_harmonics_config&c){return validHarmonics(c);}
- bool setHarmonics(const bs_harmonics_config&c,bool immediate=false){if(!validHarmonics(c))return false;harmonicsConfig_=c;for(auto*g:{&active_,&old_})for(unsigned i=0;i<g->config.count;++i)if(g->config.blocks[i].type==BS_SAUCE_HARMONICS)g->states[i].harmonics.configure(harmonicsEntry(c,g->config.blocks[i].id),immediate);return true;}
- const bs_harmonics_config&harmonicsConfig()const{return harmonicsConfig_;}
+ static bs_sauce_config defaults(){bs_sauce_config c{};c.version=BS_SAUCE_VERSION;return c;}
+ static bool valid(const bs_sauce_config&c){if(c.version!=BS_SAUCE_VERSION||c.count>BS_SAUCE_CAPACITY)return false;bool primary=false;for(unsigned i=0;i<c.count;++i){const auto&b=c.blocks[i];if(!b.id||b.type!=BS_SAUCE_FULLNESS||b.primary>1||b.enabled>1||!std::isfinite(b.amount)||b.amount<0||b.amount>1||(b.primary&&primary))return false;if(b.primary)primary=true;for(unsigned j=0;j<i;++j)if(c.blocks[j].id==b.id)return false;}return true;}
  AudioRack(){requested_=defaults();begin(requested_,true);}
  bool configure(const bs_sauce_config&config,double rate,bool immediate=false,bool includeBase=false){if(!valid(config)||!std::isfinite(rate)||rate<8000||rate>384000)return false;rate_=rate;includeBase_=includeBase;smoothing_=1-std::exp(-1/(.005*rate));requested_=config;if(immediate){pending_=false;begin(config,true);}else if(length_){pending_=!equal(config,active_.config)||includeBase_!=active_.includeBase;}else if(!equal(config,active_.config)||includeBase_!=active_.includeBase)begin(config,false);return true;}
  const bs_sauce_config&config()const{return requested_;}
  bool transitioning()const{return length_!=0||pending_;}
  double process(double input,double driveAmount,double fullnessAmount,double driveEnabled,double fullnessEnabled,double dcPole,double alpha,double baseOrder=0,const Modulation*modulation=nullptr,double linkedMagnitude=-1,double amplitudeContext=1){
-  modulation_=modulation;linkedMagnitude_=linkedMagnitude;amplitudeContext_=amplitudeContext;
+  modulation_=modulation;(void)linkedMagnitude;(void)amplitudeContext;
   if(!length_)return graph(active_,input,driveAmount,fullnessAmount,driveEnabled,fullnessEnabled,dcPole,alpha,baseOrder);
   double current,prior;
   if(sharedBase_){

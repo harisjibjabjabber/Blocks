@@ -10,7 +10,7 @@ The shared Filter has Soft, resonant LP12 and nonlinear Ladder LP24 modes, indep
 
 The mini Sub is centred and monophonic, with Level, Octave and Clean/FX routing. Details contains Sine/Triangle and lowest/last-note priority. It follows performed notes, sustain, release and glide. Clean bypasses colour, filtering, width and delay while retaining amplitude gating, master volume and final output protection. The inactive Sub shares the desktop waveform strip; enabled details can scroll.
 
-Sauce contains repeatable, reorderable Drive, Fullness and Harmonics blocks plus Arp, Strum and Pitch Drop note processors. Harmonics offers only Round, Tube and Fold, with Drive/Tone/Dynamics/Mix on the main card and Output in Details. Dynamics uses the actual voice envelope/velocity context. Width and regular/ping-pong Delay operate on the output bus. Drawable LFOs support typed routes and source phase display. Extended mapping for the new Bass parameters remains future work.
+Sauce contains repeatable, reorderable Fullness blocks plus Arp, Strum and Pitch Drop note processors. Harmonics has its own page with independent Compressor, Colour, Crush and OTT-style stages. Two serial Colour slots offer Amp, Clip, Sine Crush, Tape and Rectify with independent Drive/Tone/Mix/Output; signed Dynamics uses audio-domain compression/expansion (Tight/Neutral/Bloom), leaving ADSR unchanged. Mix preserves aligned original dry audio. Details exposes timing, knee, makeup, recovery, multiband strengths and output trim. Colour reference diagrams are settings previews; the level/gain meters come from the native processor. Character shares the same Suite Drive state through its shortcut. Width and Delay follow the Suite; Clean Sub bypasses processing with the same24sample alignment. Drawable LFOs retain typed routes; extended Suite/Bass mapping remains future work.
 
 Preset/import/Init release voices. Dial edits remain live, completed gestures create one Undo entry, and Escape/pointer cancellation restores their starting state. The touch keyboard and MIDI are optional ways to play. [Two complete example patches](examples/README.md) are bundled as listening starting points.
 
@@ -27,14 +27,14 @@ node scripts/build-synth.mjs
 python -m http.server 41821 --bind 127.0.0.1 --directory packages/synth-web/build
 ```
 
-Open http://127.0.0.1:41821 and press Start sound. Serve the complete output directory, including fonts and OFL notices. HTTPS is required away from localhost. There is no backend. Every module, worklet, WASM binary and stylesheet uses one content revision to avoid stale mixed assets; the build removes the retired source-comparison UI file.
+Open http://127.0.0.1:41821 and press Start sound. Serve the complete output directory, including fonts and OFL notices. HTTPS is required away from localhost. There is no backend. Every module, worklet, WASM binary and stylesheet uses one content revision to avoid stale mixed assets; the build removes retired source-comparison and per-node Harmonics UI assets.
 
 ## Current patch format
 
-Export writes `blocks-synth-patch`, tone version 7/count 44, and complete performance, rack, modulation v3, explicit clock, Sub, Bass v2, Voicing v2, sound, routing, delay and width sections. Import validates every section before mutation, including representable Float32 parameter boundaries. Retired/incomplete formats are rejected; no patch migrations or compatibility fallbacks remain.
+Export writes `blocks-synth-patch`, tone version 7/count 44, and complete performance, rack, modulation v3, explicit clock, Sub, Bass v2, Voicing v2, sound, routing, delay, width and mandatory current Suite v2 sections. Import validates every section before mutation, including representable Float32 parameter boundaries. Retired/incomplete formats are rejected; no patch migrations or compatibility fallbacks remain.
 
 ## Verification and references
 
 Run `node --test packages/synth-web/*.test.mjs`. Focused browser checks include `synth-expansion-proof.mjs`, `synth-osc-bass-proof.mjs`, `synth-sound-proof.mjs`, `synth-tone-layout-proof.mjs`, `synth-gesture-proof.mjs`, `synth-standalone-proof.mjs`, `synth-filter-shape-proof.mjs` and `synth-cache-proof.mjs` under `scripts/`. They use isolated muted Chrome profiles; they never attach to the user's browser.
 
-See [Bass/Sub/clock contracts](../../docs/audio-references/bass-expansion-implementation.md), [Harmonics design and measured limits](../../docs/research/harmonics-quality-20261111.md) and the [product roadmap](../../docs/synth-product-plan.md). Listening and physical-device acceptance are separate from automated checks. Sampler, MIDI Pitch Echo, Moving Space, VST packaging and external audio input are future work.
+See [Bass/Sub/clock contracts](../../docs/audio-references/bass-expansion-implementation.md), [Phase12 Harmonics design and references](../../docs/research/phase12-harmonics-suite.md) and the [product roadmap](../../docs/synth-product-plan.md). Listening and physical-device acceptance are separate from automated checks. Sampler, MIDI Pitch Echo, Moving Space, VST packaging and external audio input are future work.

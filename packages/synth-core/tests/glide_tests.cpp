@@ -19,7 +19,7 @@ static double pitch(const Audio&a,unsigned center,unsigned radius=240){double fi
 static bs_event on(unsigned t,unsigned key){return {t,BS_NOTE_ON,0,key,0,1};}static bs_event off(unsigned t,unsigned key){return {t,BS_NOTE_OFF,0,key,0,0};}
 int main(){
  {Synth s;CHECK(bs_abi_version()==7&&bs_parameter_count()==44&&sizeof(bs_patch)==180);bs_patch p{},q{};CHECK(bs_get_patch(s.p,&p));p.values[40]=1;p.values[41]=.35f;CHECK(bs_set_patch(s.p,&p));CHECK(bs_get_patch(s.p,&q));CHECK(std::memcmp(&p,&q,sizeof p)==0);p.values[41]=std::numeric_limits<float>::infinity();CHECK(!bs_set_patch(s.p,&p));bs_patch retained{};bs_get_patch(s.p,&retained);CHECK(std::memcmp(&retained,&q,sizeof q)==0);}
- std::puts("PASS current Glide schema, v5 prefix defaults, exact roundtrip and atomic invalid rejection");
+ std::puts("PASS current Glide schema, exact roundtrip and atomic invalid rejection");
  {Synth s;const auto a=render(s.p,24000,127,{on(0,72),on(9600,84)});CHECK(std::abs(pitch(a,4800)-72)<.01);CHECK(std::abs(pitch(a,12000)-75)<.07);CHECK(std::abs(pitch(a,14400)-78)<.07);CHECK(std::abs(pitch(a,16800)-81)<.07);CHECK(std::abs(pitch(a,21600)-84)<.01);CHECK(bs_active_voices(s.p)==1);std::printf("METRIC Glide quarter/mid/threequarter MIDI=%.5f/%.5f/%.5f\n",pitch(a,12000),pitch(a,14400),pitch(a,16800));}
  std::puts("PASS first Mono note immediate and overlapping octave Glide is constant-time in log frequency");
  {Synth s;const auto a=render(s.p,30000,127,{on(0,72),on(9600,84),on(12000,79),off(14400,79),off(16800,84)});CHECK(std::abs(pitch(a,13920)-75.8)<.08);CHECK(std::abs(pitch(a,16320)-77.6)<.08);CHECK(std::abs(pitch(a,19200)-76.5)<.08);CHECK(std::abs(pitch(a,28800)-72)<.01);}

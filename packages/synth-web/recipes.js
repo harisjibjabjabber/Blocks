@@ -7,7 +7,6 @@ export const motionRecipe = Object.freeze({
     Object.freeze({id:35,minimum:1,maximum:1}),
   ]),
 });
-export const characterRecipe=Object.freeze({id:'character',version:5,targets:Object.freeze([Object.freeze({id:12,minimum:1,maximum:2.2})])});
 const clamp = value => Math.max(0, Math.min(1, value));
 function mapped(target,n){
  if(!target.points)return target.minimum+n*(target.maximum-target.minimum);

@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="dial-reset.css">
 <link rel="stylesheet" href="output-ui.css">
 <link rel="stylesheet" href="sound-ui.css">
+<link rel="stylesheet" href="harmonics-ui.css">
 </head>
 <body>
   <main class="instrument" aria-label="Blocks synthesizer">
@@ -35,9 +36,11 @@
       <button type="button" data-module="tone" class="selected" aria-pressed="true">Tone</button>
       <button type="button" data-module="envelope" aria-pressed="false">Envelope</button>
       <button type="button" data-module="character" aria-pressed="false">Character</button>
+      <button type="button" data-module="harmonics" aria-pressed="false">Harmonics</button>
       <button type="button" data-module="drop" aria-pressed="false">Sauce</button>
       <button type="button" data-module="lfo" aria-pressed="false">LFO</button>
     </nav>
+    <section id="harmonics-page" hidden aria-label="Harmonics suite"></section>
     <div id="sauce-rack" hidden></div>
     <section id="sauce-output" hidden aria-label="Sauce output effects"></section>
     <section id="sound-editor" class="sound-editor" aria-label="Sound editing">

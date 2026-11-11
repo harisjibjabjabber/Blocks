@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <cstring>
 namespace blocks_detail {
-inline bool modulationTarget(uint32_t id){switch(id){case 0:case 2:case 3:case 11:case 12:case 13:case 14:case 18:case 21:case 22:case 23:case 24:case BS_FILTER_RESONANCE:return true;default:return false;}}
+inline bool modulationTarget(uint32_t id){switch(id){case 0:case 2:case 3:case 11:case 13:case 14:case 18:case 21:case 22:case 23:case 24:case BS_FILTER_RESONANCE:return true;default:return false;}}
 template<class Source>inline void defaultLfoShape(Source&s){s.retrigger=0;s.point_count=9;constexpr float h=.7071067811865475244f;const float y[]={0,h,1,h,0,-h,-1,-h,0};for(unsigned i=0;i<9;++i)s.points[i]={float(i)/8,y[i],0};}
 inline bs_modulation_config_v3 defaultModulationV3(){bs_modulation_config_v3 c{};c.version=3;c.source_count=1;auto&s=c.sources[0];s.id=1;s.division=4;s.rate_hz=1;s.intensity=1;s.route_count=2;s.routes[0]={0,0,11,.3f};s.routes[1]={0,0,0,.2f};defaultLfoShape(s);return c;}
 class Modulation {
