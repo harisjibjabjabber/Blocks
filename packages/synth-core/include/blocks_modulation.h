@@ -5,73 +5,15 @@
 extern "C" {
 #endif
 typedef struct bs_synth bs_synth;
-#define BS_MODULATION_VERSION 1u
 #define BS_MAX_LFOS 4u
 #define BS_MAX_LFO_ROUTES 8u
-#define BS_MODULATION_V2_VERSION 2u
-#define BS_MAX_LFO_POINTS 16u
 #define BS_MODULATION_V3_VERSION 3u
 #define BS_MAX_LFO_POINTS_V3 32u
 typedef enum bs_lfo_waveform { BS_LFO_SINE=0, BS_LFO_TRIANGLE=1, BS_LFO_SAW=2, BS_LFO_SQUARE=3, BS_LFO_SMOOTH_RANDOM=4, BS_LFO_CUSTOM=5 } bs_lfo_waveform;
-/* Physical tone values remain saved independently. Depth is bipolar normalized
- * range displacement; the host/core applies the target's linear/log mapping. */
-typedef struct bs_lfo_route { uint32_t parameter_id; float depth; } bs_lfo_route;
-typedef struct bs_lfo_source {
- uint32_t id,enabled,waveform,synced,division,triplet;
- float rate_hz,intensity;
- uint32_t route_count;
- bs_lfo_route routes[BS_MAX_LFO_ROUTES];
-} bs_lfo_source;
-typedef struct bs_modulation_config {
- uint32_t version,source_count;
- bs_lfo_source sources[BS_MAX_LFOS];
-} bs_modulation_config;
-/* Sizes: route8, source100, config408. Unique source IDs preserve phase across
- * edits/reordering. Duplicate target IDs within a source are rejected. Sync
- * division1/2/4/8/16/32/64; triplets only through16. Atomic rejection on invalid
- * config. No NoteOn/panic reset; explicit engine reset resets all LFO clocks. */
-void bs_default_modulation(bs_modulation_config *config);
-int bs_set_modulation(bs_synth *synth,const bs_modulation_config *config);
-int bs_get_modulation(const bs_synth *synth,bs_modulation_config *config);
-/* Additive v2 API: v1 functions still read/write exactly408 bytes. The v1
- * setter imports built-in/free-running state; its getter rejects Custom, retrigger or nondefault remembered shape
- * state atomically, without writing a lossy/oversized result. */
-typedef struct bs_lfo_point { float x,y,bend; } bs_lfo_point;
-typedef struct bs_lfo_source_v2 {
- uint32_t id,enabled,waveform,synced,division,triplet;
- float rate_hz,intensity;
- uint32_t route_count;
- bs_lfo_route routes[BS_MAX_LFO_ROUTES];
- uint32_t retrigger,point_count;
- bs_lfo_point points[BS_MAX_LFO_POINTS];
-} bs_lfo_source_v2;
-typedef struct bs_modulation_config_v2 {
- uint32_t version,source_count;
- bs_lfo_source_v2 sources[BS_MAX_LFOS];
-} bs_modulation_config_v2;
-/* Point12/source300/config1208 bytes. Source prefix0..99 is the v1 source;
- * retrigger100, point_count104, points108. Config sources begin8.
- *2..16 points, x0=0/xlast=1, minimum x separation1/1024; y/bend in[-1,1].
- * Endpoint y values may differ: wrapping then deliberately jumps to the first.
- * Outgoing segment easing q=t+bend*t*(1-t) has exact endpoints/no overshoot.
- * Shapes persist with built-in waveforms selected; edits preserve ID clocks.
- * Retrigger is whole-instrument: each final accepted NoteOn requests phase0
- * once per sample before evaluation, including generated/Mono-return attacks.
- * Free-running sources, panic and NoteOff do not reset phase. */
-void bs_default_modulation_v2(bs_modulation_config_v2 *config);
-int bs_set_modulation_v2(bs_synth *synth,const bs_modulation_config_v2 *config);
-int bs_get_modulation_v2(const bs_synth *synth,bs_modulation_config_v2 *config);
-/* Additive v3: source556/config2232. routes@36 (8x16 bytes),
- * retrigger164, point_count168, points172 (32x12 bytes). v1/v2 stay unchanged.
- * target_kind0: tone, target_id0, parameter_id is a continuous tone ID.
- * target_kind1: Sauce block stable ID, parameter_id0=amount.
- * target_kind2: LFO stable ID, parameter_id0=rate,1=intensity.
- * Missing target IDs are inert. Repeated identical targets are rejected.
- * LFO feedback uses previous-sample output, stable-ID reduction,5ms smoothing;
- * rate depth scales by exp2(4*offset), effectiveHz bounded .003125..1280
- * including synced clocks; intensity adds offset and clamps0..1.
- * Sauce Drive uses log-range displacement, Fullness linear. No note routes.
- * Legacy getters reject non-tone routes or unrepresentable shapes atomically. */
+typedef struct bs_lfo_point {float x,y,bend;} bs_lfo_point;
+/* Current2232-byte config: stable source IDs,32 points,8 routes/source.
+ * target_kind0tone/1Sauceamount/2LFOrate-intensity. Canonical ID reduction,
+ * previous-sample crossmod feedback; clock phase persists on config edits. */
 typedef struct bs_lfo_route_v3 { uint32_t target_kind,target_id,parameter_id;float depth; } bs_lfo_route_v3;
 typedef struct bs_lfo_source_v3 {
  uint32_t id,enabled,waveform,synced,division,triplet;

@@ -5,23 +5,21 @@
 extern "C" {
 #endif
 typedef struct bs_synth bs_synth;
-#define BS_OSC_BASS_VERSION 1u
-/* Opt-in phase-domain source flavour, independently per oscillator.
- * enabled0/1,Spin.1..20Hz,Motion/Grit0..1. Defaults off/4/.65/.35.
- * Fixed fundamental plus moving bandlimited overtones; no FIR latency.
- * Free-running clocks continue through idle/retrigger; reset starts at0.
- * Controls5ms-smoothed; normal oscillator/Unison phase ownership unchanged. */
-typedef struct bs_osc_bass_entry {uint32_t enabled;float spin_hz,motion,grit;} bs_osc_bass_entry;
-typedef struct bs_osc_bass_config {uint32_t version,reserved;bs_osc_bass_entry oscillators[2];} bs_osc_bass_config;
-void bs_default_osc_bass(bs_osc_bass_config *config);
-int bs_set_osc_bass(bs_synth *synth,const bs_osc_bass_config *config);
-int bs_get_osc_bass(const bs_synth *synth,bs_osc_bass_config *config);
-double bs_get_osc_bass_phase(const bs_synth *synth,uint32_t oscillator);
-/* Pure shape preview from the actual source algorithm. No synth required.
- * wave0..4,quality0Legacy/1Studio,width.1..9,phase0..1,freq>0 belowNyquist,
- * rate8k..384k,samples1..2048. Writes nothing on invalid inputs. Each output
- * spans one waveform period; phase is the fixed rotation-clock pose. */
-int bs_osc_bass_preview(uint32_t wave,uint32_t source_quality,float pulse_width,const bs_osc_bass_entry *settings,double rotation_phase,double frequency_hz,double sample_rate,float *output,uint32_t samples);
+#define BS_OSC_BASS_VERSION 2u
+/* Current80-byte state. voice0Rotor1Growl2Throat3Fray; Spin.1..20Hz;
+ * Motion/Grit0..1; cycle_beats.03125..64; Curl-.8...8. enabled/synced/
+ * retrigger0/1. No older state decoding. Controls smooth without note reset. */
+typedef struct bs_osc_bass_entry_v2 {uint32_t enabled,voice,synced,retrigger;float spin_hz,motion,grit,cycle_beats,curl;} bs_osc_bass_entry_v2;
+typedef struct bs_osc_bass_config_v2 {uint32_t version,reserved;bs_osc_bass_entry_v2 oscillators[2];} bs_osc_bass_config_v2;
+void bs_default_osc_bass_v2(bs_osc_bass_config_v2*);
+int bs_set_osc_bass_v2(bs_synth*,const bs_osc_bass_config_v2*);
+int bs_get_osc_bass_v2(const bs_synth*,bs_osc_bass_config_v2*);
+/* Pure current Studio source preview; source_quality must1. */
+int bs_osc_bass_preview_v2(uint32_t wave,uint32_t source_quality,float pulse_width,const bs_osc_bass_entry_v2*,double rotation_phase,double frequency_hz,double sample_rate,double bpm,float envelope,float velocity,float* output,uint32_t samples);
+double bs_get_osc_bass_phase(const bs_synth*,uint32_t oscillator);
+double bs_get_osc_bass_raw_phase(const bs_synth*,uint32_t oscillator);
+double bs_get_osc_bass_rate(const bs_synth*,uint32_t oscillator);
+double bs_osc_bass_warp_phase(double phase,float curl);
 #ifdef __cplusplus
 }
 #endif

@@ -13,11 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check out frozen audio baseline
-        uses: actions/checkout@v4
-        with:
-          ref: dceb0d25f1f185061f1d6ab0721ddab0c3fa2586
-          path: .comparison-baseline
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -29,6 +24,8 @@ jobs:
           "$RUNNER_TEMP/native/blocks_synth_ladder_polyphase_tests" | tee "$RUNNER_TEMP/synth-evidence/native-ladder-polyphase.txt"
           "$RUNNER_TEMP/native/blocks_synth_oscillator_voicing_tests" | tee "$RUNNER_TEMP/synth-evidence/native-oscillator-voicing.txt"
           "$RUNNER_TEMP/native/blocks_synth_osc_bass_tests" | tee "$RUNNER_TEMP/synth-evidence/native-osc-bass.txt"
+          "$RUNNER_TEMP/native/blocks_synth_bass_expansion_tests" | tee "$RUNNER_TEMP/synth-evidence/native-bass-expansion.txt"
+          "$RUNNER_TEMP/native/blocks_synth_harmonics_quality_tests" | tee "$RUNNER_TEMP/synth-evidence/native-harmonics-quality.txt"
           ctest --test-dir "$RUNNER_TEMP/native" --output-on-failure
           cmake --install "$RUNNER_TEMP/native"
           cmake -S packages/synth-core/tests/consumer -B "$RUNNER_TEMP/consumer" -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/synth-install"
@@ -41,8 +38,8 @@ jobs:
           "$RUNNER_TEMP/native/blocks_synth_sound_quality_benchmark" > "$RUNNER_TEMP/synth-evidence/native-sound-quality-benchmark.txt"
           "$RUNNER_TEMP/native/blocks_synth_oscillator_routing_benchmark" > "$RUNNER_TEMP/synth-evidence/native-oscillator-routing-benchmark.txt"
           "$RUNNER_TEMP/native/blocks_synth_osc_bass_audition" "$RUNNER_TEMP/synth-evidence"
-      - name: Exact native rack compatibility
-        run: node scripts/compare-rack-audio.mjs --before=.comparison-baseline/packages/synth-core --backend=native --out="$RUNNER_TEMP/rack-native"
+          "$RUNNER_TEMP/native/blocks_synth_bass_expansion_audition" "$RUNNER_TEMP/synth-evidence"
+          "$RUNNER_TEMP/native/blocks_synth_phase11_chain_benchmark" > "$RUNNER_TEMP/synth-evidence/native-phase11-chain.txt"
       - name: Install official Emscripten toolchain
         run: |
           git clone --depth 1 --branch 7.0.0 https://github.com/emscripten-core/emsdk.git "$RUNNER_TEMP/emsdk"
@@ -58,8 +55,6 @@ jobs:
           node scripts/test-synth-core.mjs
           node scripts/compare-synth-renders.mjs "$RUNNER_TEMP/synth-evidence/native.wav" "$RUNNER_TEMP/synth-evidence/wasm.wav"
           node scripts/build-synth.mjs
-          SYNTH_SOURCE_AUDIT="$RUNNER_TEMP/synth-evidence/source-switch-audit.json" node scripts/probe-source-switch.mjs
-          node scripts/compare-rack-audio.mjs --before=.comparison-baseline/packages/synth-core --backend=wasm --out="$RUNNER_TEMP/rack-wasm"
       - name: Reproducible audio auditions and core timing
         env:
           SYNTH_AUDITIONS: ${{ runner.temp }}/synth-auditions
@@ -85,6 +80,7 @@ jobs:
           node scripts/synth-sound-proof.mjs
           node scripts/synth-filter-shape-proof.mjs
           node scripts/synth-osc-bass-proof.mjs
+          node scripts/synth-expansion-proof.mjs
           node scripts/synth-tone-layout-proof.mjs
           node scripts/synth-oscillator-proof.mjs
           node scripts/synth-cache-proof.mjs
@@ -100,10 +96,6 @@ jobs:
             ${{ runner.temp }}/synth-auditions/*.json
             ${{ runner.temp }}/synth-filter-auditions/*.wav
             ${{ runner.temp }}/synth-filter-auditions/*.json
-            ${{ runner.temp }}/rack-native/*.json
-            ${{ runner.temp }}/rack-native/*.f32
-            ${{ runner.temp }}/rack-wasm/*.json
-            ${{ runner.temp }}/rack-wasm/*.f32
             ${{ runner.temp }}/synth-prefix-benchmark/*.json
             ${{ runner.temp }}/synth-browser
             ${{ runner.temp }}/synth-install

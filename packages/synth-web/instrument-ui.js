@@ -1,8 +1,10 @@
+import {DEFAULT_CLOCK,normalizeClock} from './clock-state.js';
+import {DEFAULT_SUB,normalizeSub} from './sub-state.js';
+import {createSubUI} from './sub-ui.js';
 import {DEFAULT_OSC_BASS,normalizeOscBass} from './osc-bass-state.js';
 import {createOscBassUI} from './osc-bass-ui.js';
 import {createOutputUI} from './output-ui.js';
-import {DEFAULT_SOUND,LEGACY_SOUND,normalizeSound} from './sound-state.js';
-import {createSourceUI} from './sound-ui.js';
+import {DEFAULT_SOUND,normalizeSound} from './sound-state.js';
 import {createVoicingUI} from './voicing-ui.js';
 import {DEFAULT_VOICING,normalizeVoicing} from './voicing-state.js';
 import {DEFAULT_FILTER_ROUTING,normalizeFilterRouting} from './filter-routing-state.js';
@@ -21,10 +23,10 @@ import {createPerformanceUI} from './performance-ui.js';
 import {createSauceRack} from './sauce-rack-ui.js';
 import {createRackEditor} from './rack-editor.js';
 import {createLfoUI} from './lfo-ui.js';
-import {DEFAULT_RACK,normalizeRack,legacyRack,newSauceBlock,reorderRack,syncRackOrder} from './sauce-state.js';
+import {DEFAULT_RACK,normalizeRack,newSauceBlock,reorderRack,syncRackOrder} from './sauce-state.js';
 import {DEFAULT_MODULATION,normalizeModulation,defaultLfo,modulationDestinations} from './modulation-state.js';
 // The instrument surface owns gestures, never voices or the audio clock.
-export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, getPerformance, applyPerformance, getRack, applyRack, getModulation, applyModulation, getSound=()=>DEFAULT_SOUND,applySound=()=>{},getStereoWidth=()=>1,applyStereoWidth=()=>{},getVoicing=()=>DEFAULT_VOICING,applyVoicing=()=>{},getFilterRouting=()=>DEFAULT_FILTER_ROUTING,applyFilterRouting=()=>{},getDelay=()=>DEFAULT_DELAY,applyDelay=()=>{},getOscBass=()=>DEFAULT_OSC_BASS,applyOscBass=()=>{},previewOscBass=()=>null,getSampleRate=()=>48000, onViewChange=()=>{} }) {
+export function createInstrumentUI({ parameters, getValues, applyValues, releaseVoices, getPerformance, applyPerformance, getRack, applyRack, getModulation, applyModulation, getSound=()=>DEFAULT_SOUND,applySound=()=>{},getStereoWidth=()=>1,applyStereoWidth=()=>{},getVoicing=()=>DEFAULT_VOICING,applyVoicing=()=>{},getFilterRouting=()=>DEFAULT_FILTER_ROUTING,applyFilterRouting=()=>{},getDelay=()=>DEFAULT_DELAY,applyDelay=()=>{},getClock=()=>DEFAULT_CLOCK,applyClock=()=>{},getSub=()=>DEFAULT_SUB,applySub=()=>{},warpBassPhase=phase=>phase,getOscBass=()=>DEFAULT_OSC_BASS,applyOscBass=()=>{},previewOscBass=()=>null,getSampleRate=()=>48000, onViewChange=()=>{} }) {
   let localPerformance={...DEFAULT_PERFORMANCE};
   getPerformance??=()=>localPerformance;
   applyPerformance??=next=>{localPerformance={...next};};
@@ -36,7 +38,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   const $ = id => document.getElementById(id);
   const history = [];
   const modulationPhases=new Map();
-  let oscBassPhases=[.25,.25],oscBassTime=0,oscBassRunning=false,oscBassFrame=null,oscBassDrawTime=0;
+  let oscBassPhases=[.25,.25],oscBassRawPhases=null,oscBassRates=null,oscBassTime=0,oscBassRunning=false,oscBassFrame=null,oscBassDrawTime=0;
   let sauceKeyboard=false;
   let filterDriveControl;
   let module = 'tone', sauce = null, envelopeTarget='amp', gesture = null, preset = 'velvet';
@@ -72,10 +74,10 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     return Number(value.toFixed(id === 14 ? 2 : 1)) + (id === 14 ? ' Hz' : id === 12 ? '×' : id === 3 ? '' : ' ct');
   };
   const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
-  const state = () => ({values: [...getValues()], performance:performance(), rack:rack(), modulation:modulation(),stereoWidth:getStereoWidth(),voicing:normalizeVoicing(getVoicing()),oscBass:normalizeOscBass(getOscBass()),filterRouting:normalizeFilterRouting(getFilterRouting()),delay:normalizeDelay(getDelay()),sound:normalizeSound(getSound()), preset});
+  const state = () => ({values: [...getValues()], performance:performance(), rack:rack(), modulation:modulation(),stereoWidth:getStereoWidth(),voicing:normalizeVoicing(getVoicing()),oscBass:normalizeOscBass(getOscBass()),clock:normalizeClock(getClock()),sub:normalizeSub(getSub()),filterRouting:normalizeFilterRouting(getFilterRouting()),delay:normalizeDelay(getDelay()),sound:normalizeSound(getSound()), preset});
   const restorePerformance=next=>{if(JSON.stringify(next)!==JSON.stringify(performance()))applyPerformance(next);};
   function commit(before) {
-    if (JSON.stringify(before.oscBass)!==JSON.stringify(getOscBass()) || JSON.stringify(before.filterRouting)!==JSON.stringify(getFilterRouting()) || JSON.stringify(before.sound)!==JSON.stringify(getSound()) || JSON.stringify(before.voicing)!==JSON.stringify(getVoicing()) || JSON.stringify(before.delay)!==JSON.stringify(getDelay()) || before.stereoWidth!==getStereoWidth() || !same(before.values, getValues()) || JSON.stringify(before.performance)!==JSON.stringify(performance()) || JSON.stringify(before.rack)!==JSON.stringify(rack()) || JSON.stringify(before.modulation)!==JSON.stringify(modulation())) { history.push(before); if (history.length > 40) history.shift(); }
+    if (JSON.stringify(before.clock)!==JSON.stringify(getClock()) || JSON.stringify(before.sub)!==JSON.stringify(getSub()) || JSON.stringify(before.oscBass)!==JSON.stringify(getOscBass()) || JSON.stringify(before.filterRouting)!==JSON.stringify(getFilterRouting()) || JSON.stringify(before.sound)!==JSON.stringify(getSound()) || JSON.stringify(before.voicing)!==JSON.stringify(getVoicing()) || JSON.stringify(before.delay)!==JSON.stringify(getDelay()) || before.stereoWidth!==getStereoWidth() || !same(before.values, getValues()) || JSON.stringify(before.performance)!==JSON.stringify(performance()) || JSON.stringify(before.rack)!==JSON.stringify(rack()) || JSON.stringify(before.modulation)!==JSON.stringify(modulation())) { history.push(before); if (history.length > 40) history.shift(); }
     $('undo').disabled = !history.length;
   }
   function apply(next, markCustom = true) {
@@ -89,7 +91,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     const before = gesture.before;
     gesture = null; restore(before);
   }
-  function restore(before){preset=before.preset;applyValues(before.values);restorePerformance(before.performance);applyRack(before.rack);applyModulation(before.modulation);applyStereoWidth(before.stereoWidth??1);applyVoicing(normalizeVoicing(before.voicing));applyOscBass(normalizeOscBass(before.oscBass));applyFilterRouting(normalizeFilterRouting(before.filterRouting));applyDelay(normalizeDelay(before.delay));applySound(normalizeSound(before.sound));update();}
+  function restore(before){preset=before.preset;applyValues(before.values);restorePerformance(before.performance);applyRack(before.rack);applyModulation(before.modulation);applyStereoWidth(before.stereoWidth??1);applyVoicing(normalizeVoicing(before.voicing));applyOscBass(normalizeOscBass(before.oscBass));applyClock(normalizeClock(before.clock));applySub(normalizeSub(before.sub));applyFilterRouting(normalizeFilterRouting(before.filterRouting));applyDelay(normalizeDelay(before.delay));applySound(normalizeSound(before.sound));update();}
   function begin(e, type, data = {}) {
     if (gesture || (e.button !== undefined && e.button !== 0)) return false;
     gesture = {type, pointer: e.pointerId, before: state(), x: e.clientX, y: e.clientY, ...data};
@@ -187,6 +189,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     $('macros').replaceChildren(...(module==='tone'&&parameters[43]?[filterModeControl()]:[]),...(isPerformance?[]:selected.filter(([id])=>typeof id!=='number'||parameters[id]).map(([id,name])=>knob(String(id),name))));
     $('tone-filter-mode').replaceChildren();if(module==='tone'&&parameters[43])$('tone-filter-mode').append($('macros').querySelector('.filter-mode-control'));
     filterDriveControl=null;if(module==='tone'){filterDriveControl=configDial({begin,getGesture:()=>gesture,bindCompletion,key:'sound:filterDrive',label:'Drive',min:1,max:12,defaultValue:1,getValue:()=>getSound().filterDrive,change:(filterDrive,commit)=>changeConfig(()=>applySound(normalizeSound({...getSound(),filterDrive})),commit),format:v=>Number(v.toFixed(1))+'\u00d7'});filterDriveControl.element.classList.add('sound-filter-drive');$('macros').append(filterDriveControl.element);}
+    if(module==='tone')$('macros').append(filterEnvDial.element);
     layoutTone();
     update();
   }
@@ -354,7 +357,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   document.addEventListener('pointerdown',e=>{if(!e.target.closest('#volume-panel,#volume-toggle')){$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}if(!e.target.closest('#waveforms'))closeOsc(false);if(!e.target.closest('#filter-mode-toggle,#filter-mode-options'))closeFilter(false);if(!gesture&&!e.target.closest('#motion-details,#motion-details-toggle,.keyboard-section'))closeMotion(false);if(!gesture&&!e.target.closest('.keyboard-section'))closeGlide(false);});
   window.addEventListener('keydown',e=>{if(e.key==='Escape'){const editing=!!gesture;cancel();closeOsc(true);closeFilter(true);if(!editing){closeMotion(true);closeGlide(true);}$('volume-panel').hidden=true;$('volume-toggle').setAttribute('aria-expanded','false');}});window.addEventListener('blur',cancel);
   $('undo').addEventListener('click',()=>{cancel();rackUI.cancel();const before=history.pop();if(before)restore(before);$('undo').disabled=!history.length;});
-  function loadPatch(next,name='custom',settings=DEFAULT_PERFORMANCE,extras={}) {cancel();rackUI.cancel();closeOsc(false);closeFilter(false);lfoUI.close();const before=state();releaseVoices();preset=name;applyValues(next);applyPerformance(normalizePerformance(settings));applyRack(extras.rack?normalizeRack(extras.rack):legacyRack(next,settings));applyModulation(extras.modulation?normalizeModulation(extras.modulation):normalizeModulation());applyStereoWidth(normalizeStereoWidth(extras.stereoWidth));applyVoicing(normalizeVoicing(extras.voicing));applyOscBass(normalizeOscBass(extras.oscBass));applyFilterRouting(normalizeFilterRouting(extras.filterRouting));applyDelay(normalizeDelay(extras.delay));applySound(normalizeSound(extras.sound??(name==='init'?DEFAULT_SOUND:LEGACY_SOUND)));update();commit(before);}
+  function loadPatch(next,name='custom',settings=DEFAULT_PERFORMANCE,extras={}) {cancel();rackUI.cancel();closeOsc(false);closeFilter(false);lfoUI.close();const before=state();releaseVoices();preset=name;applyValues(next);applyPerformance(normalizePerformance(settings));applyRack(normalizeRack(extras.rack));applyModulation(extras.modulation?normalizeModulation(extras.modulation):normalizeModulation());applyStereoWidth(normalizeStereoWidth(extras.stereoWidth));applyVoicing(normalizeVoicing(extras.voicing));applyOscBass(normalizeOscBass(extras.oscBass));applyClock(normalizeClock(extras.clock));applySub(normalizeSub(extras.sub));applyFilterRouting(normalizeFilterRouting(extras.filterRouting));applyDelay(normalizeDelay(extras.delay));applySound(normalizeSound(extras.sound));update();commit(before);}
   if(!$('presets').querySelector('[value="custom"]')){const option=document.createElement('option');option.value='custom';option.textContent='Custom patch';option.disabled=true;$('presets').append(option);}
   const initOption=document.createElement('option');initOption.value='init';initOption.textContent='Init';$('presets').prepend(initOption);
   $('presets').addEventListener('change',e=>loadPatch(e.target.value==='init'?neutralValues(parameters):factoryPatch(e.target.value,parameters),e.target.value));
@@ -366,11 +369,13 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   function changeConfig(action,commitNow=true){if(gesture&&(commitNow||!['config','performance'].includes(gesture.type)))return;const before=state();action();preset='custom';update();if(commitNow)commit(before);}
   function getNode(key){const[lane,id]=key.split(':');return lane==='lfo'?modulation().sources.find(n=>n.id===Number(id)):rack()[lane].find(n=>n.id===Number(id));}
   function changeNode(key,patch,commitNow=true){changeConfig(()=>{const[lane,id]=key.split(':');if(lane==='lfo'){const m=modulation();m.sources=m.sources.map(n=>n.id===Number(id)?{...n,...patch}:n);applyModulation(normalizeModulation(m));}else{const r=rack();r[lane]=r[lane].map(n=>n.id===Number(id)?{...n,...patch}:n);applyRack(normalizeRack(r));}},commitNow);}
-  const commonControls={parameters,getDestinations:()=>modulationDestinations(parameters,rack(),modulation()),begin,getGesture:()=>gesture,bindCompletion,getPhase:id=>modulationPhases.get(id)??null,getTempo:()=>performance().bpm,changeTempo:delta=>changePerformance({bpm:performance().bpm+delta})};
+  function changeGlobalTempo(delta){changeConfig(()=>{const bpm=Math.max(40,Math.min(240,getClock().bpm+delta));applyClock({version:1,bpm,beatsPerBar:getClock().beatsPerBar});applyPerformance(normalizePerformance({...performance(),bpm}));const next=rack();for(const node of next.notes)if(node.type==='arp'||node.type==='strum')node.performance.bpm=bpm;applyRack(next);},true);}
+  const commonControls={parameters,getDestinations:()=>modulationDestinations(parameters,rack(),modulation()),begin,getGesture:()=>gesture,bindCompletion,getPhase:id=>modulationPhases.get(id)??null,getClock,getTempo:()=>getClock().bpm,changeTempo:delta=>changeGlobalTempo(delta)};
   const outputUI=createOutputUI({...commonControls,container:$('sauce-output'),getKeyboardVisible:()=>sauceKeyboard,onKeyboardToggle:()=>{sauceKeyboard=!sauceKeyboard;document.querySelector('.instrument').dataset.sauceKeyboard=String(sauceKeyboard);outputUI.update();},getWidth:getStereoWidth,changeWidth:(value,commit)=>changeConfig(()=>applyStereoWidth(value),commit),getDelay,changeDelay:(patch,commit)=>changeConfig(()=>applyDelay(normalizeDelay({...getDelay(),...patch})),commit)});
   const bassUIs=[0,1].map(oscillator=>createOscBassUI({...commonControls,oscillator,container:$('oscillator-bass-'+(oscillator+1)),getConfig:getOscBass,change:(index,patch,commit)=>changeConfig(()=>{const next=normalizeOscBass(getOscBass());Object.assign(next.oscillators[index],patch);applyOscBass(normalizeOscBass(next));},commit)}));
+  const subContainer=document.createElement('section');subContainer.id='sub-panel';$('tone-shared').prepend(subContainer);const subUI=createSubUI({...commonControls,container:subContainer,getSub,changeSub:(patch,commit)=>changeConfig(()=>applySub(normalizeSub({...getSub(),...patch})),commit)});
+  const filterEnvButton=document.createElement('button');filterEnvButton.type='button';filterEnvButton.className='filter-env-shortcut';filterEnvButton.dataset.filterEnvOpen='';filterEnvButton.textContent='Envelope →';filterEnvButton.setAttribute('aria-label','Open filter envelope');filterEnvButton.addEventListener('click',()=>{if(gesture)return;envelopeTarget='filter';select('envelope');});const filterEnvDial=configDial({...commonControls,key:'filter:envAmount',label:'Env amount',min:parameters[24].min,max:parameters[24].max,defaultValue:0,getValue:()=>getValues()[24],change:(value,commit)=>changeConfig(()=>{const next=[...getValues()];next[24]=value;applyValues(next);},commit),format:value=>(value>0?'+':'')+Number(value.toFixed(1))+' st'});$('tone-filter').querySelector('.tone-filter-heading').insertBefore(filterEnvButton,$('tone-filter-mode'));
   const voicingUIs=[0,1].map(oscillator=>createVoicingUI({...commonControls,oscillator,container:$('oscillator-unison-'+(oscillator+1)),getVoicing,changeVoicing:(index,patch,commit)=>changeConfig(()=>{const next=normalizeVoicing(getVoicing());Object.assign(next.oscillators[index],patch);applyVoicing(normalizeVoicing(next));},commit)}));
-  const sourceUI=createSourceUI({container:$('tone-source'),getSound,getGesture:()=>gesture,changeSound:(patch,commit)=>changeConfig(()=>applySound(normalizeSound({...getSound(),...patch})),commit)});
   for(const button of document.querySelectorAll('[data-filter-osc]'))button.addEventListener('click',()=>{if(gesture)return;const key=button.dataset.filterOsc;changeConfig(()=>applyFilterRouting(normalizeFilterRouting({...getFilterRouting(),[key]:!getFilterRouting()[key]})),true);});
   $('scope-wrapper').querySelector('.waveform-caption').firstElementChild.textContent='Combined output';
   const rackUI=createSauceRack({container:$('sauce-rack'),canDrag:()=>!gesture,
@@ -393,7 +398,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     for(const preview of document.querySelectorAll('[data-osc-preview]')){
       const id=Number(preview.dataset.oscPreview),index=id-19,wave=Math.round(getValues()[id]),duty=getValues()[3],bass=getOscBass().oscillators[index];
       const shape=t=>wave===0?Math.sin(t*Math.PI*2):wave===1?4*Math.abs(t-.5)-1:wave===2?2*t-1:t<(wave===4?.5:duty)?1:-1;
-      const phase=oscBassRunning?(oscBassPhases[index]+(globalThis.performance.now()-oscBassTime)*.001*bass.spinHz)%1:.25;
+      const elapsed=(globalThis.performance.now()-oscBassTime)*.001,raw=oscBassRawPhases?.[index],rate=oscBassRates?.[index]??(bass.synced?getClock().bpm/60/bass.cycleBeats:bass.spinHz);const phase=oscBassRunning?(raw!==undefined?warpBassPhase((raw+elapsed*rate)%1,bass.curl):oscBassPhases[index]):warpBassPhase(.25,bass.curl);
       const samples=bass.enabled?previewOscBass(index,wave,duty,phase):null;
       const displayScale=samples?Math.max(1,...samples.map(Math.abs)):1;
       preview.setAttribute('aria-label','Oscillator '+(index+1)+' '+format(id)+(bass.enabled?' Bass C3 native shape preview, auto-scaled, not measured output':' wave shape, illustrative'));
@@ -411,7 +416,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   }
   function update() {
     syncOscBassAnimation();
-    outputUI.update();bassUIs.forEach(ui=>ui.update());voicingUIs.forEach(ui=>ui.update());sourceUI.update();for(const button of document.querySelectorAll('[data-filter-osc]')){const on=getFilterRouting()[button.dataset.filterOsc];button.setAttribute('aria-pressed',String(on));button.title=on?'Oscillator passes through Tone filter':'Oscillator bypasses Tone filter; mixer and Sauce remain active';}const ladder=getSound().filterModel==='ladder';document.querySelector('.instrument').dataset.filterModel=module==='tone'&&ladder?'ladder':'existing';if(filterDriveControl){filterDriveControl.element.hidden=!ladder;filterDriveControl.update();}
+    outputUI.update();subUI.update();filterEnvDial.update();const envHint='Moves cutoff around Base Cutoff; lower cutoff for upward sweeps';filterEnvDial.button.title=envHint+' · '+filterEnvDial.button.title;filterEnvDial.button.setAttribute('aria-description',envHint);bassUIs.forEach(ui=>ui.update());voicingUIs.forEach(ui=>ui.update());for(const button of document.querySelectorAll('[data-filter-osc]')){const on=getFilterRouting()[button.dataset.filterOsc];button.setAttribute('aria-pressed',String(on));button.title=on?'Oscillator passes through Tone filter':'Oscillator bypasses Tone filter; mixer and Sauce remain active';}const ladder=getSound().filterModel==='ladder';document.querySelector('.instrument').dataset.filterModel=module==='tone'&&ladder?'ladder':'existing';if(filterDriveControl){filterDriveControl.element.hidden=!ladder;filterDriveControl.update();}
     for(const p of parameters){const input=document.querySelector(`[data-param="${p.id}"]`);input.value=p.mapping===2?getValues()[p.id]:Math.round((timingIds.includes(p.id)?timeUnit: norm)(p.id)*1000);input.setAttribute('aria-valuetext',format(p.id));document.querySelector(`[data-value="${p.id}"]`).textContent=format(p.id);}
     for(const chooser of document.querySelectorAll('[data-waveosc]')){const id=Number(chooser.dataset.waveosc),number=id===19?1:2;chooser.querySelector('.wave-name').textContent=format(id);chooser.setAttribute('aria-label','Oscillator '+number+' waveform '+format(id));}
     drawOscPreviews();
@@ -420,7 +425,7 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
     for(const dial of document.querySelectorAll('[data-knob]')){const id=dial.dataset.knob,n=knobN(id),text=id==='character'?(characterCustom()?'Custom · ':'')+Math.round(n*100)+'%':id==='motion'?(motionCustom()?'Custom. ':'')+'Drift up to '+format(13)+', attack settling up to '+format(32):format(Number(id));dial.style.setProperty('--rotation',(-135+n*270)+'deg');dial.setAttribute('aria-valuenow',String(Math.round(n*100)));dial.setAttribute('aria-valuetext',text);const output=document.querySelector(`[data-knob-value="${id}"]`);if(id==='motion'){output.classList.add('motion-value');const drift=document.createElement('span'),hit=document.createElement('span');drift.textContent='≤ '+format(13);hit.textContent='Hit '+format(32);output.replaceChildren(drift,hit);dial.closest('.macro').querySelector('.macro-name').textContent=motionCustom()?'Pitch · Custom':'Pitch';}else output.textContent=text;}
     const resonant=ladder||Math.round(getValues()[43]||0)===1,modeButton=$('filter-mode-toggle');
     if(modeButton){modeButton.querySelector('.filter-mode-name').textContent=ladder?'Ladder':resonant?'LP12':'Soft';modeButton.setAttribute('aria-label','Filter mode, '+(ladder?'Ladder LP24':resonant?'Resonant LP12':'Soft'));$('filter-mode-value').textContent=ladder?'24 dB/oct':resonant?'12 dB/oct':'6 dB/oct';for(const option of document.querySelectorAll('[data-filter-mode]'))option.setAttribute('aria-pressed',String(Number(option.dataset.filterMode)===(ladder?2:resonant?1:0)));}
-    const legacyMode=document.querySelector('[data-param="43"]');legacyMode.disabled=ladder;legacyMode.title=ladder?'Stored legacy mode; choose Soft or LP12 in the filter model selector to use it.':'';
+    const baseMode=document.querySelector('[data-param="43"]');baseMode.disabled=ladder;baseMode.title=ladder?'Choose Soft or LP12 in the filter model selector to use this mode.':'';
     for(const control of document.querySelectorAll('[data-knob="42"],[data-param="42"]')){control.disabled=!resonant;control.title=resonant?'Resonance':'Choose Resonant LP12 to use resonance; stored amount is retained.';if(!resonant)control.setAttribute('aria-describedby','filter-resonance-help');else control.removeAttribute('aria-describedby');}
     $('presets').value=preset;
     $('value-summary').textContent=module==='tone'?format(11)+' · filter '+format(23):module==='envelope'?(envelopeTarget==='filter'?format(24):'New notes'):module==='drop'?(sauce==='drive'?format(12):'+'+format(15)):characterCustom()?'Custom':Math.round(characterN()*100)+'%';
@@ -436,5 +441,5 @@ export function createInstrumentUI({ parameters, getValues, applyValues, release
   }
   // Factory selection changes the patch, not the captured performance.
   preset='init';applyValues(neutralValues(parameters)); select('tone');
-  return {update,updatePerformance:update,setOscBassPhases:phases=>{oscBassRunning=Array.isArray(phases)&&phases.length===2&&phases.every(p=>Number.isFinite(p)&&p>=0&&p<1);if(oscBassRunning){oscBassPhases=[...phases];oscBassTime=globalThis.performance.now();}drawOscPreviews();syncOscBassAnimation();},setModulationPhases:entries=>{modulationPhases.clear();for(const entry of entries||[])if(Number.isFinite(entry.phase)&&entry.phase>=0&&entry.phase<1)modulationPhases.set(entry.id,entry.phase);lfoUI.updatePhase();rackUI.updatePhases();},setPerformancePending:()=>{},setRackPending:rackUI.setPending,loadPatch,cancel};
+  return {update,updatePerformance:update,setOscBassPhases:(phases,rawPhases,rates)=>{oscBassRunning=Array.isArray(phases)&&phases.length===2&&phases.every(p=>Number.isFinite(p)&&p>=0&&p<1);if(oscBassRunning){oscBassPhases=[...phases];oscBassRawPhases=Array.isArray(rawPhases)&&rawPhases.length===2?rawPhases:null;oscBassRates=Array.isArray(rates)&&rates.length===2?rates:null;oscBassTime=globalThis.performance.now();}drawOscPreviews();syncOscBassAnimation();},setModulationPhases:entries=>{modulationPhases.clear();for(const entry of entries||[])if(Number.isFinite(entry.phase)&&entry.phase>=0&&entry.phase<1)modulationPhases.set(entry.id,entry.phase);lfoUI.updatePhase();rackUI.updatePhases();},setPerformancePending:()=>{},setRackPending:rackUI.setPending,loadPatch,cancel};
 }

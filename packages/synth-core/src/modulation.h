@@ -10,23 +10,11 @@
 #include <cstring>
 namespace blocks_detail {
 inline bool modulationTarget(uint32_t id){switch(id){case 0:case 2:case 3:case 11:case 12:case 13:case 14:case 18:case 21:case 22:case 23:case 24:case BS_FILTER_RESONANCE:return true;default:return false;}}
-inline bs_modulation_config defaultModulation(){bs_modulation_config c{};c.version=1;c.source_count=1;auto&s=c.sources[0];s.id=1;s.division=4;s.rate_hz=1;s.intensity=1;s.route_count=2;s.routes[0]={11,.3f};s.routes[1]={0,.2f};return c;}
 template<class Source>inline void defaultLfoShape(Source&s){s.retrigger=0;s.point_count=9;constexpr float h=.7071067811865475244f;const float y[]={0,h,1,h,0,-h,-1,-h,0};for(unsigned i=0;i<9;++i)s.points[i]={float(i)/8,y[i],0};}
-template<class Source>inline bool hasDefaultLfoShape(const Source&s){bs_lfo_source_v2 expected{};defaultLfoShape(expected);if(s.point_count!=expected.point_count)return false;for(unsigned i=0;i<s.point_count;++i)if(s.points[i].x!=expected.points[i].x||s.points[i].y!=expected.points[i].y||s.points[i].bend!=expected.points[i].bend)return false;return true;}
-inline bs_modulation_config_v2 upgradeModulation(const bs_modulation_config&legacy){
- bs_modulation_config_v2 c{};c.version=BS_MODULATION_V2_VERSION;c.source_count=legacy.source_count;
- for(unsigned i=0;i<BS_MAX_LFOS;++i){std::memcpy(&c.sources[i],&legacy.sources[i],sizeof(bs_lfo_source));defaultLfoShape(c.sources[i]);}return c;
-}
-inline bs_modulation_config_v2 defaultModulationV2(){return upgradeModulation(defaultModulation());}
-inline bs_modulation_config_v3 upgradeModulation(const bs_modulation_config_v2&old){
- bs_modulation_config_v3 c{};c.version=3;c.source_count=old.source_count;
- for(unsigned i=0;i<BS_MAX_LFOS;++i){auto&n=c.sources[i];const auto&o=old.sources[i];std::memcpy(&n,&o,36);for(unsigned j=0;j<BS_MAX_LFO_ROUTES;++j)n.routes[j]={0,0,o.routes[j].parameter_id,o.routes[j].depth};n.retrigger=o.retrigger;n.point_count=o.point_count;std::copy_n(o.points,BS_MAX_LFO_POINTS,n.points);}return c;
-}
-inline bs_modulation_config_v3 defaultModulationV3(){return upgradeModulation(defaultModulationV2());}
+inline bs_modulation_config_v3 defaultModulationV3(){bs_modulation_config_v3 c{};c.version=3;c.source_count=1;auto&s=c.sources[0];s.id=1;s.division=4;s.rate_hz=1;s.intensity=1;s.route_count=2;s.routes[0]={0,0,11,.3f};s.routes[1]={0,0,0,.2f};defaultLfoShape(s);return c;}
 class Modulation {
  struct Clock{double phase=0,lastPhase=0;uint64_t cycle=0;double previous=0,rateOffset=0,intensityOffset=0;};
  struct Shape{std::array<double,BS_MAX_LFO_POINTS_V3-1> inverseWidth{},delta{};};
- bs_modulation_config legacy_=defaultModulation();
  bs_modulation_config_v3 config_=defaultModulationV3();
  std::array<Clock,BS_MAX_LFOS> clocks_{};
  std::array<Shape,BS_MAX_LFOS> shapes_{};
@@ -43,9 +31,7 @@ class Modulation {
   for(uint32_t j=0;j<s.route_count;++j){const auto&r=s.routes[j];if(!validRoute(r))return false;for(uint32_t k=0;k<j;++k)if(sameRoute(r,s.routes[k]))return false;}
   return true;
  }
- static bool validRoute(const bs_lfo_route&r){return modulationTarget(r.parameter_id)&&std::isfinite(r.depth)&&r.depth>=-1&&r.depth<=1;}
  static bool validRoute(const bs_lfo_route_v3&r){return std::isfinite(r.depth)&&r.depth>=-1&&r.depth<=1&&((r.target_kind==0&&r.target_id==0&&modulationTarget(r.parameter_id))||(r.target_kind==1&&r.target_id!=0&&r.parameter_id==0)||(r.target_kind==2&&r.parameter_id<=1));}
- static bool sameRoute(const bs_lfo_route&a,const bs_lfo_route&b){return a.parameter_id==b.parameter_id;}
  static bool sameRoute(const bs_lfo_route_v3&a,const bs_lfo_route_v3&b){return a.target_kind==b.target_kind&&a.target_id==b.target_id&&a.parameter_id==b.parameter_id;}
  static double custom(const bs_lfo_source_v3&s,const Shape&shape,double phase){
   // At most5 binary-search comparisons for32 points. Phase is half-open[0,1):
@@ -64,10 +50,6 @@ class Modulation {
  void prepareShapes(){for(unsigned i=0;i<config_.source_count;++i){const auto&s=config_.sources[i];for(unsigned j=0;j+1<s.point_count;++j){shapes_[i].inverseWidth[j]=1/(double(s.points[j+1].x)-s.points[j].x);shapes_[i].delta[j]=double(s.points[j+1].y)-s.points[j].y;}}}
 public:
  Modulation(){prepareShapes();}
- static bool valid(const bs_modulation_config&c){
-  if(c.version!=BS_MODULATION_VERSION||c.source_count>BS_MAX_LFOS)return false;
-  for(uint32_t i=0;i<c.source_count;++i){if(!validSource(c.sources[i],BS_LFO_SMOOTH_RANDOM))return false;for(uint32_t k=0;k<i;++k)if(c.sources[i].id==c.sources[k].id)return false;}return true;
- }
  template<class Config>static bool validShapeConfig(const Config&c,unsigned version,unsigned capacity){
   if(c.version!=version||c.source_count>BS_MAX_LFOS)return false;
   for(unsigned i=0;i<c.source_count;++i){const auto&s=c.sources[i];if(!validSource(s,BS_LFO_CUSTOM)||s.retrigger>1||s.point_count<2||s.point_count>capacity)return false;
@@ -76,27 +58,15 @@ public:
    for(unsigned j=0;j<s.point_count;++j){const auto&p=s.points[j];if(!std::isfinite(p.x)||!std::isfinite(p.y)||!std::isfinite(p.bend)||p.x<0||p.x>1||p.y< -1||p.y>1||p.bend< -1||p.bend>1)return false;if(j&&double(p.x)-s.points[j-1].x<1./1024)return false;}
   }return true;
  }
- static bool valid(const bs_modulation_config_v2&c){return validShapeConfig(c,2,BS_MAX_LFO_POINTS);}
  static bool valid(const bs_modulation_config_v3&c){return validShapeConfig(c,3,BS_MAX_LFO_POINTS_V3);}
- bool configure(const bs_modulation_config&c){return valid(c)&&configure(upgradeModulation(c));}
- bool configure(const bs_modulation_config_v2&c){return valid(c)&&configure(upgradeModulation(c));}
  bool configure(const bs_modulation_config_v3&c){
   if(!valid(c))return false;std::array<Clock,BS_MAX_LFOS> next{};
   for(unsigned i=0;i<c.source_count;++i)for(unsigned j=0;j<config_.source_count;++j)if(c.sources[i].id==config_.sources[j].id)next[i]=clocks_[j];
-  config_=c;clocks_=next;legacy_.version=BS_MODULATION_VERSION;legacy_.source_count=c.source_count;
-  for(unsigned i=0;i<BS_MAX_LFOS;++i){std::memcpy(&legacy_.sources[i],&c.sources[i],36);for(unsigned j=0;j<BS_MAX_LFO_ROUTES;++j)legacy_.sources[i].routes[j]={c.sources[i].routes[j].parameter_id,c.sources[i].routes[j].depth};}
+  config_=c;clocks_=next;
   for(uint32_t i=0;i<c.source_count;++i){executionOrder_[i]=i;uint32_t j=i;while(j&&c.sources[executionOrder_[j-1]].id>c.sources[executionOrder_[j]].id){const auto previous=executionOrder_[j-1];executionOrder_[j-1]=executionOrder_[j];executionOrder_[j]=previous;--j;}}
   prepareShapes();updateTargets();return true;
  }
- const bs_modulation_config&config()const{return legacy_;}
  const bs_modulation_config_v3&configV3()const{return config_;}
- bool getV2(bs_modulation_config_v2&out)const{
-  for(unsigned i=0;i<config_.source_count;++i)if(config_.sources[i].point_count>BS_MAX_LFO_POINTS||!toneOnly(config_.sources[i]))return false;
-  bs_modulation_config_v2 next{};next.version=2;next.source_count=config_.source_count;
-  for(unsigned i=0;i<BS_MAX_LFOS;++i){auto&n=next.sources[i];const auto&o=config_.sources[i];std::memcpy(&n,&legacy_.sources[i],100);n.retrigger=o.retrigger;n.point_count=o.point_count;std::copy_n(o.points,BS_MAX_LFO_POINTS,n.points);}out=next;return true;
- }
- static bool toneOnly(const bs_lfo_source_v3&s){for(unsigned j=0;j<s.route_count;++j)if(s.routes[j].target_kind!=0)return false;return true;}
- bool getLegacy(bs_modulation_config&out)const{for(unsigned i=0;i<config_.source_count;++i)if(!toneOnly(config_.sources[i])||config_.sources[i].waveform==BS_LFO_CUSTOM||config_.sources[i].retrigger||!hasDefaultLfoShape(config_.sources[i]))return false;out=legacy_;return true;}
  const std::array<bool,BS_PARAMETER_COUNT>&targets()const{return targets_;}
  void reset(){clocks_={};retriggerPending_=false;sauceCount_=0;}
  void noteOn(){retriggerPending_=true;}
@@ -132,9 +102,5 @@ public:
 
 };
 static_assert(sizeof(bs_lfo_route_v3)==16&&sizeof(bs_lfo_source_v3)==556&&sizeof(bs_modulation_config_v3)==2232&&offsetof(bs_lfo_source_v3,retrigger)==164&&offsetof(bs_lfo_source_v3,point_count)==168&&offsetof(bs_lfo_source_v3,points)==172,"LFO v3 ABI");
-static_assert(sizeof(bs_lfo_route)==8,"LFO route ABI");
-static_assert(sizeof(bs_lfo_source)==100&&sizeof(bs_modulation_config)==408,"LFO v1 ABI");
-static_assert(sizeof(bs_lfo_point)==12&&sizeof(bs_lfo_source_v2)==300&&sizeof(bs_modulation_config_v2)==1208,"LFO v2 ABI");
-static_assert(offsetof(bs_lfo_source_v2,retrigger)==100&&offsetof(bs_lfo_source_v2,point_count)==104&&offsetof(bs_lfo_source_v2,points)==108&&offsetof(bs_modulation_config_v2,sources)==8,"LFO v2 offsets");
 }
 #endif

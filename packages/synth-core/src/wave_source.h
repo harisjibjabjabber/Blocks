@@ -7,7 +7,7 @@
 #include <cmath>
 
 namespace blocks_detail {
-// Studio source only. Legacy source remains in its original runtime path.
+// Studio is the current oscillator source.
 // No phase ownership, latency, mutable tables, allocation or state reset.
 // Caller supplies finite phase, positive step <=.45 and finite pulse width.
 // Wave IDs follow the public enum: Sine0, Triangle1, Saw2, Pulse3, Square4.

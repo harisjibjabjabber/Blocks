@@ -11,7 +11,7 @@ const key=async(s,key)=>{await ev(`document.querySelector(${JSON.stringify(s)}).
 const patch=()=>ev(`(async()=>{document.querySelector('#export').click();return JSON.parse(await window.__blob.text())})()`);
 try{
  await b.send('Page.addScriptToEvaluateOnNewDocument',{source:`window.__soundMessages=[];const post=MessagePort.prototype.postMessage;MessagePort.prototype.postMessage=function(message,...rest){if(message?.kind==='sound')window.__soundMessages.push(structuredClone(message));return post.call(this,message,...rest)};const blob=URL.createObjectURL;URL.createObjectURL=function(value){window.__blob=value;return blob(value)};HTMLAnchorElement.prototype.click=function(){};`});
- await b.navigate(url);for(let i=0;i<100&&!await ev(`!!document.querySelector('#source-profile-toggle')`);i++)await delay(100);
+ await b.navigate(url);for(let i=0;i<100&&!await ev(`!!document.querySelector('[data-control="voicing:1:count"]')`);i++)await delay(100);
  await ev('document.fonts.ready.then(()=>true)');
  check(await ev(`!!document.querySelector('#tone-layout')&&!document.querySelector('#tone-layout').hidden`),'New Tone shell initialized');
  for(const width of[320,390,600,760,1024,1280,1440,1888,1920]){
@@ -20,10 +20,7 @@ try{
  }
  await click('#start');for(let i=0;i<100&&!await ev(`document.querySelector('#status').textContent.includes('running')`);i++)await delay(100);
  check(await ev(`document.querySelector('#status').textContent.includes('running')`),'Actual worklet starts');
- await click('#source-profile-toggle');await click('[data-source-profile=legacy]');
- check(await ev(`window.__soundMessages.at(-1)?.config.oscillator===0&&document.querySelector('#source-profile-toggle').textContent.includes('Legacy')`),'Legacy chooser sends oscillator0 through real worklet port');
- await click('#source-profile-toggle');await click('[data-source-profile=studio]');
- check(await ev(`window.__soundMessages.at(-1)?.config.oscillator===1&&document.querySelector('#source-profile-toggle').textContent.includes('Studio')`),'Studio chooser sends oscillator1 through real worklet port');
+ check((await patch()).sound.oscillator==='studio'&&await ev(`!document.querySelector('#source-profile-toggle')`),'Studio standard source has no comparison selector');
  await click('#filter-mode-toggle');await click('[data-filter-mode="2"]');
  for(const width of[320,390,600,760,1024,1280,1440,1888,1920]){
   await b.send('Emulation.setDeviceMetricsOverride',{width,height:width===320?740:width<600?844:900,deviceScaleFactor:1,mobile:false});await delay(140);await ev('window.scrollTo(0,0)');
@@ -44,7 +41,6 @@ try{
    await click('[data-wave="'+(id===19?4:1)+'"]');
   }
   check(await ev(`document.querySelector('[data-osc-preview="19"]').getAttribute('aria-label').includes('Square')&&document.querySelector('[data-osc-preview="20"]').getAttribute('aria-label').includes('Triangle')`),'Both individual shape previews follow actual waveform choices '+width);
-  await click('#source-profile-toggle');check(await ev(`(()=>{const p=document.querySelector('#source-profile-options'),r=p.getBoundingClientRect();return !p.hidden&&r.x>=0&&r.right<=innerWidth&&!p.closest('.voicing-panel')})()`),'Global source chooser outside Unison fits '+width);await key('[data-source-profile=studio]','Escape');
   await ev(`document.querySelector('.keyboard-section').scrollIntoView({block:'end'})`);const keyboard=await ev(`(()=>{const r=document.querySelector('#keyboard').getBoundingClientRect();return {y:r.y,bottom:r.bottom,width:r.width,height:r.height,innerHeight}})()`);writeFileSync(resolve(out,`keyboard-${width}.json`),JSON.stringify(keyboard));check(keyboard.width>0&&keyboard.height>0&&keyboard.y>=0&&keyboard.bottom<=keyboard.innerHeight+1,'Keyboard remains reachable by scrolling '+width);
   if(width<600){await ev(`document.querySelector('#tone-filter').scrollIntoView({block:'start'})`);await b.screenshot(resolve(out,`filter-${width}.png`));}
  }

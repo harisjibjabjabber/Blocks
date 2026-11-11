@@ -1,22 +1,25 @@
+import {normalizeClock,toCoreClock} from './clock-state.js';
+import {normalizeSub,toCoreSub} from './sub-state.js';
 import {normalizeOscBass,toCoreOscBass} from './osc-bass-state.js';
 import {DEFAULT_VOICING,normalizeVoicing,toCoreVoicing} from './voicing-state.js';
 import {normalizeFilterRouting,toCoreFilterRouting} from './filter-routing-state.js';
-import {normalizeSound,soundForImportedPatch,toCoreSound} from './sound-state.js';
+import {normalizeSound,toCoreSound} from './sound-state.js';
 import {toCoreHarmonics} from './harmonics-state.js';
 import {DEFAULT_DELAY,normalizeDelay,toCoreDelay} from './delay-state.js';
 import {normalizeStereoWidth} from './stereo-state.js';
 import { createInstrumentUI } from './instrument-ui.js';
 import { characterRecipe,motionRecipe } from './recipes.js';
-import { migratePatch } from './patches.js';
+import { validateCurrentPatch } from './patches.js';
 import {emptyPeak,receivePeak,peakDisplay} from './peak-meter.js';
 import {canonicalLevels,parameterBatch} from './parameter-state.js';
 import {DEFAULT_PERFORMANCE,normalizePerformance,toCorePerformance} from './performance-state.js';
-import {DEFAULT_RACK,normalizeRack,legacyRack,hydrateRack,toCoreSauce,toCoreNotes,syncRackOrder} from './sauce-state.js';
+import {DEFAULT_RACK,normalizeRack,hydrateRack,toCoreSauce,toCoreNotes,syncRackOrder} from './sauce-state.js';
 import {DEFAULT_MODULATION,normalizeModulation,toCoreModulation} from './modulation-state.js';
 const $=id=>document.getElementById(id);
 let context,node,analyser,parameters=[],values=[],ready=false,access,raf=0,lastDraw=0,instrument,version=1;
 let performanceSettings=normalizePerformance(DEFAULT_PERFORMANCE),rackSettings=normalizeRack(DEFAULT_RACK),modulationSettings=normalizeModulation(DEFAULT_MODULATION);
 const pressed=new Map(),keys=new Map();
+let clockSettings=normalizeClock(),subSettings=normalizeSub();
 let oscBassSettings=normalizeOscBass(),oscBassPreviewPhases=[.25,.25],nativeOscPreview=null;
 let stereoWidth=1,voicingSettings=normalizeVoicing(),filterRoutingSettings=normalizeFilterRouting(),delaySettings=normalizeDelay(),soundSettings=normalizeSound();
 let keyboardShift=0,voiceCount=0,peakState=emptyPeak();
@@ -31,7 +34,7 @@ function applyValues(next){
 }
 function applyPerformance(next){
   const normalized=normalizePerformance(next),reset=normalized.mode!==performanceSettings.mode||normalized.mono!==performanceSettings.mono;
-  performanceSettings=normalized;
+  performanceSettings=normalized;clockSettings={...clockSettings,bpm:normalized.bpm};
   if(reset)clearInputUI();
   if(ready)node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});
 }
@@ -47,11 +50,13 @@ function applyRack(next){
 function applyModulation(next){const normalized=normalizeModulation(next),changed=JSON.stringify(normalized)!==JSON.stringify(modulationSettings);modulationSettings=normalized;if(ready&&changed)node.port.postMessage({kind:'modulation',config:toCoreModulation(modulationSettings)});}
 function applyStereoWidth(value){const next=normalizeStereoWidth(value);if(next===stereoWidth)return;stereoWidth=next;if(ready){if(context.state==='running')node.port.postMessage({kind:'event',type:5,value:next,frame:Math.ceil(context.currentTime*context.sampleRate)});else node.port.postMessage({kind:'stereo-width',value:next});}}
 function applyVoicing(next){const config=normalizeVoicing(next);if(JSON.stringify(config)===JSON.stringify(voicingSettings))return;voicingSettings=config;if(ready)node.port.postMessage({kind:'voicing',config:toCoreVoicing(config)});}
+function applyClock(next){const config=normalizeClock(next);if(JSON.stringify(config)===JSON.stringify(clockSettings))return;clockSettings=config;if(ready)node.port.postMessage({kind:'clock',config:toCoreClock(config)});}
+function applySub(next){const config=normalizeSub(next);if(JSON.stringify(config)===JSON.stringify(subSettings))return;subSettings=config;if(ready)node.port.postMessage({kind:'sub',config:toCoreSub(config)});}
 function applyOscBass(next){const config=normalizeOscBass(next);if(JSON.stringify(config)===JSON.stringify(oscBassSettings))return;oscBassSettings=config;if(ready)node.port.postMessage({kind:'osc-bass',config:toCoreOscBass(config)});}
 function applyFilterRouting(next){const config=normalizeFilterRouting(next);if(JSON.stringify(config)===JSON.stringify(filterRoutingSettings))return;filterRoutingSettings=config;if(ready)node.port.postMessage({kind:'filter-routing',config:toCoreFilterRouting(config)});}
 function applyDelay(next){const config=normalizeDelay(next);if(JSON.stringify(config)===JSON.stringify(delaySettings))return;delaySettings=config;if(ready)node.port.postMessage({kind:'delay',config:toCoreDelay(config)});}
 function applySound(next){const config=normalizeSound(next);if(JSON.stringify(config)===JSON.stringify(soundSettings))return;soundSettings=config;if(ready)node.port.postMessage({kind:'sound',config:toCoreSound(config)});}
-function sendExtended(){sendRack();if(ready){node.port.postMessage({kind:'osc-bass',config:toCoreOscBass(oscBassSettings)});node.port.postMessage({kind:'sound',config:toCoreSound(soundSettings)});node.port.postMessage({kind:'voicing',config:toCoreVoicing(voicingSettings)});node.port.postMessage({kind:'filter-routing',config:toCoreFilterRouting(filterRoutingSettings)});node.port.postMessage({kind:'delay',config:toCoreDelay(delaySettings)});}if(ready)node.port.postMessage({kind:'stereo-width',value:stereoWidth});if(ready)node.port.postMessage({kind:'modulation',config:toCoreModulation(modulationSettings)});}
+function sendExtended(){if(ready){node.port.postMessage({kind:'clock',config:toCoreClock(clockSettings)});node.port.postMessage({kind:'sub',config:toCoreSub(subSettings)});}sendRack();if(ready){node.port.postMessage({kind:'osc-bass',config:toCoreOscBass(oscBassSettings)});node.port.postMessage({kind:'sound',config:toCoreSound(soundSettings)});node.port.postMessage({kind:'voicing',config:toCoreVoicing(voicingSettings)});node.port.postMessage({kind:'filter-routing',config:toCoreFilterRouting(filterRoutingSettings)});node.port.postMessage({kind:'delay',config:toCoreDelay(delaySettings)});}if(ready)node.port.postMessage({kind:'stereo-width',value:stereoWidth});if(ready)node.port.postMessage({kind:'modulation',config:toCoreModulation(modulationSettings)});}
 const engineData=(async()=>{
   const response=await fetch('./synth.wasm');if(!response.ok)throw Error('Cannot load synth.wasm');
   const wasm=await response.arrayBuffer();
@@ -59,11 +64,11 @@ const engineData=(async()=>{
   version=api.bs_abi_version();const view=new DataView(api.memory.buffer),bytes=new Uint8Array(api.memory.buffer);
   const string=p=>{let s='';while(bytes[p])s+=String.fromCharCode(bytes[p++]);return s;};
   parameters=Array.from({length:api.bs_parameter_count()},(_,id)=>{const p=api.bs_parameter_info(id);return{id,name:string(view.getUint32(p+4,true)),unit:string(view.getUint32(p+8,true)),min:view.getFloat32(p+12,true),max:view.getFloat32(p+16,true),default:view.getFloat32(p+20,true),mapping:view.getUint32(p+24,true)};});
-  const previewSettings=api.malloc(16),previewOutput=api.malloc(257*4);
-  if(!previewSettings||!previewOutput||!api.bs_osc_bass_preview)throw Error('Oscillator preview unavailable');
-  const previewOscBass=(index,wave,pulseWidth,phase)=>{const settings=oscBassSettings.oscillators[index],view=new DataView(api.memory.buffer);view.setUint32(previewSettings,Number(settings.enabled),true);view.setFloat32(previewSettings+4,settings.spinHz,true);view.setFloat32(previewSettings+8,settings.motion,true);view.setFloat32(previewSettings+12,settings.grit,true);if(!api.bs_osc_bass_preview(wave,soundSettings.oscillator==='studio'?1:0,pulseWidth,previewSettings,phase,130.81278265,context?.sampleRate||48000,previewOutput,257))return null;return Array.from(new Float32Array(api.memory.buffer,previewOutput,257));};
+  const previewSettings=api.malloc(36),previewOutput=api.malloc(257*4);
+  if(!previewSettings||!previewOutput||!api.bs_osc_bass_preview_v2)throw Error('Oscillator preview unavailable');
+  const previewOscBass=(index,wave,pulseWidth,phase)=>{const settings=toCoreOscBass(oscBassSettings).oscillators[index],view=new DataView(api.memory.buffer);for(const[field,offset]of[['enabled',0],['voice',4],['synced',8],['retrigger',12]])view.setUint32(previewSettings+offset,settings[field],true);for(const[field,offset]of[['spin_hz',16],['motion',20],['grit',24],['cycle_beats',28],['curl',32]])view.setFloat32(previewSettings+offset,settings[field],true);if(context?.state!=='running')phase=api.bs_osc_bass_warp_phase(.25,settings.curl);if(!api.bs_osc_bass_preview_v2(wave,1,pulseWidth,previewSettings,phase,130.81278265,context?.sampleRate||48000,clockSettings.bpm,1,1,previewOutput,257))return null;return Array.from(new Float32Array(api.memory.buffer,previewOutput,257));};
   nativeOscPreview=previewOscBass;
-  instrument=createInstrumentUI({parameters,getOscBass:()=>oscBassSettings,applyOscBass,previewOscBass,getSound:()=>soundSettings,applySound,getStereoWidth:()=>stereoWidth,applyStereoWidth,getVoicing:()=>voicingSettings,applyVoicing,getFilterRouting:()=>filterRoutingSettings,applyFilterRouting,getDelay:()=>delaySettings,applyDelay,getValues:()=>values,getSampleRate:()=>context?.sampleRate||48000,applyValues,releaseVoices:panic,onViewChange:drawScope,getPerformance:()=>performanceSettings,applyPerformance,getRack,applyRack,getModulation:()=>modulationSettings,applyModulation});
+  instrument=createInstrumentUI({parameters,getClock:()=>clockSettings,applyClock,getSub:()=>subSettings,applySub,warpBassPhase:(phase,curl)=>api.bs_osc_bass_warp_phase(phase,curl),getOscBass:()=>oscBassSettings,applyOscBass,previewOscBass,getSound:()=>soundSettings,applySound,getStereoWidth:()=>stereoWidth,applyStereoWidth,getVoicing:()=>voicingSettings,applyVoicing,getFilterRouting:()=>filterRoutingSettings,applyFilterRouting,getDelay:()=>delaySettings,applyDelay,getValues:()=>values,getSampleRate:()=>context?.sampleRate||48000,applyValues,releaseVoices:panic,onViewChange:drawScope,getPerformance:()=>performanceSettings,applyPerformance,getRack,applyRack,getModulation:()=>modulationSettings,applyModulation});
   for(const id of ['init','export','import'])$(id).disabled=false;
   return wasm;
 })();
@@ -74,7 +79,7 @@ function releaseNote(owner){const pitch=pressed.get(owner);if(pitch===undefined)
 function clearInputUI(){instrument?.setPerformancePending?.(false);pressed.clear();for(const k of keys.values())k.classList.remove('active');$('monitor').textContent='0 voices';}
 function panic(){clearInputUI();node?.port.postMessage({kind:'panic'});}
 async function stop(){panic();if(context?.state==='running')await context.suspend();cancelAnimationFrame(raf);$('status').textContent='Sound stopped';$('stop').disabled=true;$('start').disabled=false;$('start').textContent='Resume sound';voiceCount=0;receiveOscBassPhases(null);showCpu(null);instrument?.setModulationPhases?.([]);drawScope();}
-function receiveOscBassPhases(phases){oscBassPreviewPhases=Array.isArray(phases)&&phases.length===2&&phases.every(Number.isFinite)?phases:[.25,.25];instrument?.setOscBassPhases?.(phases);}
+function receiveOscBassPhases(phases,rawPhases,rates){oscBassPreviewPhases=Array.isArray(phases)&&phases.length===2&&phases.every(Number.isFinite)?phases:[.25,.25];instrument?.setOscBassPhases?.(phases,rawPhases,rates);}
 function drawScope(samples){
   const canvas=$('scope');if(!canvas.clientWidth||!canvas.clientHeight)return;
   const drawing=canvas.getContext('2d'),ratio=devicePixelRatio||1,w=Math.round(canvas.clientWidth*ratio),h=Math.round(canvas.clientHeight*ratio);
@@ -100,7 +105,7 @@ function showPeak(){const display=peakDisplay(peakState);$('peak-indicator').dat
 $('peak-reset').addEventListener('click',()=>{peakState=emptyPeak();showPeak();});
 window.addEventListener('resize',()=>drawScope());
 
-async function start(){error('');$('start').disabled=true;try{if(!context){context=new AudioContext({latencyHint:'interactive'});await context.resume();const wasm=await engineData;await context.audioWorklet.addModule('./processor.js');node=new AudioWorkletNode(context,'blocks-synth',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[2],processorOptions:{wasm}});analyser=context.createAnalyser();analyser.fftSize=1024;node.connect(analyser);analyser.connect(context.destination);await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Synth initialization timed out')),15000);node.port.onmessage=e=>{const m=e.data;if(m.kind==='error'){error(m.message);if(!ready){clearTimeout(timer);reject(Error(m.message));}}else if(m.kind==='ready'){clearTimeout(timer);ready=true;version=m.version;node.port.postMessage({kind:'patch',version,values});node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});sendExtended();for(const id of ['midi','init','export','import'])$(id).disabled=false;resolve();}else if(m.kind==='status'){receiveOscBassPhases(context?.state==='running'?m.oscBassPhases:null);showCpu(m.cpuPercent);voiceCount=m.voices;instrument?.setPerformancePending?.(Boolean(m.performancePending));instrument?.setRackPending?.(m.notesPendingMask??0);instrument?.setModulationPhases?.(context?.state==='running'?m.lfoPhases??[]:[]);$('monitor').textContent=m.voices+' voices';peakState=receivePeak(peakState,m);showPeak();if(m.invalid<0)error('Audio event block rejected');}else if(m.kind==='patch'){values=m.values;instrument?.update();}};});}else {await context.resume();node.port.postMessage({kind:'patch',version,values});node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});sendExtended();}$('status').textContent='Sound running · '+Math.round(context.sampleRate)+' Hz';$('stop').disabled=false;$('start').disabled=true;instrument?.update();scope();}catch(e){error(String(e));if(context){await context.close();context=null;}node=null;ready=false;$('start').disabled=false;$('status').textContent='Sound unavailable';}}
+async function start(){error('');$('start').disabled=true;try{if(!context){context=new AudioContext({latencyHint:'interactive'});await context.resume();const wasm=await engineData;await context.audioWorklet.addModule('./processor.js');node=new AudioWorkletNode(context,'blocks-synth',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[2],processorOptions:{wasm}});analyser=context.createAnalyser();analyser.fftSize=1024;node.connect(analyser);analyser.connect(context.destination);await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Synth initialization timed out')),15000);node.port.onmessage=e=>{const m=e.data;if(m.kind==='error'){error(m.message);if(!ready){clearTimeout(timer);reject(Error(m.message));}}else if(m.kind==='ready'){clearTimeout(timer);ready=true;version=m.version;node.port.postMessage({kind:'patch',version,values});node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});sendExtended();for(const id of ['midi','init','export','import'])$(id).disabled=false;resolve();}else if(m.kind==='status'){receiveOscBassPhases(context?.state==='running'?m.oscBassPhases:null,m.oscBassRawPhases,m.oscBassRates);showCpu(m.cpuPercent);voiceCount=m.voices;instrument?.setPerformancePending?.(Boolean(m.performancePending));instrument?.setRackPending?.(m.notesPendingMask??0);instrument?.setModulationPhases?.(context?.state==='running'?m.lfoPhases??[]:[]);$('monitor').textContent=m.voices+' voices';peakState=receivePeak(peakState,m);showPeak();if(m.invalid<0)error('Audio event block rejected');}else if(m.kind==='patch'){values=m.values;instrument?.update();}};});}else {await context.resume();node.port.postMessage({kind:'patch',version,values});node.port.postMessage({kind:'performance',config:toCorePerformance(performanceSettings)});sendExtended();}$('status').textContent='Sound running · '+Math.round(context.sampleRate)+' Hz';$('stop').disabled=false;$('start').disabled=true;instrument?.update();scope();}catch(e){error(String(e));if(context){await context.close();context=null;}node=null;ready=false;$('start').disabled=false;$('status').textContent='Sound unavailable';}}
 $('start').addEventListener('click',start);$('stop').addEventListener('click',stop);
 const whites=[60,62,64,65,67,69,71,72,74,76,77,79,81,83],blacks=[[61,1],[63,2],[66,4],[68,5],[70,6],[73,8],[75,9],[78,11],[80,12],[82,13]],names=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
 for(const pitch of whites){const b=document.createElement('button');b.className='key white';b.dataset.pitch=pitch;b.textContent=names[pitch%12]+(pitch%12===0?Math.floor(pitch/12)-1:'');b.setAttribute('aria-label','Play '+names[pitch%12]+(Math.floor(pitch/12)-1));$('keyboard').append(b);keys.set(pitch,b);}
@@ -128,13 +133,12 @@ for(const name of ['pointerup','pointercancel','lostpointercapture'])$('keyboard
 const mapping={a:60,w:61,s:62,e:63,d:64,f:65,t:66,g:67,y:68,h:69,u:70,j:71,k:72};
 window.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(e.target.tagName))return;const base=mapping[e.key.toLowerCase()],pitch=base===undefined?undefined:base+keyboardShift*12;if(pitch!==undefined&&!e.repeat){e.preventDefault();startNote('key-'+e.code,pitch);}});window.addEventListener('keyup',e=>releaseNote('key-'+e.code));
 for(const[pitch,key]of keys){key.addEventListener('keydown',e=>{if([' ','Enter'].includes(e.key)&&!e.repeat){e.preventDefault();startNote('button-'+pitch,Number(key.dataset.pitch));}});key.addEventListener('keyup',e=>{if([' ','Enter'].includes(e.key)){e.preventDefault();releaseNote('button-'+pitch);}});}
-$('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({format:'blocks-synth-patch',version,values,performance:performanceSettings,rack:syncRackOrder(getRack(),modulationSettings),modulation:modulationSettings,stereoWidth,voicing:voicingSettings,oscBass:oscBassSettings,filterRouting:filterRoutingSettings,delay:delaySettings,sound:soundSettings,macroVersions:{character:characterRecipe.version,motion:motionRecipe.version}},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='blocks-synth-patch.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);});
+$('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({format:'blocks-synth-patch',version,values,performance:performanceSettings,rack:syncRackOrder(getRack(),modulationSettings),modulation:modulationSettings,stereoWidth,voicing:voicingSettings,oscBass:oscBassSettings,sub:subSettings,clock:clockSettings,filterRouting:filterRoutingSettings,delay:delaySettings,sound:soundSettings,macroVersions:{character:characterRecipe.version,motion:motionRecipe.version}},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='blocks-synth-patch.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);});
 $('import').addEventListener('change',async e=>{
   try{
     const file=e.target.files[0];if(!file)return;if(file.size>65536)throw Error('Patch exceeds 64 KiB');
     const patch=JSON.parse(await file.text());
-    const tone=migratePatch(patch,parameters,version),performance=normalizePerformance(patch.performance===undefined?DEFAULT_PERFORMANCE:patch.performance),rack=patch.rack===undefined?legacyRack(tone,performance):normalizeRack(patch.rack),modulation=normalizeModulation(patch.modulation===undefined?DEFAULT_MODULATION:patch.modulation);
-    const oscBass=normalizeOscBass(patch.oscBass),stereoWidth=normalizeStereoWidth(patch.stereoWidth),voicing=normalizeVoicing(patch.voicing),filterRouting=normalizeFilterRouting(patch.filterRouting),delay=normalizeDelay(patch.delay),sound=soundForImportedPatch(patch);performance.mode='off';instrument.loadPatch(tone,'custom',performance,{rack:syncRackOrder(rack,modulation),modulation,stereoWidth,voicing,oscBass,filterRouting,delay,sound});error('');
+    const p=validateCurrentPatch(patch,parameters,version);instrument.loadPatch(p.values,'custom',p.performance,p);error('');
   }catch(e){error(String(e));}finally{e.target.value='';}
 });
 

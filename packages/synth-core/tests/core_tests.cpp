@@ -63,11 +63,8 @@ int main() {
    CHECK(!bs_set_parameter(s.p,i,std::numeric_limits<float>::quiet_NaN())); CHECK(bs_get_parameter(s.p,i)==d->maximum);
   }
   CHECK(!bs_parameter_info(99)); CHECK(!bs_set_parameter(s.p,99,1));
-  bs_patch patch{},after{}; CHECK(bs_get_patch(s.p,&patch)); patch.version=999; CHECK(!bs_set_patch(s.p,&patch)); patch.version=2; patch.values[7]=std::numeric_limits<float>::infinity(); CHECK(!bs_set_patch(s.p,&patch)); CHECK(bs_get_patch(s.p,&after)); CHECK(after.values[7]==bs_parameter_info(7)->maximum);
-  patch=after; patch.version=1; patch.values[BS_FULLNESS]=std::numeric_limits<float>::quiet_NaN(); CHECK(bs_set_patch(s.p,&patch)); CHECK(bs_get_parameter(s.p,BS_FULLNESS)==0); CHECK(bs_get_patch(s.p,&after)); CHECK(after.version==7);
-  for(unsigned i=0;i<18;++i) CHECK(after.values[i]==patch.values[i]);
-  CHECK(sizeof(bs_patch)==180);
-  patch=after;patch.version=4;for(unsigned i=35;i<BS_PARAMETER_COUNT;++i)patch.values[i]=std::numeric_limits<float>::quiet_NaN();CHECK(bs_set_patch(s.p,&patch));CHECK(bs_get_patch(s.p,&after));CHECK(after.version==7);CHECK(after.values[BS_ENVELOPE_RESPONSE]==0&&after.values[BS_DRIVE_ENABLED]==1&&after.values[BS_PITCH_DROP_ENABLED]==1&&after.values[BS_SAUCE_ORDER]==0&&after.values[BS_FULLNESS_ENABLED]==1);for(unsigned i=0;i<35;++i)CHECK(after.values[i]==patch.values[i]);
+  bs_patch patch{},after{}; CHECK(bs_get_patch(s.p,&patch)); patch.version=999; CHECK(!bs_set_patch(s.p,&patch)); patch.version=7; patch.values[7]=std::numeric_limits<float>::infinity(); CHECK(!bs_set_patch(s.p,&patch)); CHECK(bs_get_patch(s.p,&after)); CHECK(after.values[7]==bs_parameter_info(7)->maximum);
+  CHECK(sizeof(bs_patch)==180);for(unsigned version=1;version<7;++version){patch=after;patch.version=version;CHECK(!bs_set_patch(s.p,&patch));}
   patch=after;patch.values[BS_ENVELOPE_RESPONSE]=.6f;patch.values[BS_DRIVE_ENABLED]=0;patch.values[BS_PITCH_DROP_ENABLED]=0;patch.values[BS_SAUCE_ORDER]=1;patch.values[BS_FULLNESS_ENABLED]=0;CHECK(bs_set_patch(s.p,&patch));CHECK(bs_get_patch(s.p,&after));CHECK(std::memcmp(&patch,&after,sizeof patch)==0);patch.values[BS_FULLNESS_ENABLED]=std::numeric_limits<float>::quiet_NaN();CHECK(!bs_set_patch(s.p,&patch));bs_patch retained{};CHECK(bs_get_patch(s.p,&retained));CHECK(std::memcmp(&retained,&after,sizeof after)==0);
   patch=after; patch.values[BS_FULLNESS]=.55f; CHECK(bs_set_patch(s.p,&patch)); CHECK(bs_get_patch(s.p,&after)); CHECK(std::memcmp(&patch,&after,sizeof patch)==0);
  }
@@ -148,8 +145,7 @@ int main() {
  }
 
  {
-  Synth s;bs_patch p{},after{};bs_get_patch(s.p,&p);p.version=2;p.values[BS_FULLNESS]=.55f;p.values[BS_OSC1_WAVE]=std::numeric_limits<float>::quiet_NaN();p.values[BS_OSC2_WAVE]=p.values[BS_OSC1_WAVE];
-  CHECK(bs_set_patch(s.p,&p));CHECK(bs_get_parameter(s.p,BS_FULLNESS)==.55f);CHECK(bs_get_parameter(s.p,BS_OSC1_WAVE)==BS_SAW);CHECK(bs_get_parameter(s.p,BS_OSC2_WAVE)==BS_PULSE);
+  Synth s;bs_patch p{},after{};bs_get_patch(s.p,&p);p.values[BS_FULLNESS]=.55f;CHECK(bs_set_patch(s.p,&p));
   bs_get_patch(s.p,&p);p.values[BS_OSC1_WAVE]=1.6f;CHECK(bs_set_patch(s.p,&p));CHECK(bs_get_parameter(s.p,BS_OSC1_WAVE)==2);
   bs_get_patch(s.p,&after);p.values[BS_OSC2_WAVE]=std::numeric_limits<float>::infinity();CHECK(!bs_set_patch(s.p,&p));bs_patch rejected{};bs_get_patch(s.p,&rejected);CHECK(std::memcmp(&after,&rejected,sizeof after)==0);
   // All25 pairs across bass/middle/treble and five intermediate Fullness points.
@@ -169,7 +165,10 @@ int main() {
   for(float amount:{0.f,.6f,1.f}) {
    Synth a,b;for(auto*x:{a.p,b.p}){bs_set_parameter(x,BS_FULLNESS,amount);bs_set_parameter(x,BS_OSC2_DETUNE,0);bs_reset(x);}
    const std::vector<bs_event> events={note(0,60),{3000,BS_PARAMETER,0,0,BS_OSC1_WAVE,BS_SINE},{3050,BS_PARAMETER,0,0,BS_OSC1_WAVE,BS_TRIANGLE},{6000,BS_PARAMETER,0,0,BS_OSC2_WAVE,BS_SINE},{9000,BS_PARAMETER,0,0,BS_OSC1_WAVE,BS_PULSE},{12000,BS_PARAMETER,0,0,BS_OSC1_WAVE,BS_SQUARE},{15000,BS_PARAMETER,0,0,BS_OSC1_WAVE,BS_SAW},{15000,BS_PARAMETER,0,0,BS_OSC2_WAVE,BS_PULSE}};
-   const auto audio=render(a.p,24000,127,events);same(audio,render(b.p,24000,256,events));clean(audio);double delta=0;for(unsigned i=1;i<audio.l.size();++i)delta=std::max(delta,std::abs(double(audio.l[i])-audio.l[i-1]));std::printf("METRIC held_wave_retarget Fullness=%.1f max_sample_delta=%.7f\n",amount,delta);CHECK(delta<.025);
+   const auto audio=render(a.p,24000,127,events);same(audio,render(b.p,24000,256,events));clean(audio);double delta=0;for(unsigned i=1;i<audio.l.size();++i)delta=std::max(delta,std::abs(double(audio.l[i])-audio.l[i-1]));// A settled Studio wave can have slightly steeper natural slew than PolyBLEP.
+   // Keep the original click bound on the actual5ms transition windows.
+   double transitionDelta=0;for(const auto&e:events)if(e.type==BS_PARAMETER)for(unsigned i=e.sample_offset;i<std::min<unsigned>(e.sample_offset+240,unsigned(audio.l.size()));++i)if(i)transitionDelta=std::max(transitionDelta,std::abs(double(audio.l[i])-audio.l[i-1]));
+   std::printf("METRIC held_wave_retarget Fullness=%.1f max_sample_delta=%.7f transition_delta=%.7f\n",amount,delta,transitionDelta);CHECK(transitionDelta<.025);
   }
   constexpr unsigned n=4096,f=503;std::vector<std::complex<double>> tri(n),naive(n),sinusoid(n);
   for(unsigned i=0;i<n;++i) {const double phase=std::fmod(double(i)*f/n,1.);tri[i]=blocks_detail::triangle(phase,double(f)/n);sinusoid[i]=blocks_detail::sine(phase);naive[i]=phase<.5?1-4*phase:4*phase-3;}
@@ -177,7 +176,7 @@ int main() {
   double tierJump=0;for(unsigned h:blocks_detail::triangleLimits)if(h>1)for(unsigned i=0;i<2048;++i){const double phase=double(i)/2048,step=.45/h; tierJump=std::max(tierJump,std::abs(blocks_detail::triangle(phase,step*(1-1e-8))-blocks_detail::triangle(phase,step*(1+1e-8))));}CHECK(tierJump<1e-7);
   std::printf("METRIC triangle_alias_power=%.12f naive=%.9f sine_alias=%.12f mip_boundary_delta=%.10f\n",triangleAlias,naiveAlias,sineAlias,tierJump);
  }
- std::puts("PASS discrete waveform migration, 375 Fullness signals, live crossfade retarget/block invariance and table alias/tier continuity");
+ std::puts("PASS discrete waveform validation, 375 Fullness signals, live crossfade retarget/block invariance and table alias/tier continuity");
  {
   // A stolen same-key owner still consumes its own later NoteOff.
   Synth s;bs_set_parameter(s.p,BS_RELEASE,.001f);bs_reset(s.p);for(unsigned key=60;key<76;++key)bs_note_on(s.p,0,key,1);render(s.p,1000,127);bs_note_on(s.p,0,60,1);render(s.p,200,127);CHECK(bs_active_voices(s.p)==16);bs_note_off(s.p,0,60);render(s.p,200,127);CHECK(bs_active_voices(s.p)==16);bs_note_off(s.p,0,60);render(s.p,200,127);CHECK(bs_active_voices(s.p)==15);
@@ -195,13 +194,11 @@ int main() {
   Synth s;CHECK(bs_set_parameter(s.p,BS_OSC_MIX,.2f));CHECK(std::abs(bs_get_parameter(s.p,BS_OSC1_LEVEL)-.8f)<1e-7);CHECK(bs_get_parameter(s.p,BS_OSC2_LEVEL)==.2f);
   bs_set_parameter(s.p,BS_OSC1_LEVEL,.4f);CHECK(std::abs(bs_get_parameter(s.p,BS_OSC_MIX)-1.f/3)<1e-7);CHECK(bs_get_parameter(s.p,BS_OSC2_LEVEL)==.2f);bs_set_parameter(s.p,BS_OSC1_LEVEL,0);bs_set_parameter(s.p,BS_OSC2_LEVEL,0);CHECK(bs_get_parameter(s.p,BS_OSC_MIX)==.5f);
   bs_patch p{},q{};bs_get_patch(s.p,&p);p.values[BS_OSC_MIX]=.99f;p.values[BS_OSC1_LEVEL]=.7f;p.values[BS_OSC2_LEVEL]=.7f;CHECK(bs_set_patch(s.p,&p));bs_get_patch(s.p,&q);CHECK(q.values[BS_OSC_MIX]==.5f);CHECK(q.values[BS_OSC1_LEVEL]==.7f&&q.values[BS_OSC2_LEVEL]==.7f);
-  p=q;p.version=3;p.values[BS_OSC_MIX]=.23f;for(unsigned id=21;id<BS_PARAMETER_COUNT;++id)p.values[id]=std::numeric_limits<float>::quiet_NaN();CHECK(bs_set_patch(s.p,&p));bs_get_patch(s.p,&q);CHECK(std::abs(q.values[BS_OSC1_LEVEL]-.77f)<1e-7);CHECK(q.values[BS_OSC2_LEVEL]==.23f);CHECK(q.values[BS_FILTER_MIX]==1&&q.values[BS_FILTER_AMOUNT]==0&&q.values[BS_SETTLING_CENTS]==0&&q.values[BS_VELOCITY_MOVEMENT]==0);
-  Synth migrated,canonical;CHECK(bs_set_patch(migrated.p,&p));CHECK(bs_set_patch(canonical.p,&q));bs_reset(migrated.p);bs_reset(canonical.p);same(render(migrated.p,24000,127,{note(0,60)}),render(canonical.p,24000,256,{note(0,60)}));
   bs_get_patch(s.p,&p);p.values[34]=std::numeric_limits<float>::infinity();CHECK(!bs_set_patch(s.p,&p));bs_patch unchanged{};bs_get_patch(s.p,&unchanged);CHECK(std::memcmp(&q,&unchanged,sizeof q)==0);
   Synth square,pulse,changedWidth;for(auto*x:{square.p,pulse.p,changedWidth.p}){bs_set_parameter(x,BS_OSC1_LEVEL,0);bs_set_parameter(x,BS_OSC2_LEVEL,1);bs_set_parameter(x,BS_OSC2_DETUNE,0);bs_set_parameter(x,BS_PULSE_WIDTH,.5f);}bs_set_parameter(square.p,BS_OSC2_WAVE,BS_SQUARE);bs_set_parameter(changedWidth.p,BS_OSC2_WAVE,BS_SQUARE);bs_set_parameter(changedWidth.p,BS_PULSE_WIDTH,.19f);bs_reset(square.p);bs_reset(pulse.p);bs_reset(changedWidth.p);const auto sq=render(square.p,8000,127,{note(0,60)});same(sq,render(pulse.p,8000,256,{note(0,60)}));same(sq,render(changedWidth.p,8000,128,{note(0,60)}));
   Synth silent;bs_set_parameter(silent.p,BS_OSC1_LEVEL,0);bs_set_parameter(silent.p,BS_OSC2_LEVEL,0);bs_reset(silent.p);CHECK(energy(render(silent.p,4000,128,{note(0,60)}))==0);
  }
- std::puts("PASS independent levels, canonical Mix alias, atomic v4/v3 migrations and fixed-duty Square");
+ std::puts("PASS independent levels, canonical Mix alias, current patch validation and fixed-duty Square");
  {
   Synth base,pluck,negative,bypassA,bypassB;
   for(auto*x:{base.p,pluck.p,negative.p,bypassA.p,bypassB.p}){bs_set_parameter(x,BS_OSC1_LEVEL,1);bs_set_parameter(x,BS_OSC2_LEVEL,0);bs_set_parameter(x,BS_ATTACK,.001f);bs_set_parameter(x,BS_SUSTAIN_LEVEL,1);bs_set_parameter(x,BS_RELEASE,.8f);bs_set_parameter(x,BS_CUTOFF,200);bs_set_parameter(x,BS_FILTER_ATTACK,.001f);bs_set_parameter(x,BS_FILTER_DECAY,.1f);bs_set_parameter(x,BS_FILTER_SUSTAIN,0);}

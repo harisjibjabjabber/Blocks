@@ -4,6 +4,7 @@
 #include <blocks_synth.h>
 #include <blocks_voicing.h>
 #include <blocks_osc_bass.h>
+#include <blocks_bass_support.h>
 #include <blocks_filter_routing.h>
 #include <blocks_delay.h>
 #include <blocks_sound.h>
@@ -14,41 +15,36 @@ int main() {
   bs_sauce_config sauce{},sauceRead{};
   bs_sound_config sound{},soundRead{};bs_harmonics_config harmonics{},harmonicsRead{};
   bs_default_sound(&sound);bs_default_harmonics(&harmonics);
-  bs_voicing_config voicing{},voicingRead{};bs_delay_config delay{},delayRead{};
-  bs_default_voicing(&voicing);bs_default_delay(&delay);
-  bs_osc_bass_config bass{},bassRead{};bs_default_osc_bass(&bass);
+  bs_delay_config delay{},delayRead{};
+  bs_default_delay(&delay);
+  bs_osc_bass_config_v2 bassV2{};bs_default_osc_bass_v2(&bassV2);bs_clock_config clock{};bs_default_clock(&clock);bs_sub_config sub{};bs_default_sub(&sub);
   bs_voicing_config_v2 voicingV2{},voicingV2Read{};bs_filter_routing_config routing{},routingRead{};
   bs_default_voicing_v2(&voicingV2);bs_default_filter_routing(&routing);
   bs_notes_config notes{},notesRead{};
-  bs_modulation_config modulation{},modulationRead{};
-  bs_modulation_config_v2 modulationV2{},modulationV2Read{};
   bs_modulation_config_v3 modulationV3{},modulationV3Read{};
   bs_performance_config performance{},performanceRead{};
   bs_default_modulation_v3(&modulationV3);bs_default_sauce(&sauce);bs_default_notes(&notes);
-  bs_default_modulation(&modulation);bs_default_modulation_v2(&modulationV2);bs_default_performance(&performance);
-  const bool configured=bs_set_voicing(synth,&voicing)&&bs_get_voicing(synth,&voicingRead)
+  bs_default_performance(&performance);
+  const bool configured=bs_set_clock(synth,&clock)&&bs_get_clock(synth,&clock)&&bs_set_sub(synth,&sub)&&bs_get_sub(synth,&sub)&&bs_set_osc_bass_v2(synth,&bassV2)&&bs_get_osc_bass_v2(synth,&bassV2)
     &&bs_set_voicing_v2(synth,&voicingV2)&&bs_get_voicing_v2(synth,&voicingV2Read)
     &&bs_set_filter_routing(synth,&routing)&&bs_get_filter_routing(synth,&routingRead)
-    &&bs_set_osc_bass(synth,&bass)&&bs_get_osc_bass(synth,&bassRead)
     &&bs_get_osc_bass_phase(synth,0)==0
     &&bs_set_sound(synth,&sound)&&bs_get_sound(synth,&soundRead)
     &&bs_set_harmonics(synth,&harmonics)&&bs_get_harmonics(synth,&harmonicsRead)
     &&bs_set_delay(synth,&delay)&&bs_get_delay(synth,&delayRead)&&bs_set_sauce(synth,&sauce)&&bs_get_sauce(synth,&sauceRead)
     &&bs_set_notes(synth,&notes)&&bs_get_notes(synth,&notesRead)
-    &&bs_set_modulation(synth,&modulation)&&bs_get_modulation(synth,&modulationRead)
-    &&bs_set_modulation_v2(synth,&modulationV2)&&bs_get_modulation_v2(synth,&modulationV2Read)
-    &&bs_get_modulation_phase(synth,modulationV2.sources[0].id)==0
     &&bs_set_modulation_v3(synth,&modulationV3)&&bs_get_modulation_v3(synth,&modulationV3Read)
     &&bs_set_stereo_width(synth,1)&&bs_get_stereo_width(synth)==1
     &&bs_set_performance(synth,&performance)&&bs_get_performance(synth,&performanceRead);
   if(!configured||soundRead.version!=BS_SOUND_VERSION||harmonicsRead.version!=BS_HARMONICS_VERSION||sauceRead.version!=BS_SAUCE_VERSION||notesRead.version!=BS_NOTES_VERSION
-    ||modulationV3Read.version!=BS_MODULATION_V3_VERSION||modulationRead.version!=BS_MODULATION_VERSION||modulationV2Read.version!=BS_MODULATION_V2_VERSION||performanceRead.version!=BS_PERFORMANCE_VERSION
+    ||modulationV3Read.version!=BS_MODULATION_V3_VERSION||performanceRead.version!=BS_PERFORMANCE_VERSION
     ||bs_notes_pending_mask(synth)!=0){bs_destroy(synth);return 2;}
   float preview[16]{};
-  if(!bs_osc_bass_preview(2,1,.5f,&bass.oscillators[0],.25,65,48000,preview,16)){bs_destroy(synth);return 3;}
+  if(!bs_osc_bass_preview_v2(2,1,.5f,&bassV2.oscillators[0],.25,65,48000,120,1,1,preview,16)){bs_destroy(synth);return 3;}
   float left[128]{},right[128]{};
   bs_note_on(synth,0,60,.7f);
   int result=bs_render(synth,left,right,128,nullptr,0);
   bs_destroy(synth);
   return result;
 }
+

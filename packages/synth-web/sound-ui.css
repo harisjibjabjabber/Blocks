@@ -1,5 +1,6 @@
 .source-profile-control{position:relative;min-width:0}.source-profile-control>button{min-height:44px;padding:0 8px;font-size:10px;background:transparent;white-space:nowrap}.source-profile-options{position:absolute;top:48px;left:0;width:180px;padding:6px;z-index:40;background:#151a1f;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px #0007;display:grid;gap:4px}.source-profile-options[hidden]{display:none}.source-profile-options>button{min-height:44px;justify-content:flex-start;font-size:11px;background:transparent}.source-profile-options>button[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}.instrument[data-filter-model=ladder] #macros{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.sound-filter-drive{display:flex;flex-direction:column;align-items:center;min-width:0}.sound-filter-drive .config-control{min-width:0}.instrument[data-filter-model=ladder] #macros .macro{min-width:0}.instrument[data-filter-model=ladder] #macros .macro-name{font-size:9px}.instrument[data-filter-model=ladder] #macros .macro-value{font-size:9px}.harmonics-model{width:100%;min-height:44px;padding:0 10px;font-size:11px;background:transparent}.rack-card[data-rack-type=harmonics]{width:276px}.rack-card[data-rack-type=harmonics] .rack-card-controls{flex-wrap:wrap;gap:8px;padding-inline:8px}.harmonics-main-dials{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}.harmonics-main-dials>.config-control{min-width:0}.harmonics-model-options{display:grid;grid-template-columns:1fr 1fr;gap:4px;width:100%}.harmonics-model-options[hidden]{display:none}.harmonics-model-options button{min-height:44px;font-size:11px;background:transparent}.harmonics-model-options button[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}@media(max-width:699px){.rack-card[data-rack-type=harmonics]{width:100%}.instrument[data-filter-model=ladder] #macros .dial{width:44px;height:44px;min-width:44px;min-height:44px}.instrument[data-filter-model=ladder] #macros .filter-mode-control>button{min-width:44px;width:44px;padding:0 2px;font-size:10px}}
 .sound-filter-drive[hidden]{display:none}
+.filter-env-shortcut{min-height:44px;min-width:44px;padding:0 8px;font-size:10px;background:transparent;white-space:nowrap}
 
 /* Tone has its own balanced card grid; it must never inherit the old macro rail. */
 .patch-toolbar{display:contents}
@@ -29,6 +30,22 @@
 .osc-bass-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:8px 0}
 .osc-bass-controls[hidden]{display:none}
 .osc-bass-controls>.config-control{min-width:0}
+.osc-bass-panel[hidden],.sub-controls[hidden]{display:none}
+.osc-bass-modes{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin-top:4px}
+.osc-bass-modes select,.osc-bass-modes button,.bass-timing-details button,.sub-panel select,.sub-toggle{min-height:44px;min-width:44px;background:var(--panel,#151a1f);color:var(--ivory);font-size:11px;border:1px solid var(--line);border-radius:7px;padding:0 8px}
+.osc-bass-modes button[aria-pressed=true],.bass-timing-details button[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
+.osc-bass-details summary,.sub-details summary{min-height:44px;display:flex;align-items:center;font-size:11px;cursor:pointer}
+.bass-timing-details{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:8px}
+.osc-bass-details .lfo-tempo{display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between;margin:8px 0 0}
+.sub-panel{border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:0;background:#11161b}
+.sub-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:8px;padding-top:8px}
+.sub-controls label{display:grid;gap:4px;font-size:10px;color:var(--muted);min-width:0}
+.sub-controls select{width:100%;min-width:0}
+.sub-details{grid-column:1/-1}.sub-deeper{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.filter-env-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:8px;margin-top:8px}
+.filter-env-entry>button{min-height:44px;font-size:11px;background:transparent;padding:0 10px}
+.rack-card[data-rack-type=harmonics]{width:300px}.harmonics-main-dials{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+@media(max-width:699px){.rack-card[data-rack-type=harmonics]{width:100%}}
 .oscillator-panel .osc-popover{top:62px;left:8px;right:8px;width:auto;z-index:45}
 .oscillator-panel .wave-options{grid-template-columns:repeat(3,minmax(0,1fr))}
 .oscillator-panel .wave-options button{padding-inline:3px;font-size:11px}
@@ -105,7 +122,13 @@
 #filter-routing button{height:44px;min-height:44px;min-width:58px;padding:0 10px;font-size:11px;background:transparent}
 #filter-routing button[aria-pressed=true]{border-color:var(--accent);color:var(--ivory);background:#ff743f0a}
 #filter-routing button[aria-pressed=false]{color:var(--muted)}
+.tone-filter-heading h2{margin-right:auto}
+.tone-filter-heading{gap:6px}
+.instrument[data-module=tone] #macros{grid-template-columns:repeat(4,minmax(0,1fr))}
+.instrument[data-module=tone][data-filter-model=ladder] #macros{grid-template-columns:repeat(5,minmax(0,1fr))}
 @media(min-width:1180px){
+ .tone-shared:has(.sub-controls[hidden]){grid-template-columns:96px minmax(0,1fr)}
+ .tone-shared:has(.sub-controls[hidden]) #sub-panel{display:flex;align-items:center;justify-content:center;padding:8px}
  .oscillator-wave-preview{height:120px;min-height:72px;max-height:160px;margin-top:12px}
  .oscillator-preview-caption{margin-top:0}
  .oscillator-unison{margin-top:12px}

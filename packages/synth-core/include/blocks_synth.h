@@ -73,7 +73,7 @@ void bs_destroy(bs_synth *synth);
  * prepare accepts8k..384kHz, allocates delay memory, resets voices/tails, retains settings. Invalid rates/allocation fail atomically. */
 int bs_prepare(bs_synth *synth, double sample_rate);
 void bs_reset(bs_synth *synth); /* reset voices, pedal and deterministic RNG sequence */
-/* Setting legacy Mix sets levels to1-Mix/Mix. Setting either level updates
+/* Setting Mix sets levels to1-Mix/Mix. Setting either level updates
  * canonical Mix, without changing the other level. Levels need not sum to1. */
 /* Glide is Mono-only across connected notes. First notes after an empty pool
  * and gated Arp gaps start immediately. Time is smoothed then captured on each
@@ -90,13 +90,10 @@ float bs_get_parameter(const bs_synth *synth, uint32_t id);
 int bs_set_stereo_width(bs_synth *synth,float width);
 float bs_get_stereo_width(const bs_synth *synth); /* null returns neutral1 */
 int bs_get_patch(const bs_synth *synth, bs_patch *patch);
-/* v7 writes/reads44 values; v1(18), v2(19), v3(21), v4(35), v5(40), v6(42) prefixes migrate.
- * Resonance42 defaults0; FilterMode43 defaults0 (legacy one-pole),1 selects resonant LP12.
- * Versions1-5 receive Glide disabled and time .08seconds.
- * Versions1-4 bypass envelope response (0); Drive/Pitch Drop/Fullness remain enabled (1), order is Drive then Fullness (0).
- * Legacy Mix maps to oscillator levels; v4-v7 levels are authoritative and Mix
- * is exported as level2/(level1+level2), or .5 when both are zero.
- * Unknown versions/nonfinite input: atomic reject. Getter always v7. */
+/* Current version7 writes/reads44 finite values. Other versions reject atomically.
+ * Resonance42 defaults0; FilterMode43 defaults0 (one-pole),1 selects LP12.
+ * Oscillator levels are authoritative; Mix is exported as level2/(level1+level2),
+ * or .5 when both are zero. */
 int bs_set_patch(bs_synth *synth, const bs_patch *patch);
 void bs_note_on(bs_synth *synth, uint32_t channel, uint32_t key, float velocity);
 void bs_note_off(bs_synth *synth, uint32_t channel, uint32_t key);

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {DEFAULT_RACK,normalizeRack,newSauceBlock,legacyRack,hydrateRack,toCoreSauce,toCoreNotes,rackVisualOrder,reorderRack,syncRackOrder} from './sauce-state.js';
+import {DEFAULT_RACK,normalizeRack,newSauceBlock,hydrateRack,toCoreSauce,toCoreNotes,rackVisualOrder,reorderRack,syncRackOrder} from './sauce-state.js';
 import {DEFAULT_MODULATION,normalizeModulation,toCoreModulation,defaultLfo,shapeForWave,normalizeLfoPoints,sampleLfoPoints,randomLfoPoints,modulationDestinations,routeTargetKey} from './modulation-state.js';
 test('repeatable rack blocks are independent and serialize both processing lanes in exact order',()=>{
  let rack=normalizeRack(DEFAULT_RACK);assert.deepEqual(rack.audio,[]);assert.deepEqual(rack.notes,[]);
@@ -10,11 +10,6 @@ test('repeatable rack blocks are independent and serialize both processing lanes
  const copy=structuredClone(rack),normalized=normalizeRack(rack);assert.deepEqual(rack,copy);assert.equal(normalized.audio[0].amount,1);assert.equal(normalized.audio[1].amount,8);assert.equal(normalized.notes[0].performance.division,'1/8');
  assert.deepEqual(toCoreSauce(rack).blocks.map(b=>b.id),rack.audio.map(b=>b.id));assert.equal(toCoreNotes(rack).blocks[1].perf.division,64);assert.equal(toCoreNotes(rack).blocks[4].drop_amount,1200);
  for(const bad of [{...rack,version:2},{...rack,audio:Array(17).fill(rack.audio[0])},{...rack,notes:[...rack.notes,rack.notes[0]]}])assert.throws(()=>normalizeRack(bad));
-});
-test('legacy routing migration preserves active generators and primary amounts without refilling an empty FX workspace',()=>{
- const values=Array(44).fill(0);values[12]=8;values[18]=.7;values[15]=600;values[16]=.12;values[37]=1;
- const r=legacyRack(values,{mode:'arp',mono:true,bpm:120});assert.equal(r.audio.length,0);assert.equal(r.notes[0].type,'arp');assert.equal(r.notes[0].performance.mono,false);assert.equal(r.notes[1].amount,600);
- const h=hydrateRack(r,values);assert.equal(h.notes[1].amount,600);assert.equal(h.notes[1].enabled,true);assert.equal(normalizeRack(DEFAULT_RACK).audio.length,0);
 });
 test('LFO sources and routes roundtrip independent settings with bounded capacity and permanent source1',()=>{
  const m=normalizeModulation(DEFAULT_MODULATION);m.sources[0].enabled=true;m.sources[0].routes[0].depth=-.5;m.sources.push(defaultLfo(2));m.sources[1].rate=4;m.sources[1].routes.push({parameter:18,depth:.2});
@@ -37,9 +32,9 @@ test('global rack order projects typed subsequences without changing cross-type 
  const roundtrip=normalizeRack(JSON.parse(JSON.stringify(r)));assert.deepEqual(roundtrip,r);const removed={...m,sources:[m.sources[0]]};assert(!syncRackOrder(r,removed).order.includes('lfo:2'));
  assert.throws(()=>reorderRack(r,m,['notes:1']));assert.throws(()=>normalizeRack({...r,order:['audio:2','audio:2']}));
 });
-test('modulation v1 migrates free clocks while v2 preserves drawn curves and retrigger atomically',()=>{
- const old=defaultLfo();delete old.points;delete old.retrigger;old.rate=3;old.division='1/8T';const migrated=normalizeModulation({version:1,sources:[old]});assert.equal(migrated.version,3);assert.equal(migrated.sources[0].retrigger,false);assert.equal(migrated.sources[0].rate,3);assert.equal(migrated.sources[0].division,'1/8T');assert.deepEqual(migrated.sources[0].points,shapeForWave());
- migrated.sources[0].waveform='custom';migrated.sources[0].retrigger=true;migrated.sources[0].points=[{x:0,y:-1,bend:1},{x:.5,y:.8,bend:-1},{x:1,y:1,bend:0}];const normalized=normalizeModulation(migrated);assert.deepEqual(normalizeModulation(JSON.parse(JSON.stringify(normalized))),normalized);assert.equal(toCoreModulation(normalized).sources[0].retrigger,1);assert.equal(toCoreModulation(normalized).sources[0].waveform,5);
+test('current modulation preserves drawn curves; retired formats reject',()=>{
+ const old=defaultLfo();delete old.points;delete old.retrigger;assert.throws(()=>normalizeModulation({version:1,sources:[old]}));assert.throws(()=>normalizeModulation({version:2,sources:[defaultLfo()]}));
+ const migrated=normalizeModulation();migrated.sources[0].waveform='custom';migrated.sources[0].retrigger=true;migrated.sources[0].points=[{x:0,y:-1,bend:1},{x:.5,y:.8,bend:-1},{x:1,y:1,bend:0}];const normalized=normalizeModulation(migrated);assert.deepEqual(normalizeModulation(JSON.parse(JSON.stringify(normalized))),normalized);assert.equal(toCoreModulation(normalized).sources[0].retrigger,1);assert.equal(toCoreModulation(normalized).sources[0].waveform,5);
  for(const points of [[],Array(33).fill({x:0,y:0,bend:0}),[{x:.1,y:0,bend:0},{x:1,y:0,bend:0}],[{x:0,y:0,bend:0},{x:0,y:1,bend:0},{x:1,y:0,bend:0}],[{x:0,y:-2,bend:0},{x:1,y:0,bend:0}]])assert.throws(()=>normalizeLfoPoints(points));
 });
 test('custom curve sampling keeps exact points and bounded monotone bent segments with independent wrap levels',()=>{
@@ -50,8 +45,8 @@ test('Triangle editing template matches native polarity at quarter phases',()=>{
  const points=shapeForWave('triangle');for(const phase of [0,.25,.5,.75,1])assert.equal(sampleLfoPoints(points,phase),1-4*Math.abs(phase-.5));
 });
 
-test('new synced defaults preserve explicit legacy free clocks and random30point patterns persist',()=>{
- assert.equal(defaultLfo().synced,true);for(const version of[1,2,3]){const source=defaultLfo();source.synced=false;if(version===1){delete source.points;delete source.retrigger;}assert.equal(normalizeModulation({version,sources:[source]}).sources[0].synced,false);}
+test('new synced defaults preserve explicit current free clocks and random30point patterns persist',()=>{
+ assert.equal(defaultLfo().synced,true);const source=defaultLfo();source.synced=false;assert.equal(normalizeModulation({version:3,sources:[source]}).sources[0].synced,false);
  let seed=1;const random=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296);const points=randomLfoPoints(30,random);assert.equal(points.length,30);assert.equal(points[0].y,points.at(-1).y);assert.notDeepEqual(points,randomLfoPoints(30,random));const m=normalizeModulation();m.sources[0].points=points;m.sources[0].waveform='custom';assert.deepEqual(normalizeModulation(JSON.parse(JSON.stringify(m))),m);
 });
 test('dynamic destinations key repeated blocks and LFO targets independently',()=>{

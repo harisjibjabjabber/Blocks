@@ -17,7 +17,7 @@ private:
  struct State {FullnessPath fullness;Harmonics harmonics;double amount=0,enabled=0,modulation=0;};
  struct Graph {bs_sauce_config config{};std::array<State,BS_SAUCE_CAPACITY> states{};SauceRack base;bool includeBase=false,primaryDrive=false,primaryFullness=false;};
  Graph active_{},old_{};bs_sauce_config requested_{};bool pending_=false,includeBase_=false;uint32_t position_=0,length_=0,sharedPrefix_=0;bool sharedBase_=false;double rate_=48000,smoothing_=1-std::exp(-1.0/240);
- bs_harmonics_config harmonicsConfig_=defaultHarmonics();double linkedMagnitude_=-1;
+ bs_harmonics_config harmonicsConfig_=defaultHarmonics();double linkedMagnitude_=-1,amplitudeContext_=1;
  static bool equal(const bs_sauce_config&a,const bs_sauce_config&b){if(a.version!=b.version||a.count!=b.count)return false;for(unsigned i=0;i<a.count;++i){const auto&x=a.blocks[i];const auto&y=b.blocks[i];if(x.id!=y.id||x.type!=y.type||x.primary!=y.primary||x.enabled!=y.enabled||x.amount!=y.amount)return false;}return true;}
  void begin(const bs_sauce_config&config,bool immediate){
   old_=active_;Graph next{};next.config=config;next.base=active_.base;next.includeBase=includeBase_;
@@ -46,7 +46,7 @@ private:
    if(modTarget!=0||state.modulation!=0){state.modulation+=smoothing_*(modTarget-state.modulation);if(std::abs(state.modulation-modTarget)<1e-12)state.modulation=modTarget;if(state.modulation!=0)amount=b.type!=BS_SAUCE_FULLNESS?std::max(1.,std::min(12.,amount*std::exp(2.4849066497880004*std::max(-4.,std::min(4.,state.modulation))))):std::max(0.,std::min(1.,amount+state.modulation));}
    if(b.type==BS_SAUCE_DRIVE){if(enabled!=0){const double wet=std::tanh(input*amount);input=enabled==1?wet:input+enabled*(wet-input);}}
    else if(b.type==BS_SAUCE_FULLNESS){const double depth=amount*enabled,residual=state.fullness.process(input,dcPole),colour=depth>0?input+depth*residual:input,body=state.fullness.body(colour,alpha);input=depth>0?colour+depth*body:colour;}
-   else if(enabled!=0){const double wet=state.harmonics.process(input,amount,linkedMagnitude_);input=enabled==1?wet:input+enabled*(wet-input);}
+   else if(enabled!=0){const double wet=state.harmonics.process(input,amount,linkedMagnitude_,(linkedMagnitude_>=0?linkedMagnitude_:std::abs(input))*std::abs(amplitudeContext_));input=enabled==1?wet:input+enabled*(wet-input);}
   }
   return input;
  }
@@ -65,8 +65,8 @@ public:
  bool configure(const bs_sauce_config&config,double rate,bool immediate=false,bool includeBase=false){if(!valid(config)||!std::isfinite(rate)||rate<8000||rate>384000)return false;rate_=rate;includeBase_=includeBase;smoothing_=1-std::exp(-1/(.005*rate));requested_=config;if(immediate){pending_=false;begin(config,true);}else if(length_){pending_=!equal(config,active_.config)||includeBase_!=active_.includeBase;}else if(!equal(config,active_.config)||includeBase_!=active_.includeBase)begin(config,false);return true;}
  const bs_sauce_config&config()const{return requested_;}
  bool transitioning()const{return length_!=0||pending_;}
- double process(double input,double driveAmount,double fullnessAmount,double driveEnabled,double fullnessEnabled,double dcPole,double alpha,double baseOrder=0,const Modulation*modulation=nullptr,double linkedMagnitude=-1){
-  modulation_=modulation;linkedMagnitude_=linkedMagnitude;
+ double process(double input,double driveAmount,double fullnessAmount,double driveEnabled,double fullnessEnabled,double dcPole,double alpha,double baseOrder=0,const Modulation*modulation=nullptr,double linkedMagnitude=-1,double amplitudeContext=1){
+  modulation_=modulation;linkedMagnitude_=linkedMagnitude;amplitudeContext_=amplitudeContext;
   if(!length_)return graph(active_,input,driveAmount,fullnessAmount,driveEnabled,fullnessEnabled,dcPole,alpha,baseOrder);
   double current,prior;
   if(sharedBase_){

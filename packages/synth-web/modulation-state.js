@@ -26,17 +26,16 @@ export function defaultLfo(id=1){return{id,enabled:false,waveform:'sine',rate:1,
 export const DEFAULT_MODULATION=Object.freeze({version:3,sources:[defaultLfo()]});
 const bounded=(x,min,max)=>{if(!Number.isFinite(x))throw Error('Invalid modulation value');return Math.max(min,Math.min(max,x));};
 export function normalizeModulation(input=DEFAULT_MODULATION){
- if(!input||![1,2,3].includes(input.version)||!Array.isArray(input.sources)||input.sources.length<1||input.sources.length>4)throw Error('Invalid modulation configuration');
- const legacy=input.version===1,ids=new Set();const sources=input.sources.map(s=>{
-  if(!s||!Number.isInteger(s.id)||s.id<1||s.id>0x7fffffff||ids.has(s.id)||typeof s.enabled!=='boolean'||typeof s.synced!=='boolean'||!LFO_WAVES.includes(s.waveform)||(legacy&&s.waveform==='custom')||!Object.hasOwn(MOD_DIVISIONS,s.division)||!Array.isArray(s.routes)||s.routes.length>8||(!legacy&&typeof s.retrigger!=='boolean'))throw Error('Invalid LFO source');ids.add(s.id);
+ if(!input||input.version!==3||!Array.isArray(input.sources)||input.sources.length<1||input.sources.length>4)throw Error('Invalid modulation configuration');
+ const ids=new Set();const sources=input.sources.map(s=>{
+  if(!s||!Number.isInteger(s.id)||s.id<1||s.id>0x7fffffff||ids.has(s.id)||typeof s.enabled!=='boolean'||typeof s.synced!=='boolean'||!LFO_WAVES.includes(s.waveform)||!Object.hasOwn(MOD_DIVISIONS,s.division)||!Array.isArray(s.routes)||s.routes.length>8||typeof s.retrigger!=='boolean')throw Error('Invalid LFO source');ids.add(s.id);
   const targets=new Set();const routes=s.routes.map(r=>{
    if(!r)throw Error('Invalid LFO destination');const kind=r.kind??'tone',targetId=r.targetId??0;
    if(!['tone','sauce','lfo'].includes(kind)||!Number.isInteger(targetId)||targetId<0||targetId>0x7fffffff||!Number.isInteger(r.parameter)||(kind==='tone'?(targetId!==0||!MOD_TARGETS.includes(r.parameter)):(targetId<1||(kind==='sauce'?r.parameter!==0:![0,1].includes(r.parameter)))))throw Error('Invalid LFO destination');
-   if(input.version<3&&kind!=='tone')throw Error('Extended destination requires modulation v3');
    const key=routeTargetKey({kind,targetId,parameter:r.parameter});if(targets.has(key))throw Error('Duplicate LFO destination');targets.add(key);
    return{kind,targetId,parameter:r.parameter,depth:bounded(r.depth,-1,1)};
   });
-  return{id:s.id,enabled:s.enabled,waveform:s.waveform,rate:bounded(s.rate,.05,20),synced:s.synced,division:s.division,intensity:bounded(s.intensity,0,1),retrigger:legacy?false:s.retrigger,points:legacy?shapeForWave():normalizeLfoPoints(input.version===2&&s.points?.length>16?[]:s.points),routes};
+  return{id:s.id,enabled:s.enabled,waveform:s.waveform,rate:bounded(s.rate,.05,20),synced:s.synced,division:s.division,intensity:bounded(s.intensity,0,1),retrigger:s.retrigger,points:normalizeLfoPoints(s.points),routes};
  });if(!ids.has(1))throw Error('Main LFO source is required');return{version:3,sources};
 }
 export function toCoreModulation(input){const s=normalizeModulation(input);return{version:3,sources:s.sources.map(l=>({id:l.id,enabled:Number(l.enabled),waveform:LFO_WAVES.indexOf(l.waveform),synced:Number(l.synced),division:MOD_DIVISIONS[l.division][0],triplet:MOD_DIVISIONS[l.division][1],rate_hz:l.rate,intensity:l.intensity,retrigger:Number(l.retrigger),points:l.points.map(p=>({...p})),routes:l.routes.map(r=>({target_kind:['tone','sauce','lfo'].indexOf(r.kind),target_id:r.targetId,parameter_id:r.parameter,depth:r.depth}))}))};}

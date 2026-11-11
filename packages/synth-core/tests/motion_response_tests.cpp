@@ -34,8 +34,6 @@ int main(){
  CHECK(std::abs(responsiveDrift(120,0,10)-83.92)<1e-10);CHECK(std::abs(settlingAllowance(60,0)-34.45)<1e-10);CHECK(std::abs(settlingResponseTime(.18,60,0)-.12)<1e-12);CHECK(settlingResponseTime(.04,60,0)==.04);
  CHECK(std::abs(settlingAllowance(8.9+1e-8,0)-settlingAllowance(8.9-1e-8,0))<3e-8);CHECK(std::abs(responsiveDrift(29.8+1e-8,0,1)-responsiveDrift(29.8-1e-8,0,1))<3e-8);
  std::puts("PASS stronger upper movement range is attenuation-only, continuous and time-bounded while gentle requested amounts remain unchanged");
- bs_synth*s=bs_create();CHECK(s);bs_patch legacy{};CHECK(bs_get_patch(s,&legacy));legacy.version=4;legacy.values[13]=120;legacy.values[32]=60;CHECK(bs_set_patch(s,&legacy));CHECK(bs_get_parameter(s,BS_ENVELOPE_RESPONSE)==0);CHECK(bs_get_parameter(s,BS_DRIVE_ENABLED)==1);bs_destroy(s);
- std::puts("PASS legacy physical movement remains explicit manual mode after migration");
  {
   const Shape shapes[]={{"sustained",.001f,.2f,1,.02f},{"short_pluck",.001f,.02f,0,.02f},{"zero_sustain_long_decay",.001f,8,0,.02f},{"slow_attack",1,.02f,0,.02f},{"long_release",.001f,.02f,0,10}};
   double pluckMotion=0,sustainedMotion=0;
@@ -50,9 +48,9 @@ int main(){
  std::puts("PASS actual sine pitch preserves short-pluck movement while reducing sustained, long-decay, slow-attack and long-release movement without changing knobs");
  {
   const Shape held={"held",.001f,.2f,1,.2f};Synth manual,adaptive;setup(manual.p,held,0,120,0);setup(adaptive.p,held,1,120,0);const auto m=audio(manual.p,144000,127),a=audio(adaptive.p,144000,256);const double raw=peak(periods(m,48000,144000)),adapted=peak(periods(a,48000,144000));CHECK(adapted<84.1&&raw<=120.1&&raw>20);CHECK(std::abs(adapted/raw-83.92/120)<.005);std::printf("METRIC response_held_late_peak_manual_cents=%.6f adaptive_cents=%.6f\n",raw,adapted);
-  Synth prefix,explicitManual;setup(prefix.p,held,0);setup(explicitManual.p,held,0);bs_set_parameter(prefix.p,BS_DRIVE_ENABLED,1);bs_set_parameter(explicitManual.p,BS_DRIVE_ENABLED,1);bs_reset(explicitManual.p);bs_patch old{};CHECK(bs_get_patch(prefix.p,&old));old.version=4;CHECK(bs_set_patch(prefix.p,&old));bs_reset(prefix.p);CHECK(audio(prefix.p,48000,127)==audio(explicitManual.p,48000,256));
+  Synth prefix,explicitManual;setup(prefix.p,held,0);setup(explicitManual.p,held,0);bs_set_parameter(prefix.p,BS_DRIVE_ENABLED,1);bs_set_parameter(explicitManual.p,BS_DRIVE_ENABLED,1);bs_reset(explicitManual.p);bs_patch old{};CHECK(bs_get_patch(prefix.p,&old));old.values[BS_ENVELOPE_RESPONSE]=0;CHECK(bs_set_patch(prefix.p,&old));bs_reset(prefix.p);CHECK(audio(prefix.p,48000,127)==audio(explicitManual.p,48000,256));
  }
- std::puts("PASS actual held-note drift stays within adaptive budget and response0 remains identical to migrated v4 manual audio");
+ std::puts("PASS actual held-note drift stays within adaptive budget and response0 remains identical after a current manual-response roundtrip");
  {
   const Shape pluck={"pluck",.001f,.12f,.1f,.2f};Synth one,blocks;setup(one.p,pluck,1);setup(blocks.p,pluck,1);const std::vector<bs_event>events={{0,BS_NOTE_ON,0,84,0,1},{5000,BS_PARAMETER,0,0,BS_ENVELOPE_RESPONSE,0},{5200,BS_PARAMETER,0,0,BS_ENVELOPE_RESPONSE,1},{8000,BS_NOTE_ON,1,79,0,.4f},{12000,BS_PARAMETER,0,0,BS_DRIFT_CENTS,80},{16000,BS_NOTE_OFF,0,84,0,0},{22000,BS_NOTE_OFF,1,79,0,0}};CHECK(audio(one.p,48000,1,events)==audio(blocks.p,48000,127,events));CHECK(bs_active_voices(one.p)==0&&bs_active_voices(blocks.p)==0);
  }

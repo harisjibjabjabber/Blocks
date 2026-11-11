@@ -24,9 +24,9 @@ int main(int argc,char**argv){
   auto config=mixed();if(scenario==2){config.count=2;config.blocks[0]={101,BS_SAUCE_DRIVE,1,1,1};config.blocks[1]={102,BS_SAUCE_FULLNESS,1,1,0};}if(scenario==3)for(auto&b:config.blocks)b={b.id,BS_SAUCE_FULLNESS,0,0,.75f};
   if(!bs_set_sauce(s,&config))return 4;
   // Exercise continuously moving shared base controls, not only stepped edits.
-  const bool lfoEnabled=rate==48000;bs_modulation_config modulation{};bs_default_modulation(&modulation);
-  if(lfoEnabled){auto&source=modulation.sources[0];source.enabled=1;source.waveform=BS_LFO_TRIANGLE;source.rate_hz=3.7f;source.intensity=.6f;source.route_count=4;source.routes[0]={BS_DRIVE,.15f};source.routes[1]={BS_FULLNESS,-.25f};source.routes[2]={BS_CUTOFF,.2f};source.routes[3]={BS_FILTER_RESONANCE,.3f};}
-  if(!bs_set_modulation(s,&modulation))return 11;bs_reset(s);
+  const bool lfoEnabled=rate==48000;bs_modulation_config_v3 modulation{};bs_default_modulation_v3(&modulation);
+  if(lfoEnabled){auto&source=modulation.sources[0];source.enabled=1;source.waveform=BS_LFO_TRIANGLE;source.rate_hz=3.7f;source.intensity=.6f;source.route_count=4;source.routes[0]={0,0,BS_DRIVE,.15f};source.routes[1]={0,0,BS_FULLNESS,-.25f};source.routes[2]={0,0,BS_CUTOFF,.2f};source.routes[3]={0,0,BS_FILTER_RESONANCE,.3f};}
+  if(!bs_set_modulation_v3(s,&modulation))return 11;bs_reset(s);
   std::vector<bs_event>events;for(unsigned key=48;key<64;++key){events.push_back({0,BS_NOTE_ON,0,key,0,.65f});events.push_back({rate*8/100,BS_NOTE_ON,0,key,0,.72f});events.push_back({rate/5,BS_NOTE_OFF,0,key,0,0});events.push_back({rate*7/10,BS_NOTE_OFF,0,key,0,0});}events.push_back({rate*69/100,BS_PEDAL,0,0,0,1});events.push_back({rate*4/5,BS_PEDAL,0,0,0,0});
   for(unsigned i=1;i<18;++i){const unsigned at=i*rate/25;events.push_back({at,BS_PARAMETER,0,0,BS_DRIVE,float(1+i%11)});events.push_back({at,BS_PARAMETER,0,0,BS_FULLNESS,float(i%5)/4});events.push_back({at,BS_PARAMETER,0,0,BS_SAUCE_ORDER,float(i%2)});events.push_back({at,BS_PARAMETER,0,0,BS_DRIVE_ENABLED,float(i%3!=0)});events.push_back({at,BS_PARAMETER,0,0,BS_FULLNESS_ENABLED,float(i%4!=0)});events.push_back({at,BS_PARAMETER,0,0,BS_PULSE_WIDTH,.1f+.1f*float(i%8)});}
   std::stable_sort(events.begin(),events.end(),[](const bs_event&a,const bs_event&b){return a.sample_offset<b.sample_offset;});

@@ -17,15 +17,16 @@ export function createRackEditor({item,body,extra,getNode,changeNode,parameters,
   else if(item.type==='harmonics'){
     const model=document.createElement('button');model.type='button';model.className='harmonics-model';model.dataset.harmonicsModel=item.key;model.setAttribute('aria-expanded','false');model.setAttribute('aria-controls','harmonics-model-'+item.id);
     const choices=document.createElement('div');choices.className='harmonics-model-options';choices.id='harmonics-model-'+item.id;choices.hidden=true;choices.setAttribute('role','group');choices.setAttribute('aria-label','Harmonics model');
-    for(const[value,label]of[['soft','Soft'],['asymmetric','Asymmetric']]){const option=document.createElement('button');option.type='button';option.dataset.harmonicsChoice=value;option.textContent=label;option.addEventListener('click',()=>{if(getGesture())return;changeNode({model:value},true);choices.hidden=true;model.setAttribute('aria-expanded','false');model.focus();});choices.append(option);}
+    const styles=[['round','Round'],['tube','Tube'],['fold','Fold']];
+    for(const[value,label]of styles){const option=document.createElement('button');option.type='button';option.dataset.harmonicsChoice=value;option.textContent=label;option.addEventListener('click',()=>{if(getGesture())return;changeNode({model:value},true);choices.hidden=true;model.setAttribute('aria-expanded','false');model.focus();});choices.append(option);}
     model.addEventListener('click',()=>{if(getGesture())return;choices.hidden=!choices.hidden;model.setAttribute('aria-expanded',String(!choices.hidden));});choices.addEventListener('keydown',e=>{if(e.key==='Escape'){choices.hidden=true;model.setAttribute('aria-expanded','false');model.focus();e.preventDefault();e.stopPropagation();}});
     const primary=document.createElement('div');primary.className='harmonics-main-dials';body.append(model,choices,primary);
     dial('amount','Drive',1,12,v=>Number(v.toFixed(1))+'\u00d7',{},primary);
     dial('tone','Tone',-1,1,v=>Math.abs(v)<.001?'0%':Math.round(Math.abs(v)*100)+'% '+(v<0?'Dark':'Bright'),{},primary);
+    const dynamics=dial('dynamics','Dynamics',0,1,v=>Math.round(v*100)+'%',{},primary);
     dial('mix','Mix',0,1,v=>Math.round(v*100)+'%',{},primary);
-    const dynamics=dial('dynamics','Dynamics',0,1,v=>Math.round(v*100)+'%',{},extra);
     dial('outputDb','Output',-12,12,v=>(v>0?'+':'')+Number(v.toFixed(1))+' dB',{},extra);
-    updateHarmonics=()=>{const n=getNode();dynamics.button.title='reduce saturation on attacks · '+dynamics.button.title;dynamics.button.setAttribute('aria-description','reduce saturation on attacks');model.textContent=(n.model==='soft'?'Soft':'Asymmetric')+' \u2304';model.setAttribute('aria-label','Harmonics '+item.id+' model, '+n.model);for(const option of choices.children)option.setAttribute('aria-pressed',String(option.dataset.harmonicsChoice===n.model));};
+    updateHarmonics=()=>{const n=getNode(),intent='Restore attack contrast';dynamics.button.title=intent+' · '+dynamics.button.title;dynamics.button.setAttribute('aria-description',intent);model.textContent=styles.find(s=>s[0]===n.model)[1]+' \u2304';model.setAttribute('aria-label','Harmonics '+item.id+' style, '+n.model);for(const option of choices.children)option.setAttribute('aria-pressed',String(option.dataset.harmonicsChoice===n.model));};
   }
   else if(item.type==='drop'){
     dial('amount','Amount',0,2400,v=>Math.round(v)+' ct');
