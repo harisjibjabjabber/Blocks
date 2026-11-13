@@ -24,10 +24,15 @@ public:
   if(!valid(c)||!std::isfinite(rate)||rate<8000||rate>384000)return false;
   bool topology=c.count!=config_.count;for(uint32_t i=0;i<c.count&&!topology;++i){const auto&a=c.blocks[i];const auto&b=config_.blocks[i];topology=a.id!=b.id||a.type!=b.type||a.enabled!=b.enabled;}
   if(topology||rate!=rate_){if(hooks_.panic)hooks_.panic(hooks_.context);for(auto&s:stages_)s.clear();}
-  config_=c;
+  config_=c;effective_=c;
   for(uint32_t i=0;i<c.count;++i)if(c.blocks[i].type!=BS_NOTE_DROP)stages_[i].configure(c.blocks[i].perf);
   if(rate!=rate_)prepare(rate);return true;
  }
+ // Numeric modulation never changes topology or requested patch state.
+ bool configureEffective(const bs_notes_config&c){if(c.count!=config_.count)return false;for(unsigned i=0;i<c.count;++i){const auto&a=c.blocks[i];const auto&b=config_.blocks[i];if(a.id!=b.id||a.type!=b.type||a.enabled!=b.enabled||a.primary!=b.primary)return false;}if(!valid(c))return false;for(unsigned i=0;i<c.count;++i)if(c.blocks[i].type!=BS_NOTE_DROP&&std::memcmp(&effective_.blocks[i].perf,&c.blocks[i].perf,sizeof(bs_performance_config)))stages_[i].configure(c.blocks[i].perf);effective_=c;return true;}
+ void restoreEffective(){configureEffective(config_);}
+ const bs_notes_config&effectiveConfig()const{return effective_;}
+ bs_note_block effectiveBlock(unsigned id)const{for(unsigned i=0;i<effective_.count;++i)if(effective_.blocks[i].id==id){auto b=effective_.blocks[i];if(b.type!=BS_NOTE_DROP)b.perf=stages_[i].activeConfig();return b;}return {};}
  void prepare(double rate){if(!std::isfinite(rate)||rate<8000||rate>384000)return;rate_=rate;for(auto&s:stages_)s.prepare(rate);}
  void clear(){if(hooks_.panic)hooks_.panic(hooks_.context);for(auto&s:stages_)s.clear();}
  void on(uint32_t ch,uint32_t key,float velocity){if(ch>=16||key>=128||!std::isfinite(velocity))return;if(velocity<=0){off(ch,key);return;}forwardOn(0,ch,key,std::min(1.f,velocity));}
@@ -40,7 +45,7 @@ public:
  const bs_notes_config&config()const{return config_;}
 private:
  struct Link{NoteRack*rack=nullptr;unsigned next=0;};
- Hooks hooks_{};bs_notes_config config_=defaults();double rate_=48000;
+ Hooks hooks_{};bs_notes_config config_=defaults(),effective_=defaults();double rate_=48000;
  std::array<Performance,BS_NOTES_CAPACITY>stages_{};std::array<Link,BS_NOTES_CAPACITY>links_{};
  unsigned generator(unsigned start)const{for(unsigned i=start;i<config_.count;++i)if(config_.blocks[i].enabled&&config_.blocks[i].type!=BS_NOTE_DROP)return i;return config_.count;}
  void forwardOn(unsigned start,uint32_t ch,uint32_t key,float velocity){const unsigned next=generator(start);if(next<config_.count)stages_[next].on(ch,key,velocity);else if(hooks_.on)hooks_.on(hooks_.context,ch,key,velocity);}

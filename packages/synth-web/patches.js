@@ -28,7 +28,6 @@ export function validateTonePatch(patch,parameters,engineVersion){
 export function validateCurrentPatch(patch,parameters,engineVersion,getTargetInfo=null){
  const values=validateTonePatch(patch,parameters,engineVersion);
  if(values[2]!==0)throw Error('Use oscillator Fine pitch for tuning');
- if(values[24]!==0)throw Error('Use envelope routing for filter movement');
  const fields={envelopes:Object.keys(DEFAULT_ENVELOPES),tuning:Object.keys(DEFAULT_TUNING),filterBank:Object.keys(DEFAULT_FILTER_BANK),reverb:Object.keys(DEFAULT_REVERB),suite:Object.keys(DEFAULT_SUITE),performance:Object.keys(DEFAULT_PERFORMANCE),rack:['version','audio','notes','order'],modulation:['version','sources'],clock:['version','bpm','beatsPerBar'],sub:['version','enabled','waveform','octave','priority','routing','level'],oscBass:['version','oscillators'],voicing:['version','oscillators'],sound:['version','oscillator','filterModel','filterDrive'],filterRouting:['version','osc1','osc2'],delay:['version','enabled','mode','synced','division','time','feedback','wet','damping']};
  for(const[key,required]of Object.entries(fields))requireFields(patch[key],required,key);
  if(!Object.hasOwn(patch,'stereoWidth'))throw Error('Incomplete stereo width');inRange(patch.stereoWidth,0,2,'stereo width');checkPerformance(patch.performance);

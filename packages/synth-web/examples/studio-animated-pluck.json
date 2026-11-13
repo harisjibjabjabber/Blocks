@@ -69,7 +69,7 @@
     "order": []
   },
   "modulation": {
-    "version": 3,
+    "version": 4,
     "sources": [
       {
         "id": 1,
@@ -132,7 +132,8 @@
             "kind": "tone",
             "targetId": 0,
             "parameter": 11,
-            "depth": 0.08
+            "depth": 0.08,
+            "polarity": "bipolar"
           }
         ]
       },
@@ -475,7 +476,7 @@
     "ducking": 0
   },
   "envelopes": {
-    "version": 1,
+    "version": 2,
     "sources": [
       {
         "id": 1,
@@ -502,7 +503,8 @@
             "kind": "config",
             "targetId": 10,
             "parameter": 0,
-            "depth": 0.12542916485999217
+            "depth": 0.12542916485999217,
+            "polarity": "unipolar"
           }
         ]
       },

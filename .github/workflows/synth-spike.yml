@@ -81,6 +81,7 @@ jobs:
             if curl --fail --silent http://127.0.0.1:41821/ > /dev/null; then break; fi
             sleep 1
           done
+          SYNTH_PROOF_DIR="$SYNTH_PROOF_DIR/modulation-gestures" node scripts/synth-modulation-gesture-proof.mjs
           node scripts/synth-split-modulation-proof.mjs
           node scripts/synth-workspace-proof.mjs
           SYNTH_WORKSPACE_SPOTS=1 SYNTH_PROOF_DIR="$SYNTH_PROOF_DIR/workspace-spots" node scripts/synth-workspace-proof.mjs

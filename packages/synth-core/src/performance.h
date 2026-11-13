@@ -16,8 +16,9 @@ public:
  void bind(Hooks hooks){hooks_=hooks;}
  void prepare(double rate){rate_=rate;frame_=0;clear();}
  void clear(){held_={};pedals_={};queueCount_=0;collecting_=false;arp_=false;monoConnected_=false;gateSlot_=-1;monoSlot_=-1;order_=0;arpIndex_=0;pending_=false;active_=requested_;rng_=active_.seed?active_.seed:1;}
- void configure(const bs_performance_config&c){requested_=c;if(arp_&&active_.mode==BS_ARP){pending_=std::memcmp(&active_,&requested_,sizeof c)!=0;}else{if(active_.seed!=c.seed)rng_=c.seed?c.seed:1;active_=c;pending_=false;}}
+ void configure(const bs_performance_config&c){requested_=c;if((arp_&&active_.mode==BS_ARP)||(collecting_&&active_.mode==BS_STRUM)){pending_=std::memcmp(&active_,&requested_,sizeof c)!=0;}else{if(active_.seed!=c.seed)rng_=c.seed?c.seed:1;active_=c;pending_=false;}}
  const bs_performance_config&config()const{return requested_;}
+ const bs_performance_config&activeConfig()const{return active_;}
  double tempo()const{return active_.bpm;}
  bool pending()const{return pending_;}
  bool enabled()const{return requested_.mode!=BS_PERFORMANCE_OFF||requested_.mono;}
@@ -51,7 +52,7 @@ public:
     }
    }
   }else if(active_.mode==BS_STRUM){
-   if(collecting_&&frame_>=collectAt_)publishStrum();
+   if(collecting_&&frame_>=collectAt_){publishStrum();if(pending_){active_=requested_;pending_=false;}}
    while(queueCount_&&queue_[0].when<=frame_){const auto e=queue_[0];for(unsigned i=1;i<queueCount_;++i)queue_[i-1]=queue_[i];--queueCount_;if(held_[e.slot].used&&held_[e.slot].generation==e.generation&&eligible(held_[e.slot]))emit(int(e.slot));}
   }
   ++frame_;
@@ -79,7 +80,7 @@ private:
  void afterRelease(bool membershipChanged){
   if(active_.mode==BS_PERFORMANCE_OFF&&active_.mono)monoSync(false);
   else if(active_.mode==BS_STRUM&&active_.mono&&monoSlot_<0)monoSync(false,true);
-  if(active_.mode==BS_STRUM){bool any=false;for(const auto&h:held_)any|=eligible(h);if(!any){collecting_=false;queueCount_=0;monoConnected_=false;}}
+  if(active_.mode==BS_STRUM){bool any=false;for(const auto&h:held_)any|=eligible(h);if(!any){collecting_=false;queueCount_=0;monoConnected_=false;active_=requested_;pending_=false;}}
   if(active_.mode==BS_ARP){bool any=false;for(const auto&h:held_)any|=eligible(h);if(!any){stopAll();arp_=false;pending_=false;if(active_.seed!=requested_.seed)rng_=requested_.seed?requested_.seed:1;active_=requested_;}else if(membershipChanged)restartArp();}
  }
  void monoSync(bool retrigger,bool performedOnly=false){int newest=-1;for(unsigned i=0;i<capacity;++i)if(eligible(held_[i])&&(!performedOnly||held_[i].performed)&&(newest<0||(held_[i].count>0&&held_[unsigned(newest)].count==0)||((held_[i].count>0)==(held_[unsigned(newest)].count>0)&&held_[i].order>held_[unsigned(newest)].order)))newest=int(i);if(newest<0){stopAll();monoConnected_=false;return;}if(newest!=monoSlot_||retrigger)emit(newest);}

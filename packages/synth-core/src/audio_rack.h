@@ -1,6 +1,7 @@
 ﻿#ifndef BLOCKS_AUDIO_RACK_H
 #define BLOCKS_AUDIO_RACK_H
 #include "blocks_sauce.h"
+#include "blocks_modulation.h"
 #include "fullness.h"
 #include <algorithm>
 #include <array>
@@ -9,7 +10,7 @@
 namespace blocks_detail {
 class AudioRack {
 public:
- struct Modulation {struct Offset{uint32_t id=0;double value=0;};std::array<Offset,32> offsets{};unsigned count=0;double at(uint32_t id)const{for(unsigned i=0;i<count;++i)if(offsets[i].id==id)return offsets[i].value;return 0;}};
+ struct Modulation {struct Offset{uint32_t id=0;double value=0;};std::array<Offset,BS_MAX_LFOS*BS_MAX_LFO_ROUTES+BS_SAUCE_CAPACITY> offsets{};unsigned count=0;double at(uint32_t id)const{for(unsigned i=0;i<count;++i)if(offsets[i].id==id)return offsets[i].value;return 0;}};
 private:
  const Modulation*modulation_=nullptr;
  struct State {FullnessPath fullness;double amount=0,enabled=0,modulation=0;};

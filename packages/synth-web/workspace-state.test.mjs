@@ -9,11 +9,11 @@ import {DEFAULT_RACK,syncRackOrder} from './sauce-state.js';
 const copy=x=>structuredClone(x);
 const route=(kind,targetId,parameter,depth=.4)=>({kind,targetId,parameter,depth});
 
-test('four persistent independent LFOs keep power off, exact identities and eight routes',()=>{
+test('four persistent independent LFOs keep power off, exact identities and32 routes',()=>{
  const m=normalizeModulation();assert.deepEqual(m.sources.map(s=>s.id),[1,2,3,4]);assert.ok(m.sources.every(s=>!s.enabled));
  m.sources[1].points[1].y=.2;assert.notEqual(m.sources[0].points[1].y,.2);
- m.sources[2].routes=Array.from({length:MOD_ROUTE_LIMIT},(_,i)=>route('config',20,8+i));
- assert.equal(toCoreModulation(m).sources[2].routes.length,8);
+ m.sources[2].routes=Array.from({length:MOD_ROUTE_LIMIT},(_,i)=>route('sauce',i+1,0));
+ assert.equal(toCoreModulation(m).sources[2].routes.length,32);
  m.sources[2].routes.push(route('config',23,0));assert.throws(()=>normalizeModulation(m));
  assert.throws(()=>normalizeModulation({...DEFAULT_MODULATION,sources:DEFAULT_MODULATION.sources.slice(0,3)}));
  assert.throws(()=>normalizeModulation({...DEFAULT_MODULATION,sources:[...DEFAULT_MODULATION.sources.slice(0,3),{...DEFAULT_MODULATION.sources[3],id:7}]}));
@@ -25,9 +25,9 @@ test('envelope aliases preserve routes and independent Env3 without mutating ton
  [4,25].forEach((base,i)=>[.02+i,.4,.6,.8,.2,-.3,.4].forEach((v,j)=>values[base+j]=v));
  e.sources[0].routes=[route('config',11,0,-.7)];e.sources[2].attack=4;
  const h=hydrateEnvelopes(e,values);assert.equal(h.sources[0].attack,.02);assert.equal(h.sources[1].attack,1.02);assert.equal(h.sources[2].attack,4);
- assert.deepEqual(h.sources[0].routes,e.sources[0].routes);assert.equal(e.sources[0].attack,DEFAULT_ENVELOPES.sources[0].attack);
+ assert.deepEqual(h.sources[0].routes,e.sources[0].routes.map(r=>({...r,polarity:'unipolar'})));assert.equal(e.sources[0].attack,DEFAULT_ENVELOPES.sources[0].attack);
  const next=envelopesToTone(h,values);next[4]=3;assert.equal(values[4],.02);
- const c=toCoreEnvelopes(h);assert.equal(c.sources[0].attack_bend,.2);assert.deepEqual(c.sources[0].routes[0],{target_kind:4,target_id:11,parameter_id:0,depth:-.7});
+ const c=toCoreEnvelopes(h);assert.equal(c.sources[0].attack_bend,.2);assert.deepEqual(c.sources[0].routes[0],{target_kind:4,target_id:11,parameter_id:0,depth:-.7,polarity:1});
  for(const [field,value] of [['attack',5.01],['decay',8.01],['release',10.01],['sustain',1.01],['attackBend',2.01]]){const bad=copy(e);bad.sources[2][field]=value;assert.throws(()=>normalizeEnvelopes(bad),field);}
 });
 
@@ -52,7 +52,7 @@ test('Filter A aliases do not overwrite independently configured Filter B',()=>{
 test('target registry uses physical config words and native authority, excluding discrete and composite controls',()=>{
  const targets=buildModulationTargets([],DEFAULT_RACK,DEFAULT_MODULATION);
  for(const [control,key] of [['suite:driveDb','config:20:8'],['output:reverb:ducking','config:22:16'],['filter:1:cutoff','config:11:0'],['env:3:release','config:42:3'],['tuning:sub:fineCents','config:28:1']])assert.equal(modulationTargetForControl(targets,control)?.key,key);
- for(const p of [2,12,19,20,24,36,43])assert.equal(isKnownModulationTarget('tone',0,p),false);
+ for(const p of [2,12,19,20,36,43])assert.equal(isKnownModulationTarget('tone',0,p),false);
  assert.equal(modulationTargetForControl(targets,'character'),null);
  assert.equal(targets.find(t=>t.key==='tone:0:11').canonicalKey,'config:10:0');
  assert.equal(targets.find(t=>t.key==='tone:0:25').canonicalKey,'config:41:0');
@@ -67,7 +67,7 @@ test('rack deletion prunes both source families atomically while preserving unre
  const m=normalizeModulation();m.sources[0].routes=copy(routes);m.sources[0].rate=3.2;m.sources[0].enabled=true;
  const e=normalizeEnvelopes();e.sources[2].routes=copy(routes);const original=copy({m,e});
  const pm=pruneEffectRoutes(m,rack),pe=pruneEnvelopeRoutes(e,rack),expected=routes.filter((_,i)=>[0,2,4,6].includes(i));
- assert.deepEqual(pm.sources[0].routes,expected);assert.deepEqual(pe.sources[2].routes,expected);assert.equal(pm.sources[0].rate,3.2);assert.equal(pm.sources[0].enabled,true);
+ assert.deepEqual(pm.sources[0].routes,expected.map(r=>({...r,polarity:'bipolar'})));assert.deepEqual(pe.sources[2].routes,expected.map(r=>({...r,polarity:'unipolar'})));assert.equal(pm.sources[0].rate,3.2);assert.equal(pm.sources[0].enabled,true);
  assert.deepEqual({m,e},original);pm.sources[0].routes[0].depth=-1;assert.equal(m.sources[0].routes[0].depth,.4);
 });
 

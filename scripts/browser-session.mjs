@@ -55,7 +55,9 @@ export async function browserSession() {
   }
   try {
     const portFile = join(profile, "DevToolsActivePort");
-    const endpointDeadline = Date.now() + 10000;
+    // Cold Chrome startup on a busy CI runner can take more than 10 seconds.
+    // Keep this bounded and separate from every application assertion timeout.
+    const endpointDeadline = Date.now() + 30000;
     let page, endpointError;
     // Chrome can create the port file before writing it or accepting requests.
     // Retry only startup discovery; application assertions are never retried.

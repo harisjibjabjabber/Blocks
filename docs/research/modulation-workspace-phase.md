@@ -1,5 +1,6 @@
 # Modulation workspace phase
 
+Superseded interaction/contract details: the [12 November direct-modulation follow-up](modulation-gestures.md) adds per-route polarity, 32 routes, stepped octave/count/clock destinations and local amount editing. The version numbers, eight-route limit, excluded numeric targets and retired Tone 24 statements below describe this earlier checkpoint, not the current build.
 Status: implemented and locally verified, 11 November 2026. Preview revision `52eda8cc0e5061c01095`. Independent scoped UX and technical gates pass; listening approval and remote CI remain open.
 
 The user requests a coherent instrument workspace, with four drawable LFOs and three envelopes available below every sound page. Env 1 remains the existing per-voice amplitude envelope; Env 2 and Env 3 are assignable. Each main oscillator and the mono Sub needs an octave selector from -3 through +3 and independent fine tuning. The Sub should visually belong to the oscillator family. Tone gains two independent filters, A and B, with visible routing and a neutral second-filter default.

@@ -15,9 +15,10 @@
  std::array<double,BS_PARAMETER_COUNT> visualTone{};
  std::array<std::array<double,4>,2> visualFilters{};
  std::array<std::array<double,7>,3> visualShapes{};
- std::array<double,3> visualFine{};
+ std::array<double,3> visualFine{},visualOctave{};
  uint64_t workspaceCounter=0,visualVoiceOrder=0;
  double visualGain=.7,visualWidth=1;
+ bool envelopeActive=false;
  bool workspaceRouted=false,workspaceBusWasActive=false;
  Weights subWaveWeights{{1,0,0,0,0}};
 
@@ -26,23 +27,23 @@
  int setEnvelopes(const bs_envelopes_config&c){if(!blocks_detail::validEnvelopes(c))return 0;envelopeConfig=c;for(unsigned e=0;e<2;++e){float v[7];std::memcpy(v,&c.sources[e].attack,sizeof v);for(unsigned i=0;i<7;++i)parameters[(e?25:4)+i]=v[i];}refreshWorkspaceRoutes();return 1;}
  int setTuning(const bs_tuning_config&c){if(!blocks_detail::validTuning(c))return 0;tuningConfig=c;baseSub.octave=c.oscillators[2].octave;auto sub=subNotes.config;sub.octave=baseSub.octave;subNotes.configure(sub);return 1;}
  int setFilterBank(const bs_filter_bank_config&c){if(!blocks_detail::validFilterBank(c))return 0;filterBank=c;const auto&a=c.filters[0];parameters[BS_CUTOFF]=a.cutoff;parameters[BS_FILTER_RESONANCE]=a.resonance;parameters[BS_FILTER_MIX]=a.mix;parameters[BS_FILTER_MODE]=a.model==1?1:0;soundConfig.filter_model=a.model==2?1:0;soundConfig.filter_drive=a.drive;filterRouting.mask=a.mask;return 1;}
- void refreshWorkspaceRoutes(){workspaceRouted=false;for(const auto&s:envelopeConfig.sources)workspaceRouted|=s.route_count!=0;const auto&c=modulation.configV3();for(unsigned i=0;i<c.source_count;++i)if(c.sources[i].enabled)for(unsigned j=0;j<c.sources[i].route_count;++j)workspaceRouted|=c.sources[i].routes[j].target_kind>=4;}
- double envelopeOffset(unsigned kind,unsigned id,unsigned p,const Voice*v=nullptr)const{double sum=0;for(unsigned e=0;e<3;++e){const auto&s=envelopeConfig.sources[e];const double value=v?v->envelopeValues[e]:envelopeValues[e];for(unsigned j=0;j<s.route_count;++j){const auto&r=s.routes[j];if(r.target_kind==kind&&r.target_id==id&&r.parameter_id==p)sum+=value*r.depth;}}return sum;}
+ void refreshWorkspaceRoutes(){workspaceRouted=false;for(const auto&s:envelopeConfig.sources)workspaceRouted|=s.route_count!=0;const auto&c=modulation.configV4();for(unsigned i=0;i<c.source_count;++i)if(c.sources[i].enabled)for(unsigned j=0;j<c.sources[i].route_count;++j)workspaceRouted|=c.sources[i].routes[j].target_kind>=4;}
+ double envelopeOffset(unsigned kind,unsigned id,unsigned p,const Voice*v=nullptr)const{if(v?!v->active:!envelopeActive)return 0;double sum=0;for(unsigned e=0;e<3;++e){const auto&s=envelopeConfig.sources[e];const double value=v?v->envelopeValues[e]:envelopeValues[e];for(unsigned j=0;j<s.route_count;++j){const auto&r=s.routes[j];if(r.target_kind==kind&&r.target_id==id&&r.parameter_id==p)sum+=(r.polarity==BS_POLARITY_BIPOLAR?2*value-1:value)*r.depth;}}return sum;}
  double workspaceOffset(unsigned kind,unsigned id,unsigned p,const Voice*v=nullptr)const{return modulation.targetOffset(kind,id,p)+envelopeOffset(kind,id,p,v);}
  double workspaceValue(double base,unsigned kind,unsigned id,unsigned p,const Voice*v=nullptr)const{const auto*d=blocks_detail::workspaceTarget(kind,id,p);return d?blocks_detail::workspaceModulate(base,workspaceOffset(kind,id,p,v),*d):base;}
  template<class T>void modWords(T&c,unsigned id){for(unsigned word=0;word<sizeof(T)/4;++word)if(const auto*d=blocks_detail::workspaceTarget(4,id,word)){double offset=workspaceOffset(4,id,word);if(offset!=0)blocks_detail::wordFloat(c,word,float(blocks_detail::workspaceModulate(blocks_detail::wordFloat(c,word),offset,*d)));}}
- void restoreWorkspaceBus(){suite.configure(baseSuite);delay.configure(baseDelay);reverb.configure(baseReverb);if(creative)creative->configure(baseCreative);oscBass.configure(baseBass);unison.configure(baseVoicing.oscillators[0]);unison2.configure(baseVoicing.oscillators[1]);subNotes.configure(baseSub);workspaceBusWasActive=false;}
- void resetWorkspace(){restoreWorkspaceBus();workspaceCounter=0;envelopeValues={};visualVoiceOrder=0;visualTone=smooth;for(unsigned i=0;i<3;++i){octaveSmooth[i]=tuningConfig.oscillators[i].octave;fineSmooth[i]=visualFine[i]=tuningConfig.oscillators[i].fine_cents;}filterBWeights={};filterBWeights[filterBank.filters[1].model]=1;subWaveWeights={};subWaveWeights[baseSub.waveform]=1;for(unsigned i=0;i<2;++i){double a=filterBank.filters[0].enabled&&bool(filterRouting.mask&(1u<<i))?1:0,b=filterBank.filters[1].enabled&&bool(filterBank.filters[1].mask&(1u<<i))?1:0,sum=a+b;filterRoutes[i]=sum?a/sum:0;filterBRoutes[i]=sum?b/sum:0;filterBypassRoutes[i]=sum?0:1;}refreshWorkspaceRoutes();}
+ void restoreWorkspaceBus(){noteRack.restoreEffective();suite.configure(baseSuite);delay.configure(baseDelay);reverb.configure(baseReverb);if(creative)creative->configure(baseCreative);oscBass.configure(baseBass);unison.configure(baseVoicing.oscillators[0]);unison2.configure(baseVoicing.oscillators[1]);subNotes.configure(baseSub);workspaceBusWasActive=false;}
+ void resetWorkspace(){restoreWorkspaceBus();workspaceCounter=0;envelopeValues={};envelopeActive=false;visualVoiceOrder=0;visualTone=smooth;for(unsigned i=0;i<3;++i){octaveSmooth[i]=tuningConfig.oscillators[i].octave;fineSmooth[i]=visualFine[i]=tuningConfig.oscillators[i].fine_cents;}filterBWeights={};filterBWeights[filterBank.filters[1].model]=1;subWaveWeights={};subWaveWeights[baseSub.waveform]=1;for(unsigned i=0;i<2;++i){double a=filterBank.filters[0].enabled&&bool(filterRouting.mask&(1u<<i))?1:0,b=filterBank.filters[1].enabled&&bool(filterBank.filters[1].mask&(1u<<i))?1:0,sum=a+b;filterRoutes[i]=sum?a/sum:0;filterBRoutes[i]=sum?b/sum:0;filterBypassRoutes[i]=sum?0:1;}refreshWorkspaceRoutes();}
  void workspaceControl(){
   if((workspaceCounter++&63)!=0)return;
   if(!workspaceRouted){if(workspaceBusWasActive)restoreWorkspaceBus();return;}workspaceBusWasActive=true;
   auto hs=baseSuite;modWords(hs,20);hs.ott_high_hz=std::max(hs.ott_high_hz,2*hs.ott_low_hz);suite.configure(hs);
-  auto dc=baseDelay;modWords(dc,21);delay.configure(dc);
+  auto dc=baseDelay;modWords(dc,21);numericDelay(dc);delay.configure(dc);
   auto rc=baseReverb;modWords(rc,22);reverb.configure(rc);
-  auto bc=baseBass;for(unsigned i=0;i<2;++i)modWords(bc.oscillators[i],24+i);oscBass.configure(bc);
-  for(unsigned i=0;i<2;++i){auto vc=baseVoicing.oscillators[i];vc.detune_cents=float(workspaceValue(vc.detune_cents,4,26+i,0));vc.spread=float(workspaceValue(vc.spread,4,26+i,1));(i?unison2:unison).configure(vc);}
+  auto bc=baseBass;for(unsigned i=0;i<2;++i){modWords(bc.oscillators[i],24+i);numericBass(bc.oscillators[i],i);}oscBass.configure(bc);
+  for(unsigned i=0;i<2;++i){auto vc=baseVoicing.oscillators[i];vc.detune_cents=float(workspaceValue(vc.detune_cents,4,26+i,0));vc.spread=float(workspaceValue(vc.spread,4,26+i,1));numericVoicing(vc,i);(i?unison2:unison).configure(vc);}
   auto sc=baseSub;sc.level=float(workspaceValue(sc.level,4,28,0));subNotes.configure(sc);
-  auto cc=baseCreative;for(unsigned i=0;i<cc.count;++i){auto&b=cc.blocks[i];for(unsigned p=0;p<9;++p){const auto*d=blocks_detail::workspaceTarget(5,b.id,p);double offset=workspaceOffset(5,b.id,p);if(offset!=0)blocks_detail::wordFloat(b,3+p,float(blocks_detail::workspaceModulate(blocks_detail::wordFloat(b,3+p),offset,*d)));}}if(creative)creative->configure(cc);
+  auto cc=baseCreative;for(unsigned i=0;i<cc.count;++i){auto&b=cc.blocks[i];for(unsigned p=0;p<9;++p){const auto*d=blocks_detail::workspaceTarget(5,b.id,p);double offset=workspaceOffset(5,b.id,p);if(offset!=0)blocks_detail::wordFloat(b,3+p,float(blocks_detail::workspaceModulate(blocks_detail::wordFloat(b,3+p),offset,*d)));}}if(creative)creative->configure(cc);applyNoteModulation();
  }
  void workspaceSmoothing(){for(unsigned i=0;i<3;++i){octaveSmooth[i]+=smoothing*(tuningConfig.oscillators[i].octave-octaveSmooth[i]);fineSmooth[i]+=smoothing*(tuningConfig.oscillators[i].fine_cents-fineSmooth[i]);if(std::abs(octaveSmooth[i]-tuningConfig.oscillators[i].octave)<1e-12)octaveSmooth[i]=tuningConfig.oscillators[i].octave;if(std::abs(fineSmooth[i]-tuningConfig.oscillators[i].fine_cents)<1e-12)fineSmooth[i]=tuningConfig.oscillators[i].fine_cents;}
   for(unsigned i=0;i<3;++i){const double target=filterBank.filters[1].model==i?1:0;filterBWeights[i]+=std::min(1.,dt/.01)*(target-filterBWeights[i]);if(std::abs(filterBWeights[i]-target)<1e-12)filterBWeights[i]=target;}
@@ -57,6 +58,8 @@
  }
  double modulatedValue(unsigned kind,unsigned id,unsigned p)const{
   const auto*d=blocks_detail::workspaceTarget(kind,id,p);if(!d)return std::numeric_limits<double>::quiet_NaN();
+  const double numeric=numericTargetValue(kind,id,p);if(std::isfinite(numeric))return numeric;
+  if(kind==6)return noteTargetValue(id,p);
   if(kind==0)return p==0?visualGain:visualVoiceOrder?visualTone[p]:parameters[p];
   if(kind==2)return modulation.control(id,p);
   if(kind==3)return modulation.effectOffset(id)+envelopeOffset(kind,id,p);
@@ -69,8 +72,8 @@
   if(id==23)return visualWidth;
   if(id==24||id==25)return blocks_detail::wordFloat(oscBass.configV2().oscillators[id-24],p);
   if(id==26||id==27){const auto&c=(id==26?unison:unison2).config();return p?c.spread:c.detune_cents;}
-  if(id==28)return p==0?subLevel:subVoice.active?visualFine[2]:tuningConfig.oscillators[2].fine_cents;
-  if(id==30||id==31)return visualVoiceOrder?visualFine[id-30]:tuningConfig.oscillators[id-30].fine_cents;
+  if(id==28)return p==0?subLevel:p==2?(subVoice.active?visualOctave[2]:tuningConfig.oscillators[2].octave):(subVoice.active?visualFine[2]:tuningConfig.oscillators[2].fine_cents);
+  if(id==30||id==31)return p==1?(visualVoiceOrder?visualOctave[id-30]:tuningConfig.oscillators[id-30].octave):(visualVoiceOrder?visualFine[id-30]:tuningConfig.oscillators[id-30].fine_cents);
   if(id>=40&&id<=42){if(visualVoiceOrder)return visualShapes[id-40][p];auto c=currentEnvelopes();return blocks_detail::wordFloat(c.sources[id-40],1+p);}
   return std::numeric_limits<double>::quiet_NaN();
  }

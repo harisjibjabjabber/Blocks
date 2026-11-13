@@ -1,4 +1,4 @@
-import {LFO_WAVES,MOD_DIVISIONS,MOD_TARGETS,randomLfoPoints,routeTargetKey,defaultRouteDepth} from './modulation-state.js';
+import {LFO_WAVES,MOD_DIVISIONS,MOD_TARGETS,randomLfoPoints,routeTargetKey,defaultRouteDepth,MOD_ROUTE_LIMIT} from './modulation-state.js';
 import {configDial} from './config-dial.js';
 import {createLfoTimingDial} from './lfo-timing.js';
 import {createLfoCurve} from './lfo-curve.js';
@@ -26,11 +26,11 @@ export function createLfoUI({container,parameters,getSource,getTempo,changeSourc
   $('#lfo-delete-point').addEventListener('click',()=>curve.removeSelected());
   $('#lfo-randomize').addEventListener('click',()=>{if(!getGesture())changeSource({waveform:'custom',points:randomLfoPoints()},true);});
   $('#lfo-bpm-down').addEventListener('click',()=>{if(!getGesture())changeTempo(-1);});$('#lfo-bpm-up').addEventListener('click',()=>{if(!getGesture())changeTempo(1);});
-  $('#lfo-add-route').addEventListener('change',e=>{if(getGesture()||e.target.value==='')return;const s=getSource(),destination=getDestinations().find(d=>(d.kind==='tone'?String(d.parameter):d.key)===e.target.value);if(s.routes.length<8&&destination){const{kind,targetId,parameter}=destination;changeSource({routes:[...s.routes,{kind,targetId,parameter,depth:0}]},true);}});
+  $('#lfo-add-route').addEventListener('change',e=>{if(getGesture()||e.target.value==='')return;const s=getSource(),destination=getDestinations().find(d=>(d.kind==='tone'?String(d.parameter):d.key)===e.target.value);if(s.routes.length<MOD_ROUTE_LIMIT&&destination){const{kind,targetId,parameter}=destination;changeSource({routes:[...s.routes,{kind,targetId,parameter,depth:0}]},true);}});
   document.addEventListener('pointerdown',e=>{if(!e.target.closest('[data-lfo-ref=lfo-wave-toggle],[data-lfo-ref=lfo-wave-options]'))closeWaves();},{signal:lifecycle.signal});window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#lfo-wave-options').hidden){closeWaves(true);e.preventDefault();}},{signal:lifecycle.signal});
   let routeKey='',routeDials=[];
   function update(){
-    const s=getSource();if(!s)return;container.dataset.lfoId=s.id;rate.update();intensity.update();rate.button.dataset.control='lfo:'+s.id+':rate';rate.button.dataset.modValue=s.rate;intensity.button.dataset.control='lfo:'+s.id+':intensity';curve.update();curve.setPhase(getPhase(s.id));
+    const s=getSource();if(!s)return;container.dataset.lfoId=s.id;rate.update();intensity.update();rate.button.dataset.control='lfo:'+s.id+':'+(s.synced?'division':'rate');if(!s.synced)rate.button.dataset.modValue=s.rate;intensity.button.dataset.control='lfo:'+s.id+':intensity';curve.update();curve.setPhase(getPhase(s.id));
     $('#lfo-enabled').setAttribute('aria-label','LFO '+s.id+' enabled');$('#lfo-enabled').setAttribute('aria-checked',String(s.enabled));$('#lfo-enabled').textContent=s.enabled?'On':'Off';$('#lfo-sync').setAttribute('aria-pressed',String(s.synced));$('#lfo-retrigger').setAttribute('aria-pressed',String(Boolean(s.retrigger)));$('#lfo-retrigger').setAttribute('aria-label','Restart shared LFO on played or generated note attacks');$('.lfo-tempo').hidden=!s.synced;$('#lfo-routes-toggle').textContent='Routes · '+s.routes.length;
     $('#lfo-bpm').textContent=Math.round(getTempo())+' BPM';$('#lfo-bpm-down').disabled=getTempo()<=40;$('#lfo-bpm-up').disabled=getTempo()>=240;
     $('#lfo-wave-name').textContent=s.waveform[0].toUpperCase()+s.waveform.slice(1);for(const b of container.querySelectorAll('[data-lfo-wave]'))b.setAttribute('aria-pressed',String(b.dataset.lfoWave===s.waveform));
@@ -41,9 +41,9 @@ export function createLfoUI({container,parameters,getSource,getTempo,changeSourc
       const dial=configDial({...controlOptions,key:instance+':lfo:route:'+key,label:name+' depth',min:-1,max:1,compact:true,defaultValue:defaultRouteDepth(route),getValue:()=>getSource().routes.find(r=>routeTargetKey(r)===key)?.depth??0,change:(depth,commit)=>changeSource({routes:getSource().routes.map(r=>routeTargetKey(r)===key?{...r,depth}:r)},commit),format:v=>(v>0?'+':'')+Math.round(v*100)+'%'});
       dial.button.dataset.lfoRoute=route.kind==='tone'?route.parameter:key;const remove=document.createElement('button');remove.type='button';remove.className='lfo-route-remove';remove.textContent='\u00d7';remove.dataset.lfoRemove=route.kind==='tone'?route.parameter:key;remove.setAttribute('aria-label','Remove '+name+' modulation');remove.addEventListener('click',()=>{if(!getGesture())changeSource({routes:getSource().routes.filter(r=>routeTargetKey(r)!==key)},true);});row.append(title,dial.element,remove);$('#lfo-routes').append(row);routeDials.push(dial);
     }
-    $('#lfo-add-route').replaceChildren();const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='+ Parameter · '+s.routes.length+'/8';$('#lfo-add-route').append(placeholder);
+    $('#lfo-add-route').replaceChildren();const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='+ Parameter · '+s.routes.length+'/'+MOD_ROUTE_LIMIT;$('#lfo-add-route').append(placeholder);
     for(const kind of ['tone','sauce','lfo','effects']){const group=document.createElement('optgroup');group.label={tone:'Instrument',sauce:'Sauce blocks',lfo:'LFOs',effects:'Bus effects'}[kind];for(const d of destinations.filter(d=>d.kind===kind&&!s.routes.some(r=>routeTargetKey(r)===d.key))){const option=document.createElement('option');option.value=d.kind==='tone'?String(d.parameter):d.key;option.textContent=d.label;group.append(option);}if(group.children.length)$('#lfo-add-route').append(group);}}
-    for(const dial of routeDials)dial.update();$('#lfo-add-route').value='';$('#lfo-add-route').disabled=s.routes.length>=8;
+    for(const dial of routeDials)dial.update();$('#lfo-add-route').value='';$('#lfo-add-route').disabled=s.routes.length>=MOD_ROUTE_LIMIT;
   }
   return{update,updatePhase:()=>curve.setPhase(getPhase(getSource().id)),close:closeWaves,destroy:()=>{lifecycle.abort();curve.destroy();}};
 }
