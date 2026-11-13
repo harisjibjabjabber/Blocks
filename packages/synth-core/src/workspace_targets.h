@@ -22,6 +22,7 @@ inline const bs_modulation_target_descriptor* workspaceTarget(unsigned kind,unsi
  static const D note[]={{0,2400,0,0,0,"Drop amount (next attack)","cents"},{.001f,4,.12f,1,0,"Drop time (next attack)","seconds"},{-2,2,0,0,0,"Drop bend (next attack)","curve"},{40,240,120,0,0,"Arp tempo (next bar)","BPM"},{0,7,2,BS_DISCRETE,0,"Arp division (next bar)","index"},{-.8f,.8f,0,0,0,"Arp curl (next bar)","ratio"},{.1f,.95f,.7f,0,0,"Arp gate (next bar)","ratio"},{0,100,35,0,0,"Strum spread (next collection)","ms"},{0,1,.25f,0,0,"Strum humanize (next collection)","ratio"}};
  if(kind==6)return id&&p<9?&note[p]:nullptr;
  if(kind!=4)return nullptr;
+ static const D motion{0,1,0,0,1,"Character Pitch","ratio"};if(id==50)return p==0?&motion:nullptr;
  if((id==10||id==11)&&p<4)return &filter[p];
  if(id>=40&&id<=42&&p<7)return id==40?&envelope[p]:&modulationEnvelope[p];
  static const D octave{-3,3,0,BS_DISCRETE,1,"Octave","octaves"},subOctave{-3,3,-1,BS_DISCRETE,1,"Sub octave","octaves"};

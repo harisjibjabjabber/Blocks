@@ -1,3 +1,4 @@
+#include <blocks_bus_order.h>
 #include <blocks_envelopes.h>
 #include <blocks_tuning.h>
 #include <blocks_filter_bank.h>
@@ -17,6 +18,7 @@
 int main() {
   bs_synth* synth=bs_create();
   if(!synth) return 1;
+  bs_bus_order_config bus{};bs_default_bus_order(&bus);if(!bs_set_bus_order(synth,&bus)||!bs_get_bus_order(synth,&bus)||bus.order[0]!=0)return 20;
   bs_envelopes_config envelopes{};bs_default_envelopes(&envelopes);
   bs_tuning_config tuning{};bs_default_tuning(&tuning);
   bs_filter_bank_config filters{};bs_default_filter_bank(&filters);

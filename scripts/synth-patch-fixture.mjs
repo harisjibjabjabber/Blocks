@@ -1,3 +1,4 @@
+import {normalizeBusOrder} from '../packages/synth-web/bus-order-state.js';
 import {normalizeEnvelopes,hydrateEnvelopes} from '../packages/synth-web/envelope-state.js';
 import {normalizeTuning,hydrateTuning} from '../packages/synth-web/tuning-state.js';
 import {normalizeFilterBank,hydrateFilterBank} from '../packages/synth-web/filter-bank-state.js';
@@ -19,5 +20,5 @@ import {canonicalLevels} from '../packages/synth-web/parameter-state.js';
 export function currentPatch(values,overrides={}){
  const tone=canonicalLevels(values),clock=normalizeClock(overrides.clock),modulation=normalizeModulation(overrides.modulation),sub=normalizeSub(overrides.sub),sound=normalizeSound(overrides.sound),filterRouting=normalizeFilterRouting(overrides.filterRouting);
  const tuning=hydrateTuning(normalizeTuning(overrides.tuning),sub);if(!overrides.tuning)tuning.oscillators[1].fineCents=tone[2];tone[2]=0;
- return{...overrides,format:'blocks-synth-patch',version:7,values:tone,envelopes:hydrateEnvelopes(normalizeEnvelopes(overrides.envelopes),tone),tuning,filterBank:hydrateFilterBank(normalizeFilterBank(overrides.filterBank),tone,sound,filterRouting),stereoWidth:overrides.stereoWidth??1,performance:normalizePerformance({...normalizePerformance(),...overrides.performance,mode:'off',bpm:clock.bpm}),rack:syncRackOrder(normalizeRack(overrides.rack),modulation),modulation,clock,suite:normalizeSuite(overrides.suite),sub,oscBass:normalizeOscBass(overrides.oscBass),voicing:normalizeVoicing(overrides.voicing),sound,delay:normalizeDelay(overrides.delay),reverb:normalizeReverb(overrides.reverb),filterRouting};
+ return{...overrides,format:'blocks-synth-patch',version:7,busOrder:normalizeBusOrder(overrides.busOrder),values:tone,envelopes:hydrateEnvelopes(normalizeEnvelopes(overrides.envelopes),tone),tuning,filterBank:hydrateFilterBank(normalizeFilterBank(overrides.filterBank),tone,sound,filterRouting),stereoWidth:overrides.stereoWidth??1,performance:normalizePerformance({...normalizePerformance(),...overrides.performance,mode:'off',bpm:clock.bpm}),rack:syncRackOrder(normalizeRack(overrides.rack),modulation),modulation,clock,suite:normalizeSuite(overrides.suite),sub,oscBass:normalizeOscBass(overrides.oscBass),voicing:normalizeVoicing(overrides.voicing),sound,delay:normalizeDelay(overrides.delay),reverb:normalizeReverb(overrides.reverb),filterRouting};
 }

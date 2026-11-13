@@ -1,6 +1,7 @@
 #ifndef BLOCKS_NUMERIC_DIVISIONS_H
 #define BLOCKS_NUMERIC_DIVISIONS_H
 #include <algorithm>
+#include <functional>
 #include <array>
 #include <cmath>
 #include <cstdint>

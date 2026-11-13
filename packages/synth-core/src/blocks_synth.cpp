@@ -1,3 +1,5 @@
+#include "bus_order.h"
+#include "motion_macro.h"
 #include "blocks_synth.h"
 #include "audio_rack.h"
 #include "harmonics_suite.h"
@@ -147,6 +149,7 @@ double envelope(Voice &v,double dt) {
 struct bs_synth {
  std::unique_ptr<blocks_detail::CreativeFXRack> creative;
  blocks_detail::OutputLimiter output;
+ blocks_detail::BusOrder busOrder;
  blocks_detail::HarmonicsSuite suite;std::array<double,BS_HARMONICS_SUITE_LATENCY>cleanSubDelay{};unsigned cleanSubDelayPosition=0;
  bs_sound_config soundConfig{BS_SOUND_VERSION,BS_SOURCE_STUDIO,BS_FILTER_EXISTING,1};
  double ladderBlend=0,ladderDrive=1;
@@ -199,11 +202,11 @@ struct bs_synth {
   finalMono.bind({this,[](void*c,uint32_t ch,uint32_t key,float velocity,bool mono,bool legato){static_cast<bs_synth*>(c)->emitVoice(ch,key,velocity,mono,legato);},[](void*c,uint32_t ch,uint32_t key){static_cast<bs_synth*>(c)->voiceOff(ch,key);}});
   noteRack.bind({this,[](void*c,uint32_t ch,uint32_t key,float velocity){auto*s=static_cast<bs_synth*>(c);if(s->requestedPerformance.mono)s->finalMono.on(ch,key,velocity);else s->voiceOn(ch,key,velocity);},[](void*c,uint32_t ch,uint32_t key){auto*s=static_cast<bs_synth*>(c);if(s->requestedPerformance.mono)s->finalMono.off(ch,key);else s->voiceOff(ch,key);},[](void*c,uint32_t ch,bool down){auto*s=static_cast<bs_synth*>(c);if(s->requestedPerformance.mono)s->finalMono.pedal(ch,down);else s->voicePedal(ch,down);},[](void*c){static_cast<bs_synth*>(c)->clearOutputs();}});
  }
- void clearOutputs(){envelopeValues={};envelopeActive=false;visualVoiceOrder=0;subNotes.clear();subVoice=Voice{};subSelection=-1;oscBass.cancelRetrigger();delay.clear();reverb.clear();if(creative)creative->clear();reverbScope={};reverbScopeAt=reverbScopeDecimation=0;suite.reset();output.clear();cleanSubDelay={};cleanSubDelayPosition=0;modulation.cancelRetrigger();for(auto&v:voices)v=Voice{};for(auto&v:tails)v=Voice{};onOrdinals={};offOrdinals={};pedals={};finalMono.clear();}
+ void clearOutputs(){envelopeValues={};envelopeActive=false;visualVoiceOrder=0;subNotes.clear();subVoice=Voice{};subSelection=-1;oscBass.cancelRetrigger();delay.clear();reverb.clear();if(creative)creative->clear();reverbScope={};reverbScopeAt=reverbScopeDecimation=0;suite.reset();busOrder.reset();output.clear();cleanSubDelay={};cleanSubDelayPosition=0;modulation.cancelRetrigger();for(auto&v:voices)v=Voice{};for(auto&v:tails)v=Voice{};onOrdinals={};offOrdinals={};pedals={};finalMono.clear();}
  void emitVoice(uint32_t channel,uint32_t key,float velocity,bool mono,bool legato){double previous=0;if(mono&&legato&&parameters[BS_GLIDE_ENABLED]&&parameters[BS_GLIDE_TIME]>0){uint64_t newest=0;for(const auto&v:voices)if(v.active&&(v.stage!=Stage::release||v.stageAge==0)&&v.order>newest){previous=v.lastFrequency;newest=v.order;}}const double duration=previous>0?smooth[BS_GLIDE_TIME]:0;if(mono)for(auto&v:voices)if(v.active)retire(v);voiceOn(channel,key,velocity,previous,duration);}
  int setNotes(const bs_notes_config&config){if(!blocks_detail::NoteRack::valid(config))return 0;bool topology=!notesExplicit||config.count!=noteRack.config().count;for(unsigned i=0;i<config.count&&!topology;++i){const auto&a=config.blocks[i];const auto&b=noteRack.config().blocks[i];topology=a.id!=b.id||a.type!=b.type||a.enabled!=b.enabled;}if(topology)performance.clear();if(!notesExplicit){clearOutputs();notesExplicit=true;auto legacy=requestedPerformance;legacy.mono=0;performance.configure(legacy);auto mono=blocks_detail::defaultPerformance();mono.mono=requestedPerformance.mono;finalMono.configure(mono);}return noteRack.configure(config,rate);}
  int setSauce(const bs_sauce_config&config){if(!blocks_detail::AudioRack::valid(config))return 0;sauceConfig=config;subVoice.sauce.configure(config,rate,false,true);for(auto&v:voices)if(v.active){v.sauce.configure(config,rate,false,true);if(v.unisonCount>1)v.rightSauce.configure(config,rate,false,true);}for(auto&v:tails)if(v.active){v.sauce.configure(config,rate,false,true);if(v.unisonCount>1)v.rightSauce.configure(config,rate,false,true);}return 1;}
- void reset() { restoreWorkspaceBus(); subNotes.clear();subVoice=Voice{};subSelection=-1;subOn=subNotes.config.enabled;subLevel=subNotes.config.level;subFX=subNotes.config.routing;subWave=subNotes.config.waveform;subOctave=subNotes.config.octave;clockBpm=clockConfig.bpm;ladderBlend=soundConfig.filter_model;ladderDrive=soundConfig.filter_drive;delay.clear();reverb.clear();if(creative)creative->clear();reverbScope={};reverbScopeAt=reverbScopeDecimation=0;suite.reset();output.clear();cleanSubDelay={};cleanSubDelayPosition=0;unison.reset();unison2.reset();oscBass.reset(rate);filterRoutes={double(bool(filterRouting.mask&1)),double(bool(filterRouting.mask&2))};stereoWidthSmooth=stereoWidth; for(unsigned osc=0;osc<2;++osc) {waveWeights[osc]={};waveWeights[osc][unsigned(parameters[BS_OSC1_WAVE+osc])]=1;} for(auto&v:voices)v=Voice{};for(auto&v:tails)v=Voice{}; onOrdinals={}; offOrdinals={}; pedals={}; sequence=0;driftPhase=0;filterBlend=parameters[BS_FILTER_MODE];modulation.reset();modulationSmooth={};performance.prepare(rate);noteRack.prepare(rate);finalMono.prepare(rate); for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; resetWorkspace(); }
+ void reset() { restoreWorkspaceBus(); subNotes.clear();subVoice=Voice{};subSelection=-1;subOn=subNotes.config.enabled;subLevel=subNotes.config.level;subFX=subNotes.config.routing;subWave=subNotes.config.waveform;subOctave=subNotes.config.octave;clockBpm=clockConfig.bpm;ladderBlend=soundConfig.filter_model;ladderDrive=soundConfig.filter_drive;delay.clear();reverb.clear();if(creative)creative->clear();reverbScope={};reverbScopeAt=reverbScopeDecimation=0;suite.reset();busOrder.reset();output.clear();cleanSubDelay={};cleanSubDelayPosition=0;unison.reset();unison2.reset();oscBass.reset(rate);filterRoutes={double(bool(filterRouting.mask&1)),double(bool(filterRouting.mask&2))};stereoWidthSmooth=stereoWidth; for(unsigned osc=0;osc<2;++osc) {waveWeights[osc]={};waveWeights[osc][unsigned(parameters[BS_OSC1_WAVE+osc])]=1;} for(auto&v:voices)v=Voice{};for(auto&v:tails)v=Voice{}; onOrdinals={}; offOrdinals={}; pedals={}; sequence=0;driftPhase=0;filterBlend=parameters[BS_FILTER_MODE];modulation.reset();modulationSmooth={};performance.prepare(rate);noteRack.prepare(rate);finalMono.prepare(rate); for(uint32_t i=0;i<BS_PARAMETER_COUNT;++i) smooth[i]=parameters[i]; resetWorkspace(); }
  void panic() {performance.clear();noteRack.clear();clearOutputs();}
  void retire(Voice&v){
   Voice*tail=nullptr;for(auto&candidate:tails)if(!candidate.active){tail=&candidate;break;}
@@ -414,7 +417,7 @@ struct bs_synth {
    if(alignment>0){const double aligned=v.bypassAlignment.process(bypass);bypass+=alignment*(aligned-bypass);if(v.unisonCount>1){const double rightAligned=v.rightBypassAlignment.process(bypassRight);bypassRight+=alignment*(rightAligned-bypassRight);}}
    std::array<double,4> bParams{{filterBank.filters[1].cutoff,filterBank.filters[1].resonance,filterBank.filters[1].mix,filterBank.filters[1].drive}};if(workspaceRouted)for(unsigned p=0;p<4;++p)bParams[p]=workspaceValue(bParams[p],4,11,p,&v);
    if(filterBRoutes[0]>0||filterBRoutes[1]>0){auto b=v.filterB.process(rawB,rawBRight,v.unisonCount>1,bParams,filterBWeights,ladderBlend,rate);filtered+=b[0];rightFiltered+=b[1];}else if(v.filterB.warm)v.filterB.clear();
-   if(voiceIndex<BS_MAX_VOICES&&v.order>=visualVoiceOrder){visualVoiceOrder=v.order;visualTone=effective;visualFine[0]=fine1;visualFine[1]=fine2;visualOctave[0]=octave1;visualOctave[1]=octave2;visualFilters[0]={effective[BS_CUTOFF],effective[BS_FILTER_RESONANCE],effective[BS_FILTER_MIX],voiceDrive};visualFilters[1]=bParams;for(unsigned p=0;p<7;++p){visualShapes[0][p]=effective[4+p];visualShapes[1][p]=effective[25+p];}float shape[7];std::memcpy(shape,&envelopeConfig.sources[2].attack,sizeof shape);for(unsigned p=0;p<7;++p)visualShapes[2][p]=workspaceValue(shape[p],4,42,p,&v);}
+   if(voiceIndex<BS_MAX_VOICES&&v.order>=visualVoiceOrder){visualVoiceOrder=v.order;visualTone=effective;visualMotion=workspaceValue(blocks_detail::motionInverse(smooth[13]),4,50,0,&v);visualFine[0]=fine1;visualFine[1]=fine2;visualOctave[0]=octave1;visualOctave[1]=octave2;visualFilters[0]={effective[BS_CUTOFF],effective[BS_FILTER_RESONANCE],effective[BS_FILTER_MIX],voiceDrive};visualFilters[1]=bParams;for(unsigned p=0;p<7;++p){visualShapes[0][p]=effective[4+p];visualShapes[1][p]=effective[25+p];}float shape[7];std::memcpy(shape,&envelopeConfig.sources[2].attack,sizeof shape);for(unsigned p=0;p<7;++p)visualShapes[2][p]=workspaceValue(shape[p],4,42,p,&v);}
    if(bypass!=0)filtered+=bypass;if(bypassRight!=0)rightFiltered+=bypassRight;
    const double linkedMagnitude=v.unisonCount>1?std::sqrt(.5*(filtered*filtered+rightFiltered*rightFiltered)):std::abs(filtered);
    auto voiceSauce=sauceModulation;for(unsigned i=0;i<sauceConfig.count;++i){unsigned id=sauceConfig.blocks[i].id;double amount=envelopeOffset(1,id,0,&v);if(amount!=0){unsigned at=0;while(at<voiceSauce.count&&voiceSauce.offsets[at].id!=id)++at;if(at==voiceSauce.count&&at<voiceSauce.offsets.size())voiceSauce.offsets[voiceSauce.count++]={id,0};if(at<voiceSauce.offsets.size())voiceSauce.offsets[at].value+=amount;}}
@@ -454,13 +457,15 @@ struct bs_synth {
     const double colour=v.sauce.process(filtered,effective[BS_DRIVE],fullness,effective[BS_DRIVE_ENABLED],effective[BS_FULLNESS_ENABLED],dcPole,bodyAlpha,effective[BS_SAUCE_ORDER],sauceModulationPtr,-1,subEnvelope);l+=colour*amplitude*subFX;r+=colour*amplitude*subFX;
    }v.age+=dt;
   }
-  creative->process(l,r,[this](uint32_t id){return modulation.effectOffset(id)+envelopeOffset(3,id,0);});
-  const auto processed=suite.process(l,r,l,r);l=processed.left;r=processed.right;
-  const double alignedCleanSub=cleanSubDelay[cleanSubDelayPosition];cleanSubDelay[cleanSubDelayPosition]=cleanSub;cleanSubDelayPosition=(cleanSubDelayPosition+1)%BS_HARMONICS_SUITE_LATENCY;cleanSub=alignedCleanSub;
   const double width=workspaceRouted?workspaceValue(stereoWidthSmooth,4,23,0):stereoWidthSmooth;
-  if(width!=1){const double mid=.5*(l+r),side=.5*(l-r)*width;l=mid+side;r=mid-side;}
-  delay.process(l,r,tempo());
-  reverb.process(l,r);
+  const double busGain=busOrder.tick();
+  for(const auto group:busOrder.active().order){
+   if(group==BS_BUS_CREATIVE)creative->process(l,r,[this](uint32_t id){return modulation.effectOffset(id)+envelopeOffset(3,id,0);});
+   else if(group==BS_BUS_HARMONICS){const auto processed=suite.process(l,r,l,r);l=processed.left;r=processed.right;}
+   else{if(width!=1){const double mid=.5*(l+r),side=.5*(l-r)*width;l=mid+side;r=mid-side;}delay.process(l,r,tempo());reverb.process(l,r);}
+  }
+  if(busGain!=1){l*=busGain;r*=busGain;}
+  const double alignedCleanSub=cleanSubDelay[cleanSubDelayPosition];cleanSubDelay[cleanSubDelayPosition]=cleanSub;cleanSubDelayPosition=(cleanSubDelayPosition+1)%BS_HARMONICS_SUITE_LATENCY;cleanSub=alignedCleanSub;
   if(++reverbScopeDecimation==4){reverbScopeDecimation=0;reverbScope[reverbScopeAt]=float(reverb.wetLeft()*effective[BS_GAIN]);reverbScopeAt=(reverbScopeAt+1)%BS_REVERB_SCOPE_SAMPLES;}
   const double gain=blocks_detail::workspaceModulate(smooth[BS_GAIN],modulationSmooth[BS_GAIN]+envelopeOffset(0,0,BS_GAIN),*blocks_detail::workspaceTarget(0,0,BS_GAIN));
   visualGain=gain;visualWidth=width;
@@ -471,6 +476,10 @@ struct bs_synth {
 
 extern "C" {
 #include "workspace_api.inc"
+
+void bs_default_bus_order(bs_bus_order_config*c){if(c)*c=blocks_detail::BusOrder::defaults();}
+int bs_set_bus_order(bs_synth*s,const bs_bus_order_config*c){return s&&c&&s->busOrder.configure(*c)?1:0;}
+int bs_get_bus_order(const bs_synth*s,bs_bus_order_config*c){if(!s||!c)return 0;*c=s->busOrder.config();return 1;}
 
 void bs_default_creative_fx(bs_creative_fx_config*c){if(c)*c=blocks_detail::CreativeFXRack::defaults();}
 int bs_default_creative_fx_block(uint32_t type,bs_creative_fx_block*b){if(!b||type>BS_CREATIVE_IMPACT)return 0;*b=blocks_detail::CreativeFXRack::blockDefaults(type);return 1;}
@@ -563,7 +572,7 @@ int bs_prepare(bs_synth *synth,double rate) {
  if(!synth->delay.prepare(rate))return 0;
  synth->reverb=std::move(reverb);
  if(creative)synth->creative=std::move(creative);
- synth->rate=rate; synth->dt=1/rate; synth->smoothing=1-std::exp(-1/(.005*rate)); synth->dcPole=std::exp(-2*pi*10/rate); synth->suite.prepare(rate);synth->output.prepare(rate);synth->reset(); return 1;
+ synth->rate=rate; synth->dt=1/rate; synth->smoothing=1-std::exp(-1/(.005*rate)); synth->dcPole=std::exp(-2*pi*10/rate); synth->suite.prepare(rate);synth->busOrder.prepare(rate);synth->output.prepare(rate);synth->reset(); return 1;
 }
 void bs_reset(bs_synth *synth) { if(synth) synth->reset(); }
 int bs_set_parameter(bs_synth *synth,uint32_t id,float physical) {

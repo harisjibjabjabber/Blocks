@@ -41,6 +41,7 @@ fixed(21,10,'Delay · Division',0,7,'index',2,['output:delay:division']);
 REVERB_FIELDS.forEach(([k,,min,max],i)=>fixed(22,3+i,'Reverb · '+title(k),min,max,['lowCut','damping'].includes(k)?'Hz':k==='outputDb'?'dB':k==='shimmerSemitones'?'semitones':['predelay','decay'].includes(k)?'seconds':'',0,['output:reverb:'+k]));
 
 fixed(23,0,'Stereo width',0,2,'ratio',0,['output:width']);
+fixed(50,0,'Character · Pitch',0,1,'ratio',0,['knob:motion']);
 
 for(let o=0;o<2;o++){
 

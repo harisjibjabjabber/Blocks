@@ -17,7 +17,7 @@
  std::array<std::array<double,7>,3> visualShapes{};
  std::array<double,3> visualFine{},visualOctave{};
  uint64_t workspaceCounter=0,visualVoiceOrder=0;
- double visualGain=.7,visualWidth=1;
+ double visualGain=.7,visualWidth=1,visualMotion=0;
  bool envelopeActive=false;
  bool workspaceRouted=false,workspaceBusWasActive=false;
  Weights subWaveWeights{{1,0,0,0,0}};
@@ -50,6 +50,8 @@
  }
  void voiceWorkspace(Voice&v,std::array<double,BS_PARAMETER_COUNT>&values){
   if(workspaceRouted){for(unsigned p=0;p<BS_PARAMETER_COUNT;++p){const auto*d=blocks_detail::workspaceTarget(0,0,p);if(!d||p==BS_GAIN)continue;double offset=modulationSmooth[p]+envelopeOffset(0,0,p,&v);if(p==BS_CUTOFF)offset+=workspaceOffset(4,10,0,&v);if(p==BS_FILTER_RESONANCE)offset+=workspaceOffset(4,10,1,&v);if(p==BS_FILTER_MIX)offset+=workspaceOffset(4,10,2,&v);if(p>=4&&p<=10)offset+=workspaceOffset(4,40,p-4,&v);if(p>=25&&p<=31)offset+=workspaceOffset(4,41,p-25,&v);values[p]=blocks_detail::workspaceModulate(smooth[p],offset,*d);}}
+  const double motionBase=blocks_detail::motionInverse(smooth[13]);
+  if(workspaceOffset(4,50,0,&v)!=0){const double n=workspaceValue(motionBase,4,50,0,&v);values[13]=std::max(0.,std::min(120.,values[13]+blocks_detail::motionCurve(n,false)-blocks_detail::motionCurve(motionBase,false)));values[32]=std::max(0.,std::min(80.,values[32]+blocks_detail::motionCurve(n,true)-blocks_detail::motionCurve(motionBase,true)));}
   // Rescale elapsed stage time when a duration changes, preserving progress.
   const double times[]={values[BS_ATTACK],values[BS_DECAY],values[BS_RELEASE]};double*old[]={&v.attack,&v.decay,&v.release};for(unsigned i=0;i<3;++i){const auto stage=i==0?Stage::attack:i==1?Stage::decay:Stage::release;if(v.stage==stage&&*old[i]!=times[i])v.stageAge*=times[i]/(*old[i]);*old[i]=times[i];}v.sustain=values[BS_SUSTAIN_LEVEL];v.attackBend=values[BS_ATTACK_BEND];v.decayBend=values[BS_DECAY_BEND];v.releaseBend=values[BS_RELEASE_BEND];
   const auto update=[&](FilterEnvelope&f,const double*shape){double*oldTimes[]={&f.attack,&f.decay,&f.release};const unsigned at[]={0,1,3};for(unsigned i=0;i<3;++i){const auto stage=i==0?Stage::attack:i==1?Stage::decay:Stage::release;if(f.stage==stage&&*oldTimes[i]!=shape[at[i]])f.age*=shape[at[i]]/(*oldTimes[i]);*oldTimes[i]=shape[at[i]];}f.sustain=shape[2];f.attackBend=shape[4];f.decayBend=shape[5];f.releaseBend=shape[6];};
@@ -66,6 +68,7 @@
   if(kind==1){for(unsigned i=0;i<sauceConfig.count;++i)if(sauceConfig.blocks[i].id==id)return blocks_detail::workspaceModulate(sauceConfig.blocks[i].amount,workspaceOffset(kind,id,p),*d);return std::numeric_limits<double>::quiet_NaN();}
   if(kind==5){const auto&c=creative->config();for(unsigned i=0;i<c.count;++i)if(c.blocks[i].id==id)return blocks_detail::wordFloat(c.blocks[i],3+p);return std::numeric_limits<double>::quiet_NaN();}
   if(id==10||id==11){if(visualVoiceOrder)return visualFilters[id-10][p];auto c=currentFilterBank();const auto&f=c.filters[id-10];const double v[]={f.cutoff,f.resonance,f.mix,f.drive};return v[p];}
+  if(id==50)return visualVoiceOrder?visualMotion:blocks_detail::motionInverse(parameters[13]);
   if(id==20)return blocks_detail::wordFloat(suite.config(),p);
   if(id==21)return blocks_detail::wordFloat(delay.config(),p);
   if(id==22)return blocks_detail::wordFloat(reverb.config(),p);
