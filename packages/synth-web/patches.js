@@ -1,8 +1,12 @@
+import {DEFAULT_BUS_ORDER,normalizeBusOrder} from './bus-order-state.js';
+import {normalizeEnvelopes,DEFAULT_ENVELOPES} from './envelope-state.js';
+import {normalizeTuning,DEFAULT_TUNING} from './tuning-state.js';
+import {normalizeFilterBank,DEFAULT_FILTER_BANK} from './filter-bank-state.js';
 import {DEFAULT_SUITE,normalizeSuite} from './suite-state.js';
 import {canonicalLevels} from './parameter-state.js';
 import {DEFAULT_PERFORMANCE,normalizePerformance} from './performance-state.js';
 import {normalizeRack,syncRackOrder} from './sauce-state.js';
-import {normalizeModulation} from './modulation-state.js';
+import {normalizeModulation,modulationDestinations,routeTargetKey} from './modulation-state.js';
 import {normalizeClock} from './clock-state.js';
 import {normalizeSub} from './sub-state.js';
 import {normalizeOscBass} from './osc-bass-state.js';
@@ -22,16 +26,19 @@ export function validateTonePatch(patch,parameters,engineVersion){
 }
 // Import validates every section before changing any live state. Defaults belong
 // to Init/new controls, never to a file missing current-format data.
-export function validateCurrentPatch(patch,parameters,engineVersion){
+export function validateCurrentPatch(patch,parameters,engineVersion,getTargetInfo=null){
  const values=validateTonePatch(patch,parameters,engineVersion);
- const fields={reverb:Object.keys(DEFAULT_REVERB),suite:Object.keys(DEFAULT_SUITE),performance:Object.keys(DEFAULT_PERFORMANCE),rack:['version','audio','notes','order'],modulation:['version','sources'],clock:['version','bpm','beatsPerBar'],sub:['version','enabled','waveform','octave','priority','routing','level'],oscBass:['version','oscillators'],voicing:['version','oscillators'],sound:['version','oscillator','filterModel','filterDrive'],filterRouting:['version','osc1','osc2'],delay:['version','enabled','mode','synced','division','time','feedback','wet','damping']};
+ if(values[2]!==0)throw Error('Use oscillator Fine pitch for tuning');
+ const fields={busOrder:Object.keys(DEFAULT_BUS_ORDER),envelopes:Object.keys(DEFAULT_ENVELOPES),tuning:Object.keys(DEFAULT_TUNING),filterBank:Object.keys(DEFAULT_FILTER_BANK),reverb:Object.keys(DEFAULT_REVERB),suite:Object.keys(DEFAULT_SUITE),performance:Object.keys(DEFAULT_PERFORMANCE),rack:['version','audio','notes','order'],modulation:['version','sources'],clock:['version','bpm','beatsPerBar'],sub:['version','enabled','waveform','octave','priority','routing','level'],oscBass:['version','oscillators'],voicing:['version','oscillators'],sound:['version','oscillator','filterModel','filterDrive'],filterRouting:['version','osc1','osc2'],delay:['version','enabled','mode','synced','division','time','feedback','wet','damping']};
  for(const[key,required]of Object.entries(fields))requireFields(patch[key],required,key);
  if(!Object.hasOwn(patch,'stereoWidth'))throw Error('Incomplete stereo width');inRange(patch.stereoWidth,0,2,'stereo width');checkPerformance(patch.performance);
  for(const b of patch.rack.notes||[]){requireFields(b,['id','type','primary','enabled','performance','amount','time','bend'],'note block');requireFields(b.performance,Object.keys(DEFAULT_PERFORMANCE),'note performance');checkPerformance(b.performance);inRange(b.amount,0,2400,'note amount');inRange(b.time,.001,4,'note time');inRange(b.bend,-2,2,'note bend');}
  for(const b of patch.rack.audio||[]){inRange(b.amount,b.type==='fullness'?0:1,b.type==='fullness'?1:12,'audio amount');requireFields(b,['id','type','primary','enabled','amount',...[]],'audio block');}
  for(const s of patch.modulation.sources||[]){requireFields(s,['id','enabled','waveform','rate','synced','division','intensity','retrigger','points','routes'],'LFO');inRange(s.rate,.05,20,'LFO rate');inRange(s.intensity,0,1,'LFO intensity');for(const r of s.routes||[]){requireFields(r,['kind','targetId','parameter','depth'],'LFO route');inRange(r.depth,-1,1,'LFO depth');}}
+ for(const e of patch.envelopes.sources??[]){requireFields(e,['id','attack','decay','sustain','release','attackBend','decayBend','releaseBend','routes'],'envelope');for(const r of e.routes??[]){requireFields(r,['kind','targetId','parameter','depth'],'envelope route');inRange(r.depth,-1,1,'envelope depth');}}
  const performance=normalizePerformance(patch.performance),clock=normalizeClock(patch.clock);if(performance.mode!=='off'||performance.bpm!==clock.bpm)throw Error('Patch performance must use the shared clock and note rack');
  const modulation=normalizeModulation(patch.modulation),rack=normalizeRack(patch.rack);
- for(const source of modulation.sources)for(const route of source.routes){if(route.kind==='sauce'&&!rack.audio.some(b=>b.id===route.targetId)||route.kind==='lfo'&&!modulation.sources.some(s=>s.id===route.targetId)||route.kind==='effects'&&!rack.effects.some(b=>b.id===route.targetId&&b.type==='moving-space'))throw Error('Missing LFO route target');}
- return{values,performance,clock,suite:normalizeSuite(patch.suite),rack:syncRackOrder(rack,modulation),modulation,sub:normalizeSub(patch.sub),oscBass:normalizeOscBass(patch.oscBass),voicing:normalizeVoicing(patch.voicing),sound:normalizeSound(patch.sound),delay:normalizeDelay(patch.delay),reverb:normalizeReverb(patch.reverb),filterRouting:normalizeFilterRouting(patch.filterRouting),stereoWidth:normalizeStereoWidth(patch.stereoWidth)};
+ const envelopes=normalizeEnvelopes(patch.envelopes),targets=new Set(modulationDestinations(parameters,rack,modulation,getTargetInfo).map(routeTargetKey));
+ for(const source of [...modulation.sources,...envelopes.sources])for(const route of source.routes)if(!targets.has(routeTargetKey(route)))throw Error('Missing or unsupported modulation target');
+ return{values,busOrder:normalizeBusOrder(patch.busOrder),envelopes,tuning:normalizeTuning(patch.tuning),filterBank:normalizeFilterBank(patch.filterBank),performance,clock,suite:normalizeSuite(patch.suite),rack:syncRackOrder(rack,modulation),modulation,sub:normalizeSub(patch.sub),oscBass:normalizeOscBass(patch.oscBass),voicing:normalizeVoicing(patch.voicing),sound:normalizeSound(patch.sound),delay:normalizeDelay(patch.delay),reverb:normalizeReverb(patch.reverb),filterRouting:normalizeFilterRouting(patch.filterRouting),stereoWidth:normalizeStereoWidth(patch.stereoWidth)};
 }

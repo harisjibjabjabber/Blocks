@@ -1,5 +1,7 @@
 # Synth product plan
 
+Current completed follow-up,13 November: [live effects, multi-source modulation, processor order and measured Ladder optimization](research/live-effects-routing-and-optimization.md). Preview `4bdc9db291d9bce34946`. Env 1/Env 2/LFO 1 sum on Character Pitch with visible multiple assignments; the Creative FX repeated-config fade defect is fixed. Sauce FX/Harmonics/Space can be reordered with recall and Undo. The8× Ladder retains exact output in162 cases; zero-resonance isolated helper cost falls26–37%, with no whole-app capacity claim. Local gates pass118 frontend tests,29 focused core groups+consumer,17 modulation browser groups and10 flow UI groups. Standalone source and an experimental native VST3 boundary are moving to the separate private Blocks-Synth repository; full plugin UI/config persistence and device/listening acceptance remain open.
+
 New Sauce backlog, 11 November (ideas only, no implementation in the movement pass):
 
 - **Resampling / grain:** Decimort-inspired sample-rate and bit-depth colour, with a gentle useful region before deliberately rough crunch. Research pre/post resampling filters, jitter, quantization and dithering from [D16's official Decimort2 description](https://d16.pl/decimort2) and [manual](https://d16.pl/pub/manuals/Decimort%202-manual-gb.pdf). This should become an original repeatable block, with Mix/Trim and matched-level listening; it is not a claim to copy D16's private algorithms.

@@ -72,7 +72,9 @@ struct LadderFilter {
   // At the supported8x rate/clamped cutoff, K<.0021. Starting at rhs
   // is already within K of the unique root; four iterations bound work.
   double u=rhs;
-  for(unsigned iteration=0;iteration<4;++iteration){const auto shaped=shape(u);const double residual=u+K*shaped.value-rhs,delta=residual/(1+K*shaped.derivative);u-=delta;if(std::abs(delta)<1e-13)break;}
+  // With no feedback the unique root is rhs exactly. No rate/shape
+  // approximation or iteration reduction is used when resonance is nonzero.
+  if(K!=0)for(unsigned iteration=0;iteration<4;++iteration){const auto shaped=shape(u);const double residual=u+K*shaped.value-rhs,delta=residual/(1+K*shaped.derivative);u-=delta;if(std::abs(delta)<1e-13)break;}
   double stage=shape(u).value;
   if constexpr(measureResidual)worstResidual=std::max(worstResidual,std::abs(u+K*stage-rhs));
   for(unsigned i=0;i<4;++i){const double y=G*stage+(1-G)*state[i];state[i]=2*y-state[i];if(std::abs(state[i])<1e-20)state[i]=0;previous[i]=y;stage=y;}

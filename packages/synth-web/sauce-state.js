@@ -15,17 +15,16 @@ export function normalizeRack(input=DEFAULT_RACK){
  const effects=(input.effects??[]).map(b=>{identity(b,'effects');if(!CREATIVE_FX_TYPES.includes(b.type)||b.primary)throw Error('Invalid Creative FX block');const result={id:b.id,type:b.type,primary:false,enabled:b.enabled};for(const[key,,lo,hi]of CREATIVE_FX_FIELDS){if(!Number.isFinite(b[key])||b[key]<lo||b[key]>hi)throw Error('Invalid Creative FX '+key);result[key]=b[key];}return result;});
  const known=new Set([...effects.map(b=>'effects:'+b.id),...notes.map(b=>'notes:'+b.id),...audio.map(b=>'audio:'+b.id)]);
  const supplied=input.order??[];
- if(!Array.isArray(supplied)||supplied.length>51)throw Error('Invalid Sauce layout order');
- const seen=new Set();for(const key of supplied){if(typeof key!=='string'||! /^(audio|notes|effects|lfo):[1-9][0-9]*$/.test(key)||Number(key.split(':')[1])>0x7fffffff||seen.has(key))throw Error('Invalid or duplicate Sauce layout key');seen.add(key);}
- // Structural edits can leave old layout references. Prune removed note/audio
- // cards; LFO availability is reconciled against modulation when displayed.
- const order=supplied.filter(key=>key.startsWith('lfo:')?key!=='lfo:1':known.has(key));
+ if(!Array.isArray(supplied)||supplied.length>48)throw Error('Invalid Sauce layout order');
+ const seen=new Set();for(const key of supplied){if(typeof key!=='string'||! /^(audio|notes|effects):[1-9][0-9]*$/.test(key)||Number(key.split(':')[1])>0x7fffffff||seen.has(key))throw Error('Invalid or duplicate Sauce layout key');seen.add(key);}
+ // Structural edits can leave layout references. Prune removed processing cards.
+ const order=supplied.filter(key=>known.has(key));
  for(const key of known)if(!order.includes(key))order.push(key);
  const rank=new Map(order.map((key,i)=>[key,i]));audio.sort((a,b)=>rank.get('audio:'+a.id)-rank.get('audio:'+b.id));notes.sort((a,b)=>rank.get('notes:'+a.id)-rank.get('notes:'+b.id));effects.sort((a,b)=>rank.get('effects:'+a.id)-rank.get('effects:'+b.id));
  return{version:1,audio,notes,effects,order};
 }
 export function rackVisualOrder(input,modulation={sources:[]}){
- const rack=normalizeRack(input),available=[...rack.effects.map(b=>'effects:'+b.id),...rack.notes.map(b=>'notes:'+b.id),...rack.audio.map(b=>'audio:'+b.id),...modulation.sources.filter(s=>s.id!==1).map(s=>'lfo:'+s.id)],known=new Set(available);
+ const rack=normalizeRack(input),available=[...rack.effects.map(b=>'effects:'+b.id),...rack.notes.map(b=>'notes:'+b.id),...rack.audio.map(b=>'audio:'+b.id)],known=new Set(available);
  const order=rack.order.filter(key=>known.has(key));for(const key of available)if(!order.includes(key))order.push(key);return order;
 }
 export function syncRackOrder(input,modulation){const rack=normalizeRack(input);rack.order=rackVisualOrder(rack,modulation);return rack;}

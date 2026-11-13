@@ -7,6 +7,7 @@
 #include "blocks_voicing.h"
 #include "blocks_delay.h"
 #include "blocks_output.h"
+#include "blocks_bus_order.h"
 #include "blocks_reverb.h"
 #include "blocks_creative_fx.h"
 #ifdef __cplusplus

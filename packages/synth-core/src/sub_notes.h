@@ -6,7 +6,7 @@
 #include <limits>
 namespace blocks_detail {
 inline bs_sub_config defaultSub(){return {1,0,0,-1,0,0,.25f,0};}
-inline bool validSub(const bs_sub_config&c){return c.version==1&&c.enabled<=1&&c.waveform<=1&&c.octave>=-2&&c.octave<=0&&c.priority<=1&&c.routing<=1&&std::isfinite(c.level)&&c.level>=0&&c.level<=1&&c.reserved==0;}
+inline bool validSub(const bs_sub_config&c){return c.version==1&&c.enabled<=1&&c.waveform<=4&&c.octave>=-3&&c.octave<=3&&c.priority<=1&&c.routing<=1&&std::isfinite(c.level)&&c.level>=0&&c.level<=1&&c.reserved==0;}
 class SubNotes{
  struct Note{uint32_t count=0;uint64_t order=0;float velocity=1;bool pedal=false;};
  std::array<Note,2048>notes_{};std::array<bool,16>pedals_{};uint64_t sequence_=0;bool dirty_=true;int selected_=-1;

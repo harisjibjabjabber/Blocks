@@ -10,6 +10,8 @@
 <link rel="stylesheet" href="output-ui.css">
 <link rel="stylesheet" href="sound-ui.css">
 <link rel="stylesheet" href="harmonics-ui.css">
+<link rel="stylesheet" href="modulation-dock.css">
+<link rel="stylesheet" href="processor-flow-ui.css">
 </head>
 <body>
   <main class="instrument" aria-label="Blocks synthesizer">
@@ -34,13 +36,12 @@
     <div class="signal-row"><span id="status" role="status">Sound stopped</span><output id="cpu-load" title="Estimated audio-thread load against its processing budget, not whole-computer CPU usage." aria-label="Estimated audio CPU load">CPU —</output><span id="monitor">0 voices</span></div>
     <nav id="module-tabs" aria-label="Sound module">
       <button type="button" data-module="tone" class="selected" aria-pressed="true">Tone</button>
-      <button type="button" data-module="envelope" aria-pressed="false">Envelope</button>
       <button type="button" data-module="character" aria-pressed="false">Character</button>
       <button type="button" data-module="harmonics" aria-pressed="false">Harmonics</button>
       <button type="button" data-module="space" aria-pressed="false">Space</button>
       <button type="button" data-module="drop" aria-pressed="false">Sauce</button>
-      <button type="button" data-module="lfo" aria-pressed="false">LFO</button>
     </nav>
+    <section id="processor-flow"></section>
     <section id="harmonics-page" hidden aria-label="Harmonics suite"></section>
     <div id="sauce-rack" hidden></div>
     <section id="space-panel" hidden aria-label="Space effects"></section>
@@ -61,6 +62,7 @@
       </div>
       <div id="macros" aria-label="Sound controls"></div>
     </section>
+    <section id="modulation-dock"></section>
     <section class="keyboard-section" aria-label="Touch instrument">
       <div class="keyboard-heading"><span>Keyboard</span><div class="keyboard-performance"><button id="mono-toggle" type="button" aria-pressed="false" title="Mono · last note priority">Mono</button><button id="glide-toggle" type="button" aria-pressed="false">Glide</button><button id="glide-time-toggle" type="button" aria-expanded="false" aria-controls="glide-panel" hidden>80 ms</button><div id="glide-panel" role="group" aria-label="Glide time" hidden></div><div class="octave-controls" aria-label="Keyboard octave"><button id="octave-down" type="button" aria-label="Lower keyboard octave">−</button><span id="octave-label" aria-live="polite">C4</span><button id="octave-up" type="button" aria-label="Higher keyboard octave">+</button></div></div></div>
       <div class="keyboard" id="keyboard" aria-label="Playable piano"></div>

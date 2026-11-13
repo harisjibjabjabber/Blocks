@@ -7,12 +7,14 @@ Original C++17 audio engine with a C ABI, independent of UI frameworks, Web Audi
 - Sixteen logical note voices; per-oscillator Sine, Triangle, Saw, Pulse or Square, independent levels and 1-7-copy Unison.
 - Independent opt-in Rotor/Growl/Throat/Fray sources, native waveform preview, shared clock, free/synced Spin, optional retrigger and cycle-preserving Curl.
 - Mono/Glide, ordered Arp/Strum/Pitch Drop note processing, sustain and deterministic voice ownership.
-- Curved amplitude and filter envelopes, Soft/LP12/Ladder filters and per-oscillator filter routing. Ladder retains 8x reconstruction and nonlinear scalar feedback.
+- Three live curved per-voice envelopes (Env 1 amplitude; Env 2/3 assignable). Two independent parallel Soft/LP12/Ladder filters with per-oscillator sends. Ladder retains 8x reconstruction and nonlinear scalar feedback; Filter B is disabled by default.
 - Repeated ordered Fullness inserts, followed by a shared stereo Harmonics suite: Compressor → two serial Colour slots (Amp/Clip/Sine Crush/Tape/Rectify) → Crush → OTT-style multiband → Output. Stages bypass independently; native meters show gain changes. Colour/Crush use 4x reconstruction.
 - Audio-domain Tight/Neutral/Bloom dynamics uses signal detection/compression/expansion, leaving note ADSR and ownership unchanged. The Suite declares24samples of latency even when disabled; Clean Sub receives the same alignment delay.
-- A centred single-note Sub with Sine/Triangle, lowest/last priority, glide and Clean/FX routing. Clean joins after main colour and before common master gain/final protection; it still obeys note envelopes and panic.
+- A centred single-note five-wave Sub with lowest/last priority, glide, octave −3…+3, fine tuning and Clean/FX routing. Clean joins after main colour and before common master gain/final protection; it still obeys note envelopes and panic.
 - Typed drawable LFOs, stereo Width, regular/ping-pong Delay and stereo Plate/Hall/Shimmer reverb. Reverb is one global prepared processor; Shimmer pitch-shifts actual wet audio in feedback.
 - Master gain now precedes stereo-linked lookahead sample-peak protection, replacing the final always-on tanh. No colour when gain reduction is inactive; ~1ms output lookahead (48 samples at48kHz) plus the24-sample Suite alignment. `bs_output_latency` reports total fixed bus latency; `bs_get_output_meters` reports pre-protection level/output/reduction. This is not certified true-peak protection.
+
+Workspace APIs add `blocks_envelopes.h` v2 (2036 bytes), `blocks_tuning.h` (28 bytes), and `blocks_filter_bank.h` (72 bytes). Current modulation v4 is 4280 bytes, adding typed fixed-control/Creative FX targets. `bs_modulation_target_info` defines supported continuous targets and units; `bs_get_modulated_target_value` and source telemetry report actual rendered values. Configuration getters return requested base values, never modulated snapshots. Shared effects take the maximum active envelope; voice targets retain per-note envelopes. Bus updates run on a continuous 64-sample control clock with processor smoothing. See [workspace design and evidence](../../docs/research/modulation-workspace-phase.md).
 
 Rendering uses prepared fixed storage with no heap allocation. Note and parameter events have sample offsets. Configuration setters validate atomically; processing and source-preview functions reject invalid arguments. Output protection does not imply unlimited patch headroom or a universal CPU guarantee.
 
@@ -27,7 +29,7 @@ cmake -S packages/synth-core/tests/consumer -B build/consumer -DCMAKE_PREFIX_PAT
 cmake --build build/consumer --parallel 2
 ```
 
-The installed CMake target is `Blocks::Synth`. Public headers cover tone/events, performance, note rack, modulation v3, audio rack, Harmonics Suite, Voicing v2, Bass v2, shared clock/Sub, routing, sound, Delay, Reverb and output telemetry. The consumer fixture exercises the installed interface. Current tone state is ABI 7/count 44; Bass is 80 bytes, Voicing 32, clock 12, Sub 32, Suite v2 (see public header; meters44) and modulation v3 2232. These version numbers identify the current schemas; retired converters/APIs are not provided.
+The installed CMake target is `Blocks::Synth`. Public headers cover tone/events, performance, note rack, modulation v4, audio rack, Harmonics Suite, Voicing v2, Bass v2, shared clock/Sub, routing, sound, Delay, Reverb and output telemetry. The consumer fixture exercises the installed interface. Current tone state is ABI 7/count 44; Bass is 80 bytes, Voicing 32, clock 12, Sub 32, Suite v2 (see public header; meters44) and modulation v4 4280. These version numbers identify the current schemas; retired converters/APIs are not provided.
 
 ## WebAssembly and checks
 
@@ -51,3 +53,5 @@ Phase13 DSP, sources, controls, evidence and limitations: [space/output results]
 Creative FX: `blocks_creative_fx.h` exposes a776-byte config for16 independent Moving Space/Impact stereo inserts. The bus precedes Harmonics and excludes Clean Sub; setters are allocation-free and topology edits fade through dry. See [follow-up DSP and evidence](../../docs/research/space-creative-and-punch-followup.md). Tight now releases prior-body attenuation quickly for repeated hits; no note ADSR changes.
 
 Moving Space Env (`motion`) is signed-1..1. Shared LFO routes target kind3/effect ID/parameter0 with independent signed depths in the unchanged Modulation v3 layout. All contributions combine before physical tap bounds. See [movement contract and verification](../../docs/research/moving-space-movement.md).
+
+Routes hold signed depth and independent polarity: native0 resolves to LFO bipolar / ENV unipolar,1 is unipolar,2 bipolar. Web state always saves the explicit mode. LFO conversion precedes intensity; zero intensity and disabled sources produce no offset. Bipolar envelopes map `2e−1` only while their owning voice exists. The last voice ending removes that offset; bus targets settle through their normal smoothing. A negative depth inverts either mode. Each of four LFOs and three envelopes supports32 unique destinations. Source meters retain natural LFO±intensity and ENV0..1; effective target telemetry includes route polarity. Octave destinations round the normalized modulation result; these intentional pitch steps are not hidden glide.

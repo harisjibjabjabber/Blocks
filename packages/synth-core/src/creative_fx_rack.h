@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstring>
 namespace blocks_detail {
 class CreativeFXRack {
  struct Slot {uint32_t id=0,type=0;MovingSpace space;Impact impact;};
@@ -37,7 +38,17 @@ public:
  }
  bool prepare(double rate){if(!std::isfinite(rate)||rate<8000||rate>384000)return false;for(auto&s:slots_)if(!s.space.prepare(rate)||!s.impact.prepare(rate))return false;rate_=rate;step_=1/(.01*rate);clear();return true;}
  double rate()const{return rate_;}
- bool configure(const bs_creative_fx_config&c){if(!valid(c))return false;requested_=c;if(!processed_){apply(c,true);phase_=stable;fade_=1;}else if(phase_==stable&&topology(active_,c)){apply(c,false);}else if(phase_!=out){phase_=out;}return true;}
+ bool configure(const bs_creative_fx_config&c){
+  if(!valid(c))return false;
+  // Control-bus refreshes are not topology changes. In particular, a repeated
+  // request during fade-in must not send the rack back towards dry forever.
+  if(c.count==requested_.count&&!std::memcmp(c.blocks,requested_.blocks,c.count*sizeof(bs_creative_fx_block)))return true;
+  requested_=c;
+  if(!processed_){apply(c,true);phase_=stable;fade_=1;}
+  else if(topology(active_,c)){apply(c,false);if(phase_==out)phase_=in;}
+  else if(phase_!=out)phase_=out;
+  return true;
+ }
  const bs_creative_fx_config&config()const{return requested_;}
  void clear(){for(auto&s:slots_){s.space.clear();s.impact.clear();}apply(requested_,true);phase_=stable;fade_=1;processed_=false;}
  void process(double&l,double&r){process(l,r,[](uint32_t){return 0.;});}

@@ -55,18 +55,28 @@ export async function browserSession() {
   }
   try {
     const portFile = join(profile, "DevToolsActivePort");
-    for (let i = 0; i < 100 && !existsSync(portFile); i++) {
+    // Cold Chrome startup on a busy CI runner can take more than 10 seconds.
+    // Keep this bounded and separate from every application assertion timeout.
+    const endpointDeadline = Date.now() + 30000;
+    let page, endpointError;
+    // Chrome can create the port file before writing it or accepting requests.
+    // Retry only startup discovery; application assertions are never retried.
+    while (Date.now() < endpointDeadline) {
       if (launchError) throw launchError;
-      if (exitStatus) throw new Error("Chrome exited before exposing its test endpoint");
+      if (exitStatus) throw new Error("Chrome exited during test endpoint startup");
+      if (existsSync(portFile)) {
+        try {
+          const port = Number(readFileSync(portFile, "utf8").split("\n")[0]);
+          if (Number.isInteger(port) && port > 0 && port <= 65535) {
+            const response = await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(Math.max(1, Math.min(1000, endpointDeadline - Date.now()))) });
+            if (response.ok) page = (await response.json()).find(target => target.type === "page" && target.webSocketDebuggerUrl);
+            if (page) break;
+          }
+        } catch (error) { endpointError = error; }
+      }
       await delay(100);
     }
-    if (launchError) throw launchError;
-    if (exitStatus) throw new Error("Chrome exited during test endpoint startup");
-    if (!existsSync(portFile)) throw new Error("Chrome did not expose its test endpoint");
-    const port = Number(readFileSync(portFile, "utf8").split("\n")[0]);
-    const pages = await (await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(5000) })).json();
-    const page = pages.find(page => page.type === "page");
-    if (!page?.webSocketDebuggerUrl) throw new Error("Chrome test endpoint has no page target");
+    if (!page) throw new Error("Chrome did not expose a usable test endpoint", { cause: endpointError });
     socket = new WebSocket(page.webSocketDebuggerUrl);
     await new Promise((resolveOpen, reject) => { socket.addEventListener("open", resolveOpen, { once: true }); socket.addEventListener("error", reject, { once: true }); });
     socket.addEventListener("message", event => {

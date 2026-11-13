@@ -9,7 +9,7 @@ export function createSauceRack({container,createEditor,onToggle,onAdd,onRemove,
   const picker=document.createElement('dialog');picker.id='sauce-picker';picker.setAttribute('aria-labelledby','sauce-picker-title');
   picker.innerHTML='<div class="rack-picker-heading"><h2 id="sauce-picker-title">Add Sauce</h2><button type="button" data-picker-close aria-label="Close Add Sauce">\u00d7</button></div><div class="rack-picker-options"></div><p class="rack-picker-capacity"></p>';
   const options=picker.querySelector('.rack-picker-options');
-  for(const type of ['fullness','moving-space','impact','arp','strum','drop','lfo']){
+  for(const type of ['fullness','moving-space','impact','arp','strum','drop']){
     const b=document.createElement('button');b.type='button';b.dataset.rackAdd=type;
     const title=document.createElement('strong');title.textContent=names[type];const tag=document.createElement('span');tag.textContent=['moving-space','impact'].includes(type)?'Bus':type==='fullness'?'Audio':type==='lfo'?'Control':'Notes';if(['moving-space','impact'].includes(type))tag.title='Stereo bus before Harmonics; Bus blocks run in their displayed order. Clean Sub bypasses this chain.';b.append(title,tag);
     b.addEventListener('click',()=>{closePicker();onAdd(type);});options.append(b);
@@ -57,7 +57,7 @@ export function createSauceRack({container,createEditor,onToggle,onAdd,onRemove,
   document.addEventListener('pointerup',e=>{if(blocked.has(e.pointerId)){e.preventDefault();e.stopImmediatePropagation();setTimeout(()=>blocked.delete(e.pointerId),600);}},true);document.addEventListener('click',e=>{if(blocked.has(e.pointerId)){blocked.delete(e.pointerId);e.preventDefault();e.stopImmediatePropagation();}},true);
   window.addEventListener('keydown',e=>{if(e.key==='Escape'&&drag){cancelDrag();e.preventDefault();}});window.addEventListener('blur',cancelDrag);window.addEventListener('resize',cancelDrag);
   function update({rack,modulation}){
-    const available=[...rack.notes.map(b=>({...b,lane:'notes',key:'notes:'+b.id})),...rack.audio.map(b=>({...b,lane:'audio',key:'audio:'+b.id})),...rack.effects.map(b=>({...b,lane:'effects',key:'effects:'+b.id})),...modulation.sources.filter(s=>s.id!==1).map(s=>({...s,lane:'lfo',type:'lfo',key:'lfo:'+s.id}))];
+    const available=[...rack.notes.map(b=>({...b,lane:'notes',key:'notes:'+b.id})),...rack.audio.map(b=>({...b,lane:'audio',key:'audio:'+b.id})),...rack.effects.map(b=>({...b,lane:'effects',key:'effects:'+b.id}))];
     const next=rackVisualOrder(rack,modulation).map(key=>available.find(item=>item.key===key)).filter(Boolean);
     if(drag&&JSON.stringify(next.map(i=>i.key))!==JSON.stringify(drag.before))cancelDrag();current=next;
     for(const[key,entry]of cards)if(!current.some(i=>i.key===key)){entry.editor.destroy?.();entry.card.remove();cards.delete(key);}

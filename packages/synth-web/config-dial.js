@@ -1,8 +1,8 @@
 import {bindDoubleTap,markDialDefault} from './tap-gesture.js';
 // A configuration dial uses the instrument's shared gesture/Undo transaction.
-export function configDial({key,label,min=0,max=1,getValue,change,begin,getGesture,bindCompletion,format=value=>String(value),toUnit=value=>(value-min)/(max-min),fromUnit=unit=>min+unit*(max-min),step=fine=>fine?.001:.01,compact=false,defaultValue=0}) {
+export function configDial({key,label,min=0,max=1,getValue,change,begin,getGesture,bindCompletion,format=value=>String(value),toUnit=value=>(value-min)/(max-min),fromUnit=unit=>min+unit*(max-min),step=fine=>fine?.001:.01,compact=false,defaultValue=0,modulationToUnit=null}) {
   const wrap=document.createElement('div');wrap.className='config-control'+(compact?' config-control-inline':'');
-  const button=document.createElement('button');button.type='button';button.className='config-dial';button.dataset.control=key;button.setAttribute('role','slider');button.setAttribute('aria-label',label);button.setAttribute('aria-valuemin',min);button.setAttribute('aria-valuemax',max);
+  const button=document.createElement('button');button.type='button';button.className='config-dial';button.dataset.control=key;button.modulationToUnit=modulationToUnit;button.setAttribute('role','slider');button.setAttribute('aria-label',label);button.setAttribute('aria-valuemin',min);button.setAttribute('aria-valuemax',max);
   const face=document.createElement('span');face.className='config-dial-face';face.setAttribute('aria-hidden','true');const needle=document.createElement('span');needle.className='config-dial-needle';face.append(needle);button.append(face);
   const title=document.createElement('span');title.className='config-dial-label';title.textContent=label;const value=document.createElement('output');value.className='config-dial-value';
   const bounded=n=>Math.max(0,Math.min(1,n));

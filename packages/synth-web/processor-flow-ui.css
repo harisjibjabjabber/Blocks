@@ -1,0 +1,22 @@
+.processor-flow{position:relative;display:flex;align-items:center;gap:14px;margin:0 0 14px;min-width:0;isolation:isolate;z-index:5}
+.processor-flow-caption{font-size:10px;color:var(--muted);flex:none;letter-spacing:.03em}
+.processor-flow-row{display:flex;gap:18px;min-width:0;flex:1;max-width:490px}
+.processor-flow-chip{position:relative;display:flex;align-items:center;flex:1;min-width:0;height:44px;border:1px solid var(--line);border-radius:9px;background:var(--panel,#11171c);box-sizing:border-box;transition:transform 130ms ease,border-color 130ms ease}
+.processor-flow-chip:not([data-position="3"]):after{content:'›';position:absolute;right:-13px;color:var(--quiet);font-size:16px;pointer-events:none}
+.processor-flow-chip.is-dragging{z-index:3;transition:none;border-color:var(--accent);box-shadow:0 5px 18px #0008;cursor:grabbing}
+.processor-flow-chip.is-dragging:after{display:none}
+.processor-flow-chip button{height:44px;min-height:44px;background:transparent;border:0;padding:0;color:var(--muted);font-size:11px;white-space:nowrap}
+.processor-flow-chip .processor-flow-open{flex:1;min-width:0;padding-left:9px;text-align:left;border-radius:8px 0 0 8px}
+.processor-flow-open[aria-current="page"]{color:var(--ivory)}
+.processor-flow-chip .processor-flow-grip{width:36px;min-width:36px;flex:none;font-size:18px;color:var(--quiet);cursor:grab;touch-action:none;border-radius:0 8px 8px 0}
+.processor-flow-grip:hover,.processor-flow-grip:focus-visible{color:var(--accent)}
+.processor-flow-grip>svg{display:block;margin:auto;opacity:.8}.processor-flow-grip:hover>svg,.processor-flow-grip:focus-visible>svg{opacity:1}
+.processor-flow-menu{position:absolute;top:calc(100% + 6px);z-index:8;display:grid;gap:5px;width:190px;max-width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--line);border-radius:10px;background:#131b21;box-shadow:0 8px 25px #0009}
+.processor-flow-menu[hidden]{display:none}
+.processor-flow-menu strong{font-size:11px;font-weight:400;color:var(--ivory);padding:3px 4px}
+.processor-flow-menu button{min-height:44px;padding:0 10px;text-align:left;font-size:11px;background:transparent;border:1px solid var(--line);border-radius:6px}
+.processor-flow-menu button:disabled{opacity:.35}
+@media(max-width:699px){.processor-flow{gap:0;margin-bottom:12px}.processor-flow-caption{display:none}.processor-flow-row{gap:10px;max-width:none}.processor-flow-chip:not([data-position="3"]):after{right:-8px;font-size:12px}.processor-flow-chip .processor-flow-open{font-size:10px;padding-left:7px}.processor-flow-chip .processor-flow-grip{width:30px;min-width:30px;font-size:16px}}
+@media(pointer:coarse){.processor-flow-chip .processor-flow-grip{width:44px;min-width:44px}.processor-flow-chip .processor-flow-open{padding-left:6px}.processor-flow-chip[data-flow-group=sauce]{flex:1.05}.processor-flow-chip[data-flow-group=harmonics]{flex:1.15}.processor-flow-chip[data-flow-group=space]{flex:.9}}
+@media(pointer:coarse) and (max-width:359px){.processor-flow-row{gap:4px}.processor-flow-chip[data-flow-group]{flex:1}.processor-flow-chip .processor-flow-open{padding-left:0;font-size:9.5px;text-align:center}.processor-flow-chip:not([data-position="3"]):after{right:-4px;font-size:8px}}
+@media(prefers-reduced-motion:reduce){.processor-flow-chip{transition:none}}

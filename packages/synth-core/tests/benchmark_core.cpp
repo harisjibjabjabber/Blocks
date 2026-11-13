@@ -87,10 +87,10 @@ int main(int argc,char**argv) {
   bs_sauce_config rack{};bs_default_sauce(&rack);rack.count=audioBlocks;
   for(unsigned i=0;i<audioBlocks;++i){const bool fullness=kind==0||i%2;rack.blocks[i]={i+1,BS_SAUCE_FULLNESS,0,1,fullness?.5f:.2f};}
   if(!bs_set_sauce(s,&rack))return 10;
-  bs_modulation_config_v3 modulation{};bs_default_modulation_v3(&modulation);modulation.source_count=lfoSources;const auto sourceDefaults=modulation.sources[0];
+  bs_modulation_config_v4 modulation{};bs_default_modulation_v4(&modulation);modulation.source_count=lfoSources;const auto sourceDefaults=modulation.sources[0];
   const unsigned targets[]={0,2,3,11,14,13,18,24};
   for(unsigned i=0;i<lfoSources;++i){auto&source=modulation.sources[i];source=sourceDefaults;source.id=i+1;source.enabled=1;source.waveform=i==3?BS_LFO_SMOOTH_RANDOM:i;source.synced=0;source.division=4;source.triplet=0;source.rate_hz=float(i+1);source.intensity=.5f;source.route_count=8;for(unsigned j=0;j<8;++j)source.routes[j]={0,0,targets[j],.2f};}
-  if(!bs_set_modulation_v3(s,&modulation))return 11;
+  if(!bs_set_modulation_v4(s,&modulation))return 11;
   bs_notes_config notes{};bs_default_notes(&notes);notes.count=noteBlocks;
   for(unsigned i=0;i<noteBlocks;++i){auto&node=notes.blocks[i];node.id=i+1;node.type=kind==4?BS_NOTE_STRUM:BS_NOTE_ARP;node.enabled=1;bs_default_performance(&node.perf);node.perf.mode=kind==4?BS_STRUM:BS_ARP;node.perf.bpm=240;node.perf.division=64;node.perf.triplet=0;node.perf.curl=.8f;node.perf.gate=.95f;node.perf.strum_ms=100;node.perf.randomness=1;}
   if(!bs_set_notes(s,&notes))return 12;bs_reset(s);
